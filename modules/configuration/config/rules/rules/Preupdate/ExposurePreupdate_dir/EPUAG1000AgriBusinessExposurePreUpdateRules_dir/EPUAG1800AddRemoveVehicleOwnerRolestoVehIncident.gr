@@ -1,0 +1,40 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG1800 - Add/Remove Vehicle Owner Roles to Veh Incident")
+internal class EPUAG1800AddRemoveVehicleOwnerRolestoVehIncident {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.VehicleIncident.OwnLienAtAccidentExt != null or
+exposure.VehicleIncident.OwnLienAtClaimCloseExt != null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  if(exposure.VehicleIncident.OwnLienAtAccidentExt != null and 
+    (!exists(clmCont in exposure.Claim.Contacts where clmCont.Contact == exposure.VehicleIncident.OwnLienAtAccidentExt) or
+    exists(clmCont in exposure.Claim.Contacts where clmCont.Contact == exposure.VehicleIncident.OwnLienAtAccidentExt and
+    !exists(role in clmCont.Roles where role.Role == "VehOwnClaimOpen" and role.getOwnerExt() == exposure)))){
+    exposure.addRole( "VehOwnClaimOpen", exposure.VehicleIncident.OwnLienAtAccidentExt );
+  }
+  if(exposure.VehicleIncident.OwnLienAtClaimCloseExt != null and 
+    (!exists(clmCont in exposure.Claim.Contacts where clmCont.Contact == exposure.VehicleIncident.OwnLienAtClaimCloseExt) or
+    exists(clmCont in exposure.Claim.Contacts where clmCont.Contact == exposure.VehicleIncident.OwnLienAtClaimCloseExt and
+    !exists(role in clmCont.Roles where role.Role == "VehOwnClaimClose" and role.getOwnerExt() == exposure)))){
+    exposure.addRole( "VehOwnClaimClose", exposure.VehicleIncident.OwnLienAtClaimCloseExt );
+  }
+  
+  if((exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt != null and 
+  exposure.VehicleIncident.OwnLienAtAccidentExt != (exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt){
+    exposure.updateRolesOnCheckPayee((exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt, ContactRole.TC_VEHOWNCLAIMOPEN);
+    exposure.removeRole( "VehOwnClaimOpen", (exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt );
+  }
+  if((exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt != null and 
+  exposure.VehicleIncident.OwnLienAtClaimCloseExt != (exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt){
+    exposure.updateRolesOnCheckPayee((exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt, ContactRole.TC_VEHOWNCLAIMCLOSE);
+    exposure.removeRole( "VehOwnClaimClose", (exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt );
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,270 @@
+<?xml version="1.0"?>
+<!-- Contact table -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  abstract="true"
+  desc="Represents a generic contact like a person or a business."
+  entity="Contact"
+  exportable="true"
+  extendable="true"
+  final="false"
+  javaClass="com.guidewire.pl.domain.contact.Contact"
+  platform="true"
+  size="huge"
+  table="contact"
+  type="retireable">
+  <implementsEntity
+    name="Validatable"/>
+  <implementsEntity
+    name="AddressBookConvertable"/>
+  <implementsEntity
+    name="CommonContact"/>
+  <implementsEntity
+    name="Extractable"/>
+  <implementsEntity
+    name="OverlapTable"/>
+  <fulldescription><![CDATA[
+      Represents a generic contact like a person or a business. The Contact is a primary object in the
+      ClaimCenter system as it is used in the management of your company's employees, its vendors, and the
+      participants in a Claim. Contact is an abstract supertype with subtypes such as Person, Company, Place.
+      Guidewire provides an initial hierarchy of Contact types that you can extend.<p/>
+      From a Contact entity you can reach the expected Contact data such as physical address, phone, and fax
+      information.  (In general, only the Primary Address is used for location-based functionality like
+      Assignment and Geocoding/Proximity Search.) Contact and it subtypes may also contain management related
+      information such as social security number, tax IDs, organization type , and so forth.<p/>
+      Within ClaimCenter, users create Contacts that are only associated with a particular Claim.  For example,
+      an injured party is a typical claim contact. ClaimCenter does not attempt to determine if a contact
+      associated with one claim appears elsewhere on another claim. Thus, any claim contact that users create,
+      like an auto body shop, can be a duplicate of one or more other claim contacts associated with different
+      claims.<p/>
+      If ClaimCenter is integrated with Guidewire's ContactCenter application, your users can create contacts
+      and then access them centrally through the linking feature.  This allows a company to have both centrally
+      managed contacts such as a vendor business <i>and</i> locally managed contacts such as an injured party.
+      To support this behavior, ContactCenter and ClaimCenter typically contain matching hierarchies of Contact
+      entities. So, for example, an extension made to a ClaimCenter Contact entity should also be made in
+      ContactCenter.  See the ClaimCenter Administration Guide for more information about the integration between
+      ClaimCenter and ContactCenter.
+    ]]></fulldescription>
+  <column
+    desc="Primary email address associated with the contact."
+    name="EmailAddress1"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <column
+    desc="Secondary email address associated with the contact."
+    name="EmailAddress2"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <column
+    desc="Fax number associated with the contact."
+    name="FaxPhone"
+    type="phone"/>
+  <column
+    desc="Home phone number associated with the contact."
+    name="HomePhone"
+    type="phone"/>
+  <column
+    default="false"
+    desc="This field is deprecated. It was formerly used to determine whether related contacts should be loaded from the Address Book."
+    exportable="false"
+    loadable="false"
+    name="LoadRelatedContacts"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="This contact's name."
+    name="Name"
+    supportsLinguisticSearch="true"
+    type="companyname">
+    <columnParam
+      name="logicalSize"
+      value="60"/>
+  </column>
+  <column
+    desc="Notes on this contact."
+    name="Notes"
+    type="longtext"/>
+  <column
+    default="false"
+    desc="Whether the vendor is a preferred vendor."
+    name="Preferred"
+    nullok="false"
+    type="bit"/>
+  <column
+    createhistogram="true"
+    desc="Tax ID for the contact (SSN or EIN)."
+    name="TaxID"
+    type="ssn"/>
+  <column
+    desc="Vendor number for the contact."
+    name="VendorNumber"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <column
+    desc="The contact's backup withholding rate, or null if backup withholding is not required or is not known to be required."
+    name="WithholdingRate"
+    nullok="true"
+    type="percentagedec"/>
+  <column
+    desc="Business phone number associated with the contact."
+    name="WorkPhone"
+    type="phone"/>
+  <column
+    desc="Overall review Score for this Contact"
+    name="Score"
+    nullok="true"
+    type="integer"/>
+  <typekey
+    desc="Primary phone number type for the contact."
+    name="PrimaryPhone"
+    typelist="PrimaryPhoneType">
+    <keyfilters>
+      <keyfilter
+        name="subtype"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    default="unconfirmed"
+    desc="Status of the contact's tax ID; whether it is known or unknown."
+    name="TaxStatus"
+    nullok="true"
+    typelist="TaxStatus"/>
+  <typekey
+    desc="The company's vendor type."
+    name="VendorType"
+    typelist="VendorType"/>
+  <typekey
+    desc="The account's preferred language"
+    name="PrimaryLanguage"
+    typelist="LanguageType"/>
+  <typekey
+    desc="Validation level that this object passed (if any) before it was stored."
+    exportable="false"
+    name="ValidationLevel"
+    typelist="ValidationLevel"/>
+  <typekey
+    desc="The contact's preferred currency."
+    exportable="true"
+    name="PreferredCurrency"
+    typelist="Currency"/>
+  <typekey
+    desc="A status code to indicate whether this entity allows auto-sync or not. Null means disallow."
+    name="AutoSync"
+    typelist="AutoSync"/>
+  <foreignkey
+    columnName="PrimaryAddressID"
+    deletefk="true"
+    desc="Primary address associated with the contact."
+    fkentity="Address"
+    name="PrimaryAddress"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <array
+    arrayentity="ContactAddress"
+    desc="Secondary addresses associated with the contact."
+    name="ContactAddresses"
+    owner="true"
+    triggersValidation="true"/>
+  <array
+    arrayentity="ContactContact"
+    arrayfield="RelatedContact"
+    desc="Contacts that point to this contact."
+    name="SourceRelatedContacts"/>
+  <array
+    arrayentity="ContactContact"
+    arrayfield="SourceContact"
+    desc="Contacts that this Contact points to."
+    name="TargetRelatedContacts"/>
+  <array
+    arrayentity="OfficialID"
+    desc="TaxIDs associated with this contact"
+    name="OfficialIDs"/>
+  <array
+    arrayentity="ContactCategoryScore"
+    desc="List of categories and their average scores, associated with this Contact."
+    name="CategoryScores"
+    owner="true"/>
+  <aspect
+    desc="Separates scriptable only methods from the rest of the Contact interface. These methods have                   equivalents defined in CommonContact, but are required to be defined in terms of Contact for                   scripting."
+    name="Gosu"/>
+  <events/>
+  <index
+    desc="Covering index for searches by taxid"
+    expectedtobecovering="true"
+    name="contactu2"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="TaxID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ID"/>
+  </index>
+  <index
+    desc="Covering index for related claims search; from address book page look for all claims with contacts that have the same UID"
+    name="AddressBookUID"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="AddressBookUID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ID"/>
+  </index>
+  <index
+    desc="Covering index for search by name; need subtype to know whether name is relevant"
+    name="CompanyName"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="NameDenorm"/>
+    <indexcol
+      keyposition="2"
+      name="Subtype"/>
+    <indexcol
+      keyposition="3"
+      name="Retired"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+  <index
+    desc="index to help performance on assign by proximity, this should replace the backing index"
+    name="PrimaryAddress"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="PrimaryAddressID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="Subtype"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+  <dbcheckbuilder
+    className="com.guidewire.pl.domain.contact.dbchecks.UniqueContactPrimaryAddressDBCheckBuilder"/>
+</entity>

@@ -1,0 +1,52 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUSP1000SpecialtyESTransactionPreUpdateRules_dir.TPUSP1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUSP1110 - 100K Reserve Email Notification")
+internal class TPUSP1110100KReserveEmailNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis ReserveSet
+and !(transactionSet.LoadCommandID != null) and
+transactionSet.ApprovalStatus=="approved" and
+transactionSet.AllTransactions.where(\ t -> t.Amount >= 100000).Count>0 and
+transactionSet.Claim.Notes.where(\ n -> n.Subject == displaykey.Notes.NoteSubject.LargeReserve).IsEmpty
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+try {
+    var noteBody:String
+    var note:Note
+    var body : String = templates.email.specialtyes.NoticeLargeReserve_SPES.renderToString(transactionSet)
+    var recipient = transactionSet.Claim.AssignedUser.DisplayName;
+    var envInfo : String = util.custom_Ext.finders.getEnvironment()
+    var emailHelper = new EmailHelper()
+    // Defect#8360: Created Script Parameter for DL emails
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+      emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+            ScriptParameters.SpecES100KReserveNotificationEmail, ScriptParameters.Underwriters_Name, 
+            "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+            displaykey.Email.Subject.LargeReserve, body)
+    } else {
+      emailHelper.sendEmailWithBodyEcf(transactionSet.Claim,  
+            ScriptParameters.ClaimCenterDevEmail, recipient,
+            "ClaimCenterSupport@gaig.com", envInfo, 
+            displaykey.Email.Subject.LargeReserve, body)
+    }
+
+    noteBody = displaykey.Notes.NoteBody.LargeReserve
+    note = transactionSet.Claim.addNote(NoteTopicType.TC_RESERVES, noteBody)
+    note.Subject = displaykey.Notes.NoteSubject.LargeReserve
+  
+    }catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null )
+    }
+  
+
+
+
+
+    
+    /*end00rule*/
+  }
+}

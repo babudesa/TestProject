@@ -1,0 +1,36 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUAC1000ACLsActivityPreUpdateRules_dir.APUAC1100TempAccesstoSecureClaim_dir
+
+@gw.rules.RuleName("APUAC1120 - Remove Temp Access Role")
+internal class APUAC1120RemoveTempAccessRole {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/!activity.New
+and
+activity.Status == typekey.ActivityStatus.TC_COMPLETE
+or 
+activity.Status ==typekey.ActivityStatus.TC_SKIPPED 
+and
+activity.AssignedUser!=activity.Claim.AssignedUser
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var openActivityCount = 0
+
+for(act in activity.Claim.Activities){
+  if(act.AssignedUser == activity.AssignedUser
+  and act.PublicID != activity.PublicID
+  and act.Status == "open"){
+    openActivityCount = openActivityCount + 1
+  }
+}
+
+if(openActivityCount == 0){
+  for(rolassign in activity.Claim.RoleAssignments){
+    if(rolassign.Role == typekey.UserRole.TC_TEMPCLAIMEDITOR and rolassign.getAssignedUser() == activity.AssignedUser){
+      activity.Claim.removeFromRoleAssignments(rolassign)
+    }
+  }
+}
+/*end00rule*/
+  }
+}

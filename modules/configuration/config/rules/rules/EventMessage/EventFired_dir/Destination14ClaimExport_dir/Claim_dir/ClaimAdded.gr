@@ -1,0 +1,26 @@
+package rules.EventMessage.EventFired_dir.Destination14ClaimExport_dir.Claim_dir
+
+@gw.rules.RuleName("ClaimAdded")
+internal class ClaimAdded {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.EventName == "NewClaim" || messageContext.EventName == "ClaimAdded")
+&& messageContext.Root typeis Claim
+&& messageContext.Root.State != ClaimState.TC_DRAFT/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.claimexport.gaigclaimexport.enums.RecordTypeEnum
+
+try {
+
+  var claim = messageContext.Root as Claim
+  var f = util.gaic.claimexport.ClaimExportFunctionsFactory.getClaimFunctions()
+
+  f.sendClaimChanges(messageContext, claim, RecordTypeEnum.A)
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

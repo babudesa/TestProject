@@ -1,0 +1,22 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1Q00 - Unverified Policy Flag for Claim")
+internal class CPUXX1Q00UnverifiedPolicyFlagforClaim {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Created for defect 1257 - to flag a claim on an unverified policy
+author:erawe
+date:10/30/09
+*/
+claim.State != "closed" and !claim.Policy.Verified and 
+claim.Flagged!="isflagged" and claim.isConvertedExt() == false //.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.setFlag( "This Claim has an unverified policy associated to it." )
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, "Problem with setting Claim.setFlag" )
+}
+/*end00rule*/
+  }
+}

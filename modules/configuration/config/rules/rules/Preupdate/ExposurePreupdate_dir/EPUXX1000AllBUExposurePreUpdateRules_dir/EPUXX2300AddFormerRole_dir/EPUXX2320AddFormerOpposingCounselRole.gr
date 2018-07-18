@@ -1,0 +1,19 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX2300AddFormerRole_dir
+
+@gw.rules.RuleName("EPUXX2320 - Add Former Opposing Counsel Role")
+internal class EPUXX2320AddFormerOpposingCounselRole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!exposure.New && !exposure.Closed &&
+(exposure.OriginalVersion as Exposure) .opposingcounsel != null &&
+(exposure.OriginalVersion as Exposure) .opposingcounsel != exposure.opposingcounsel/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*///Defect 7656 - Opposing Counsel assigned Former Opposing Counsel when role changed
+try{  
+  exposure.addRole(ContactRole.TC_FORMEROPPOSINGCOUNSEL, (exposure.OriginalVersion as Exposure).opposingcounsel)  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

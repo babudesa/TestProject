@@ -1,0 +1,386 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <InputSet
+    id="CheckWizardCheckSummaryInputSet">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <Require
+      name="prevServiceEnd"
+      type="DateTime"/>
+    <Variable
+      initialValue="Check.checkDateOfService()"
+      name="DOSEditable"
+      type="boolean"/>
+    <Variable
+      initialValue="setPreviousInvNumber()"
+      name="previousInvoiceNumber"
+      type="String"/>
+    <Variable
+      initialValue="setPreviousInvDate()"
+      name="previousInvoiceDate"
+      type="DateTime"/>
+    <Variable
+      initialValue="initMemo()"
+      name="init"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="setPreviousServiceDate()"
+      name="previousServiceDate"
+      type="DateTime"/>
+    <Variable
+      initialValue="setPreviousServiceStart()"
+      name="prevServiceStart"
+      type="DateTime"/>
+    <Variable
+      initialValue="initWCMemo()"
+      name="wcMemo"/>
+    <Variable
+      initialValue="setPreviousDOSType()"
+      name="previousDOSType"
+      type="DateOfServiceExt"/>
+    <Variable
+      initialValue="Check.Memo"
+      name="recurringMemo"
+      type="String"/>
+    <Variable
+      initialValue="Check.ServicePdEnd != null ? Check.ServicePdEnd : null"
+      name="previousEndDate"
+      type="DateTime"/>
+    <ListViewInput
+      boldLabel="true"
+      def="NewCheckGroupChecksLV(Check.Group)"
+      id="Group_Checks"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Group.Checks"
+      visible="Check.isGroupMember(false)">
+      <Toolbar/>
+    </ListViewInput>
+    <Input
+      boldLabel="true"
+      id="newManualCheck_CheckNumber"
+      label="displayKey.newManualCheck.CheckNumber"
+      value="Check.CheckNumber"
+      visible="Check.ManualCheck"/>
+    <!-- <Input
+      boldLabel="true"
+      id="Check_PayTo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.PayTo"
+      value="Check.PayTo"
+      visible="!Check.isGroupMember(false)"/> -->
+    <TextAreaInput
+      boldLabel="true"
+      id="PayToAddyOnChk"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.PayTo"
+      maxChars="200"
+      numCols="100"
+      numRows="5"
+      value="Check.getPayToAppearingOnCheck()"/>
+    <Input
+      boldLabel="true"
+      id="Check_MailTo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.MailTo"
+      value="Check.getMailToAddress()"
+      visible="!Check.isGroupMember(false)"/>
+    <Input
+      boldLabel="true"
+      formatType="currency"
+      id="Amount_Gross"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Amount.Gross"
+      value="(!Check.isGroupMember(false) ? Check.GrossAmountExt : Check.Group.GrossAmountExt)"/>
+    <Input
+      boldLabel="true"
+      id="Amount_Net"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Amount.Net"
+      value="(!Check.isGroupMember(false) ? Check.NetAmount : Check.Group.NetAmount)"/>
+    <ClaimContactInput
+      boldLabel="true"
+      claim="Check.Claim"
+      id="Check_Claimant"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Claimant"
+      value="Check.Claimant"
+      valueRange="Check.Claim.relatedContacts"/>
+    <BooleanRadioInput
+      editable="true"
+      falseLabel="displaykey.NVV.Financials.Check.DateOfServicePeriod"
+      id="DOSChoice"
+      onChange="clearDOSFields();"
+      postOnChange="true"
+      trueLabel="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService"
+      value="DOSEditable"
+      visible="Check.ManualCheck"/>
+    <TypeKeyRadioInput
+      editable="true"
+      id="WCDateofService"
+      onChange="setPreviousDOSType(); clearDates();"
+      postOnChange="true"
+      value="Check.DOSTypeExt"
+      visible="!Check.ManualCheck"/>
+    <DateInput
+      available="Check.ManualCheck ? DOSEditable : Check.DOSTypeExt == DateOfServiceExt.TC_DATEOFSERVICE "
+      boldLabel="true"
+      editable="true"
+      id="Check_DateOfService"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService"
+      onChange="Check.Memo = Check.populateCheckMemoServiceDate(Check.Memo, previousServiceDate); setPreviousServiceDate()"
+      postOnChange="true"
+      value="Check.DateOfService"
+      visible="true"/>
+    <DateInput
+      available="Check.ManualCheck ? !DOSEditable : Check.DOSTypeExt == DateOfServiceExt.TC_STARTEND"
+      boldLabel="true"
+      editable="true"
+      id="ServicePeriod_Start"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.Start"
+      onChange="Check.Memo = Check.populateCheckMemoDatesOfService(Check.Memo, prevServiceStart, previousEndDate); prevServiceStart = Check.setPreviousStart()"
+      postOnChange="true"
+      validationExpression="((Check.ServicePdStart==null OR Check.ServicePdStart==&quot;&quot;) AND Check.ServicePdEnd!=null) ? displaykey.NVV.Financials.Check.ValidationExpression.ServicePdStart : null"
+      value="Check.ServicePdStart"
+      visible="Check.DOSTypeExt != DateOfServiceExt.TC_RECURRING"/>
+    <DateInput
+      available="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING"
+      boldLabel="true"
+      editable="true"
+      id="Recurring_Start"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.RecurringStart"
+      onChange="prevServiceEnd = Check.ServicePdEnd; Check.ServicePdEnd = Check.recurringEndDate; Check.Memo = Check.populateCheckMemoDatesOfService(Check.Memo, prevServiceStart, prevServiceEnd); prevServiceStart = Check.setPreviousStart()"
+      postOnChange="true"
+      required="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING || Check.CheckSet.Recurrence != null"
+      validationExpression="Check.recurringValidation()"
+      value="Check.ServicePdStart"
+      visible="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING"/>
+    <DateInput
+      available="Check.ManualCheck ? !DOSEditable : Check.DOSTypeExt == DateOfServiceExt.TC_STARTEND"
+      boldLabel="true"
+      editable="true"
+      id="ServicePeriod_End"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.End"
+      onChange="Check.Memo = Check.populateCheckMemoDatesOfService(Check.Memo, prevServiceStart, previousEndDate); previousEndDate = Check.ServicePdEnd"
+      postOnChange="true"
+      validationExpression="(Check.ServicePdEnd!=null AND gw.api.util.DateUtil.compareIgnoreTime(Check.ServicePdEnd,Check.ServicePdStart)&lt;=0) ? displaykey.NVV.Financials.Check.ValidationExpression.ServicePdEnd : null"
+      value="Check.ServicePdEnd"
+      visible="Check.DOSTypeExt != DateOfServiceExt.TC_RECURRING"/>
+    <DateInput
+      available="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING"
+      boldLabel="true"
+      id="Recurring_End"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.RecurringEnd"
+      required="Check.CheckSet.Recurrence != null"
+      validationExpression="(Check.ServicePdEnd!=null AND gw.api.util.DateUtil.compareIgnoreTime(Check.ServicePdEnd,Check.ServicePdStart)&lt;=0) ? displaykey.NVV.Financials.Check.ValidationExpression.ServicePdEnd : null"
+      value="Check.ServicePdEnd"
+      visible="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING"/>
+    <Input
+      boldLabel="true"
+      id="Check_PrevServiceDate"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.PrevServiceDate"
+      value="Check.PrevPaidOrScheduledServicePeriod"
+      visible="Check.hasExposureWithServicePeriod()"/>
+    <!-- <Input
+      boldLabel="true"
+      editable="true"
+      id="PaymentCloseReason"
+      label="displaykey.LV.Financials.NewCheckPayments.Payments.ClaimCloseReason"
+      required="true"
+      value="Check.Claim.ClosedOutcome"
+      visible="exists(pmt in Check.Payments where pmt.PaymentType==&quot;final&quot;)"/> -->
+    <!-- defect 09/28/2009 - backed out changes
+1829 - Djohnson - Enterprise MTA - Close Reason is still being generated on Final Payments that close the Feature and/or Claim. -->
+    <TextAreaInput
+      boldLabel="true"
+      editable="true"
+      id="Check_InvoiceNumber1"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.InvoiceNumber"
+      maxChars="20"
+      numRows="1"
+      onChange="Check.populateCheckMemoInvoiceNumber(Check.Memo, previousInvoiceNumber); setPreviousInvNumber(); setPreviousServiceStart()"
+      postOnChange="true"
+      value="Check.InvoiceNumber"
+      visible="false"/>
+    <TextInput
+      boldLabel="true"
+      editable="true"
+      id="Check_InvoiceNumber"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.InvoiceNumber"
+      maxChars="20"
+      onChange="Check.populateCheckMemoInvoiceNumber(Check.Memo, previousInvoiceNumber); setPreviousInvNumber()"
+      postOnChange="true"
+      required="false"
+      value="Check.InvoiceNumber"/>
+    <DateInput
+      boldLabel="true"
+      editable="true"
+      id="InvoiceDateInput"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.InvoiceDate"
+      onChange="Check.populateCheckMemoInvoiceDate(Check.Memo, previousInvoiceDate); setPreviousInvDate()"
+      postOnChange="true"
+      validationExpression="Check.InvoiceDateExt != null and Check.InvoiceDateExt &gt; util.DateUtil.currentDate() ? displaykey.Java.Validation.Date.ForbidFuture : null"
+      value="Check.InvoiceDateExt"
+      visible="Check.Claim.LossType==&quot;EXECLIABDIV&quot; or Check.Claim.LossType==&quot;PROFLIABDIV&quot; or Check.Claim.LossType==typekey.LossType.TC_MERGACQU or Check.Claim.LossType==typekey.LossType.TC_SPECIALHUMSERV"/>
+    <TextAreaInput
+      boldLabel="true"
+      editable="true"
+      id="Check_Memo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Memo"
+      maxChars="120"
+      numCols="100"
+      numRows="3"
+      postOnChange="true"
+      required="true"
+      value="Check.Memo"/>
+    <TextAreaInput
+      id="CheckMemoOnCheck"
+      label="displaykey.NVV.Financials.NewCheckPayee.Check.PayTo.AsSeenOn"
+      maxChars="120"
+      numCols="108"
+      numRows="3"
+      value="Check.getMemoMatchingCheck()"/>
+    <InputDivider/>
+    <ListViewInput
+      boldLabel="true"
+      def="TransactionSetDocumentsLV(Check.CheckSet)"
+      id="Check_Documents"
+      label="displaykey.NVV.Financials.NewPaymentInstructions.Check.Documents"
+      visible="perm.System.viewdocs">
+      <Toolbar/>
+    </ListViewInput>
+    <Code><![CDATA[function clearDOSEnd(){
+  if(Check.ServicePdStart==null){
+    Check.ServicePdEnd=null
+  }
+}
+
+function clearDOSFields(){
+  if(DOSEditable){
+    Check.ServicePdStart=null
+    Check.ServicePdEnd=null
+  } else {
+    Check.DateOfService=null
+  }
+}
+
+function validateServicePeriod() : String {
+  var result : String = null
+  
+  if ((Check.ServicePdStart != null and Check.ServicePdEnd == null)
+      or (Check.ServicePdStart == null and Check.ServicePdEnd != null)) {
+    result = displaykey.Web.Financials.Check.ServicePeriodNotInSync
+  } else if (Check.ServicePdEnd != null and !Check.ServicePdEnd.after(Check.ServicePdStart)) {
+    result = displaykey.Web.Financials.Check.ServicePeriodRangeError
+  }
+  
+  return result
+}
+
+function setPreviousInvNumber(){
+  if(Check.InvoiceNumber != null){
+    previousInvoiceNumber = Check.InvoiceNumber
+  }else{
+    previousInvoiceNumber = null
+  }
+}
+
+function setPreviousInvDate(){
+  if(Check.InvoiceDateExt != null){
+    previousInvoiceDate = Check.InvoiceDateExt
+  }else{
+    previousInvoiceDate = null
+  }  
+}
+
+function setPreviousServiceDate(){
+  if(Check.DateOfService != null){
+    previousServiceDate = Check.DateOfService
+  }else{
+    previousServiceDate = null
+  }  
+}
+
+function setPreviousServiceStart(){
+  if(Check.ServicePdStart != null){
+    prevServiceStart = Check.ServicePdStart
+  }else{
+    prevServiceStart = null
+  }  
+}
+
+function setPreviousServiceEnd(){
+  if(Check.ServicePdEnd != null){
+    prevServiceEnd = Check.ServicePdEnd
+  }else{
+    prevServiceEnd = null
+  }  
+}
+
+// 5.14.14 - cmullin - Defect 6885: updated the code for Specialty E&S custom Check Memo to include 
+// GAI as TPA expense/loss CostTypes.
+function initMemo(){
+  if (Check.Claim.LossType == LossType.TC_SPECIALTYES && Check.Memo==null){
+    var cost = Check.FirstPayment.CostType
+    var LineCat = Check.Payments*.LineItems*.LineCategory.last()
+      if (cost == CostType.TC_CLAIMCOST or cost == CostType.TC_GAIASTPALOSS){
+        Check.Memo = "In Full and Final Settlement of Any and All Claims. "
+      } else if (cost == CostType.TC_EXPENSE or cost == CostType.TC_GAIASTPAEXPENSE){
+        Check.Memo = LineCat.DisplayName.toString() 
+      }
+  }else if(Check.Claim.LossType == LossType.TC_OMAVALON and Check.Memo == null){
+    var cost = Check.FirstPayment.CostType
+    if(cost == CostType.TC_CLAIMCOST or cost == CostType.TC_GAIASTPALOSS){
+     Check.Memo = "FEIN: 95-1542353" 
+    }
+  }
+}
+
+function clearDates(){
+  Check.DateOfService=null
+  Check.ServicePdEnd=null
+  Check.ServicePdStart=null
+  if (Check.FirstPayment.Exposure.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS && Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING){
+    Check.Memo = Check.getInitialRecurringMemo()
+  }else if (Check.FirstPayment.Exposure.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS && Check.DOSTypeExt != DateOfServiceExt.TC_RECURRING){
+    if (Check.Memo != null && Check.Memo.contains(Check.getInjuryString())){
+      if (Check.FirstPayment.WCInjuryTypeExt == WCInjuryTypeExt.TC_COMPROMISEDEATH){
+        Check.Memo = Check.getInjuryString()
+      } else {
+        Check.Memo = Check.Memo
+      }
+    }
+  }else {
+    Check.Memo = Check.populateWCMemoInvoiceNum(Check.InvoiceNumber, Check.InvoiceNumber)
+  }
+  //Check.clearCheckMemo(previousDOSType)
+  previousServiceDate = null
+  prevServiceStart = null
+  prevServiceEnd = null
+//  if (Check.InvoiceNumber != null){
+//    Check.populateCheckMemoInvoiceNumber(Check.Memo, previousInvoiceNumber)
+//  }
+}
+
+function initWCMemo(){
+  if (util.WCHelper.isWCorELLossType(Check.Claim)){
+    setPreviousInvNumber();
+    setPreviousInvDate();
+    setPreviousServiceStart()
+    setPreviousServiceEnd()
+    setPreviousServiceDate()
+    Check.Memo = Check.setWCMemo(Check.DOSTypeExt)
+  }else {
+    setPreviousInvNumber();
+    setPreviousInvDate();
+  }
+}
+
+ function setPreviousDOSType(){
+  if(Check.DOSTypeExt != null){
+    previousDOSType = Check.DOSTypeExt
+  }else{
+    previousDOSType = null
+  }
+}]]></Code>
+  </InputSet>
+</PCF>

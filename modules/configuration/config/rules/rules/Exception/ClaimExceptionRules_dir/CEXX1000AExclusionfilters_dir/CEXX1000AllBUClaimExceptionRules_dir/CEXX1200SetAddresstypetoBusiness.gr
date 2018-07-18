@@ -1,0 +1,59 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1200 - Set Addresstype to Business")
+internal class CEXX1200SetAddresstypetoBusiness {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///print (claim.ClaimNumber)
+ for(x in claim.Contacts){
+//   print("\t"+x)  
+   for(ad in claim.Policy.ex_Agency.AllAddresses){
+     if(ad.AddressType  == null and
+       (ad.AddressLine1 != null or 
+        ad.AddressLine2 != null or 
+        ad.AddressLine3 != null or
+        ad.City != null or
+        ad.State != null or
+        ad.PostalCode !=null))
+       {
+//         print("\t\t\tSetting Agency AddressType")
+        ad.AddressType ="business"
+       }
+   }
+   for(addy in x.Contact.AllAddresses){
+//     print("\t\t"+addy + " - " + addy.AddressType)
+     if(addy.AddressType  == null and
+       (addy.AddressLine1 != null or 
+        addy.AddressLine2 != null or 
+        addy.AddressLine3 != null or
+        addy.City != null or
+        addy.State != null or
+        addy.PostalCode !=null))
+       {
+//         print("\t\t\tSetting AddressType")
+        addy.AddressType ="business"
+    }
+    
+       for(add in x.Contact.AllAddresses){
+//     print("\t\t"+addy + " - " + addy.AddressType)
+     if(add.AddressType  == null and
+       (add.AddressLine1 == null or 
+        add.AddressLine2 == null or 
+        add.AddressLine3 == null or
+        add.City == null or
+        add.State == null or
+        add.PostalCode ==null))
+       {
+//         print("\t\t\tSetting AddressType")
+        x.Contact.removeAddress(add)
+    }
+       }
+ }
+}
+     
+/*end00rule*/
+  }
+}

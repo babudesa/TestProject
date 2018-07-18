@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CPUXX1410 - Suspicious Claim Activity")
+internal class CPUXX1410SuspiciousClaimActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*updated erawe 10/30/09 - created to replace CPUEQ1720, changing to enterprise level rule
+note: this will set the flag only one time.  Once the activity has been created
+this condition will not happen again.  Approved, Karen 11/2/09
+*/
+/* Defect ID : 7669- TECHNICAL: multiple hardcoded activity patterns are causing errors in higher environments, i.e. WC INT. See attached emails.
+Replaced with activity code instead of activity public id by gyemula */
+claim.AssignmentStatus=="assigned" and
+claim.State != "closed" and 
+claim.LossDate != null and
+(gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) < 10 or
+ gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) < 10)
+and !claim.isConvertedExt() //Changed to isConverted from LoadCommandID - SR
+and
+not exists( 
+ Activity in claim.Activities
+    where (Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_clm_plcy_eff_exp")))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*end00rule*/
+  }
+}

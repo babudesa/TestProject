@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Purging Data Prior to Upgrade</title>
+    <link rel="StyleSheet" href="css/procedure-db-athena.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_4.html#1830365">Upgrading from 4.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-athena.14.01.html#1830365">Upgrading the ClaimCenter 4.0.x Database</a> : Purging Data Prior to Upgrade</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1830365">Purging Data Prior to Upgrade</a></div>
+      <div class="B_-_Body"><a name="1830366">This topic includes recommendations for purging certain types of data from the database prior to upgrade. </a>Removing unused records can improve the performance of the database upgrade and ClaimCenter.</div>
+      <div class="H2_-_Heading_2"><a name="1830373">Purging Old Messages from the Database</a></div>
+      <div class="B_-_Body"><a name="1830374">Purge completed inactive messages before upgrading the database. Doing so reduces the complexity of the data</a>base upgrade. Use the following command from the current (pre-upgrade) customer configuration <span class="cv_-_computer_voice">toolkit/bin</span> directory to purge completed messages:</div>
+      <div class="CS_-_Code_Single_Line"><a name="1830375">messaging_tools -password </a><span class="pc_-_parameter_in_code">password</span> -server http://<span class="pc_-_parameter_in_code">server</span>:<span class="pc_-_parameter_in_code">port</span>/<span class="pc_-_parameter_in_code">instance </span>-purge <span class="pc_-_parameter_in_code">MM</span>/<span class="pc_-_parameter_in_code">DD</span>/<span class="pc_-_parameter_in_code">YY</span> </div>
+      <div class="B_-_Body"><a name="1830376">Replace </a><span class="pc_-_parameter_in_code">MM</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">/</span><span class="pc_-_parameter_in_code">DD</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">/</span><span class="pc_-_parameter_in_code">YY</span> with a date. This tool deletes completed messages that are older than that date. Periodically use this command to purge old messages to prevent the database from growing unnecessarily. </div>
+      <div class="B_-_Body"><a name="1830377">Or, you can use the web service API </a><span class="cv_-_computer_voice">IMessageToolsAPI.purgeCompletedMessages(Calendar date)</span>.</div>
+      <div class="B_-_Body"><a name="1830381">Always perform this message purge on the database before starting ClaimCenter so that the database upgrade </a>does not attempt to convert those rows.</div>
+      <div class="B_-_Body"><a name="1830382">You cannot resend old messages after the upgrade. This is because integrations change and the message payload </a>might be different. It is important that messages that have failed or not yet been consumed finish prior to upgrading.</div>
+      <div class="B_-_Body"><a name="1830386">After you purge completed inactive messages, reorganize the </a><span class="cv_-_computer_voice">cc_MessageHistory</span> table. You might also want to rebuild any indexes on the table. Contact Guidewire Support if you need assistance.</div>
+      <div class="H2_-_Heading_2"><a name="1830387">Purging Orphaned Policies from the Database</a></div>
+      <div class="B_-_Body"><a name="1830391">Each claim has an associated policy record. In ClaimCenter 6.0 and prior versions, if a user refreshed the policy </a>information on a claim, the old policy record remained in the database. If orphaned policies are consuming large amounts of database space, contact Guidewire Support for assistance removing the policies.</div>
+      <div class="H2_-_Heading_2"><a name="1830392">Purging Address Correction Records</a></div>
+      <div class="B_-_Body"><a name="1830399">The </a><span class="cv_-_computer_voice">cc_addresscorrection</span> table stores address corrections returned from geocoding systems. ClaimCenter does not display address corrections by default. However, you might have configured ClaimCenter to expose address corrections to allow users to make corrections.</div>
+      <div class="B_-_Body"><a name="1830406">If you have not configured ClaimCenter to expose address corrections, you can remove the address correction </a>records by truncating the <span class="cv_-_computer_voice">cc_addresscorrection</span> table.</div>
+      <div class="B_-_Body"><a name="1830410">If you do have address corrections exposed, you can remove records that have been handled already.</a></div>
+      <div class="H2_-_Heading_2"><a name="1830412">Purging Workflow Logs</a></div>
+      <div class="B_-_Body"><a name="1830422">Each time ClaimCenter creates an activity, the activity is added to the </a><span class="cv_-_computer_voice">cc_Workflow</span>, <span class="cv_-_computer_voice">cc_WorkflowLog</span> and <span class="cv_-_computer_voice">cc_WorkflowWorkItem</span> tables. Once a user completes the activity, ClaimCenter sets the workflow status to completed. The <span class="cv_-_computer_voice">cc_Workflow</span>, <span class="cv_-_computer_voice">cc_WorkflowLog</span> and <span class="cv_-_computer_voice">cc_WorkflowWorkItem</span> table entry for the activity are never used again. These tables grow in size over time and can adversely affect performance as well as waste disk space. Excessive records in these tables also negatively impacts the performance of the database upgrade.</div>
+      <div class="B_-_Body"><a name="1830438">Remove workflow log entries, workflow items, and workflows for completed activities to improve database </a>upgrade and operational performance and to recover disk space. </div>
+      <div class="B_-_Body"><a name="1830439">Use the following SQL statements in the order shown to remove these items:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1830440">delete from cc_workflowlog</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1830441">&nbsp;</a>&nbsp;where workflow in ( select id from cc_workflow</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1830442">&nbsp;</a>&nbsp;&nbsp;&nbsp;where state = ( select id from cctl_workflowstate where typecode="completed" ))</PRE>
+      <PRE class="CF_-_Code_First_Line"><a name="1830443">delete from cc_workflowworkitem</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1830444">&nbsp;</a>&nbsp;where workflowid in ( select id from cc_workflow</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1830445">&nbsp;</a>&nbsp;&nbsp;&nbsp;where state = ( select id from cctl_workflowstate where typecode="completed" ))</PRE>
+      <PRE class="CF_-_Code_First_Line"><a name="1830446">delete from cc_workflow</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1830447">&nbsp;</a>&nbsp;where state = ( select id from cctl_workflowstate where typecode="completed" ))</PRE>
+      <div class="B_-_Body"><a name="1830448">Try this in a test environment before applying to your production database.</a></div>
+      <div class="B_-_Body"><a name="1830452">ClaimCenter 6.0 and higher includes work queues to purge completed workflows and their logs that are older </a>than a configurable number of days. Guidewire recommends that you purge completed workflows and their logs periodically. This reduces the problem of a large number of workflow log records causing performance issues. These work queues are described in <a href="javascript:WWHClickedPopup('admin', 'database.06.11.html#1250988', '');" title="Purging Old Workflows and Workflow Logs">“Purging Old Workflows and Workflow Logs” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'database.06.11.html#1250988', '');" title="Purging Old Workflows and Workflow Logs">System Administration Guide</a></span>.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

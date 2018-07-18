@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Popup
+    afterCommit="java.lang.System.err.println()"
+    beforeValidate="claim.createMNIRelatedDBAClaimContact()"
+    canEdit="(inputContact != null and perm.Contact.editlocal(inputContact)) and (Claim != null and perm.Claim.edit(Claim))"
+    canVisit="inputContact != null and perm.Contact.viewlocal and (Claim != null and perm.Claim.view(Claim))"
+    id="ClaimRelatedContactDetailPopup"
+    startInEditMode="startInEditMode"
+    title="inputContact.DisplayName">
+    <LocationEntryPoint
+      signature="ClaimRelatedContactDetailPopup(inputContact : Contact, claim : Claim)"/>
+    <LocationEntryPoint
+      signature="ClaimRelatedContactDetailPopup(inputContact : Contact, claim : Claim, startInEditMode : boolean)"/>
+    <Variable
+      name="inputContact"
+      type="Contact"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim == null ? null : claim.getClaimContact(inputContact)"
+      name="claimContact"
+      type="ClaimContact"/>
+    <Variable
+      initialValue="claimContact == null ? ( new contact.LocationContactHandle(inputContact) as  contact.ContactHandle ) : ( claimContact as contact.ContactHandle )"
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Variable
+      initialValue="Contact==null ? null : Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="false"
+      name="startInEditMode"
+      type="boolean"/>
+    <Variable
+      initialValue="linkStatus.Known and linkStatus.Linked"
+      name="showRelatedObjects"
+      recalculateOnRefresh="true"/>
+    <ScreenRef
+      def="ContactDetailScreen(contactHandle, true, true, linkStatus, claim, false, showRelatedObjects)"/>
+    <Code><![CDATA[property get Contact() : Contact { return contactHandle.Contact; }]]></Code>
+  </Popup>
+</PCF>

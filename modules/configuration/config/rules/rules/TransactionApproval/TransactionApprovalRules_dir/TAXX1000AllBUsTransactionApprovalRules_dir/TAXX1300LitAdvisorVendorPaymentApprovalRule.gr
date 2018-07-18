@@ -1,0 +1,47 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir.TAXX1000AllBUsTransactionApprovalRules_dir
+
+@gw.rules.RuleName("TAXX1300 - LitAdvisor Vendor Payment Approval Rule")
+internal class TAXX1300LitAdvisorVendorPaymentApprovalRule {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Updated - Sharon McHone 8/18/10 - updated to bypass if last approving
+// user is same as claim assigned user
+transactionSet.Subtype == "CheckSet"
+//&& TransactionSet.ApprovalStatus == "unapproved"
+&& User.util.getCurrentUser() == util.custom_Ext.finders.getUserOb( "batchsu" )
+//and (TransactionSet as CheckSet).PrimaryCheck.CheckCategoryExt=="lit_advisor"
+//and (TransactionSet.LastApprovingUser==util.custom_Ext.finders.getUserOb( "batchsu" ) ||
+//TransactionSet.LastApprovingUser!=TransactionSet.RequestingUser)
+
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkSet = transactionSet as CheckSet;
+
+//// no field/flag if Check is created using LitAdvisor batch process so use Memo instead
+//// this should be changed once Config team added the field/flag to determine if the 
+//// payment was created from a batch process
+//if (checkSet.PrimaryCheck.Memo.toUpperCase().startsWith( "PYMT. FOR LEGAL SERVICES" ))
+if (checkSet.PrimaryCheck.CheckCategoryExt == "lit_advisor")
+{
+  // Check if the first check payee is a company or person vendor type
+  if (checkSet.PrimaryCheck.Payees[0].Payee.PersonVendor != null || 
+      checkSet.PrimaryCheck.Payees[0].Payee.CompanyVendor != null)
+  {
+    for (c in checkSet.Checks)
+    {
+      // Require approval for check's gross amount greater than or equal to $20,000
+      // and set the approving user to the adjuster assigned to the feature attached to first payment 
+      if (c.GrossAmountExt >= 20000)
+      {
+        transactionSet.requireApproval( "Vendor payment is greater than or equal to $20,000 limit and needs approval" );
+        transactionSet.RequestingUser = util.custom_Ext.finders.getUserOb( "batchsu" );
+      }
+    }
+  }
+}
+
+/*end00rule*/
+  }
+}

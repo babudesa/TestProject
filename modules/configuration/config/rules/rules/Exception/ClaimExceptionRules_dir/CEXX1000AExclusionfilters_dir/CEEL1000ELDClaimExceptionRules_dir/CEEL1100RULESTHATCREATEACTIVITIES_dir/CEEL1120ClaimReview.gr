@@ -1,0 +1,33 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEL1120 - Claim Review")
+internal class CEEL1120ClaimReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="claim_review"))
+ && 
+ !exists( res in claim.ReserveLines where res.reserves != null  )
+/*(claim.LossCause == null ||
+claim.ex_DetailLossCause == null ||
+exists(exposure in claim.Exposures where exposure.JurisdictionState == null) ||
+exists(matter in claim.Matters where matter.SuitFiledDate == null)) 
+*//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 -Modified to generate the activity 10 calendar days 
+(rather than 5 calender days) and prevents this activity from generating if a
+ Reserve exists.
+*/
+var ap = util.custom_Ext.finders.findActivityPattern("claim_review")
+try{
+  if(gw.api.util.DateUtil.currentDate() >
+   gw.api.util.DateUtil.addDays(claim.CreateTime, 10)){
+    claim.createActivityFromPattern(null, ap)
+  }
+ }catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

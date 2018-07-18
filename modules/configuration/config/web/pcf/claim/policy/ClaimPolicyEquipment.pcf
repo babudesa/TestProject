@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;equipment&quot;) and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+    canVisit="Claim.filterItems() ? gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;equipment&quot;) and perm.Policy.view(Claim) and perm.System.viewpolicy :false"
+    id="ClaimPolicyEquipment"
+    title="displaykey.GAIC.Web.ClaimPolicy.Equipment">
+    <LocationEntryPoint
+      signature="ClaimPolicyEquipment(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Screen
+      id="ClaimPolicyEquipmentScreen">
+      <Toolbar>
+        <IteratorButtons
+          addVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+          removeLabel="displaykey.Button.Delete"
+          removeVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"/>
+        <ToolbarButton
+          action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim)"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+          id="ClaimPolicyEquipment_AddMoreItemsButton"
+          label="displaykey.Button.AddMoreItems"
+          visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim) and perm.System.editverifiedpolicy"/>
+      </Toolbar>
+      <AlertBar
+        id="ClaimPolicyEquipment_PartialListAlertBar"
+        label="displaykey.Web.ClaimPolicy.Vehicles.PartialList(Claim.Policy.TotalVehicles)"
+        visible="Claim.Policy.Verified and (Claim.Policy.TotalVehicles &gt;= 0) and (Claim.Policy.TotalVehicles != Claim.Policy.Vehicles.length)"/>
+      <ListDetailPanel
+        lockWhileEditing="true"
+        selectionName="PolicyVehicle"
+        selectionType="VehicleRU">
+        <PanelRef
+          def="EquipmentLV(Claim.Policy.Vehicles, Claim)"/>
+        <CardViewPanel>
+          <Card
+            id="EquipmentDetailCard"
+            title="displaykey.Web.ClaimPolicy.EquipmentDetail">
+            <PanelRef
+              def="PolicyEquipmentDetailDV(Claim.Policy,PolicyVehicle)"
+              editable="!Claim.Policy.Verified">
+              <Toolbar>
+                <ToolbarButton
+                  action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim, true);"
+                  confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+                  id="ClaimPolicyEquipment_EditButton"
+                  label="displaykey.Button.Edit"
+                  visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim) and perm.System.editverifiedpolicy"/>
+                <EditButtons
+                  cancelVisible="!Claim.Policy.Verified"
+                  editVisible="!Claim.Policy.Verified"
+                  updateVisible="!Claim.Policy.Verified"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+  </Page>
+</PCF>

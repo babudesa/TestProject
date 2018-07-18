@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    id="OrganizationSearchPopup"
+    returnType="Organization"
+    title="displaykey.Web.Admin.OrganizationSearch">
+    <LocationEntryPoint
+      signature="OrganizationSearchPopup()"/>
+    <LocationEntryPoint
+      signature="OrganizationSearchPopup(IncludesCarrier : Boolean)"/>
+    <Variable
+      initialValue="false"
+      name="IncludesCarrier"
+      type="Boolean"/>
+    <Screen
+      id="OrganizationSearchPopupScreen">
+      <SearchPanel
+        criteriaName="SearchCriteria"
+        resultCachingEnabled="false"
+        resultsName="Organizations"
+        search="SearchCriteria.performSearch()"
+        searchCriteria="return createSearchCriteria();"
+        searchOnEnter="true"
+        searchResultsType="Organization[]">
+        <PanelRef
+          def="OrganizationSearchDV(SearchCriteria)"/>
+        <PanelRef
+          def="OrganizationSearchResultsLV(Organizations as entity.OrganizationQuery)">
+          <TitleBar
+            appendListViewPaging="true"
+            title="displaykey.Web.Search.Results"/>
+          <Toolbar/>
+        </PanelRef>
+      </SearchPanel>
+    </Screen>
+    <Code><![CDATA[
+      function createSearchCriteria() : OrganizationSearchCriteria {
+        var criteria = new OrganizationSearchCriteria();
+        if (includesCarrier) {
+          criteria.Carrier = null;
+        }
+        return criteria;
+      }
+    ]]></Code>
+  </Popup>
+</PCF>

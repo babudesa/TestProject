@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1G00TypeofLoss_dir
+
+@gw.rules.RuleName("CPUXX1G20 - Reset TOL - Loss Cause")
+internal class CPUXX1G20ResetTOLLossCause {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isFieldChanged("LossCause") and claim.Exposures.length != 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var originalLossCause : LossCause = (claim.OriginalVersion.getFieldValue( "LossCause" ) as LossCause)
+var currentLossCause : LossCause = claim.LossCause
+
+if(originalLossCause != currentLossCause and (originalLossCause == "mold" or currentLossCause == "mold")){
+  for(exp in claim.Exposures){
+    exp.LossCauseChangedExt = false;
+    if((exp.Coverage.SublineExt=="116" || exp.Coverage.SublineExt=="136" || exp.Coverage.SublineExt=="156") and exp.TypeOfLossMostExt != null){
+      exp.LossCauseChangedExt = true;
+      exp.TypeOfLossMostExt = null
+    }
+  }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Using Existing Bundles</title>
+    <link rel="StyleSheet" href="css/transactions.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="transactions.21.1.html#1552732">Bundles and Transactions</a> : Using Existing Bundles</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1552732">Using Existing Bundles</a></div>
+      <div class="B_-_Body"><a name="1562056">To manage database transactions, Guidewire applications group business entities together in groups called </a><span class="e_-_emphasis">bundles</span>. Each bundle is a collection of one or more cached in-memory instances of entities to transmit and save to the database together. The set of entities include changed entities, new entities, and entities to delete from the database. Gosu represents bundles by the class <span class="cv_-_computer_voice">Bundle</span> in the package <span class="cv_-_computer_voice">gw.transaction</span>. </div>
+      <div class="B_-_Body"><a name="1562059">Guidewire refers to the process of sending the entities to the database as </a><span class="e_-_emphasis">committing the bundle</span> to the database. If any code attempts to commit the bundle and it completely succeeds, the database changes and finalize changes to all entities in the in a single database transaction. If the commit attempt fails in any way, the entire update rolls back (it is undone) and Gosu throws an exception. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1561990">A bundle might never be committed. Errors in related code might prevent the current action from </a>completing, and the bundle might be destroyed. If some code destroys the bundle with uncommitted changes, it is as if changes were forgotten, and entity data in the database was unchanged.</div>
+      <div class="B_-_Body"><a name="1562051">The most common thing to do with bundles is to add an entity to a bundle using the </a><span class="cv_-_computer_voice">Bundle.add(</span><span class="ps_-_parameter_in_code_snippets">entity</span><span class="cv_-_computer_voice">)</span> method. In most cases, Gosu might need to duplicate (clone) the in-memory instance of the entity during the transfer process. Unless the original entity was obtained from a <span class="cv_-_computer_voice">find()</span> query, you must assume the return result is a duplicate entity that belongs to the new bundle. Think of the return result of the <span class="cv_-_computer_voice">add</span> method as a copy that exists inside the new group of entities. </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1562126">In many cases, the return result of the </a><span class="cv_-_computer_voice">add</span> method is a cloned instance of what you passed into the method. If you want a reference to the entity or want to make further changes, you must keep a reference to the <span class="s_-_strong">return</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">result</span> of the <span class="cv_-_computer_voice">add</span> method. Do not modify the original entity reference and do not keep a reference to the original entity.</div>
+      <div class="B_-_Body"><a name="1562136">However, if your original entity is in a read-only bundle, the return value of the </a><span class="cv_-_computer_voice">add</span> method is the same object as was passed in. The entity instance does not need to be cloned. If you got the entity from a <span class="cv_-_computer_voice">find()</span> query result, it is originally in a read-only bundle.</div>
+      <div class="B_-_Body"><a name="1562137">If at some later time the destination bundle commits and the entity was modified, the database saves the in-</a>memory version in the destination of the entity to the database. If the entity was not yet in the database, the application adds the entity to the database as a new&nbsp;row in the table. You can also remove entities from the database, see <a href="javascript:WWHClickedPopup('gosu', 'transactions.21.3.html#1561324', '');" title="Using Existing Bundles">“Removing Entities from the Database Entirely”</a>.</div>
+      <div class="B_-_Body"><a name="1556737">In most cases, the destination bundle to use is the current bundle. Get the current bundle by calling the </a><span class="cv_-_computer_voice">getCurrent</span> static method on the <span class="cv_-_computer_voice">Transaction</span> class:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1556738">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1553675">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1553676">var bundle = Transaction.getCurrent()</a></PRE>
+      <div class="B_-_Body"><a name="1556195">With this bundle reference, you can call other methods on it like </a><span class="cv_-_computer_voice">add</span>. </div>
+      <div class="B_-_Body"><a name="1556260">The following example gets the current bundle, adds an entity to the bundle, and then changes a property:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1556334">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556261">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556337">// get the ambient (current) bundle from the current database Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556262">var bundle = Transaction.getCurrent()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556353">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557519">// move (and possibly copy) the entity, being sure to save the result of the add() method</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557520">copyOfEntity = bundle.add(anEntityIWantToChange) </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557521">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556410">//if you modify properties, modify the new copy of the entity:</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1557424">copyOfEntity.Description = "New Description Value"</a></PRE>
+      <div class="B_-_Body"><a name="1557425">If you want to change data you retrieved from a </a><span class="cv_-_computer_voice">find()</span> query, your code might look like the following:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1557458">// get the current (ambient) bundle of the runing code</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557459">var bundle = gw.transaction.Transaction.getCurrent()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557460">&nbsp;</a></PRE>
+      <PRE class="CF_-_Code_First_Line"><a name="1557461">var query = find( p in Claim.Policy where p.PolicyNumber == "54-123456" )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557462">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557463">for( claim in query ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557464">&nbsp;</a>&nbsp;bundle.add(claim)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557465">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557466">&nbsp;</a>&nbsp;// make changes to one or more properties directly on the entity or its subobjects</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557467">&nbsp;</a>&nbsp;claim.MyProperty1 = true</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1557468">}</a></PRE>
+      <div class="B_-_Body"><a name="1560258">Alternatively, you can get a bundle from an existing entity from its </a><span class="ps_-_parameter_in_code_snippets">entity</span><span class="cv_-_computer_voice">.Bundle</span> property. You can call the <span class="cv_-_computer_voice">add</span> method on that bundle and modify the result if the bundle is not read-only (it is read only if it was a <span class="cv_-_computer_voice">find</span> query result). If you use this approach, <span class="s_-_strong">all</span> entities in the bundle commit to the database, not just the entity from which you got the bundle reference. </div>
+      <div class="B_-_Body"><a name="1562246">The following is an example of this approach:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1556280">// Get the bundle from an existing entity with code like: </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556284">var bundle = myClaim.bundle</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556285">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557504">// move (and possibly copy) the entity, being sure to save the result of the add() method</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557505">copyOfEntity = bundle.add(anEntityIWantToChange) </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1557506">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556386">//if you modify properties, modify the new copy of the entity:</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1556724">copyOfEntity.Description = "New Description Value"</a></PRE>
+      <div class="B_-_Body"><a name="1557877">Gosu requires that one of two things to be true at the time you attempt to add an entity to a bundle:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1557878">The original entity is in a read-only bundle.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1557879">The original entity is in a writable bundle but is not yet edited</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1557880">If you try to add an entity in another bundle and the entity was modified, Gosu throws the exception </a><span class="cv_-_computer_voice">IllegalBundleTransferException</span>. Be careful not to let the entity be modified in more than one bundle. If it is already modified, Gosu throws an exception if you try to copy it to the new location, as mentioned earlier. </div>
+      <div class="B_-_Body"><a name="1572746">However, even if the entity was unmodified at the time you copy it to the new bundle and the entity exists in </a>another writable bundle, there might be problems later. If both entities load from the same database record, only one bundle can try to commit the change to that entity. If an entity is modified in more than one bundle and both edited and committed, the second one fails with a concurrent data modification exception. That second commit attempt that fails might be in code other than yours, such as user interface code.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1562353">If an entity exists in a modified form in more than one bundle and both bundles commit, </a>the second one fails with a concurrent data modification exception. Gosu attempts to avoid this problem by preventing adding an entity to a new bundle if it is already modified in memory, by throwing an exception during the <span class="cv_-_computer_voice">add</span> method. In some cases, user interface code internally refreshes an entity, which discards cached versions and gets latest versions. However, there is no supported API to refresh entities from Gosu.</div>
+      <div class="H2_-_Heading_2"><a name="1562498">Getting an Entity from its Public ID or Internal ID (Key)</a></div>
+      <div class="B_-_Body"><a name="1562499">In some cases you might not have a reference to the entity itself although you might have one of the following:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1562500">The entity’s public ID, which is its </a><span class="cv_-_computer_voice">publicID</span> property </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1562501">The entity’s key, which is its unique internal </a><span class="cv_-_computer_voice">ID</span> property represented by t<span class="cv_-_computer_voice">h</span>e Gosu type <span class="cv_-_computer_voice">Key</span>. This internal ID is also the native ID used for foreign keys, such as the result of the <span class="cv_-_computer_voice">getOriginalValue</span> method to get a property that links to another entity.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1562502">In these common cases, get references to the entities to using the alternate methods </a><span class="cv_-_computer_voice">loadByPublicID</span> and <span class="cv_-_computer_voice">loadByKey</span>. These are especially helpful if you write web services implementations in Gosu. For web services that you write in Gosu, refer to entities by public ID if possible rather than attempting to pass a large entity and potentially large graphs of subobjects.</div>
+      <div class="B_-_Body"><a name="1562503">To load an existing entity by its public ID using </a><span class="cv_-_computer_voice">loadPublicID</span> with the entity type and the public ID. You will need to cast it to the correct (more specific) subtype using the <span class="cv_-_computer_voice">as</span> keyword:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1562504">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1562505">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1562506">var a = Transaction.getCurrent().loadByPublicID(Address, "ABC:1234") as Address</a></PRE>
+      <div class="B_-_Body"><a name="1562507">To load an existing entity by its </a><span class="cv_-_computer_voice">Key</span> with the entity type and an internal ID:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1562508">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1562509">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1562510">var a = Transaction.getCurrent().loadByKey(Address, "1234" as Key) as Address</a></PRE>
+      <div class="B_-_Body"><a name="1562511">The destination bundle must be writable (non-read-only) if you want to modify the data and save changes to the </a>database. Edit the new entity as desired, and commit the bundle afterward if appropriate. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1562512">Be extremely careful only to commit entity changes at appropriate times, or else serious </a>data integrity errors occur. If an entity’s changes commit to the database, changes can no longer be rolled back if an error happens in related code that must undo related database changes. For example, all rule set code must never commit data explicitly since committing happens automatically if all related changes including rule set code succeeds.</div>
+      <div class="H2_-_Heading_2"><a name="1567986">Creating New Entities in Specific Bundles</a></div>
+      <div class="B_-_Body"><a name="1568090">If you pass arguments to the </a><span class="cv_-_computer_voice">new</span> operator, Gosu calls a specific constructor (a post-creation function) defined for that Java type. If there are multiple constructors, Gosu chooses the right one based on the arguments you pass it (the number of arguments and their types). For Guidewire business entities such as <span class="cv_-_computer_voice">Claim</span> and <span class="cv_-_computer_voice">User</span>, typical code passes no arguments to create the entity. Passing no arguments tells Gosu to create the entity in the current database transaction (the current <span class="e_-_emphasis">bundle</span>), which is usually the best approach. </div>
+      <div class="B_-_Body"><a name="1568096">In special cases, pass a single argument with the </a><span class="cv_-_computer_voice">new</span> operator to override the bundle in which to create the new entity. Pass an existing entity to creates the new entity in the <span class="s_-_strong">same</span> bundle as the entity you specify. Pass a bundle to explicitly use for the new entity. The following table compares different arguments to the <span class="cv_-_computer_voice">new</span> operator.</div>
+      <div class="T_-_Table"><a name="1568053">&nbsp;</a></div>
+      <table class="withoutHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1568006">Expression</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1568008">Result</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1568024">new Note()</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1568026">Constructs a new </a><span class="cvt_-_computer_voice_table">Note</span> entity in the current bundle. Changes related to the current code submit to the database at the same time as Gosu adds the new note to the database.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1568031">new Note(myClaim)</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1568036">Constructs a new </a><span class="cvt_-_computer_voice_table">Note</span> entity given a <span class="cvt_-_computer_voice_table">Claim</span> as the bundle to use. Changes to the <span class="cvt_-_computer_voice_table">Claim</span> are submitted to the database at the same time as Gosu adds the new note to the database.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1568044">new Note(myClaim.bundle)</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1568049">Constructs a new </a><span class="cvt_-_computer_voice_table">Note</span> entity given a <span class="cvt_-_computer_voice_table">Claim</span> as the bundle to use. Changes to the <span class="cvt_-_computer_voice_table">Claim</span> submit to the database at the same time as Gosu adds the new note to the database.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="1561204">For more information about the new operator, see </a><a href="javascript:WWHClickedPopup('gosu', 'expressions.05.10.html#1595812', '');" title="New Object Expressions">“New Object Expressions”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="1568102">Committing a Bundle</a></div>
+      <div class="B_-_Body"><a name="1556726">Committing a bundle means to send all changes for entities in this bundle to the database and save their new </a>values. Use the method <span class="ps_-_parameter_in_code_snippets">bundle</span><span class="cv_-_computer_voice">.commit()</span> to attempt to commit the entire bundle. If it fails, it throws an exception and rolls back any changes. Either the entire transaction commits or the entire process fails and the database is unchanged.</div>
+      <div class="B_-_Body"><a name="1556683">The </a><span class="cv_-_computer_voice">Transaction</span> class has a static method <span class="cv_-_computer_voice">getCurrent()</span> that you can call to get the current bundle. For typical use, the current bundle is typically the bundle you want to add entities to or to commit. The <span class="cv_-_computer_voice">Transaction</span> class also contains other features, discussed in later sections.</div>
+      <div class="B_-_Body"><a name="1552615">Get the </a><span class="e_-_emphasis">current bundle</span>, which represents the current database transaction, by calling the <span class="cv_-_computer_voice">getCurrent</span> static method on the <span class="cv_-_computer_voice">Transaction</span> class:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1553014">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1553600">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1553479">var bundle = Transaction.getCurrent()</a></PRE>
+      <div class="B_-_Body"><a name="1554718">The following is a simple example web service that takes an entity and commits the entity’s bundle:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1554719">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1552839">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1553607">@WebService</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560791">class AddressExampleAPI {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560792">  public function insertAddress(newAddress : Address) : Address {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560793">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560721">&nbsp;</a>&nbsp;&nbsp;// commit all entities in the current bundle</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560642">&nbsp;</a>&nbsp;&nbsp;gw.transaction.Transaction.getCurrent().commit() </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560769">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560770">&nbsp;</a>&nbsp;&nbsp;// note: for SOAP API implementations, bundle includes incoming enties</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1572327">&nbsp;</a>&nbsp;&nbsp;// deserialized with the request.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1554679">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1554680">&nbsp;</a>&nbsp;&nbsp;return newAddress</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1552758"> }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1562428">}</a></PRE>
+      <div class="B_-_Body"><a name="1562432">If you have an entity reference, get its bundle from accessing the </a><span class="ps_-_parameter_in_code_snippets">entity</span><span class="cv_-_computer_voice">.bundle</span> property. However, remember that committing a bundle commits <span class="s_-_strong">all</span> entities in the bundle, not just the one from which you got the bundle reference. For example:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1560624">var bundle = myClaim.bundle.commit() // commits *all* entities in the bundle of this object</a></PRE>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1560625">Be extremely careful only to commit entity changes at appropriate times, or else serious </a>data integrity errors occur. If an entity’s changes are commit to the database, changes can no longer be rolled back in related code that must undo all related database changes. For example, all rule set code must never commit data explicitly since committing happens automatically if all related changes including rule set code succeeds.</div>
+      <div class="B_-_Body"><a name="1562821">For additional web services examples, see </a><a href="javascript:WWHClickedPopup('gosu', 'transactions.21.3.html#1560993', '');" title="Using Existing Bundles">“Bundles and Web Services”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="1560993">Bundles and Web Services</a></div>
+      <div class="B_-_Body"><a name="1607408">Guidewire provides APIs related to database transactions. You may need to use these APIs if you design SOAP </a>APIs that take parameters that must commit to the database. You may need to use these APIs if your web service looks up entities in the database and makes entity changes. These APIs are documented fully in <a href="javascript:WWHClickedPopup('gosu', 'transactions.21.1.html#1456387', '');" title="Bundles and Transactions">“Bundles and Transactions” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('gosu', 'transactions.21.1.html#1456387', '');" title="Bundles and Transactions">Gosu Reference Guide</a></span>. This section shows a simple example. See that topic for additional details and code samples.</div>
+      <div class="B_-_Body"><a name="1607413">A </a><span class="e_-_emphasis">bundle</span> is a group of Guidewire entities, grouped together so they save to the database together. You can get the current transaction by calling <span class="cv_-_computer_voice">gw.transaction.Transaction.getCurrent()</span>.</div>
+      <div class="B_-_Body"><a name="1607414">The most important things to know about changing entity data in your web service as follows:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607415">When a web service client calls your web service, the system sets up a bundle automatically.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607416">Get the current bundle by calling </a><span class="cv_-_computer_voice">gw.transaction.Transaction.getCurrent()</span>. The current bundle is the bundle setup for your code. You can add entities to this writable bundle. For example, add read-only entities to this bundle.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607417">If you have a reference to an entity, get its bundle as the </a><span class="ps_-_parameter_in_code_snippets">entity</span><span class="cv_-_computer_voice">.bundle</span> property. However, generally speaking use <span class="cv_-_computer_voice">gw.transaction.Transaction.getCurrent()</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607418">Any entities serialized into the web service as arguments to your web service are already in the current </a>bundle. You do not need to add them to the current transaction.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607419">No data is automatically commits to the database after your web service completes. If you want the existing </a>transaction (including serialized data) to commit to the database you must do so manually by calling the <span class="cv_-_computer_voice">commit</span> method on the bundle.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607420">If you query the database with </a><span class="cv_-_computer_voice">find()</span> statements, entities you find are initially read-only. You must add them to the current writable transaction to modify the entities. Add them by calling the following code:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1607421">writableEntity = gw.transaction.Transaction.getCurrent().add(foundEntity)</a></PRE>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607422">You can create an entirely new bundle to encapsulate a task in a Gosu block. A block is an in-line Gosu func</a>tion contained in other Gosu code. See <a href="javascript:WWHClickedPopup('gosu', 'transactions.21.4.html#1561481', '');" title="Running Code in an Entirely New Bundle">“Running Code in an Entirely New Bundle”</a>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1607426">In your block, create new entities with the bundle argument as an argument to the entity constructor:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="1607427">&nbsp;</a>&nbsp;&nbsp;&nbsp;writableEntity = new Address(bundle)</div>
+      <div class="LP_-_List_Para"><a name="1607428">In your block, add existing entities to the new bundle with the </a><span class="cv_-_computer_voice">bundle.add(</span><span class="ps_-_parameter_in_code_snippets">entity</span><span class="cv_-_computer_voice">)</span> method:</div>
+      <div class="CS_-_Code_Single_Line"><a name="1607429">&nbsp;</a>&nbsp;&nbsp;&nbsp;writableEntity = bundle.add(foundEntity)</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1607430">There may be cases where web service method parameters include entities you do not want to commit but you </a>make other entity changes that must commit. If so, create an entirely new bundle and explicitly add entities to that group, as discussed in <a href="javascript:WWHClickedPopup('gosu', 'transactions.21.4.html#1561481', '');" title="Running Code in an Entirely New Bundle">“Running Code in an Entirely New Bundle”</a>. Simply let the application commit the new bundle created in <span class="cv_-_computer_voice">runWithNewBundle</span>. If you use <span class="cv_-_computer_voice">runWithNewBundle</span>, do <span class="s_-_strong">not</span> commit the default (current) bundle for the web service.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1607435">The following simple example web service takes an entity:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1607436">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607437">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607438">@WebService</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607439">class AddressExampleAPI {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607440">  public function insertAddress(newAddress : Address) : Address {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607441">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607442">&nbsp;</a>&nbsp;&nbsp;// commit all entities in the current bundle</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607443">&nbsp;</a>&nbsp;&nbsp;gw.transaction.Transaction.getCurrent().commit() </PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><a name="1607444">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607445">&nbsp;</a>&nbsp;// note: for SOAP API implementations, bundle includes incoming entities</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607446">&nbsp;</a>&nbsp;// &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;deserialized with the request.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607447">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607448">&nbsp;</a>&nbsp;&nbsp;return newAddress</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607449"> }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607450">}</a></PRE>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1607451">Be extremely careful only to commit entity changes at appropriate times or serious data </a>integrity errors occur. If an entity’s changes commit to the database, changes can no longer roll back if errors happen in related code. Typically, errors must undo all related database changes. For example, Gosu code in rule sets must never commit data explicitly since the application automatically commits the bundle automatically only after all rule sets and validation successfully runs.</div>
+      <div class="B_-_Body"><a name="1607452">The following example web service gets a user and adds roles to it. Finally, it commits the result:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607453">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607454">/**</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607455">* Adds roles to a User.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607456">* If a role already belongs to the user, it is ignored.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607457">*</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607458">* @param userID The ID of the user</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607459">* @param roleIDs The public IDs of roles to be added.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607460">*/</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607461">  @Throws(DataConversionException, "if the userID or roleID does not exist")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607462">  @Throws(SOAPException, "")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607463">  public function addRolesToUser(userPublicID : String, roleIDs : String[]) : String {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607464">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607465">    var user = User( userPublicID )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607466">    if (user == null){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607467">      throw new DataConversionException("No User exists with PublicID: " + userPublicID);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607468">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607469">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607470">    // add user to current bundle -- the current database transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607471">    // this is always strictly required if you got the entity from a find() query!</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607472">    // we get the return value of add() and it has a DIFFERENT value than before.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607473">    // It is a copy in the new bundle!</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607474">    user = Transaction.getCurrent().add( user );</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607475">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607476">    if (roleIDs == null || roleIDs.length == 0){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607477">      throw new RequiredFieldException("Roles");</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607478">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607479">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607480">    // Add in all the roles for the user</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607481">    for (var roleId in roleIDs) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607482">      var role = loadRoleByIdOrThrow(roleId);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607483">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607484">      // pass an argument when creating a new entity with "new" to use a specific bundle</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607485">      var userRole = new UserRole();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607486">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607487">      userRole.Role = role</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607488">      user.addToRoles(userRole);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607489">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607490">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607491">    // commit our bundle</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607492">    Transaction.getCurrent().commit();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607493">    return userPublicID;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1607494">  } </a></PRE>
+      <div class="H2_-_Heading_2"><a name="1561324">Removing Entities from the Database Entirely</a></div>
+      <div class="B_-_Body"><a name="1561286">Instead of adding or changing entities by adding them to the bundle, mark an entity for removal from the data</a>base using the bundle <span class="cv_-_computer_voice">remove(...)</span> method. If the bundle commits, Gosu removes the entity from the database.</div>
+      <div class="B_-_Body"><a name="1554143">For example:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1554541">uses gw.transaction.Transaction</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1554552">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1554553">var a = Transaction.getCurrent().loadByPublicID(Address, "ABC:1234") as Address</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1554561">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1554554">Transaction.getCurrent().remove(a) // removes from database, not just from bundle</a></PRE>
+      <div class="B_-_Body"><a name="1561381">Be careful to understand that this does </a><span class="s_-_strong">not</span> simply remove entities from the bundle so that changes to the entity are forgotten. There is no API to evict an entity from the bundle. However, you can remove an entity from the database and the bundle using the <span class="cv_-_computer_voice">remove(...)</span> method.</div>
+      <div class="B_-_Body"><a name="1561474">There is no API to </a><span class="e_-_emphasis">move</span> an entity to another bundle, but you can use the bundle <span class="cv_-_computer_voice">add(...)</span> method to add an entity to another bundle, which in most cases duplicates the entity into the destination bundle.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1561479">The </a><span class="cv_-_computer_voice">remove</span> method is dangerous so use it with great care. Despite the name that seems to mirror the <span class="cv_-_computer_voice">add</span> method, this method does <span class="s_-_strong">not</span> simply remove the entity from the bundle’s list of entities (no such API exists). The bundle <span class="cv_-_computer_voice">remove</span> method marks entities to remove the record from the database if this bundle is committed</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

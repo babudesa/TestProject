@@ -1,0 +1,14 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1200 - Pending Assignment - Claim")
+internal class ECVXX1200PendingAssignmentClaim {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.AssignmentStatus == "pendingassignment" or
+exposure.Claim.AssignmentStatus == "unassigned" or
+exposure.Claim.AssignmentStatus == "manual"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.reject( "newloss", "You cannot close feature (" + exposure.DisplayName + ") while claim (" + exposure.Claim.ClaimNumber + ") is in Pending Assignment Status. Please assign the claim and then close the feature.", null, null )/*end00rule*/
+  }
+}

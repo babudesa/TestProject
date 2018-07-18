@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- GAIC Customized  commented out the second & third option in the menu to eliminate the ability to add new documents that already exist  users should use e-reader for that as they do today -->
+  <MenuItemSet
+    id="ClaimNewDocumentMenuItemSet">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <MenuItem
+      action="checkValidation()"
+      id="ClaimNewDocumentMenuItemSet_Create"
+      label="displaykey.JSP.CreateDocument_Options.Option.Create"/>
+    <!-- <MenuItem
+      action="ClaimNewDocumentLinkedWorksheet.goInWorkspace(Claim)"
+      id="ClaimNewDocumentMenuItemSet_Link"
+      label="displaykey.JSP.CreateDocument_Options.Option.Link"/> -->
+    <!-- <MenuItem
+      action="ClaimNewDocumentExistsWorksheet.goInWorkspace(Claim)"
+      id="ClaimNewDocumentMenuItemSet_IndicateExists"
+      label="displaykey.JSP.CreateDocument_Options.Option.IndicateExists"/> -->
+    <Code><![CDATA[uses gw.api.util.Logger //Added for logging in Debug - SR
+function checkValidation(){
+	  
+	  	var temp1 = 0
+		if(!(Claim.safeValidate(false).ValidationLevelPassed == Claim.ValidationLevel))
+		{
+			temp1 = 1;
+			//print(displaykey.GAIC.Documents.CentralPrint.Validation.ValidationError.Error);
+		}
+		for(temp in Claim.Exposures)
+		{
+			if(!(temp.safeValidate(false).ValidationLevelPassed == temp.ValidationLevel))
+			{
+				temp1 = 1;
+				//print(displaykey.GAIC.Documents.CentralPrint.Validation.ValidationError.Error);
+			}
+		}
+		if(temp1  == 0){
+			ClaimNewDocumentFromTemplateWorksheet.goInWorkspace(Claim)
+		}
+		else if(temp1 == 1){
+			//changed to logging in Debug - SR
+                        Logger.logDebug(displaykey.GAIC.Documents.CentralPrint.Validation.ValidationError.Error);
+			GeneralErrorWorksheet.goInWorkspace(displaykey.GAIC.Documents.CentralPrint.Validation.ValidationError.Error)
+		}
+	  }]]></Code>
+  </MenuItemSet>
+</PCF>

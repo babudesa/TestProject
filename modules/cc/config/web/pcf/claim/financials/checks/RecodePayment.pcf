@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsTransactionsDetail.go(Claim, OriginalPayment)"
+    afterCommit="financials.FinancialsUtil.logRecode(OriginalPayment, Payment); ClaimFinancialsTransactions.go(Claim, financials.ClaimFinancialsTransactionsOption.PAYMENT)"
+    alwaysInEditMode="true"
+    canEdit="true"
+    canVisit="perm.payment.recode(OriginalPayment)"
+    id="RecodePayment"
+    parent="ClaimFinancialsTransactionsDetail(Claim, OriginalPayment)"
+    startInEditMode="true"
+    title="displaykey.JSP.RecodePayment.Recode.Title">
+    <LocationEntryPoint
+      signature="RecodePayment(Claim : Claim, OriginalPayment : Payment)"/>
+    <Variable
+      initialValue="new financials.EditTransactionHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="OriginalPayment"
+      type="Payment"/>
+    <Variable
+      initialValue="createPayment()"
+      name="Payment"/>
+    <Screen
+      id="RecodePaymentScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="doRecode()"
+          id="RecodePayment_RecodeButton"
+          label="displaykey.Button.Payment.Recode"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          cancelVisible="true"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="RecodePaymentDV(Payment, PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[
+function createPayment() : Payment {
+  var pmt = OriginalPayment.getOnset();
+  if (pmt == null) {
+    pmt = OriginalPayment.createOnsetPayment(true);
+  }
+  return pmt;
+}
+
+function doRecode() {
+  if (OriginalPayment.hasDeductibleLineItem()) {
+    OriginalPayment.unlinkDeductible()
+  }
+  Payment.linkDeductible()
+  financials.FinancialsUtil.recodePayment(CurrentLocation, OriginalPayment, Payment, Claim)
+}
+    ]]></Code>
+  </Page>
+</PCF>

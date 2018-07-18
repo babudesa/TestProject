@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsTransactions.go(Claim)"
+    afterCommit="ClaimFinancialsTransactions.go(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY_RESERVE)"
+    afterEnter="afterEnter()"
+    alwaysInEditMode="true"
+    beforeCommit="beforeCommit();checkInjuryTypeBeforeCommit(PageHelper);"
+    canEdit="true"
+    canVisit="perm.Claim.createrecoveryreserve(Claim) and perm.Claim.viewrecoveryreserves(Claim)"
+    id="NewRecoveryReserveSet"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(Claim)"
+    parent="Claim(Claim)"
+    startInEditMode="true"
+    title="displaykey.JSP.NewRecoveryReserveSet.SetRecoveryReserves.Title">
+    <LocationEntryPoint
+      signature="NewRecoveryReserveSet(Claim : Claim)"/>
+    <Variable
+      initialValue="new financials.RecoveryReserveWizardHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="PageHelper.WorkingTransactionSet"
+      name="RecoveryReserveSet"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="RecoveryReserveSet"
+      name="TransactionSet"
+      recalculateOnRefresh="true"/>
+    <Screen
+      id="NewReserveSetScreen">
+      <Toolbar>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          cancelVisible="true"
+          editVisible="false"
+          updateLabel="displaykey.Button.Save"
+          updateVisible="true"/>
+        <IteratorButtons
+          addShortcut="D"
+          removeFlags="all Removeable"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim)"
+          id="Button_Reserve_LinkDocument"
+          label="displaykey.Button.Reserve.LinkDocument"
+          onPick="financials.TransactionSetLinkDocumentHelper.linkDocument(PickedValue, PageHelper.WorkingTransactionSet)"
+          shortcut="E"
+          visible="perm.System.viewdocs"/>
+      </Toolbar>
+      <Verbatim
+        label="displaykey.JSP.NewRecoveryReserveSet.Helper"/>
+      <PanelRef
+        def="RecoveryReservesSummaryDV(PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[uses gw.api.financials.TransactionWizardHelper;
+uses com.guidewire.pl.web.controller.UserDisplayableException
+
+function afterEnter() {
+  if (PageHelper.getTransactionWrappers().length == 0) {
+    PageHelper.initializeTransactionSet(Claim);    
+  }                 
+  PageHelper.updateTransactionSet(Claim);
+  Claim.freezeCurrency()
+}
+
+function beforeCommit() { 
+  gw.api.system.bundle.BundleCommitCondition.verify(Claim)
+  util.financials.GAICFinancials.reservesBeforeCommit(PageHelper)
+  PageHelper.beforeCommit()
+}
+
+function getAmount():String {
+  if(RecoveryReserveSet.Bundle == null){
+    return "Null Bundle"
+  }else{
+    return RecoveryReserveSet.Bundle
+  }
+}
+
+/*  2-26-16 bbenson2 - modified version of the checkInjuryTypeBeforeCommit function from GAICFinancials.gs
+ *  Will throw an error if injury type is changed but the amount isn't.
+ */
+function checkInjuryTypeBeforeCommit(helper:TransactionWizardHelper) {
+    var wrappers = helper.getTransactionWrappers();
+    for(wrap in wrappers){
+      var mostRecent = wrap.Transaction.Claim.Transactions.sortBy(\ t -> t.CreateTime).lastWhere(\ a -> a.Subtype == "recoveryreserve" && wrap.Transaction.Exposure == a.Exposure && wrap.Transaction.CostType == a.CostType)
+
+      if(mostRecent.WCInjuryTypeExt != wrap.Transaction.WCInjuryTypeExt and wrap.PrevBaseAmount.Amount.equals(wrap.NewAmountInClaimCurrency.Amount)){
+        throw new UserDisplayableException("New Open Recovery Estimates must also be updated.")
+      }
+    }
+}]]></Code>
+  </Page>
+</PCF>

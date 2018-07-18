@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsChecksDetail.go(Claim, Check)"
+    afterCommit="util.financials.CheckFunctions.handleRemoveForAdditionalPayees(Check, null); ClaimFinancialsChecksDetail.go(Claim, Check)"
+    beforeCommit="Check.setMailTo();setFields(Check)"
+    canEdit="true"
+    canVisit="perm.Claim.viewpayments(Claim)"
+    id="ClaimFinancialsAddJointPayees"
+    parent="ClaimFinancialsChecks(Claim)"
+    startInEditMode="true"
+    title="displaykey.LV.Check.Payees.NewPayees.PayeeCorrection">
+    <LocationEntryPoint
+      signature="ClaimFinancialsAddJointPayees(Claim: Claim, Check : Check)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Check"
+      type="Check"/>
+    <Variable
+      initialValue="Check.PayTo"
+      name="PayTo"
+      type="String"/>
+    <Variable
+      initialValue="Check.MailToAddress"
+      name="MailToAddy"
+      type="String"/>
+    <Screen
+      id="ClaimFinancialsAddJointPayeesScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          editVisible="true"
+          updateVisible="hasOneVendor(Check)"/>
+      </Toolbar>
+      <AlertBar
+        id="alert"
+        label="displaykey.LV.Check.Payees.NewPayees.Error.TooManyVendors"
+        visible="!hasOneVendor(Check)"/>
+      <PanelRef
+        def="CheckAddPayeesDV(Check)"
+        editable="true"/>
+    </Screen>
+    <Code><![CDATA[
+function hasOneVendor(chk : Check) : boolean{
+                 var numVendors : int = 0
+                 var hasOneVendor : boolean = true
+                 for(payee in chk.Payees){
+                   if(payee.PayeeType=="vendor"){
+                     numVendors = numVendors + 1
+                   }
+                 }
+                 if(numVendors > 1){
+                 	hasOneVendor = false
+                 }
+                 return hasOneVendor;
+               }
+               /*function setPayeeFields(chk : Check) {
+                 for(payee in chk.Payees){
+                   if(payee.New){
+                     chk.IssuedPayeesExt = chk.IssuedPayeesExt + "\n" + payee.ClaimContact.Contact
+                     chk.IssuedPayeeTypesExt = chk.IssuedPayeeTypesExt + "\n" + payee.PayeeType.Name
+      				 chk.IssuedPayeeTaxIDExt = chk.IssuedPayeeTaxIDExt + "\n" + payee.ClaimContact.Contact.TaxID
+                   }
+                 }
+               }*/
+               function setFields(chk : Check){
+               	 var numVendors : int = 0
+                 for(payee in chk.Payees){
+                   if(payee.PayeeType=="vendor"){
+                     numVendors = numVendors + 1
+                   }
+                 }
+                 if(numVendors >= 1){
+                 	chk.Reportability = "reportable"
+                 } else {
+                    chk.Reportability = "notreportable"
+                 }
+                 chk.PayTo = PayTo
+                 chk.MailToAddress = MailToAddy
+               }
+    ]]></Code>
+  </Page>
+</PCF>

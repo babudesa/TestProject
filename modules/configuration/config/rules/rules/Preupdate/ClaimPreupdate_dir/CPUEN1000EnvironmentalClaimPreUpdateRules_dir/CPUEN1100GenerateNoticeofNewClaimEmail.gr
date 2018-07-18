@@ -1,0 +1,37 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEN1000EnvironmentalClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEN1100 - Generate Notice of New Claim Email")
+internal class CPUEN1100GenerateNoticeofNewClaimEmail {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isFieldChanged("AssignedUser")
+and claim.AssignmentStatus=="assigned" /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+
+uses util.custom_Ext.EmailHelper
+var body : String = templates.email.NewClaim.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var agent : String = claim.Policy.ex_Agency.DisplayName
+var emailHelper=new EmailHelper()
+
+
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        claim.AssignedUser.Contact.EmailAddress1, claim.AssignedUser.DisplayName,
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Notice of New Claim (Environmental)", body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+} else {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, claim.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Notice of New Claim (Environmental)", body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressBookNonVendorPayeeBusinessContactInfoInputSet">
+    <!-- Note the name of this symbol cannot be "contact"; otherwise, it interferes with the symbol defined by
+    the ContactInput widget that is used to implement the "View Details" action. -->
+    <Require
+      name="businessContact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.ContactInfo"/>
+    <!-- 3/4/2008 - zthomas - Defect 896, Remove Primary Contact for all Contacts, and replace with Contact Person for company vendors. -->
+    <AddressBookContactInput
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      forceContactSubtype="entity.Person"
+      id="PrimaryContact"
+      label="displaykey.Web.ContactDetail.PrimaryContact"
+      newContactMenu="NewPersonOnlyPickerMenuItemSet"
+      parentContact="businessContact"
+      value="businessContact.PrimaryContact"
+      visible="false"/>
+    <Input
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="ContactPerson"
+      label="displaykey.Web.ContactDetail.ContactPerson"
+      value="businessContact.ContactPersonExt"
+      visible="businessContact typeis CompanyVendor"/>
+    <TextInput
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="Work"
+      inputMask="businessContact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Work"
+      validationExpression="businessContact.isPhoneValid(businessContact.WorkPhone) ? null : displaykey.Validator.Phone(&quot;Business&quot;)"
+      value="businessContact.WorkPhone"/>
+    <TextInput
+      editable="!businessContact.VerifiedPolicyContactExt and !businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="Home"
+      inputMask="businessContact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Home"
+      validationExpression="businessContact.isPhoneValid(businessContact.HomePhone) ? null : displaykey.Validator.Phone(&quot;Home&quot;)"
+      value="businessContact.HomePhone"/>
+    <TextInput
+      editable="!businessContact.VerifiedPolicyContactExt and !businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="Cell"
+      inputMask="businessContact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Cell"
+      validationExpression="businessContact.isPhoneValid(businessContact.CellPhoneExt) ? null : displaykey.Validator.Phone(&quot;Mobile&quot;)"
+      value="businessContact.CellPhoneExt"/>
+    <Input
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="Toll"
+      label="displaykey.Web.ContactDetail.Phone.Toll"
+      value="businessContact.TollFreeNumberExt"/>
+    <TextInput
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="Fax"
+      inputMask="businessContact.getFaxPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Fax"
+      validationExpression="businessContact.isPhoneValid(businessContact.FaxPhone) ? null : displaykey.Validator.FaxPhone"
+      value="businessContact.FaxPhone"/>
+    <Input
+      editable="!businessContact.VerifiedPolicyContactExt and !businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      id="PrimaryPhone"
+      label="displaykey.Web.ContactDetail.Phone.PrimaryPhone"
+      validationExpression=" if (businessContact.PrimaryPhone == null or (businessContact.PrimaryPhone == &quot;work&quot; and businessContact.WorkPhone != null) or                     (businessContact.PrimaryPhone == &quot;home&quot; and businessContact.HomePhone != null) or                     (businessContact.PrimaryPhone == &quot;mobile&quot; and businessContact.CellPhoneExt != null)) {                   return null;                 } else {                   return displaykey.Web.ContactDetail.Phone.PrimaryPhone.Error; }; "
+      value="businessContact.PrimaryPhone">
+      <Reflect
+        triggerIds="Work,Home,Cell"
+        value="javascript:getNewPrimaryPhoneValue(REFLECTOR.value, [VALUE1, VALUE2, VALUE3], ['work', 'home', 'mobile'])"/>
+    </Input>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Email"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Email1"
+      label="displaykey.Web.ContactDetail.PrimaryContact.Email1"
+      value="businessContact.EmailAddress1"/>
+    <TextInput
+      editable="!businessContact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+      formatType="email"
+      id="Email2"
+      label="displaykey.Web.ContactDetail.PrimaryContact.Email2"
+      value="businessContact.EmailAddress2"/>
+  </InputSet>
+</PCF>

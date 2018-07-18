@@ -1,0 +1,25 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1700RecoveryEstimateRules_dir
+
+@gw.rules.RuleName("TPOXX1710 - Set Recovery Estimate Re-open for Feature or Cla")
+internal class TPOXX1710SetRecoveryEstimateReopenforFeatureorCla {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for (trans in transactionSet.Transactions) {
+     if (trans.Exposure.State.Code == "closed") {
+        if (gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReservesForTransaction(trans) != 0) {  
+            if (trans.Claim.State.Code == "closed") {  
+               trans.Claim.reopen( "reopenrecvest", "Reopened because Recovery Estimate was Created" )  
+            }
+            trans.Exposure.reopen( "reopenrecvest", "Reopened because Recovery Estimate was Created" )  
+        }
+     }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

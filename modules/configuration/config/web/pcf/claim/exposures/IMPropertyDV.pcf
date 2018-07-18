@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="IMPropertyDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, &quot;IMProperty&quot;)"/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, &quot;IMProperty&quot;)"/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <InputSetRef
+        def="ExposureCertificateInputSet(Exposure)"
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossDescBox"
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <TextAreaInput
+        id="dataCompromise"
+        numRows="3"
+        value="Exposure.Claim.Description"
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <InputDivider
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;) &amp;&amp; !((Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU) &amp;&amp; Exposure.ExposureType == ExposureType.TC_IM_PERSONALPROP)"/>
+      <!-- DAMAGED PROPERTY VALUE SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.DamagPropDesc"
+        visible="!((Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU) &amp;&amp; Exposure.ExposureType == ExposureType.TC_IM_PERSONALPROP)"/>
+      <Input
+        formatType="exactNumber"
+        id="InsurLimit"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InsuranceLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        value="Exposure.Coverage.IncidentLimit"
+        visible="!((Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU) &amp;&amp; Exposure.ExposureType == ExposureType.TC_IM_PERSONALPROP)"/>
+      <InputDivider
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;) &amp;&amp; !((Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU) &amp;&amp; Exposure.ExposureType == ExposureType.TC_IM_PERSONALPROP)"/>
+      <!-- DAMAGED PROPERTY DETAILS SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.Title"
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <InputSetRef
+        def="PIMDamagedPropertyDetailsInputSet(Exposure)"
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <InputDivider/>
+      <!-- RECOVERY SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Recovery"
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <Input
+        editable="true"
+        id="ContributionBooleanRadioInput"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.ContributionPotential"
+        required="true"
+        value="Exposure.ContribPotentialExt"
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <Input
+        editable="true"
+        id="DeductibleBooleanRadioInput"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.IsThereDeductible"
+        required="true"
+        value="Exposure.DeductibleExistsExt"
+        visible="Exposure.UIHelper.IsDeductibleVisible &amp;&amp; Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <Input
+        editable="true"
+        id="SalvPotential"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SalvPotential"
+        required="true"
+        value="Exposure.SalvagePotentialExt"
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <Input
+        editable="true"
+        id="SubroPotential"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SubroPotential"
+        required="true"
+        value="Exposure.SubrogPotentialExt"
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <InputDivider
+        visible="Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTUILOBMTPFLTR || Exposure.Coverage.Type == CoverageType.TC_SP_MTPFLTRMANU"/>
+      <!-- OTHER CARRIER INVOLVEMENT SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

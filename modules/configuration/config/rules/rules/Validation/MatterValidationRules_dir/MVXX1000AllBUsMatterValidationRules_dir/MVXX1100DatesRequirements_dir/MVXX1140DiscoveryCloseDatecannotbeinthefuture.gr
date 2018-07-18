@@ -1,0 +1,22 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1140 - Discovery Close Date cannot be in the future")
+internal class MVXX1140DiscoveryCloseDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("DiscoveryCloseDate") and
+matter.DiscoveryCloseDate != null and
+gw.api.util.DateUtil.compareIgnoreTime( matter.DiscoveryCloseDate, gw.api.util.DateUtil.currentDate() ) > 0/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  msg="Please provide a Discovery Close Date that is not a future date."
+  matter.rejectField( "DiscoveryCloseDate", "newloss", msg,Null, Null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

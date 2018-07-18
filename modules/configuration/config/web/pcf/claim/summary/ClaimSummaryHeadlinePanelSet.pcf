@@ -1,0 +1,467 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="ClaimSummaryHeadlinePanelSet">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <PanelRow
+      columnDivider="true"
+      stretch="false">
+      <PanelColumn
+        id="BasicsPanel"
+        width="32%">
+        <DetailViewPanel>
+          <InputHeaderSection>
+            <Label
+              id="BasicsLabel"
+              label="displaykey.Web.ClaimSummary.Headline.Basics.Label"/>
+          </InputHeaderSection>
+          <InputColumn>
+            <!-- GW ADDED -->
+            <BarInput
+              highInclusive="!onlyTargetValueExists(claim.DaysOpenClaimMetric.Limit)"
+              highThreshold="HighThreshold"
+              id="DaysOpenProgressBar"
+              label="claim.State.DisplayName"
+              lowInclusive="noYellowValueExists(claim.DaysOpenClaimMetric.Limit)"
+              lowThreshold="LowThreshold"
+              percentage="DaysOpenPercentage"
+              status="OpenStatus"
+              switchHighLowStyle="true"
+              visible="!claim.Closed and showBarInput()"/>
+            <!-- GW ADDED -->
+            <Input
+              id="DaysOpenText"
+              labelAbove="true"
+              value="displaykey.Web.ClaimSummary.Headline.Basics.ClaimOpenWithState( claim.State.DisplayName, OpenStatus)"
+              visible="false //!claim.Closed and !showBarInput()"/>
+            <!-- <Input
+              id="ClaimClosedText"
+              label="claim.State.DisplayName"
+              value="getClaimClosedText()"
+              visible="claim.Closed"/> -->
+            <DateInput
+              dateFormat="short"
+              id="LossDateInput"
+              label="displaykey.NVV.Claim.ClaimSummary.LossDate"
+              timeFormat="short"
+              value="claim.LossDate"
+              visible="claim.LossType==&quot;EXECLIABDIV&quot; || claim.LossType==typekey.LossType.TC_MERGACQU || claim.LossType==typekey.LossType.TC_SPECIALHUMSERV ? (claim.ClaimsMadePolicyExt ? false : true) : true"/>
+            <DateInput
+              id="DateReported"
+              label="claim.ClaimsMadePolicyExt ? displaykey.NVV.Claim.ClaimsMadeDate : displaykey.NVV.Claim.ClaimSummary.ReportDate"
+              value="claim.ReportedDate"/>
+            <Input
+              id="LossLocationInput"
+              label="displaykey.NVV.Claim.ClaimSummary.LocationOfLoss"
+              value="claim.LossLocation.DisplayName"/>
+            <TextAreaInput
+              id="Description"
+              label="displaykey.NVV.Claim.ClaimSummary.Description"
+              maxChars="60"
+              numCols="30"
+              numRows="3"
+              value="claim.Description"/>
+            <PreFormattedTextInput
+              id="blank"
+              value="&quot;&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel>
+          <InputColumn>
+            <Input
+              align="left"
+              formatType="general"
+              id="Status"
+              label="SIUStatus()"
+              value="&quot;&quot;"
+              visible="claim.SIUInvestigationsExt.length &gt; 0 &amp;&amp; SIUStatus()!=&quot;&quot;"/>
+            <Input
+              id="CorpClaimsAssist"
+              label="getCorpClaimsAssist1()"
+              value="&quot;&quot;"
+              visible="getCorpClaimsAssist1()!=&quot;&quot;"/>
+            <Input
+              id="SIU"
+              label="getSIU()"
+              value="&quot;&quot;"
+              visible="getSIU()!=&quot;&quot;"/>
+            <Input
+              id="RecoveryAssist"
+              label="getRecoveryAssist()"
+              value="&quot;&quot;"
+              visible="getRecoveryAssist()!=&quot;&quot;"/>
+            <Input
+              id="CLEERequired"
+              label="&quot;CLEE Location Coding Required&quot;"
+              value="&quot;&quot;"
+              visible="claim.CLEEExt!=null || claim.Policy.CLEEIndicatorExt"/>
+            <Input
+              id="SCHA"
+              label="specialClaimHandlingLabel()"
+              value="&quot;&quot;"
+              visible="specialClaimHandlingLabel()!=&quot;&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <PanelColumn>
+        <DetailViewPanel>
+          <InputHeaderSection>
+            <Label
+              id="PolicyLabel"
+              label="displaykey.Web.ClaimSummary.Policy.Title"/>
+          </InputHeaderSection>
+          <InputColumn>
+            <Input
+              id="PolicyNumberInput"
+              label="claim.LossType == typekey.LossType.TC_COMMBONDS ? displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.BondNumber : displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyNumber"
+              value="claim.Policy.PolicyNumber"/>
+            <Input
+              id="PolicyModInput"
+              label="claim.LossType == typekey.LossType.TC_COMMBONDS ? displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.BondMod : displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyMod"
+              value="claim.Policy.PolicySuffix"/>
+            <Input
+              id="Type"
+              label="claim.LossType == typekey.LossType.TC_COMMBONDS ? displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.BondType : displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Type"
+              required="true"
+              value="claim.Policy.PolicyType"/>
+            <DateInput
+              id="PolicyEffectiveDateInput"
+              label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.EffectiveDate"
+              value="claim.Policy.EffectiveDate"/>
+            <DateInput
+              id="ExpirationDateInput"
+              label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ExpirationDate"
+              value="claim.Policy.ExpirationDate"/>
+            <ClaimContactInput
+              claim="claim"
+              id="AgencyClaimContactInput"
+              label="displaykey.Web.ClaimSummary.Policy.AgentName"
+              value="claim.Policy.ex_Agency"
+              valueRange="claim.getAgencies()"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <PanelColumn
+        id="FinancialsPanel"
+        visible="gw.plugin.util.CurrentUserUtil.getCurrentUser().User.underwriterRestrictionsELD()"
+        width="32%">
+        <DetailViewPanel>
+          <InputHeaderSection>
+            <Label
+              id="FinancialsLabel"
+              label="displaykey.Web.ClaimSummary.Headline.Financials.Label"/>
+          </InputHeaderSection>
+          <InputFooterSection>
+            <Input
+              id="ClaimRemainingReservesInput"
+              label="displaykey.Web.ClaimSummary.Financials.OpenReserves"
+              value="financials.FinancialsCalculationUtil.getOpenReserves().getAmount(claim)"/>
+            <Input
+              id="TotalPaidInput"
+              label="displaykey.Web.ClaimSummary.Financials.TotalPaid"
+              value="financials.FinancialsCalculationUtil.getTotalPayments().getAmount(claim)"/>
+            <Input
+              id="FuturePaymentsInput"
+              label="displaykey.Web.ClaimSummary.Financials.FuturePayments"
+              value="financials.FinancialsCalculationUtil.getFuturePayments().getAmount(claim)"/>
+          </InputFooterSection>
+        </DetailViewPanel>
+        <DetailViewPanel
+          columnDivider="false"
+          visible="false">
+          <InputColumn>
+            <ContentInput
+              labelAbove="true">
+              <Link
+                icon="getFinancialsPercentageIcon()"
+                id="PieChartIcon"/>
+            </ContentInput>
+          </InputColumn>
+          <InputColumn>
+            <!-- GW ADDED -->
+            <Input
+              id="TotalGrossIncurred"
+              label="displaykey.Web.ClaimSummary.Headline.Financials.GrossIncurred"
+              value="gw.api.util.CurrencyUtil.renderAsCurrency(claim.ClaimRpt.TotalIncurredGross)"/>
+            <!-- <InputIterator
+              elementName="deductible"
+              id="DeductibleIterator"
+              value="claim.getDeductibles()">
+              <Input
+                id="DeductibleInput"
+                label="displaykey.Web.ClaimSummary.Headline.Financials.Deductible"
+                value="deductible.DisplayAmount"/>
+            </InputIterator> -->
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <!-- GW ADDED -->
+      <PanelColumn
+        id="RiskIndicatorsPanel"
+        visible="false"
+        width="32%">
+        <DetailViewPanel>
+          <InputHeaderSection>
+            <Label
+              id="RiskIndicatorLabel"
+              label="displaykey.Web.ClaimSummary.Headline.RiskIndicators.Label"/>
+          </InputHeaderSection>
+          <InputColumn>
+            <InputIterator
+              elementName="indicator"
+              id="RiskIndicatorIterator"
+              value="claim.ClaimIndicators.where( \ c -&gt; c.IsOn).orderBy( \ e -&gt; ((e.Subtype.Priority) as java.lang.Comparable&lt;java.lang.Object&gt;)).toTypedArray()">
+              <ContentInput
+                labelAbove="true">
+                <Link
+                  icon="indicator.Icon"
+                  id="IndicatorIcon"
+                  tooltip="indicator.HoverText"/>
+                <Link
+                  id="IndicatorText"
+                  label="indicator.Text"/>
+              </ContentInput>
+            </InputIterator>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+    </PanelRow>
+    <Code><![CDATA[function getFinancialsPercentageIcon() : String {
+  var totalPaid = claim.TotalPaidClaimMetric.Value as java.math.BigDecimal
+  var totalIncurred = claim.ClaimRpt.TotalIncurredGross.Amount
+  
+  var percentString : String
+  if (totalIncurred == null or totalIncurred.IsZero or totalPaid == null or totalPaid.IsZero) {
+    percentString = "0"
+  }
+  else if (totalIncurred == totalPaid) {
+    percentString = "100"
+  }
+  else {
+    var percentage = (totalPaid).divide(totalIncurred, 2, HALF_UP)
+    // roundedPercent is the percentage * 100, rounded up to the nearest multiple of 5
+    var roundedPercent = percentage.multiply(20).setScale(0, CEILING).multiply(5)
+    if (roundedPercent == new java.math.BigDecimal(100)) {
+      // rounding back down if rounded up to 100 so 95-99% doesn't look complete
+      percentString = "95"
+    } else {
+      percentString = roundedPercent as String
+    }
+  }
+  var icon = "pie_" + percentString + ".gif"
+  return icon
+}
+
+property get DaysOpenPercentage() : java.lang.Double {
+  var limit = claim.DaysOpenClaimMetric.Limit
+  var daysOpen = claim.DaysOpenClaimMetric.Value as java.lang.Integer
+  var result : java.lang.Double = null
+  if (limit != null) {
+    if (limit.RedValue != null) {
+      result = calculatePercentageValue(daysOpen, limit.RedValue)
+    } else if (limit.YellowValue != null) {
+      result = calculatePercentageValue(daysOpen, limit.YellowValue )
+    } else if (limit.TargetValue != null) {
+      result = calculatePercentageValue(daysOpen, limit.TargetValue )
+    }
+  }
+  return result
+}
+
+property get LowThreshold() : java.lang.Double {
+  var limit = claim.DaysOpenClaimMetric.Limit
+  var threshold : java.lang.Double = null
+  if (limit != null) {
+    if (limit.YellowValue != null and limit.RedValue != null) {
+      threshold = (new java.math.BigDecimal(limit.YellowValue as java.lang.Integer)).divide(new java.math.BigDecimal(limit.RedValue as java.lang.Integer), 2, gw.api.util.CurrencyUtil.getRoundingMode()).multiply( 100 ).doubleValue()
+    } else {
+      threshold = MaxPercentage
+    } 
+  }
+  return threshold
+}
+
+property get HighThreshold() : java.lang.Double {
+  var limit = claim.DaysOpenClaimMetric.Limit
+  var threshold : java.lang.Double = null
+  if (limit != null) {
+    if (limit.RedValue != null or onlyTargetValueExists(limit)) {
+      //when both yellow and red value is null but target is not null, set high threshold to 100
+      //this is done so that the progress bar can show green color
+      threshold = MaxPercentage
+    }
+  }
+  return threshold
+}
+
+property get OpenStatus() : String {
+  var status : String = null
+  var limit = claim.DaysOpenClaimMetric.Limit
+  var value = claim.DaysOpenClaimMetric.Value
+  if (value == (1 as java.lang.Comparable<java.lang.Object>)) {
+    if (limit.TargetValue != null and limit.TargetValue != (0 as java.lang.Comparable<java.lang.Object>)) {
+      status = displaykey.Web.ClaimSummary.Headline.Basics.ClaimOpenStringSingularWithTarget(value, limit.TargetValue )
+    } else {
+      status = displaykey.Web.ClaimSummary.Headline.Basics.ClaimOpenStringSingular(value )
+    }
+  } else {
+    if (limit.TargetValue != null and limit.TargetValue != (0 as java.lang.Comparable<java.lang.Object>)) {
+      status = displaykey.Web.ClaimSummary.Headline.Basics.ClaimOpenStringPluralWithTarget(value, limit.TargetValue )
+    } else {
+      status = displaykey.Web.ClaimSummary.Headline.Basics.ClaimOpenStringPlural(value )
+    }
+  }
+  return status
+}
+
+function showBarInput() : boolean {
+  var limit = claim.DaysOpenClaimMetric.Limit
+  if (limit != null) {
+    //if any of the red/yellow/target value is not null and not 0, show the progressbar
+    if ((limit.RedValue != null and limit.RedValue != (0 as java.lang.Comparable<java.lang.Object>)) 
+        or (limit.TargetValue != null and limit.TargetValue != (0 as java.lang.Comparable<java.lang.Object>))
+        or (limit.YellowValue != null and limit.YellowValue != (0 as java.lang.Comparable<java.lang.Object>))) {
+      return true
+    }
+  }
+  return false
+}
+
+function getClaimClosedText() : String {
+  var text : String = null
+  var closeDate = claim.CloseDate == null ? displaykey.Web.NA : claim.CloseDate.format( "MM/dd/yyyy" )
+  if (claim.DaysOpenClaimMetric.Value == (1 as java.lang.Comparable<java.lang.Object>)) {
+    text = displaykey.Web.ClaimSummary.Headline.Basics.ClaimClosedStringSingular(closeDate , claim.DaysOpenClaimMetric.Value)
+    } else {
+    text = displaykey.Web.ClaimSummary.Headline.Basics.ClaimClosedStringPlural(closeDate , claim.DaysOpenClaimMetric.Value)
+  }
+  return text
+}
+
+private function calculatePercentageValue(value : java.lang.Integer, threshold : java.lang.Comparable) : java.lang.Double {
+  var result : java.lang.Double = null
+  if (value >= threshold) {
+    result = MaxPercentage
+  } else {
+    result = (new java.math.BigDecimal(value)).divide(new java.math.BigDecimal(threshold as java.lang.Integer), 2, gw.api.util.CurrencyUtil.getRoundingMode() ).multiply( 100 ).doubleValue()
+  }
+  return result
+}
+
+private function onlyTargetValueExists(limit : gw.api.metric.MetricLimitMethods ) : boolean {
+ return limit.YellowValue == null and limit.RedValue == null and limit.TargetValue != null
+}
+
+private function noYellowValueExists(limit : gw.api.metric.MetricLimitMethods) : boolean {
+  return limit.YellowValue == null
+}
+
+property get MaxPercentage() : java.lang.Double {
+  return 100
+}
+
+
+
+function getCorpClaimsAssist1() : String {
+    var users : String = ""
+    try{
+      for(claimUserModel in claim.ClaimUserModelSet.ClaimUserModels){
+        if(exists(role in claimUserModel.UserRoleAssignments where role.Role=="scoassist")){
+          users = users + "Corporate Claim Assist:"+" "+ claimUserModel.User.DisplayName + "\n " + "\n"
+        }
+      }
+      users = users.trim()
+      if(users.endsWith( "," )){
+        users = users.substring( 0, users.lastIndexOf( "\n" ) )
+      }
+    } catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( Claim, "Adding Corp Claims Assist users to a string", e, null )
+    }
+      return users
+  }
+
+
+
+
+
+function getSIU() : String {
+    var users : String = ""
+    try{
+      for(claimUserModel in claim.ClaimUserModelSet.ClaimUserModels){
+        if(exists(role in claimUserModel.UserRoleAssignments where role.Role=="SIU")){
+          users = users + "SIU Assist:"+" "+ claimUserModel.User.DisplayName + "\n " + "\n"
+        }
+      }
+      users = users.trim()
+      if(users.endsWith( "," )){
+        users = users.substring( 0, users.lastIndexOf( "\n" ) )
+      }
+    } catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( Claim, "Adding SIU Assist users to a string", e, null )
+    }
+      return users
+  }
+  
+  
+  
+function getRecoveryAssist() : String {
+    var users : String = ""
+    try{
+      for(claimUserModel in claim.ClaimUserModelSet.ClaimUserModels){
+        if(exists(role in claimUserModel.UserRoleAssignments where role.Role=="RecoveryAssist")){
+          users = users + "Recovery Assist:"+" "+ claimUserModel.User.DisplayName + "\n " + "\n"
+        }
+      }
+      users = users.trim()
+      if(users.endsWith( "," )){
+        users = users.substring( 0, users.lastIndexOf( "\n" ) )
+      }
+    } catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( Claim, "Adding Recovery Assist users to a string", e, null )
+    }
+      return users
+  }
+
+
+
+
+
+function SIUStatus():String{
+var st: String = null
+if(claim.SIUInvestigationsExt.length > 0 )
+{ 
+    for ( siureferral in claim.SIUInvestigationsExt){
+      if(siureferral.SIUReferralType!="data"){
+               if((siureferral.InvestigationStatus == "open")or (siureferral.InvestigationStatus == null) or (siureferral.InvestigationStatus== "reopen"))  {
+                  st="Open SIU Referral(s)"
+                   break;
+       }
+       else if(siureferral.InvestigationStatus == "closed")
+       st = "Closed SIU Referral(s)"
+     }
+    }
+  }
+     return st
+}
+
+function specialClaimHandlingLabel() : String {
+  var str = ""
+  if(claim.SpecClaimHandlingExt){
+    if(claim.SpecClaimThresholdExt != null){
+      str = "Special Claim Handling Agreement - " + gw.api.util.StringUtil.formatNumber(claim.SpecClaimThresholdExt as java.lang.Double, "$###,###.00")
+    }else{
+      str = "Special Claim Handling Agreement"
+    }
+  } 
+  return str
+}]]></Code>
+  </PanelSet>
+</PCF>

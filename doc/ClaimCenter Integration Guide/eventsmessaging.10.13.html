@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Resyncing Messages</title>
+    <link rel="StyleSheet" href="css/eventsmessaging.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="eventsmessaging.10.01.html#4320423">Messaging and Events</a> : Resyncing Messages</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="4320423">Resyncing Messages</a></div>
+      <div class="B_-_Body"><a name="4323173">Most ClaimCenter implementations use the messaging system to synchronize ClaimCenter data with claim data </a>in an external system. </div>
+      <div class="B_-_Body"><a name="4320430">In rare cases some messaging integration condition might file, such as failure to enforce an external validation </a>requirement properly. If this happens, an external system might process one or more ClaimCenter messages incorrectly or incompletely. If the destination detects the problem, the external system returns an error. The error must be fixed or there may be synchronization errors with the external system.</div>
+      <div class="B_-_Body"><a name="4320437">However, suppose the administrator fixes the data in ClaimCenter and improves any related code. It still might </a>be the case that the external system has incorrect or incomplete information. For this type of situation, ClaimCenter provides a programming hook called a <span class="e_-_emphasis">resync event</span> (a resynchronization event) to recover from such messaging failures.</div>
+      <div class="B_-_Body"><a name="4323179">The resync can be triggered from the administration user interface or programmatically using the </a><span class="cv_-_computer_voice">IMessagingToolsAPI</span> interface’s <span class="cv_-_computer_voice">resyncClaim</span> method. </div>
+      <div class="B_-_Body"><a name="4323185">As a result of a resync request, ClaimCenter triggers the resync event (</a><span class="cv_-_computer_voice">ClaimResync</span>). Your messaging destination can listen for this even in Event Fired business rules.</div>
+      <div class="B_-_Body"><a name="4323194">Afterwards, ClaimCenter marks all messages that were pending as of the resync as </a><span class="e_-_emphasis">skipped</span>. You must implement Guidewire Studio rules that examine the and generate necessary messages. You must bring the external system into sync with the current state of the claim.</div>
+      <div class="B_-_Body"><a name="4320496">Design your Gosu resync Event Fired rules to how your particular external systems recover from such errors. </a></div>
+      <div class="B_-_Body"><a name="4320497">There are two different basic approaches for generating the resync messages. </a></div>
+      <div class="B_-_Body"><a name="4323200">In the first approach, your Gosu rules traverse all claim data and generate messages for elements of the claim that </a>are out-of-sync (or might be) with the external system. Depending on how your external system works, it might be sufficient to overwrite the external system’s claim with the ClaimCenter version. In this case, resend the entire series of messages. It may be necessary to add custom properties to various elements so you can help the external system track its synchronization state. If you can determine that you only need to resend a subset of messages, you can choose to generate elements of the claim only for those not in sync.</div>
+      <div class="B_-_Body"><a name="4323202">In the second approach, Gosu rules examine the failed message and all queued and unsent messages for the claim </a>for a specific destination. Your rules must determine which messages must be regenerated. Instead of examining the entire claim, consider only failed and unsent messages. Because a message with an error prevents sending subsequent messages for that claim, there may be many unsent pending messages. To help with this process, ClaimCenter includes properties and methods in the rules context on <span class="cv_-_computer_voice">messageContext</span> and <span class="cv_-_computer_voice">Message</span>. </div>
+      <div class="B_-_Body"><a name="4320502">From within your Event Fired rules, your Gosu code can access the </a><span class="cv_-_computer_voice">messageContext</span> object. It contains information to help you copy pending <span class="cv_-_computer_voice">Message</span> objects. To get the list of pending messages from a rule that handles the resync event, use the read-only property <span class="cv_-_computer_voice">messageContext.PendingMessages</span>. That property returns an array of pending messages. After your code runs, the application skips all these original pending messages. This means that the application permanently removes the messages from the send queue after the resync event rules complete. If there are no pending messages at resync time, this array has length zero.</div>
+      <div class="B_-_Body"><a name="4320503">If you create new messages, the new messages queue in creation order, independent of the order of original </a>messages. This might be a different order than they originally sent data to the external system. </div>
+      <div class="B_-_Body"><a name="4320504">There are various properties within any message you can get in pending messages or set in new messages:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320505">payload</a></span> - A string containing the text-based message body of the message.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320506">user</a></span> - The user who created the message. If you create the message without cloning the old message, the user by default is the user who triggered the resync. If you create the message by cloning a pending message, the new message inherits the original user who creates the original message. In either case, you can choose to set the <span class="cv_-_computer_voice">user</span> property to override the default behavior. However, in general Guidewire recommends setting the user to the original user. For financial transactions, set the user to the user who created the transaction.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4320507">There are also read-only properties in pending messages returned from </a><span class="cv_-_computer_voice">messageContext.PendingMessages</span>:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320508">EventName</a></span> - A string that contains the event that triggered this message. For example, <span class="cv_-_computer_voice">“ClaimAdded”</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320512">Status</a></span> - The message status, as an enumeration. See the following table for values and their meanings.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320513">ErrorDescription</a></span> - A string that contains the description of errors, if any. This may or may not be present. This is set within a negative acknowledgement (Nack).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320514">SenderRefID</a></span> - A sender reference ID set by the destination to uniquely identify the message. Your destination can optionally set the <span class="cv_-_computer_voice">message.senderRefID</span> field in any of your messaging plugins during original sending of the message. Only the <span class="e_-_emphasis">first</span> pending message has this value set due to <span class="e_-_emphasis">safe ordering</span>. You only need to use the sender reference ID if it is useful for that external system. The <span class="cv_-_computer_voice">SenderRefID</span> property is read-only from resync rules. This value is <span class="cv_-_computer_voice">null</span> unless this message is the first pending message and it was already sent (or pending send) and it did not yet successfully send. As long as the <span class="cv_-_computer_voice">message.status</span> property does not indicate that it is <span class="e_-_emphasis">pending send</span>, the message could have the sender reference ID property populated by the destination.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4320517">The message status values are as follows:</a></div>
+      <div class="T_-_Table"><a name="4320573">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4320520">Message status value</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4320522">Meaning</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4320524">Can appear during resync</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320526">1</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320528">Pending send</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320530">Yes</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320532">2</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320534">Pending ack</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320536">Yes</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320538">3</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320540">Error</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320542">Yes</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320544">4</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320546">Retryable error</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320548">Yes</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320550">10</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320552">Acknowledged</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320554">No</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320556">11</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320558">Error cleared and skipped</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320560">No</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320562">12</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320564">Error retried and skipped</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320566">No</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320568">13</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320570">Skipped</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4320572">No</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="4320574">As indicated in the previous table, status values 10 and higher do not actually appear during resync. However, </a>use this table for reference for debugging and analyzing the status property in <span class="cv_-_computer_voice">Message</span> and <span class="cv_-_computer_voice">MessageHistory</span> tables.</div>
+      <div class="H3_-_Heading_3"><a name="4320575">Cloning New Messages From Pending Messages</a></div>
+      <div class="B_-_Body"><a name="4320576">As mentioned earlier, you can clone a new message from a pending message that you retrieved with the code </a><span class="cv_-_computer_voice">messageContext</span>.<span class="cv_-_computer_voice">PendingMessages</span>. To clone a new a new message from the old message, pass the old message as a parameter to the <span class="cv_-_computer_voice">createMessage</span> method:</div>
+      <div class="CS_-_Code_Single_Line"><a name="4320577">messageContext.createMessage(</a><span class="pc_-_parameter_in_code">message</span>)</div>
+      <div class="B_-_Body"><a name="4320578">This method copies a message into a new message and returns the new message. If desired, you can modify the </a>new message within the resync rules. All new messages (whether standard or cloned) submit together to the send queue as part of one database transaction after the resync rules complete.</div>
+      <div class="B_-_Body"><a name="4320579">The cloned message is identical to the original message, with the following exceptions:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320580">The new message has a different message ID.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320581">The new message has status of pending send (</a><span class="cv_-_computer_voice">status</span> = <span class="cv_-_computer_voice">PENDING_SEND</span>).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320582">The new message has cleared properties for Ack count and code (</a><span class="cv_-_computer_voice">ackCount</span> = 0; <span class="cv_-_computer_voice">ackCode</span> = <span class="cv_-_computer_voice">null</span>).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320583">The new message has cleared property for retry count (</a><span class="cv_-_computer_voice">retryCount</span> = 0).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320584">The new message has cleared property for sender reference ID (</a><span class="cv_-_computer_voice">senderRefID</span> = <span class="cv_-_computer_voice">null</span>).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320585">The new message has cleared property for error description (</a><span class="cv_-_computer_voice">errorDescription</span> = <span class="cv_-_computer_voice">null</span>).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4320589">ClaimCenter marks all pending messages as skipped (no longer queued) after the resync rules complete. Because </a>of this, resync rules must either send new messages that include that information, or manually clone new messages from pending messages, as discussed earlier. </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="4320590">All pending messages skip after the Event Fired rules for the resync event complete. </a>You must create equivalent <span class="s_-_strong">new</span> messages for all pending messages.</div>
+      <div class="H2_-_Heading_2"><a name="4323208">Resync and ClaimCenter Financials</a></div>
+      <div class="B_-_Body"><a name="4323209">Your resync code must handle resending any unprocessed financial transactions, taking care </a><span class="s_-_strong">not</span> to resend any successfully processed financial transactions.</div>
+      <div class="H2_-_Heading_2"><a name="4323210">Resync in ContactCenter</a></div>
+      <div class="B_-_Body"><a name="4323211">If you use Guidewire ContactCenter, be aware that ContactCenter supports </a><span class="e_-_emphasis">resync</span> features for the <span class="cv_-_computer_voice">ABContact</span> entity. To detect resyncing of an <span class="cv_-_computer_voice">ABContact</span> entity, your destination can listen for the <span class="cv_-_computer_voice">ABContactResync</span> event. Your Event Fired rules can detect that event firing and then resend any important messages. Your rules generate messages to external systems for this entity that synchronize ContactCenter with the external system. For more ContactCenter integration information, see <a href="javascript:WWHClickedPopup('integration', 'addressbook.17.1.html#1930181', '');" title="Address Book Integration">“Address Book Integration”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="4320599">How Resync Affects Pre-Update and Validation</a></div>
+      <div class="B_-_Body"><a name="4320603">Be aware that claim pre-update and validation rule sets do not run solely because of a triggered event. A claim’s </a>pre-update and validation rules run only if actual entity data changes. In cases where triggered events do not correspond to already-changed entities, the event firing alone does <span class="s_-_strong">not</span> trigger claim pre-update and validation rules.</div>
+      <div class="B_-_Body"><a name="4323220">This does not affect most events because almost all events correspond to entity data changes. However, for the </a><span class="cv_-_computer_voice">ResyncClaim</span> event (triggered from a claim resync from the user interface), no entity data inherently changes due to this event. </div>
+      <div class="B_-_Body"><a name="4320615">This affects any other custom event firing through the </a><span class="cv_-_computer_voice">addEvent</span> entity method. </div>
+      <div class="B_-_Body"><a name="4323229">If you use ContactCenter, this also affects ContactCenter’s entity validation for events such as the </a><span class="cv_-_computer_voice">ResyncABContact</span> event.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

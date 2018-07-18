@@ -1,0 +1,208 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookContactBasicsDV"
+    mode="Person|PersonVendor|Adjudicator|UserContact|Doctor|Attorney|Ex_ForeignPersonVndr|Ex_ForeignPerVndrAttny|Ex_ForeignPerVndrDoc">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="contact.CategoryScores != null AND contact.CategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      type="Boolean"/>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookPersonNameInputSet(contact as Person, contact typeis Adjudicator or contact typeis UserContact or contact typeis PersonVendor or contact typeis Ex_ForeignPersonVndr)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"/>
+      <InputSetRef
+        def="AddressBookPersonContactInfoInputSet(contact as Person, null)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="!(contact typeis PersonVendor)"/>
+      <InputSetRef
+        def="AddressBookBusinessContactInfoInputSet((contact as PersonVendor), externalContactSource)"/>
+      <InputSetRef
+        def="AddressBookDriversLicenseInfoInputSet(contact as Person)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="contact.subtype==&quot;Person&quot;"/>
+      <!-- <InputDivider
+        visible="hasCategoryScores OR (contact.Score != null)"/> -->
+      <!-- <Label
+        label="displaykey.Web.Reviews.ReviewPerformance"
+        visible="hasCategoryScores or (contact.Score != null)"/> -->
+      <!-- <Input
+        id="score"
+        label="displaykey.Web.Reviews.OverallScore"
+        value="contact.Score"
+        visible="contact.Score != null"/> -->
+      <!-- <ListViewInput
+        label="displaykey.Web.Reviews.CategoryScores"
+        visible="hasCategoryScores">
+        <Toolbar/>
+        <ListViewPanel
+          id="CategoryScoresLV">
+          <RowIterator
+            editable="false"
+            elementName="categoryScore"
+            pageSize="0"
+            value="contact.getSortedCategoryScores()">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="Category"
+                label="displaykey.Web.Reviews.Category"
+                value="categoryScore.ReviewCategory"/>
+              <Cell
+                enableSort="false"
+                id="Score"
+                label="displaykey.Web.Reviews.Score"
+                value="categoryScore.Score"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput> -->
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ContactDetail.AdditionalInfo"/>
+      <InputSetRef
+        def="AddressBookPersonVendorAdditionalInfoInputSet(contact, externalContactSource)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred() or User.util.getCurrentUser().isBillingAdressAdmin()"
+        mode="contact typeis PersonVendor ? &quot;PersonVendor&quot; : null"/>
+      <InputSetRef
+        def="AddressBookUserContactAdditionalInfoInputSet(contact)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contact typeis UserContact ? &quot;UserContact&quot; : null"/>
+      <InputSetRef
+        def="AddressBookAdjudicatorAdditionalInfoInputSet(contact, externalContactSource)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contact typeis Adjudicator ? &quot;Adjudicator&quot; : null"/>
+      <InputSetRef
+        def="AddressBookPersonAdditionalInfoInputSet(contact as Person, externalContactSource)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="contact.subtype==&quot;Person&quot;"/>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contact.AddressOwner)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contact.AddressOwner.InputSetMode"/>
+      <!-- following input set for tax info -->
+      <InputSet
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()">
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <!-- ssn for non-foreign -->
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="SSN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.SSN"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateTaxID()"
+          value="(contact as PersonVendor).TaxID"
+          visible="!contact.isForeign()"/>
+        <!-- w-8 for foreign person -->
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="W8"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateForeignSSN()"
+          value="(contact as Person).TaxID"
+          visible="contact.isForeign()"/>
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo()and !contact.FormerVerifiedContactExt"
+          id="TaxStatusCode"
+          label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+          postOnChange="true"
+          required="true"
+          validationExpression="(contact as Person).Ex_TaxStatusCode != null ? (contact as Person).checkContactTaxStatusUpdate(): (contact as Person).Ex_TaxStatusCode"
+          value="(contact as Person).ex_TaxStatusCode"/>
+        <Input
+          editable="true"
+          id="TaxReportingName"
+          label="displaykey.Web.ContactDetail.TaxReportingName"
+          validationExpression="(contact.Preferred and contact.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+          value="(contact as PersonVendor).Ex_TaxReportingName"/>
+        <!-- w-8 for foreign person -->
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="W8Date"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Recevied"
+          postOnChange="true"
+          required="false"
+          value="(contact as Person).W8ReceivedExt"
+          visible="contact.isForeign()"/>
+        <DateInput
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="W8receviedDate"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Date"
+          postOnChange="true"
+          required="false"
+          value="(contact as Person).W8ReceivedDateExt"
+          visible="contact.isForeign()"/>
+        <InputSetRef
+          def="AddressBookVendorW9InfoInputSet((contact as PersonVendor))"
+          visible="!contact.isForeign() and contact typeis PersonVendor"/>
+      </InputSet>
+    </InputColumn>
+    <!-- <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection> -->
+    <Code><![CDATA[function validateTaxID():String{
+  if((contact as Person).TaxID == null){ 
+    if((contact as Person).checkContactTaxStatus()){ 
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.Required
+    }else{
+      return null
+    }
+  }else{
+    if(!(contact as Person).TaxID.matches("[0-9]{9}") or ((contact as Person).TaxID.matches("[0]{9}") or (contact as Person).TaxID.matches("[1]{9}") or (contact as Person).TaxID.matches("[2]{9}")
+      or (contact as Person).TaxID.matches("[3]{9}") or (contact as Person).TaxID.matches("[4]{9}") or (contact as Person).TaxID.matches("[5]{9}") or (contact as Person).TaxID.matches("[6]{9}")
+       or (contact as Person).TaxID.matches("[7]{9}") or (contact as Person).TaxID.matches("[8]{9}") or (contact as Person).TaxID.matches("[9]{9}"))){
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.Invalid
+    }else if((contact as Person).HICNExt != null && (contact as Person).TaxID.toString().startsWith("9")){ 
+    return displaykey.Web.ContactDetail.Name.TaxID.MedEligible
+    }{
+      return null
+    }
+  }
+  }
+  // C.McDonald EM55 9-24-13 : defect 6461 foreign entity should have ability for id with letters
+function validateForeignSSN(): String{    
+    if((contact as Person).TaxID == null )
+    return null 
+    else 
+    {
+      if( !(contact as Person).TaxID.matches("[a-zA-Z0-9]{9}") or ((contact as Person).TaxID.matches("[0]{9}") or (contact as Person).TaxID.matches("[1]{9}") or (contact as Person).TaxID.matches("[2]{9}")
+      or (contact as Person).TaxID.matches("[3]{9}") or (contact as Person).TaxID.matches("[4]{9}") or (contact as Person).TaxID.matches("[5]{9}") or (contact as Person).TaxID.matches("[6]{9}")
+       or (contact as Person).TaxID.matches("[7]{9}") or (contact as Person).TaxID.matches("[8]{9}") or (contact as Person).TaxID.matches("[9]{9}")))
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.W8Invalid
+      else return null
+    }
+}
+
+function validateSSN():String{
+  if((contact as Person).HICNExt != null && (contact as Person).TaxID.toString().startsWith("9")){ 
+    return displaykey.Web.ContactDetail.Name.TaxID.MedEligible
+    }else{
+      return null
+    }}]]></Code>
+  </DetailViewPanel>
+</PCF>

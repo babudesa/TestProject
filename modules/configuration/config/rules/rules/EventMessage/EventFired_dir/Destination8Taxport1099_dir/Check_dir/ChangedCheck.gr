@@ -1,0 +1,126 @@
+package rules.EventMessage.EventFired_dir.Destination8Taxport1099_dir.Check_dir
+
+@gw.rules.RuleName("Changed Check")
+internal class ChangedCheck {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "CheckChanged" && 
+(messageContext.Root as Check).Status == "issued" &&
+((messageContext.Root as Check).Reportability == "notreportable"||
+(messageContext.Root as Check).Reportability == "reportable")
+
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = messageContext.Root as Check
+
+for (Payee in msgCheck.Payees){
+if (Payee.Payee.Ex_TaxStatusCode == "B"){
+ // if( msgcheck.BackupWithholdingCheckExt !=Boolean ){
+    
+     //2a) send two -ve messages to Box04 and Box06/07/14
+    if(!(msgCheck.ChangedFields.contains("BackupWithholdingCheckExt")) && msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "notreportable" && Payee.Check.BackupWithholdingCheckExt == true ){
+     util.financials.Taxport.reportable1( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+      //2b) send one -ve message to Box06/07/14
+    if (!(msgCheck.ChangedFields.contains("BackupWithholdingCheckExt")) && msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "notreportable" && Payee.Check.BackupWithholdingCheckExt == false ){
+      util.financials.Taxport.reportable2( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+      //3a) send one -ve message to Box04
+    if (msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && !(msgCheck.ChangedFields.contains( "Reportability" )) && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == false ){
+      util.financials.Taxport.reportable3( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+    //3b) send one +ve message to Box04
+    if (msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && !(msgCheck.ChangedFields.contains( "Reportability" )) && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == true ){
+      util.financials.Taxport.reportable3( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+    //4a) send two -ve message to Box04 and N0x06/07/14 
+    if ( msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && msgCheck.Reportability == "notreportable" && Payee.Check.BackupWithholdingCheckExt == false ){
+       util.financials.Taxport.reportable1( messageContext, msgCheck );
+       actions.exitToNext();
+           }  
+    //4b) send one -ve message to Box06/07/14
+    if( msgCheck.ChangedFields.contains( "Reportability" )  && msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && msgCheck.Reportability == "notreportable" && Payee.Check.BackupWithholdingCheckExt == true){
+       util.financials.Taxport.reportable2( messageContext, msgCheck ); 
+       actions.exitToNext();
+         }
+    //5a) send two positive messages to Box04 and Bob06/07/14
+    if (!(msgCheck.ChangedFields.contains("BackupWithholdingCheckExt")) && msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == true ){
+      util.financials.Taxport.reportable1( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+    //5b) send one positive message to Box06/07/14
+     if (!(msgCheck.ChangedFields.contains("BackupWithholdingCheckExt")) && msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == false ){
+      util.financials.Taxport.reportable2( messageContext, msgCheck );
+      actions.exitToNext();
+      }
+    //7a) send two positive messages to Box04 and Box06/07/14
+    if ( msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt ==  false ){
+       util.financials.Taxport.reportable1( messageContext, msgCheck );
+       actions.exitToNext();
+           }  
+    //7b) send one positive messages to Box06/07/14
+    if( msgCheck.ChangedFields.contains( "Reportability" )  && msgCheck.ChangedFields.contains("BackupWithholdingCheckExt") && msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == true){
+       util.financials.Taxport.reportable2( messageContext, msgCheck ); 
+       actions.exitToNext();
+    }
+        // msgCheck.ChangedFields.contains( "Reportability" )
+         }
+         
+  else {
+     // if vendor have T - Tax Levy or 2 - Tax Levy Non-Exempt or 3 - SSN or 9 - Comporation Exempt then send one +ve message to Box06/07/14 
+     // 19), 32), 45), 58)
+    if (msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "notreportable" ){
+     var amountToSend1 : java.math.BigDecimal;
+     //amountToSend1 = -1 * msgCheck.NetAmount;
+      for (p in msgCheck.Payments){
+        if(util.financials.CheckFunctions.is1099ReportableCostType(p.CostType)){ //returns false if CostType is Not Reportable - Defect 8320
+        for (l in p.LineItems){
+          if (l.LineCategory != null){ // if line category is not null (not specified)								
+            for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+              if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                l.IRS1099BoxNumberExt=bn // set the box number                
+                amountToSend1 = -(l.Amount);
+                
+         var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend1, l.IRS1099BoxNumberExt.Code);
+          if (messageContentxx != "") {
+         var messagexx = messageContext.createMessage(messageContentxx);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+     }
+     
+     else if(msgCheck.ChangedFields.contains( "Reportability" ) && msgCheck.Reportability == "reportable") {
+        var amountToSend1 : java.math.BigDecimal;
+       // amountToSend1 = msgCheck.NetAmount;
+        for (p in msgCheck.Payments){
+        for (l in p.LineItems){
+          if (l.LineCategory != null){ // if line category is not null (not specified)									
+            for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+              if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                l.IRS1099BoxNumberExt=bn // set the box number                
+                amountToSend1 = l.Amount;
+                
+            var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend1,l.IRS1099BoxNumberExt.Code);
+             if (messageContentxx != "") {
+             var messagexx = messageContext.createMessage(messageContentxx);
+                   }
+                 }
+               }
+             }
+           } 
+         }      
+       }
+    }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,17 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Claim_dir
+
+@gw.rules.RuleName("MainContactTypeChanged")
+internal class MainContactTypeChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "MainContactTypeChanged"
+&& messageContext.Root typeis Claim
+&& messageContext.Root.State != "draft"
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var claim = messageContext.Root as Claim;
+var f = util.gaic.EDW.EDWFunctionsFactory.getClaimContactRoleFunctions();
+f.processRelatedInsuredRoleChange( messageContext, claim );   /*end00rule*/
+  }
+}

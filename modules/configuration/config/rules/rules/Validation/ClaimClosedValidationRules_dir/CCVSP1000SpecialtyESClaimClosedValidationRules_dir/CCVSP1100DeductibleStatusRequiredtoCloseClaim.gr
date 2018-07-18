@@ -1,0 +1,17 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVSP1000SpecialtyESClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVSP1100 - Deductible Status Required to Close Claim")
+internal class CCVSP1100DeductibleStatusRequiredtoCloseClaim {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.DeductibleStatus == null &&
+claim.IncidentReport == false/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    claim.rejectField("DeductibleStatus", "newloss", displaykey.Rules.Validation.Claim.SpecialtyES.DeductibleStatusRequired, null, null)  
+} catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

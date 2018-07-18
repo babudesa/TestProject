@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!-- Coverage -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  abstract="true"
+  desc="Insurance coverage."
+  entity="Coverage"
+  exportable="true"
+  extendable="true"
+  final="false"
+  javaClass="com.guidewire.cc.domain.policy.Coverage"
+  platform="false"
+  table="coverage"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <fulldescription><![CDATA[
+Abstract superclass describing a specific coverage on a policy. Contains
+information about deductibles, limits, and effective dates of the coverage. A
+policy may have multiple coverages.
+    ]]></fulldescription>
+  <column
+    desc="Deductible for this coverage."
+    name="Deductible"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="PolicyCurrency"/>
+  </column>
+  <column
+    desc="Date on which the coverage is effective."
+    name="EffectiveDate"
+    type="datetime"/>
+  <column
+    desc="Date on which the coverage is expired."
+    name="ExpirationDate"
+    type="datetime"/>
+  <column
+    desc="Dollar limit per exposure."
+    name="ExposureLimit"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="PolicyCurrency"/>
+  </column>
+  <column
+    desc="Dollar limit per incident."
+    name="IncidentLimit"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="PolicyCurrency"/>
+  </column>
+  <column
+    desc="Additional notes on this coverage."
+    name="Notes"
+    type="shorttext"/>
+  <onetoone
+    desc="Deductible entity to be applied to a payment."
+    fkentity="Deductible"
+    name="ClaimDeductible"
+    setterScriptability="doesNotExist"/>
+  <typekey
+    desc="Whether a coverage type can be combined."
+    name="LimitsIndicator"
+    typelist="LimitsIndicator"/>
+  <typekey
+    desc="The state in which this coverage is applicable, if state-specific."
+    name="State"
+    typelist="State"/>
+  <typekey
+    desc="Type of coverage."
+    name="Type"
+    nullok="false"
+    typelist="CoverageType">
+    <keyfilters>
+      <keyfilter
+        name="Policy.PolicyType"/>
+    </keyfilters>
+  </typekey>
+  <array
+    arrayentity="CovTerm"
+    desc="Additional terms and conditions associated with this Coverage."
+    name="CovTerms"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PolicyID"
+    desc="Policy to which the coverage belongs."
+    exportable="true"
+    fkentity="Policy"
+    name="Policy"
+    nullok="false"/>
+  <datetimeordering
+    firstcolumnname="EffectiveDate"
+    operator="LE"
+    secondcolumnname="ExpirationDate"/>
+  <events/>
+</entity>

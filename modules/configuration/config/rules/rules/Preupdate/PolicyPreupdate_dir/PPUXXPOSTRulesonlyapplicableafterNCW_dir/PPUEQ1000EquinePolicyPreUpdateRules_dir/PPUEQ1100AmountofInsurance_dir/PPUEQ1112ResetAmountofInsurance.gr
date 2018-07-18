@@ -1,0 +1,37 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUEQ1000EquinePolicyPreUpdateRules_dir.PPUEQ1100AmountofInsurance_dir
+
+@gw.rules.RuleName("PPUEQ1112 - Reset Amount of Insurance")
+internal class PPUEQ1112ResetAmountofInsurance {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*If the user does not have one of the two coverages required,
+we erase the Amount of Insurance on the property.
+Author: Stephanie Przygocki
+Date: 8/17/09 EM15 - final deployment
+*/
+
+//Developer: Amulya Saikumar
+//Defect# : 7380 Date : 03/24/2015
+//Added FMDED coverages to also be included for generating the Amount of Insurance
+
+true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/for(prop in policy.Properties)
+{
+  var coverages : Coverage[]
+  for(riskUnit in policy.RiskUnits){
+    if(riskUnit.Subtype=="LocationBasedRU" || riskUnit.Subtype=="PropertyRU" 
+      and (riskUnit as LocationBasedRU).Property==prop.Property){
+      coverages = riskUnit.Coverages
+    }
+  }
+    if(coverages.length<1){
+     prop.Property.ex_AmountofInsurance = null
+     policy.touch()
+    }
+
+  
+}/*end00rule*/
+  }
+}

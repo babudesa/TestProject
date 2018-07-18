@@ -1,0 +1,19 @@
+package rules.Validation.ClaimValidationRules_dir.CVAC1000CommercialAutoValidationRules_dir.CVAC1100ValidationatAbilitytoPayLevel_dir
+
+@gw.rules.RuleName("CVAC1110 - MA Town Required at Ability to Pay")
+internal class CVAC1110MATownRequiredatAbilitytoPay {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Exposures.where(\ e -> e.Coverage.State == typekey.State.TC_MA).HasElements/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if (claim.LossLocation.State == typekey.State.TC_MA and 
+(claim.MAAccidentLocationExt == null or MATownCodeExt.TF_OUTOFTOWNCODES.TypeKeys.contains(claim.MAAccidentLocationExt))){
+  claim.rejectField("MAAccidentLocationExt", "payment", displaykey.Rules.Validation.CommAuto.MATownATP, null, null)
+}
+else if (claim.LossLocation.State != typekey.State.TC_MA and
+(claim.MAAccidentLocationExt == null or !MATownCodeExt.TF_OUTOFTOWNCODES.TypeKeys.contains(claim.MAAccidentLocationExt))){
+  claim.rejectField("MAAccidentLocationExt", "payment", displaykey.Rules.Validation.CommAuto.OOSTownATP, null, null)
+}/*end00rule*/
+  }
+}

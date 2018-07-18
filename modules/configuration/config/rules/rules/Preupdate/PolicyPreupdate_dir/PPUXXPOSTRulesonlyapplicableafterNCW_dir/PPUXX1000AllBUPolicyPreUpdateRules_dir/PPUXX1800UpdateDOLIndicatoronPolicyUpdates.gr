@@ -1,0 +1,41 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("PPUXX1800 - Update DOL Indicator on Policy Updates")
+internal class PPUXX1800UpdateDOLIndicatoronPolicyUpdates {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Claim.isConvertedExt() == false
+/* Updates DOL Indicator on policy select and updates flag *//*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var startDate = policy.EffectiveDate
+  var endDate = policy.ExpirationDate
+  if(policy.Claim != null){ 
+    if(policy.CancellationDate != null and policy.ex_ReinstatementDate == null){
+     endDate = policy.CancellationDate 
+    }
+  
+    if(policy.Claim.LossDate.compareIgnoreTime(endDate)>0 or
+          policy.Claim.LossDate.compareIgnoreTime(startDate)<0){ 
+    
+      policy.Claim.DOLOutsideIndExt = true
+    
+      if(policy.Claim.Flagged != FlaggedType.TC_ISFLAGGED){
+        policy.Claim.Flagged = FlaggedType.TC_ISFLAGGED
+        policy.Claim.FlaggedReason = "Date of Loss outside policy period."
+        policy.Claim.FlaggedDate = java.util.Date.CurrentDate
+      }
+    } else{ 
+    
+      policy.Claim.DOLOutsideIndExt = false
+    
+      if(policy.Claim.Flagged == FlaggedType.TC_ISFLAGGED)
+        policy.Claim.clearFlag(null)
+    } 
+  }
+} catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,24 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("PPUXX1400 - Mark Agency as Former")
+internal class PPUXX1400MarkAgencyasFormer {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*
+* Marks previous agencies as former on unverified policies.
+* Author: Ryan Pampush
+*/
+policy.ChangedFields.contains( "ex_Agency" ) and
+!policy.Claim.DisplayName.startsWith("T")
+/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var prevAgency:ex_Agency = (policy.OriginalVersion as Policy).ex_Agency
+
+if(prevAgency != null and prevAgency != policy.ex_Agency){
+  policy.Claim.addRole( "formeragency", prevAgency )
+  policy.removeRole( "agency", prevAgency )
+}
+/*end00rule*/
+  }
+}

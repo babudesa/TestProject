@@ -1,0 +1,32 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVIM1000PIMPolicyValidationRules_dir.PVIM1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVIM1120 - Enforce Risk Type Limits")
+internal class PVIM1120EnforceRiskTypeLimits {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified && policy.Properties.countWhere(\ prop -> 
+   prop.Property.RiskTypeExt == EDWRiskType.TC_COVPROP ||
+   prop.Property.RiskTypeExt == EDWRiskType.TC_TIMELEMENT ||
+   prop.Property.RiskTypeExt == EDWRiskType.TC_PERSPROP) > 1
+/*
+  Defect 4982: tnewcomb 01/27/2012
+  This rule rejects any policies that have more than one Premises/Building with a
+  Risk Type of Covered Property, Time Element, or Personal Property.
+*//*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var validationError = policy.validateRiskTypeUniqueness()
+  
+  if(!validationError.isEmpty()){
+    policy.reject(ValidationLevel.TC_NEWLOSS, validationError, null, null)
+    actions.exit()
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex
+}catch(e){
+  gw.api.util.Logger.logError("An error has occurred in the rule: " +
+    actions.Rule.DisplayName + ".\nStack Trace: \n" + e) 
+}/*end00rule*/
+  }
+}

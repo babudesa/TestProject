@@ -1,0 +1,45 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUOM1000OceanMarineAvalonTransactionPreUpdateRules_dir
+
+@gw.rules.RuleName("TPUOM1100 - Paid Loss Exceeds Penal Sum Email")
+internal class TPUOM1100PaidLossExceedsPenalSumEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet" && transactionSet.New)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  uses util.custom_Ext.EmailHelper
+  
+  var check = (transactionSet as CheckSet).PrimaryCheck;
+  var emailHelper = new EmailHelper()
+  
+  for(payment in check.Payments){
+   if(payment.CostType == CostType.TC_CLAIMCOST){
+     if(payment.Amount > payment.Exposure.Coverage.AggregateLimitExt){
+       var totalLoss = gw.api.util.StringUtil.formatNumber(payment.Amount as java.lang.Double, "$#,###.00")
+       var bondLimit = gw.api.util.StringUtil.formatNumber(payment.Exposure.Coverage.AggregateLimitExt as java.lang.Double, "$#,###.00")
+       var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+       var emailBody = templates.email.PaidLossExceededBondPenalSum.renderToString(transactionSet)
+       
+       if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+          emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+            "DL-ClaimCenter.Avalon", "ClaimCenter Notification", "DL-ClaimCenter.Avalon" , 
+            "ClaimCenter Notification", displaykey.Email.Subject.PenalSum, emailBody)
+        } else {
+          emailHelper.sendEmailWithBodyEcf(transactionSet.Claim,
+           ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+            ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+             displaykey.Email.Subject.PenalSum, emailBody)   
+        }
+     }
+   }
+  }
+  
+  
+ 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

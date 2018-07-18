@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressBookPersonVendorAdditionalInfoInputSet"
+    mode="PersonVendor">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <InputSetRef
+      def="AddressBookDoctorAdditionalInfoInputSet(contact as PersonVendor)"
+      mode="contact typeis Doctor ? &quot;Doctor&quot; : null"/>
+    <InputSetRef
+      def="AddressBookAttorneyAdditionalInfoInputSet(contact as PersonVendor,externalContactSource)"
+      mode="contact typeis Attorney ? &quot;Attorney&quot; : null"/>
+    <Input
+      editable="perm.Contact.createpreferredab"
+      id="IsPreferredVendor"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.IsPreferredVendor"
+      required="false"
+      validationExpression="(!(contact as PersonVendor).PayableExt and (contact as PersonVendor).Preferred ? &quot;Vendor needs to be Payable before being Preferred&quot; : null)"
+      value="(contact as PersonVendor).Preferred"/>
+    <!-- 06/04/2008 - zthomas - Defect 1175, Changed editable attirbute to look for vendorpayable permission. -->
+    <Input
+      editable="perm.System.vendorpayable"
+      id="IsPayable"
+      label="displaykey.Web.ContactDetail.AddidiontalInfo.PayableExt"
+      postOnChange="true"
+      value="(contact as PersonVendor).PayableExt"
+      visible="true"/>
+    <Input
+      id="CMFContactInput"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.CMFContact"
+      postOnChange="true"
+      value="(contact as PersonVendor).CMFContactExt"
+      visible="true"/>
+    <!-- InputSetRef def="AddressBookBusinessContactInfoInputSet((contact as PersonVendor), externalContactSource)"/ -->
+    <InputDivider
+      visible="true"/>
+    <!-- <Label
+      label="displaykey.Web.ContactDetail.TaxInfo"/> -->
+    <!-- <Input
+      editable="true"
+      id="SSN"
+      label="displaykey.Web.ContactDetail.Name.TaxID.SSN"
+      required="true"
+      value="(contact as PersonVendor).TaxID"/> -->
+    <!-- <InputSetRef
+      def="AddressBookVendorW9InfoInputSet((contact as PersonVendor))"/> -->
+  </InputSet>
+</PCF>

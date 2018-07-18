@@ -1,0 +1,15 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1100 - Add Policy mod 00/60 day flag")
+internal class CEXX1100AddPolicymod0060dayflag {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.PolicySuffix == "00" 
+and (gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) < 61) 
+and !(exists(history in claim.History where history.CustomType=="newPolicy"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.createCustomHistoryEvent( "newPolicy", "Added Policy mod 00/60 day flag." )
+/*end00rule*/
+  }
+}

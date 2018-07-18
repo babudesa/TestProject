@@ -1,0 +1,36 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir.ECVXX1600MedicareRelated_dir.ECVXX1630MedicareEligibleFalse_dir
+
+@gw.rules.RuleName("ECVXX1636 - Require DOB and SSN/HICN")
+internal class ECVXX1636RequireDOBandSSNHICN {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* 
+  9/3/2015 - kniese - Closing a Medicare Feature (other than ClaimDenied Reason)
+  with Loss Payment should require DOB and SSN/HICN
+*/
+!(exposure.Claimant as Person).RefuseProvideExt &&
+!(exposure.Claimant as Person).BelowThresholdExt &&
+((exposure.Claimant as Person).DateOfBirth == null || 
+((exposure.Claimant.TaxID == null) && (exposure.Claimant as Person).HICNExt == null)) &&
+exposure.ClosedOutcome != ExposureClosedOutcomeType.TC_CLAIMDENIED/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var pay = exposure.getPaymentsIterator(false) 
+
+while(pay.hasNext()){
+  var expPay = pay.next() as Payment
+  
+  if(expPay.CostType == CostType.TC_CLAIMCOST){
+    // Generate error message
+    var missingInfo : String = "CMS Medicare fields must be populated on the Claimant: " + exposure.Claimant + " before this Feature can be closed: "
+    if((exposure.Claimant as Person).DateOfBirth==null){
+        missingInfo = missingInfo + "Date of Birth, "
+      }
+      if(((exposure.Claimant as Person).TaxID=="" || (exposure.Claimant as Person).TaxID==null) && ((exposure.Claimant as Person).HICNExt=="" || (exposure.Claimant as Person).HICNExt==null)){
+        missingInfo = missingInfo + "SSN or HICN"
+      }
+    exposure.reject("newloss", missingInfo, null, null)
+  }
+}/*end00rule*/
+  }
+}

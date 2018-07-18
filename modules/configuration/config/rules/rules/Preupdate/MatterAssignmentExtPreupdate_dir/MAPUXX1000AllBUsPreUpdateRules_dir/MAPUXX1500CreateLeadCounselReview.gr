@@ -1,0 +1,24 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir
+
+@gw.rules.RuleName("MAPUXX1500 - Create Lead Counsel Review")
+internal class MAPUXX1500CreateLeadCounselReview {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("LeadCounselExt") &&
+!exists(rev in matterAssignmentExt.LeadCounselExt.Reviews 
+        where rev.MatterAssignmentExt == matterAssignmentExt)
+         && matterAssignmentExt.LeadCounselExt!= null
+         
+/*
+* This rule generates a blank review "attorney rating" and stores it
+* in the lead counsels review array.
+*//*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/uses libraries.MatterAssignmentExt_Entity.AttorneyRatingHelper
+var reviewHelper = new AttorneyRatingHelper(matterAssignmentExt)
+
+//create the attorney rating review
+reviewHelper.createLeadCounselReview()/*end00rule*/
+  }
+}

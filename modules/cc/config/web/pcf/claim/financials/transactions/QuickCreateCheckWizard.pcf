@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <QuickCreateCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(Claim)"
+    afterFinish="ClaimFinancialsChecks.go(Claim)"
+    beforeCommit="gw.api.system.bundle.BundleCommitCondition.verify(Claim)"
+    cancelWarning="displaykey.Wizard.QuickCheckWizard.CancelWarning"
+    id="QuickCreateCheckWizard"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(Claim)"
+    parent="QuickCreateCheckWizardForward(Claim)">
+    <LocationEntryPoint
+      signature="QuickCreateCheckWizard(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="QuickCreateCheckWizard(Claim : Claim, Exposure : Exposure, CostType : CostType, CostCategory : CostCategory, setReserveLine : Boolean)"/>
+    <Variable
+      initialValue="new financials.QuickCreateCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.QuickCreateCheckWizardInfo"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="null"
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="null"
+      name="CostType"
+      type="CostType"/>
+    <Variable
+      initialValue="null"
+      name="CostCategory"
+      type="CostCategory"/>
+    <Variable
+      initialValue="Boolean.FALSE"
+      name="setReserveLine"
+      type="Boolean"/>
+    <WizardStep
+      allowFinish="Wizard.AllowStep1Finish"
+      id="QuickCheckBasics"
+      label="displaykey.Wizard.QuickCheckWizard.QuickCheckBasics.Label"
+      onExit="Wizard.Check.reconstructPayTo();Wizard.validatePayments();Wizard.setInstructionsDefaults();Wizard.validateAllCheckPayees();Wizard.doFinalChecksAndSetup();"
+      onFirstEnter="Claim.freezeCurrency()"
+      screen="QuickCheckWizard_QuickCheckBasicsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.QuickCheckWizard.QuickCheckBasics.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="QuickCheckDetails"
+      label="displaykey.Wizard.QuickCheckWizard.QuickCheckDetails.Label"
+      screen="CheckWizard_CheckInstructionsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.QuickCheckWizard.QuickCheckDetails.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+  </QuickCreateCheckWizard>
+</PCF>

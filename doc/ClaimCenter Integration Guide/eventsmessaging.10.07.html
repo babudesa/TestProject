@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Message Ordering and Multi-Threaded Sending</title>
+    <link rel="StyleSheet" href="css/eventsmessaging.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="eventsmessaging.10.01.html#4043039">Messaging and Events</a> : Message Ordering and Multi-Threaded Sending</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="4043039">Message Ordering</a> and Multi-Threaded Sending</div>
+      <div class="B_-_Body"><a name="4043046">This section explains how ClaimCenter manages the order in which messages are sent and in which cases </a>ClaimCenter sends messages in multiple threads.</div>
+      <div class="HS_-_Head_Sub"><a name="3990913">Safe-ordered Messaging</a></div>
+      <div class="B_-_Body"><a name="3980815">Safe ordering is a messaging feature in ClaimCenter and PolicyCenter:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3981022">In ClaimCenter, messages associated with a claim always send ordered by claim for each messaging destina</a>tion. These are <span class="e_-_emphasis">safe-ordered </span>messages. Messages associated with entities not tied to a specific claim, such as messages relating to a <span class="cv_-_computer_voice">Catastrophe</span> entity, are called <span class="e_-_emphasis">non-safe-ordered</span> messages.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3980817">In PolicyCenter, messages associated with a account always send ordered by account for each messaging </a>destination. These are <span class="e_-_emphasis">safe-ordered </span>messages. Messages associated with entities not tied to a specific account are called <span class="e_-_emphasis">non-safe-ordered</span> messages.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="3990976">The application waits for an acknowledgement before processing the next safe-ordered message for that primary </a>object (claim for ClaimCenter, account for PolicyCenter) for each destination. This allows ClaimCenter to send messages as soon as possible and yet prevent prevents errors that might occur if related&nbsp;messages send out of order.</div>
+      <div class="B_-_Body"><a name="4322932">For example, suppose some external system must process an initial new claim message before receiving any </a>messages for adding notes or other additional objects to that claim. If the external system rejects the first new claim message with an error, you must not send further messages at all. </div>
+      <div class="B_-_Body"><a name="3990951">Even if the transport layer guarantees delivery order, it is unsafe for ClaimCenter to send the second message </a>before confirming the first message succeeded. Doing otherwise could cause very difficult error recovery problems.</div>
+      <div class="B_-_Body"><a name="4322938">This feature has large implications for messaging performance. If the send queue contains 10 messages associ</a>ated with different claims, ClaimCenter can send all these safe-ordered messages immediately. However, if the send queue contains 10 safe-ordered messages for the same claim, ClaimCenter can only send one. ClaimCenter must wait for the message acknowledgement, and then at that point can send the next (only one) message for that claim. Another way of thinking about is that only one message can be in flight for each claim/destination pair. </div>
+      <div class="B_-_Body"><a name="4322945">If you use Guidewire ContactCenter, ContactCenter also supports safe ordering of messages associated with each </a><span class="cv_-_computer_voice">ABContact</span> entity. This means that ContactCenter only allows one message per <span class="cv_-_computer_voice">ABContact</span>/destination pair in flight at any given time. For more ContactCenter integration information, see <a href="javascript:WWHClickedPopup('integration', 'addressbook.17.1.html#1930181', '');" title="Address Book Integration">“Address Book Integration”</a>.</div>
+      <div class="B_-_Body"><a name="3991088">BillingCenter does not need and thus does not use safe-ordered messaging. Effectively all BillingCenter </a>messages are non-safe-ordered in this special sense of the phrase <span class="e_-_emphasis">safe-ordered</span>. BillingCenter messages have separate threads for each destination and each sends messages in send order (the <span class="cv_-_computer_voice">Message.SendOrder</span> property). You can think of send order as the order of message creation.</div>
+      <div class="HS_-_Head_Sub"><a name="4320146">Non-safe-ordered Messages</a></div>
+      <div class="B_-_Body"><a name="4322959">Some messages link to objects you can use across multiple claims. These cross-claim messages are </a><span class="e_-_emphasis">non-safe-</span><span class="e_-_emphasis">ordered messages</span>.</div>
+      <div class="B_-_Body"><a name="4320153">Non-safe-ordered messages send as soon as possible in the order that Event Fired rules generated them. </a>ClaimCenter does not wait for acknowledgements from prior messages before sending the next one.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="4320160">For non-safe-ordered messages, ClaimCenter sends them in order for each destination, </a>but does <span class="s_-_strong">not</span> wait for acknowledgements before sending the next one.</div>
+      <div class="B_-_Body"><a name="4322969">For example, ClaimCenter sends a new catastrophe code message immediately. ClaimCenter never waits for </a>acknowledgements for other messages before sending this message.</div>
+      <div class="B_-_Body"><a name="4320167">For ClaimCenter, messages for the following events are non-safe-ordered messages: </a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320169">Group</a></span> events</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4320171">User</a></span> events</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4322975">Catastrophe</a></span> events</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4322978">Contact-related events for </a><span class="cv_-_computer_voice">Contact</span> entities, but <span class="s_-_strong">not</span> <span class="cv_-_computer_voice">ClaimContact</span> or <span class="cv_-_computer_voice">ClaimContactRole</span> which represent a change in the contact’s <span class="e_-_emphasis">relationship</span> to the claim.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4322987">For ContactCenter, messages for the following events are non-safe-ordered messages: </a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4322989">Group</a></span> events</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="4322991">User</a></span> events</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="3998857">If Multiple Events Fire, Which Message Sends First?</a></div>
+      <div class="B_-_Body"><a name="3998858">Events trigger based on the order in each destination’s configuration. In general, messages send in the order of </a>message creation in Event Fired rules. Rules create messages for an event prior to any messages for the next listed event. This means that for any destination, the order of messages for a single event primarily is the event name order for the destination in the Messaging editor in Studio. For messages with the same event name and destination, the message order is simply the order that your Event Fired rules create the messages.</div>
+      <div class="B_-_Body"><a name="3998859">In typical deployments, the event name order in the destination setup is very important. Carefully choose the </a>order of the event names in the destination setup. Remember that changes to the ordering of the event names change the order of the events in Event Fired rules. Such changes can produce a radical effect in the behavior of Event Fired rules if they assume a certain event order.</div>
+      <div class="B_-_Body"><a name="4322996">However, because ClaimCenter supports safe-ordering of messages related to a claim, the actual ordering algo</a>rithm is more complex. Refer to <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.07.html#4043039', '');" title="Message Ordering and Multi-Threaded Sending">“Message Ordering and Multi-Threaded Sending”</a> for details.</div>
+      <div class="B_-_Body"><a name="3998862">For more information about destination setup, see </a><a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.03.html#3006454', '');" title="Message Destination Overview">“Message Destination Overview”</a>.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="3998864">The event name order in the destination setup is important. Carefully choose the order of </a>the event names in the destination setup. Be extremely careful about any changes to ordering event names in the destination setup. Order changes could change message order that force major changes in required messaging logic.</div>
+      <div class="B_-_Body"><a name="3998868">To implement messaging destinations, see </a><a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.12.html#3807598', '');" title="Implementing Messaging Plugins">“Implementing Messaging Plugins”</a>. Manage this information in Guidewire Studio in the Messaging editor. See <a href="javascript:WWHClickedPopup('config', 'studio_messaging.17.1.html#1178213', '');" title="Using the Messaging Editor">“Using the Messaging Editor” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_messaging.17.1.html#1178213', '');" title="Using the Messaging Editor">Configuration Guide</a></span>.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3998872">If you register a messaging plugin, you must register it in two places. First, register it in </a>the plugin registry in the plugin editor. See <a href="javascript:WWHClickedPopup('config', 'studio_plugins.13.1.html#1178213', '');" title="Using the Plugins Editor">“Using the Plugins Editor” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_plugins.13.1.html#1178213', '');" title="Using the Plugins Editor">Configuration Guide</a></span>. Next, register it in the messaging registry in the messaging editor; see <a href="javascript:WWHClickedPopup('config', 'studio_messaging.17.1.html#1178213', '');" title="Using the Messaging Editor">“Using the Messaging Editor” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_messaging.17.1.html#1178213', '');" title="Using the Messaging Editor">Configuration Guide</a></span>.</div>
+      <div class="H2_-_Heading_2"><a name="3974135">Message Ordering and Multi-Threading Details</a></div>
+      <div class="B_-_Body"><a name="3964227">ClaimCenter pulls messages from the database (the send queue) in batches of messages on the batch server only, </a>and then waits for a polling interval before querying again. </div>
+      <div class="B_-_Body"><a name="3964228">You can configure the number of messages that the messaging subsystem retrieves during each round of sending. </a>This is called the <span class="e_-_emphasis">chunk size</span>. Configure the chunk size in the messaging destination configuration editor with the <span class="ui_-_UI_element">Chunk</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Size</span> field. By default, this value is set to 100,000, which typically includes all messages currently in the send queue that can be sent. You can also change the polling interval in the messaging destination configuration editor with the <span class="ui_-_UI_element">Polling</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Interval</span> field.</div>
+      <div class="B_-_Body"><a name="3964230">You must understand the difference between message readers and message sending threads:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="e_-_emphasis"><a name="3964231">Message readers</a></span> are threads that query the database for messages. Message readers use the <span class="e_-_emphasis">message send </span><span class="e_-_emphasis">order</span> (typically this is equivalent to creation order). The message reader never loads more than the maximum number of messages in the chunk size setting at one time.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="e_-_emphasis"><a name="3964232">Message sender</a></span> <span class="e_-_emphasis">threads</span> are threads that actually call the messaging plugins to send the messages. A new feature in this release is support for multiple sender threads per messaging destination for safe-ordered messages. You can configure the number of sender threads for safe-ordered messages in the messaging destination configuration editor in the <span class="ui_-_UI_element">Number Sender</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Threads</span> field.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="3964233">The messaging ordering and sending architecture works as follows:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="3964234">Each messaging destination has a worker thread that queries the database for messages for that destination </a>only. In other words, <span class="e_-_emphasis">each destination has its own message reader</span>. Each message reader thread (each worker thread) acts independently.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3964239">The destination’s message reader queries the database for one batch of messages, where the maximum size is </a>defined by the chunk size. ClaimCenter does not use the chunk size value in the query itself. Instead, the message reader orders the results by send order and stops iterating across the query results after it retrieves that many messages from the database. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="4320254">ClaimCenter performs </a><span class="s_-_strong">two separate queries</span>:</div>
+      <div class="LS2A_-_List_Start_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">a.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner"><a name="4323013">First, ClaimCenter queries for claim-specific messages, also known as </a><span class="s_-_strong">safe-ordered messages</span>. The maximum number of messages returned for this query is also the chunk size. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP2_-_List_Para_002c_Level_2"><a name="4323014">The database query itself ensures ClaimCenter that no more than one message for a specific claim part of </a>this list. If a message for that claim is sent but unacknowledged, it does not appear in this list yet. This enforces the rule that no more than one message can be in-flight for each claim per destination.</div>
+      <div class="LP2_-_List_Para_002c_Level_2"><a name="4323015">The query ensures that no two messages are in flight (sent but not yet acknowledged) for the same destina</a>tion for the same claim. So, if there are 100 messages for one claim, the query only reads and dispatches <span class="s_-_strong">one</span> of those messages (out of a possible 100) to the destination subthreads.</div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">b.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="4323019">Next, ClaimCenter queries for non-claim-specific messages, also known as </a><span class="s_-_strong">non-safe-ordered messages</span>. If the chunk size is not set high enough, the returned set is not the full set of non-claim-specific messages. Be aware the chunk size affects each query. It is not cumulative for safe-ordered and non-safe-ordered messages.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="4320263">By default, the chunk size is set to 100,000, which is usually sufficient for customers. Be </a>sure not to lower the chunk size too much. Typically there are dependencies between safe-ordered and non-safe-ordered messages on that destination. If the chunk size is too low, the non-safe-ordered message query might not retrieve all the non-safe-ordered messages that your safe-ordered messages rely upon. For example, a claim message might reference a catastrophe. Thus, the downstream system probably needs ClaimCenter to send the catastrophe message before the claim message that references the catastrophe.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4320301">For each destination, the worker thread iterates through all non-safe-ordered messages for that destination, </a>sending one at time in a single thread to the messaging plugins.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="4320306">After each worker thread finishes sending non-safe-ordered messages, it creates subthreads to send safe-</a>ordered messages for that destination. Configure the number of threads in the messaging destination configuration editor in the <span class="ui_-_UI_element">Number</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Sender</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Threads</span> field. Each worker thread distributes the list of safe-ordered messages to send to the subthreads.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="4320307">Assigning the number of sender subthreads for a destination affects only the safe-</a>ordered messages for that destination. All non-safe-ordered messages always send in a single thread for each worker, which ensures that the <span class="cv_-_computer_voice">SendOrder</span> property dictates the send order for non-safe-ordered messages.</div>
+      <div class="LP_-_List_Para"><a name="4323030">If the message is associated with a claim, during messaging operations you can optionally lock the primary </a>entity (the <span class="cv_-_computer_voice">Claim</span>) at the database level. This can reduce some problems in edge cases in which other threads (including worker threads) try to modify objects associated with this same claim. </div>
+      <div class="LP_-_List_Para"><a name="4320313">ClaimCenter checks the </a><span class="cv_-_computer_voice">config.xml</span> parameter <span class="cv_-_computer_voice">LockPrimaryEntityDuringMessageHandling</span>. If it is set to <span class="cv_-_computer_voice">true</span>, ClaimCenter locks the primary entity during message send, during all parts of message reply handling, and while marking a message as skipped.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3964306">The message reader thread waits until all destination threads send all messages in the queues for each </a>subthread.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3964310">ClaimCenter checks how much time passed since the beginning of this round of sending (since the beginning </a>of <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.07.html#3964239', '');" title="Message Ordering and Multi-Threaded Sending">step 2</a>) and sleeps the remainder of the polling interval. Configure the polling interval in the messaging destination configuration editor in the <span class="ui_-_UI_element">Polling</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Interval</span> field. If the amount of time since the last beginning of the polling interval is <span class="p_-_parameter">TIME_PASSED</span> milliseconds, and the polling interval is <span class="p_-_parameter">POLLING_INTERVAL</span> milliseconds. If the polling interval since the last query has not elapsed, the reader sleeps for (<span class="p_-_parameter">POLLING_INTERVAL</span> <span class="cv_-_computer_voice">-</span> <span class="p_-_parameter">TIME_PASSED</span>) milliseconds. If the time passed is greater than the polling interval, the thread does <span class="s_-_strong">not</span> sleep before re-querying.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="3964317">The message reader reads the next batch of messages. Begin this procedure again at </a><a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.07.html#3964239', '');" title="Message Ordering and Multi-Threaded Sending">step 2</a>.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3964318">The polling interval setting critically affects messaging performance. If the value is low, </a>the message reader thread sleeps little time or even suppresses sleeping between rounds of querying the database for more messages.</div>
+      <div class="B_-_Body"><a name="4320336">To illustrate how this works, compare the following situations.</a></div>
+      <div class="B_-_Body"><a name="4323041">First, suppose there are two messaging destinations and the send queue contains 10 messages for each destina</a>tion. For each destination, assume that there is no more than one message for each claim. In other words, for each destination, there are 10 total messages related to 10 different claims:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4323042">Assuming the number of messages does not exceed the chunk size, each destination gets only one message </a>for the claim for that destination from the database. In this case, every message can be sent immediately because each message for that destination is independent because they are for different claims. If the destination’s <span class="ui_-_UI_element">Number Sender Threads</span> setting is greater than 1, ClaimCenter distributes all claim-specific messages to multiple subthreads. The length of the destination queue never exceeds the number of messages queried in each round of sending. The message reader waits until all sending is complete before repeating.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4323043">In contrast, suppose the messages for one destination includes 10 claim-specific messages for the same claim and </a>5 non-claim-specific messages:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4323044">Assuming the number of messages does not exceed the chunk size, ClaimCenter reads all 5 non-safe-ordered </a>messages and sends them. However, ClaimCenter only gets <span class="s_-_strong">one</span> message for the claim for that destination from the database. If the destination’s <span class="ui_-_UI_element">Number Sender Threads</span> setting is greater than 1, ClaimCenter distributes all claim-specific messages in multiple threads per destination. In this case there is only message that is sendable. Compared to the previous example, ClaimCenter handles fewer messages for each polling interval.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="3964373">To improve performance, </a>particularly cases like the second example, change the following settings in the Messaging editor for your destinations:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3964374">Lower the </a><span class="ui_-_UI_element">Polling Interval</span>. The value is in milliseconds. Experiment with lower values perhaps as low as 1000 (which means 1 second) or even lower. Test any changes to see the real-world effects on your messaging performance. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="4323068">If your performance issues primarily relate to </a><span class="s_-_strong">many messages per claim</span> per destination, then the polling interval is the most important messaging performance setting. </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4320353">Increase the value for </a><span class="ui_-_UI_element">Number Sender Threads</span>. This permits more worker threads to operate in parallel on the batch server only for sending safe-ordered messages. Again, test any changes to see the real-world effects on your messaging performance. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="4323074">If your performance issues primarily relate to many messages but </a><span class="s_-_strong">few messages per </span><span class="s_-_strong">claim</span> for each destination, then this is the most important messaging performance setting. </div>
+      <div class="H3_-_Heading_3"><a name="3977194">Thread-Safe Messaging Plugins</a></div>
+      <div class="B_-_Body"><a name="3977215">You must write all your messaging plugin code </a><span class="e_-_emphasis">as thread-safe</span>. This means that you must be extremely careful about static variables and any other shared memory structures. For more information, see <a href="javascript:WWHClickedPopup('gosu', 'concurrency.24.1.html#1441309', '');" title="Concurrency">“Concurrency” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('gosu', 'concurrency.24.1.html#1441309', '');" title="Concurrency">Gosu Reference Guide</a></span>.</div>
+      <div class="B_-_Body"><a name="4320388">This is true even if the </a><span class="ui_-_UI_element">Number Sender Threads</span> setting is set to 1.</div>
+      <div class="H3_-_Heading_3"><a name="4320389">How Sending Errors Affect Ordering</a></div>
+      <div class="B_-_Body"><a name="4016152">If ClaimCenter receives a </a><span class="e_-_emphasis">negative acknowledgement</span> (<span class="e_-_emphasis">Nack</span>) for a message, ClaimCenter marks the message entity with an error flag and saves the error message.</div>
+      <div class="B_-_Body"><a name="4323083">If the message with the error is a safe-ordered message, ClaimCenter blocks sending any more messages for that </a>claim/destination pair until the problem is resolved or the claim is resynced.</div>
+      <div class="B_-_Body"><a name="4323092">Errors for </a><span class="e_-_emphasis">non-safe-ordered</span> (cross-claim) messages, for example new/changed catastrophes, do <span class="s_-_strong">not</span> hold up other messages. However, errors in non-safe-ordered messages may cause errors at the destination.</div>
+      <div class="B_-_Body"><a name="4323094">For instance, suppose a new claim links to a new catastrophe. If the new catastrophe’s add message fails, the </a>catastrophe is unknown to the destination and may cause an error. </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

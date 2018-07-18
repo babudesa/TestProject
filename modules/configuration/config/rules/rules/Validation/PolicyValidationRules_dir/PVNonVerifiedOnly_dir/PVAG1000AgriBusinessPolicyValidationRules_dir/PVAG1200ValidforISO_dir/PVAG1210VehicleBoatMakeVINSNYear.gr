@@ -1,0 +1,49 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVAG1000AgriBusinessPolicyValidationRules_dir.PVAG1200ValidforISO_dir
+
+@gw.rules.RuleName("PVAG1210 - Vehicle/Boat Make, VIN/SN, Year")
+internal class PVAG1210VehicleBoatMakeVINSNYear {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///Stephanie Przygocki 2/10/10
+policy.Vehicles.length > 0 and 
+exists(veh in policy.Vehicles where 
+  veh.Vehicle.Make==null ||
+  veh.Vehicle.Year==null ||
+  (veh.Vehicle.Vin==null and veh.Vehicle.SerialNumber==null)) and
+policy.isPolicyInRefresh( 0 )  //only run when the policy is not in refresh mode
+                                //first cycle of policy validation vehicle is null although
+                                //it does exist, and is checked on second cycle./*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var message = "The following fields on are required for the Policy to be ready for ISO: "
+var resultMsg = ""
+var warnings = 0
+
+for(veh in policy.Vehicles){
+  resultMsg = veh.Vehicle + ": " + message
+  if(veh.Vehicle.Make==null){
+    resultMsg = resultMsg + "Make "
+    warnings = warnings + 1
+  }
+  if(veh.Vehicle.Year==null){
+    resultMsg = resultMsg + "Year "
+    warnings = warnings + 1
+  }
+  if(veh.Vehicle.Style!="boat"){
+    if(veh.Vehicle.Vin==null){
+      resultMsg = resultMsg + "VIN "
+      warnings = warnings + 1
+    }
+  } else {
+    if(veh.Vehicle.SerialNumber==null){
+      resultMsg = resultMsg + "Serial Number "
+      warnings = warnings + 1
+    }
+  }
+  if(warnings > 0){
+    policy.reject( "iso", resultMsg, null, null )
+    warnings = 0
+  }
+}/*end00rule*/
+  }
+}

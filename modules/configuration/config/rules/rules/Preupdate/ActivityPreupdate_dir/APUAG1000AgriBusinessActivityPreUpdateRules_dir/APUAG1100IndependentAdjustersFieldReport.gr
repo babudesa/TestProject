@@ -1,0 +1,29 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUAG1000AgriBusinessActivityPreUpdateRules_dir
+
+@gw.rules.RuleName("APUAG1100 - Independent Adjusters - Field Report")
+internal class APUAG1100IndependentAdjustersFieldReport {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/(!exists(act in activity.Claim.Activities where act.ActivityPattern.Code=="ab_damage_asses_due")&&
+(activity.ActivityPattern.Code =="ab_assign_damage" &&
+activity.Status.Code == "complete") &&
+(activity.ExternallyOwned == true &&
+activity.ExternalOwner!= NULL)) 
+
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/if(activity.Claim.LossType=="AGRIAUTO" or activity.Claim.LossType=="AGRIPROPERTY"){
+  var ap = util.custom_Ext.finders.findActivityPattern( "ab_damage_asses_due" )
+  activity.Claim.createActivityFromPattern( null, ap)
+}
+else {
+  if(activity.Claim.LossType=="AGRILIABILITY"){
+    var ap = util.custom_Ext.finders.findActivityPattern( "ab_damage_asses_due ")
+    activity.Claim.createActivity( null, ap, "IA report due - field investigation", "IA report due - field investigation", "normal", false, gw.api.util.DateUtil.addDays( activity.TargetDate, 7 ), null )
+  }
+}
+      
+/*end00rule*/
+  }
+}

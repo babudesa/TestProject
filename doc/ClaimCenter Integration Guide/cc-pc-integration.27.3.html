@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Policy Search Plugin</title>
+    <link rel="StyleSheet" href="css/cc-pc-integration.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="cc-pc-integration.27.1.html#2090006">Claim and Policy Integration</a> : Policy Search Plugin</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="2090006">Policy Search Plugin</a></div>
+      <div class="B_-_Body"><a name="2090007">The policy search plugin allows ClaimCenter users to search for a policy, review the list of possible choices, </a>select a specific policy, and retrieve the full details of that policy. The policy details are stored with the claim as a local copy. The <span class="cv_-_computer_voice">IPolicySearchAdapter</span> plugin interface defines a search method and a retrieve method to support standard policy search and retrieval. This plugin defines an additional retrieval method to handle the special case of policy refresh, which is discussed later in this topic.</div>
+      <div class="B_-_Body"><a name="2099843">If you use Guidewire PolicyCenter, you can use a built-in implementation of this plugin that queries </a>PolicyCenter for policies. To do this, in Studio, go to the Plugins editor and change the implementation class for the <span class="cv_-_computer_voice">IPolicySearchAdapter</span> plugin to the Gosu class <span class="cv_-_computer_voice">gw.plugin.pcintegration.v2.PolicySearchPCPlugin</span>. For detailed instructions on this, see <a href="javascript:WWHClickedPopup('install', 'install.7.21.html#2195052', '');" title="Enabling Integration between ClaimCenter and PolicyCenter">"Enabling Integration between ClaimCenter and PolicyCenter"</a>.</div>
+      <div class="B_-_Body"><a name="2090010">If you use another policy system, write your own implementation of this plugin.</a></div>
+      <div class="B_-_Body"><a name="2090011">ClaimCenter includes a demo version of this plugin, which generates example policies. </a></div>
+      <div class="B_-_Body"><a name="2090012">To understand the flow of ClaimCenter policy search, it is important to distinguish the two concepts of search </a>versus retrieve in the context of ClaimCenter:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="2090013">Search means getting policy summaries, and possibly many of them.</a></span> Search refers to a call out to an external system to retrieve <span class="e_-_emphasis">policy summaries</span> only, returning zero, one, two, or a very large number of results. The <span class="cv_-_computer_voice">searchPolicies</span> method receives a set of criteria and returns a subset of the full policy information, which in the typical case determines which policy the user wants. The return result is a <span class="cv_-_computer_voice">PolicySearchResultSet</span>. This object has a <span class="cv_-_computer_voice">Summaries</span> property that contains an array of <span class="cv_-_computer_voice">PolicySummary</span> entities (an array of a policy summaries).</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="2090015">Retrieval means getting a single, unique, full policy.</a></span> The two <span class="cv_-_computer_voice">retrieve</span> methods take policy summaries that contain a specific policy number, an effective date such as a loss date, and other search information. It retrieves a single unique version of the policy that is effective as of a specific effective date.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="2090016">Typical Chronological Flow of Policy Search and Retrieval</a></div>
+      <div class="B_-_Body"><a name="2090017">The chronological flow for policy search and retrieval is as follows. In particular, note the distinction between </a>the words <span class="e_-_emphasis">search</span> and <span class="e_-_emphasis">retrieve</span>, and between <span class="e_-_emphasis">summaries</span> and <span class="e_-_emphasis">entire</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">policy</span>.</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2090018">The user requests a policy search in the ClaimCenter user interface.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090019">The policy search user interface pages use a PCF page to display the search fields. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090021">The PCF pages encode user data in properties in a </a><span class="cv_-_computer_voice">PolicySearchCriteria</span> object. This is a <span class="e_-_emphasis">non-persistent </span><span class="e_-_emphasis">object</span>, which means it is described in the ClaimCenter Data Dictionary but with no corresponding table in the database for persisting it.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090022">To begin the </a><span class="s_-_strong">search</span>, ClaimCenter calls <span class="cv_-_computer_voice">IPolicySearchAdapter.searchPolicies(PolicySearchCriteria)</span>, which returns a <span class="cv_-_computer_voice">PolicySearchResultSet</span> entity. This entity contains an array of <span class="cv_-_computer_voice">PolicySummary</span> entities to display as summaries for the user to select.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2090023">At some future time, ClaimCenter must </a><span class="s_-_strong">retrieve the entire policy</span>, not merely the summary. At that time, ClaimCenter use the <span class="cv_-_computer_voice">PolicySummary</span> entity to retrieve the policy. Because of this, the <span class="cv_-_computer_voice">PolicySummary</span> must contain all the information required for policy retrieval.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2090025">If any policy-related properties are required to retrieve a single unique policy, then store </a>that information in the <span class="cv_-_computer_voice">PolicySummary</span> entity. Extend the data model with new properties as necessary to store that information. For example, suppose at policy retrieval time you want to only return a single vehicle on the policy based on special search information passed to the search. Copy that information from the <span class="cv_-_computer_voice">PolicySearchCriteria</span> to each <span class="cv_-_computer_voice">PolicySummary</span> entity. For more information about returning a subset of vehicles or real estate properties, see <a href="javascript:WWHClickedPopup('integration', 'cc-pc-integration.27.3.html#2090089', '');" title="Policy Search Plugin">"Policy Retrieval Additional Information"</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090030">The selected summary is stored in the </a><span class="cv_-_computer_voice">NewClaimPolicyDescription</span> entity on the <span class="cv_-_computer_voice">NewClaimPolicy</span> object, which is part of the wizard user interface.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090032">The user selects one of the </a><span class="s_-_strong">summaries</span> in the user interface to retrieve.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090033">To retrieve a single unique policy from the external system, ClaimCenter calls </a><span class="cv_-_computer_voice">IPolicySearchAdapter.retrievePolicyFromPolicySummary(PolicySummary)</span>. However, in some cases there is no <span class="cv_-_computer_voice">PolicySummary</span>, such as if the user skips the search and enters a <span class="cv_-_computer_voice">Policy</span> number. In this case, a the application searches using this plugin’s <span class="cv_-_computer_voice">searchPolicies</span> method to validate the policy number before retrieving the policy. The <span class="cv_-_computer_voice">searchPolicies</span> method is called a <span class="s_-_strong">second</span> time in this case, so prepare your code for this second call. This method must return a <span class="cv_-_computer_voice">PolicyRetrievalResultSet</span>. This object contains a <span class="cv_-_computer_voice">Policy</span> entity. For more details about its properties, see <a href="javascript:WWHClickedPopup('integration', 'cc-pc-integration.27.3.html#2090089', '');" title="Policy Search Plugin">"Policy Retrieval Additional Information"</a>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090039">If you refresh (reload) the </a><span class="cv_-_computer_voice">Policy</span> in the application user interface, ClaimCenter calls <span class="cv_-_computer_voice">IPolicySearchAdapter.retrievePolicyFromPolicy(Policy)</span> with the current local version of the policy. If you need any properties from the original policy search (or retrieval) at the time of policy refresh, you must set these on the <span class="cv_-_computer_voice">Policy</span> entity during original policy retrieval. The <span class="cv_-_computer_voice">retrievePolicyFromPolicy</span> method can use these properties. This method also returns a <span class="cv_-_computer_voice">PolicyRetrievalResultSet</span> entity.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2090041">Implement the plugin method </a><span class="cv_-_computer_voice">retrievePolicyFromPolicy</span> to support ClaimCenter refreshing (reloading) the policy.</div>
+      <div class="HS_-_Head_Sub"><a name="2090042">Multicurrency and Policies</a></div>
+      <div class="B_-_Body"><a name="2090043">If you use multicurrency mode, you must set the currency on the policy in the </a><span class="cv_-_computer_voice">Policy.Currency</span> property.</div>
+      <div class="HS_-_Head_Sub"><a name="2090044">Policy Search Example and Additional Information</a></div>
+      <div class="B_-_Body"><a name="2100008">The following example shows a simple policy search plugin’s main function in Java:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2100070">public PolicySearchResultSet searchPolicies(PolicySearchCriteria policySearchCriteria)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100071">&nbsp;</a>&nbsp;&nbsp;throws RemoteException {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100072">&nbsp;</a>&nbsp;int maxPolicySearchResults = 25; // must agree with MaxPolicySearchResults in config.xml</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100073">    // get whatever properties you need from the PolicySearchCriteria...    </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100074">    LossType lossType = policySearchCriteria.getLossType();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100075">    String vin = policySearchCriteria.getVin();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100076">    PolicyType policyType = policySearchCriteria.getPolicyType();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100077">    String propertyCity = policySearchCriteria.getPropertyAddress().getCity();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100170">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100078">    // [at this point, send these properties across to a remote system and get results back]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100079">    // Populate the result object with an array of policy summaries</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100080">    // In this case just return one result</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100081">    PolicySearchResultSet policySet = (PolicySearchResultSet)EntityFactory.getInstance().newEntity(</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100082">    PolicySearchResultSet.class);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100083">    PolicySummary policySummary =</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100084">    (PolicySummary) EntityFactory.getInstance().newEntity(PolicySummary.class);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100085">    policySummary.setPolicyNumber("00-00001");</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100177">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100086">    // [set any other desired properties...]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100087">    PolicySummary[] policySummaryArray = new PolicySummary[1];</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100088">    policySummaryArray[0] = policySummary;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100089">    policySet.setSummaries(policySummaryArray);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100090">    policySet.setUncappedResultCount(1);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100190">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100091">    if (policySet.getUncappedResultCount() &gt; maxPolicySearchResults) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100092">      policySet.setResultsCapped(true);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100093">    } else {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100094">      policySet.setResultsCapped(false);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100095">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100096">    </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100097">    return policySet;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2100060">  }</a></PRE>
+      <div class="B_-_Body"><a name="2100206">If your code path does not support a very large number of results, you can set a maximum number of results to </a>display in the <span class="cv_-_computer_voice">MaxPolicySearchResults</span> parameter within <span class="cv_-_computer_voice">config.xml</span>. This only affects the number of rows that ClaimCenter <span class="e_-_emphasis">displays</span>. The plugin must observe the same limitation during search. Never return more than that maximum number of results.</div>
+      <div class="B_-_Body"><a name="2100210">Set the </a><span class="cv_-_computer_voice">PolicySearchResultSet.UncappedResultCount</span> property to the number of results found according to the search criteria, even if this number exceeds the number of results actually returned in the result set. Also set <span class="cv_-_computer_voice">PolicySearchResultSet.ResultsCapped</span> property to <span class="cv_-_computer_voice">true</span>. If you do this, the ClaimCenter user interface displays a message that tells the user “too many results found to display”.</div>
+      <div class="B_-_Body"><a name="2090082">You can also add as much additional search criteria for policy searches as desired, which requires these steps:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2090084">Extend the </a><span class="cv_-_computer_voice">PolicySearchCriteria</span> object’s data model with new extension properties just like you would extend the data model of any other ClaimCenter entity.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090085">If appropriate, modify the PCF pages to input new user data that relate to those properties. Alternatively, the </a>new search criteria could be set programmatically based on some other factors other than new user data. (For instance, the context within the ClaimCenter user interface.)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2090086">Alter the PCF files appropriately to set these extension properties from form field data.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2090087">Sometimes policies have a very large number of insured risks, for example many insured vehicles or buildings. </a>In some cases you might need details only for a specific risk involved in the claim. The search criteria can identify the specific risk, for example passing a vehicle’s Vehicle Identification Number (VIN). By adding this search criteria, the policy search plugin can return <span class="e_-_emphasis">only</span> the coverages for that risk with the policy summary. If the plugin does not use some search criteria, ignore that search criteria data. Although it may be appropriate to remove those search fields from the user interface in that case if they are always ignored.</div>
+      <div class="HS_-_Head_Sub"><a name="2090089">Policy Retrieval Additional Information</a></div>
+      <div class="B_-_Body"><a name="2090090">As discussed earlier, </a><span class="e_-_emphasis">policy retrieval</span> refers to returning a single policy, rather than a list of matches. Refer to the chronological flow or how this happens in a typical search and retrieval.</div>
+      <div class="B_-_Body"><a name="2090092">The return result of the </a><span class="cv_-_computer_voice">retrievePolicyFromPolicySummary</span> plugin method is an entity called <span class="cv_-_computer_voice">PolicyRetrievalResultSet</span>. It has properties of its own but is mostly a shell for a <span class="cv_-_computer_voice">Policy</span> entity within the <span class="cv_-_computer_voice">PolicyRetrievalResultSet.Result</span> property. </div>
+      <div class="B_-_Body"><a name="2090093">Once this method retrieves the full details for a policy, it creates a new </a><span class="cv_-_computer_voice">Policy</span> object and populates its properties from data from the external system. The method adds that to a new <span class="cv_-_computer_voice">PolicyRetrievalResultSet</span> entity and returns it. </div>
+      <div class="B_-_Body"><a name="2090094">The </a><span class="cv_-_computer_voice">Policy</span> object is a fairly complicated object with a lot of subobjects that must be populated. One aspect that is particularly difficult is associating contacts (people and companies) as the insured, as the agent, as interested parties, and so on. These associations are set by linking the contact to the policy and describing the ways in which the contact is related as a set of roles. Refer to the ClaimCenter Data Dictionary for the complete set of properties on the <span class="cv_-_computer_voice">Policy</span> entity.</div>
+      <div class="B_-_Body"><a name="2090095">There are three possible outcomes of a policy retrieval, and the cases can be distinguished by values in the </a><span class="cv_-_computer_voice">PolicyRetrievalResultSet</span>:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="2090096">Successful.</a></span> The retrieval parameters map to a single, unique policy. The result entity has a <span class="cv_-_computer_voice">Result</span> property that contains a <span class="cv_-_computer_voice">Policy</span> entity, rather than <span class="cv_-_computer_voice">null</span>. Also, the result entity has a <span class="cv_-_computer_voice">NotUnique</span> property set to <span class="cv_-_computer_voice">false</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="2090097">Unsuccessful, multiple matches.</a></span> Unsuccessful because retrieval parameters map to multiple policies. The result entity has a <span class="cv_-_computer_voice">Result</span> property that contains a <span class="cv_-_computer_voice">Policy</span> entity, rather than <span class="cv_-_computer_voice">null</span>. The result entity has a <span class="cv_-_computer_voice">NotUnique</span> property set to <span class="cv_-_computer_voice">true</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="2090098">Unsuccessful, no match.</a></span> Unsuccessful, because retrieval parameters do not map to any policies. The result entity has a <span class="cv_-_computer_voice">Result</span> property that contains <span class="cv_-_computer_voice">null</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2090099">One way to implement policy retrieval is to return the entire policy, including all subobjects. However, you may </a>choose to save bandwidth and return only a subset of the vehicles or real estate properties. Perhaps return only objects included in the original search criteria that triggered the <span class="s_-_strong">search</span>, the summary of which a user clicked on, and thus triggered a <span class="s_-_strong">retrieval</span>. For example, if a search was triggered based on a specific vehicle, that information can be used to only retrieve that vehicle and not other vehicles on the policy. If you want to do this, be careful to note the following special properties on the <span class="cv_-_computer_voice">Policy</span> entity:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2090100">If a policy insures vehicles, your plugin can return a subset of vehicles, perhaps only one vehicle. If you </a>return a subset of vehicles, set the <span class="cv_-_computer_voice">Policy.TotalVehicles</span> property to the <span class="e_-_emphasis">actual</span> number of insured vehicles. Do not simply set it to the number of vehicles in <span class="cv_-_computer_voice">Policy.Vehicles</span>. Setting the total correctly allows the user interface to notice this difference between the two numbers. The application displays a message that says not all vehicles on the policy are available in ClaimCenter. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2090102">If a policy insures real estate properties, your plugin can return a subset of real estate properties, perhaps only </a>one real estate property. If you return a subset of properties, set the <span class="cv_-_computer_voice">Policy.TotalProperties</span> property to the <span class="e_-_emphasis">actual</span> number of insured real estate properties. Do not simply set it to the number of real estate properties in in <span class="cv_-_computer_voice">Policy.Properties</span>. Setting the total correctly allows the user interface to notice this difference between the two numbers. The application displays a message that says not all real estate properties on the policy are available in ClaimCenter. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2090105">In all cases, you must set the properties </a><span class="cv_-_computer_voice">Policy.TotalProperties</span> and <span class="cv_-_computer_voice">Policy.TotalVehicles</span> correctly as the total values for the policy, independent of how many you return in the result.</div>
+      <div class="B_-_Body"><a name="2090107">The following example shows what to do in the policy retrieval plugin implemented in Gosu:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2090108">override function retrievePolicyFromPolicySummary( policySummary : PolicySummary ) :</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100544">&nbsp;</a>&nbsp;&nbsp;PolicyRetrievalResultSet</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090110">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090111">&nbsp;</a>&nbsp;var p = new Policy()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090112">&nbsp;</a>&nbsp;p.policyNumber = "123"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100359">&nbsp;</a>&nbsp;p.policyType = PolicyType.TC_AUTO_PER</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100366">&nbsp;</a>&nbsp;p.policyStatus = PolicyStatus.TC_EXPIRED</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2100373">&nbsp;</a> p.isVerified = true</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090113">&nbsp;</a>&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090114">&nbsp;</a>&nbsp;var insured = new Person();</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090115">&nbsp;</a>&nbsp;insured.EmailAddress1 = "insured@testmail.com"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090116">&nbsp;</a>&nbsp;insured.EmailAddress2 = "jdoe@central.org"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090117">&nbsp;</a>&nbsp;insured.FirstName = "insured_firstname"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090118">&nbsp;</a>&nbsp;insured.HomePhone = "532-453-0989"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090119">&nbsp;</a>&nbsp;insured.LastName = "insured_lastname"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090120">&nbsp;</a>&nbsp;insured.LicenseNumber = "CL50976800"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090121">&nbsp;</a>&nbsp;insured.LicenseState = State.TC_CA</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090122">&nbsp;</a>&nbsp;insured.Occupation = "Technical Writer"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090123">&nbsp;</a>&nbsp;insured.Preferred = Boolean.TRUE</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090124">&nbsp;</a>&nbsp;insured.Prefix = NamePrefix.TC_MR</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090125">&nbsp;</a>&nbsp;insured.PrimaryPhone = PrimaryPhoneType.TC_WORK;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090126">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090127">&nbsp;</a>&nbsp;// SET ALL YOUR OTHER PROPERTIES ON THE POLICY ENTITY</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090128">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090129">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090130">&nbsp;</a>&nbsp;var policySet = new PolicyRetrievalResultSet();</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090131">&nbsp;</a>&nbsp;policySet.NotUnique = Boolean.FALSE // if successful, and there is a single match</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090132">&nbsp;</a>&nbsp;policySet.Result = p</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090133">&nbsp;</a>&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090134">&nbsp;</a>&nbsp;// return the result set</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2090135">&nbsp;</a>&nbsp;return policySet</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2090136">}</a></PRE>
+      <div class="H2_-_Heading_2"><a name="2090138">Modifying New Claim Wizard to Reload Policy</a></div>
+      <div class="B_-_Body"><a name="2090139">The New Claim Wizard retrieves policy information from an external system. On the first page of the wizard the </a>user typically does a policy search. ClaimCenter searches an external system for a policy for the new claim or creates a new one, based on the current policy description. If the policy description matches the claim's current policy then the wizard’s <span class="cv_-_computer_voice">setPolicy</span> method does nothing. </div>
+      <div class="B_-_Body"><a name="2090140">The search uses the registered policy search plugin and returns a list of policy summaries, which are extremely </a>simplified versions of policies. ClaimCenter displays these in a list view so you can choose a policy. When you hit <span class="ui_-_UI_element">Next</span>, the wizard asks the policy search plugin for the policy for the picked summary. ClaimCenter sets this policy as the claim's policy. </div>
+      <div class="B_-_Body"><a name="2090141">However, suppose you return to the first step in the wizard and pick a new policy, and click </a><span class="ui_-_UI_element">Next</span> again. ClaimCenter must decide whether to request the policy search plugin to retrieve another policy or instead keep (reuse) the current policy. ClaimCenter makes this decision using a method called <span class="cv_-_computer_voice">isSamePolicy</span> on a policy summary. The wizard compares the currently picked summary with policy that is on the claim. If <span class="cv_-_computer_voice">isSamePolicy</span> returns true it assumes the claim's current policy is still the one we want. If <span class="cv_-_computer_voice">isSamePolicy</span> returns false it replaces the claim's current policy with a new one, fetched with the policy search plugin. If the user explicitly picks a different external policy, <span class="cv_-_computer_voice">isSamePolicy</span> returns false, and that triggers ClaimCenter to refresh the policy. </div>
+      <div class="B_-_Body"><a name="2090142">To decide whether two policies are the same, ClaimCenter compares a small number of fields to see if they </a>match. By default, the set of policy summary fields ClaimCenter checks are the following: <span class="cv_-_computer_voice">PolicyType</span>, <span class="cv_-_computer_voice">PolicyNumber</span>, <span class="cv_-_computer_voice">EffectiveDate</span>, and <span class="cv_-_computer_voice">ExpirationDate</span>. To compare additional fields, modify the enhancement file <span class="cv_-_computer_voice">PolicySummary.gsx</span>, which implements the policy summary <span class="cv_-_computer_voice">isSamePolicy</span> method. You can make additions or removals to that array of property names to customize how ClaimCenter compares policy summaries to determine whether two policies match. </div>
+      <div class="B_-_Body"><a name="2090143">For example, suppose you want to assume that two policy summaries with different loss dates must always </a>trigger refreshing the policy. Modify <span class="cv_-_computer_voice">isSamePolicy</span> and add <span class="cv_-_computer_voice">"LossDate"</span> to the array of <span class="cv_-_computer_voice">String</span> values that represent property names.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

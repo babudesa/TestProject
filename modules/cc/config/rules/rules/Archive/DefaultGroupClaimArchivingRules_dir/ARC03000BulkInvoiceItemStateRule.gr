@@ -1,0 +1,21 @@
+package rules.Archive.DefaultGroupClaimArchivingRules_dir
+
+@gw.rules.RuleName("ARC03000 - Bulk Invoice Item State Rule")
+internal class ARC03000BulkInvoiceItemStateRule {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// Prevents archiving when the claim is linked to a BI item with Draft, Not Valid, or Approved
+// status, so that the user is not forced to restore the claim when the item is ready to
+// be escalated. In Review and Rejected statuses do not prevent archiving, since an item
+// can retain those statuses long after its BI is escalated and cleared.
+gw.api.database.Query.make(BulkInvoiceItem)
+    .compare("ClaimInfo",Equals,claim.ClaimInfo)
+    .compareIn("Status", new BulkInvoiceItemStatus[] {BulkInvoiceItemStatus.TC_DRAFT,
+                                                      BulkInvoiceItemStatus.TC_NOTVALID,
+                                                      BulkInvoiceItemStatus.TC_APPROVED})
+    .select().Count > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.skipFromArchiving(displaykey.Rules.Archive.BulkInvoiceItemState.Unescalated)/*end00rule*/
+  }
+}

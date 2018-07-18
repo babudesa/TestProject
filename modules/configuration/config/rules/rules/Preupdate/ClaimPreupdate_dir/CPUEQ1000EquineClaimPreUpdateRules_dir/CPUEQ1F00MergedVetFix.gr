@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1F00 - Merged Vet Fix")
+internal class CPUEQ1F00MergedVetFix {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///6/30/09 erawe - put back kmboyd's rule, it somehow was overwritten 6/2 or 6/5
+claim.getRelatedContacts( Doctor ).length < (claim.OriginalVersion as Claim).getRelatedContacts(Doctor).length or
+claim.getRelatedContacts( MedicalCareOrg ).length < (claim.OriginalVersion as Claim).getRelatedContacts(MedicalCareOrg).length         /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.ArrayList;
+
+try{
+  var mergedContacts : List = new ArrayList()
+  var vet : ClaimContact
+  for(incident in claim.FixedPropertyIncidentsOnly){
+    vet = claim.getClaimContact(incident.VeterinarianExt)
+    //will remove the vet if the claim contact no longer exists because of a merge
+    if(vet == null){
+      incident.VeterinarianExt = null;
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Understanding Distributed Work Queues</title>
+    <link rel="StyleSheet" href="css/batch.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter System Administration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="batch.13.01.html#1452983">Batch Processes and Work Queues</a> : Understanding Distributed Work Queues</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1452983">Understanding Distributed Work Queues</a></div>
+      <div class="B_-_Body"><a name="1630244">Some batch processes do all their work on the batch server within a single process. For processing-intensive </a>tasks, a work queue distributes processing across multiple servers. Guidewire calls this a <span style="font-style: italic">distributed work queue</span>.</div>
+      <div class="B_-_Body"><a name="1630242">In a ClaimCenter cluster, worker processes can run in parallel on multiple servers. Worker processes are not </a>restricted to running on the batch server. The batch process that supports workers is a <span class="e_-_emphasis">writer</span>. A writer is a schedulable batch process that runs only on the batch server. A writer loads a queue with work items to be completed by one or more workers. Together, the arrangement of workers, a writer, and a queue make up a distributed work queue. Distributed work queues have an advantage because multiple servers in a cluster can share processing. Each work queue concerns itself with a specific task. </div>
+      <div class="B_-_Body"><a name="1764427">The following diagram illustrates how a distributed work queue functions:</a></div>
+      <div class="F_-_Figure"><a name="1453203"><img class="Default" src="images/batch.13.03.1.png" style="display: block; float: none; left: 0.0; top: 0.0" alt="" /></a></div>
+      <div class="B_-_Body"><a name="1453204">When the work queue’s writer wakes, it first checks the </a><span class="cv_-_computer_voice">WorkItem</span> table to see if it contains any items specific to its task. If the table is not empty, the writer notifies the workers and goes back to sleep. If the table does not contain any work items, the writer:</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1739603">Locates items for processing.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1739604">Loads the items into the </a><span class="cv_-_computer_voice">WorkItem</span> table.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1739605">Notifies the workers.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1758567">Goes back to sleep.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1758568">Workers only process items associated with their writer. So, for example, the ActivityEsc writer might have six </a>workers on three different servers in a ClaimCenter cluster. Those workers work only on ActivityEsc items. When a worker wakes, it first checks the <span class="cv_-_computer_voice">WorkItem</span> table in the ClaimCenter database to see if it contains any items from its associated writer. If it does not, the worker goes back to sleep. Typically, there are multiple worker processes for every writer such that there are usually one or more workers processing at some point throughout the day.</div>
+      <div class="B_-_Body"><a name="1631843">If a worker wakes and there are items available for processing, the worker checks out its allotted item quota. For </a>each item the worker sets the following attributes:</div>
+      <div class="T_-_Table"><a name="1631857">&nbsp;</a></div>
+      <table class="withoutHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1631846">Status</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1631848">Set to </a><span class="cvt_-_computer_voice_table">checkedout</span>. This attribute can be <span class="cvt_-_computer_voice_table">available</span>, <span class="cvt_-_computer_voice_table">checkedout</span>, or <span class="cvt_-_computer_voice_table">failed</span>.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1631850">LastUpdateTime</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1631852">Set to the time at checkout.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1631854">CheckedOutBy</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1631856">Set to the worker.</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="1631858">After checking out its item allotment, the worker then begins processing them individually. When a worker </a>completes processing an item, it removes it from the table and begins to process the next item. </div>
+      <div class="B_-_Body"><a name="1631834">A distributed queue’s writer wakes up at the interval specified in </a><span class="cv_-_computer_voice">scheduler-config.xml</span>. Typically, you schedule the writer to wake up one or two times a day. The writer process runs on the batch server, just as any other batch process. For more information, see <a href="javascript:WWHClickedPopup('admin', 'batch.13.07.html#1030716', '');" title="Scheduling Batch Processes and Distributed Work Queues">“Scheduling Batch Processes and Distributed Work Queues”</a>.</div>
+      <div class="B_-_Body"><a name="1763765">Worker processes wake up much more frequently, at least every </a><span class="cv_-_computer_voice">maxpollinterval</span>. After a worker wakes it can process up to <span class="cv_-_computer_voice">batchsize</span> items. You configure these and other values for the distributed work queue in the <span class="cv_-_computer_voice">work-queue.xml</span> file. Access this file from the Guidewire Studio <span class="ui_-_UI_element">Resources</span> pane under <span class="ui_-_UI_element">configuration</span> → <span class="ui_-_UI_element">Other </span><span class="ui_-_UI_element">Resources</span>. See <a href="javascript:WWHClickedPopup('admin', 'batch.13.05.html#1763773', '');" title="Configuring Distributed Work Queues">“Configuring Distributed Work Queues”</a> for detailed information about configuring a work queue.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

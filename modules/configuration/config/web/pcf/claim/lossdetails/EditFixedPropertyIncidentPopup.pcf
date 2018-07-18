@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    beforeCommit="fixedPropertyIncident.setIncdVeterinarian(); fixedPropertyIncident.setFrmrVet (); fixedPropertyIncident.setFrmrTrainer(); fixedPropertyIncident.setFrmrAltTrainer()"
+    canEdit="fixedPropertyIncident != null and perm.Claim.edit(fixedPropertyIncident.Claim)"
+    canVisit="fixedPropertyIncident != null and perm.Claim.view(fixedPropertyIncident.Claim)"
+    id="EditFixedPropertyIncidentPopup"
+    startInEditMode="startInEditMode"
+    title="displaykey.Web.EditFixedPropertyIncident.Title">
+    <LocationEntryPoint
+      signature="EditFixedPropertyIncidentPopup(fixedPropertyIncident : FixedPropertyIncident, startInEditMode : boolean)"/>
+    <Variable
+      name="fixedPropertyIncident"
+      type="FixedPropertyIncident"/>
+    <Variable
+      initialValue="true"
+      name="startInEditMode"
+      type="boolean"/>
+    <Screen
+      id="EditFixedPropertyIncidentScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+        <ToolbarDivider/>
+        <PrintToolbarButton
+          hideIfEditable="true"
+          id="FixedPropertyIncident_PrintButton"
+          label="displaykey.Button.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="FixedPropertyIncidentDV(fixedPropertyIncident, getAddressOwner())"/>
+    </Screen>
+    <Code><![CDATA[function newPolicyLocation() : PolicyLocation {
+  if(fixedPropertyIncident.Property == null){
+    var prop = entity.FixedPropertyIncident.Type.TypeInfo.getProperty("Property") as gw.entity.IEntityPropertyInfo
+    return gw.api.address.CCAddressOwnerUtil.getOrCreateNewBeanFor(FixedPropertyIncident, prop, \ -> new PolicyLocation())
+  }else{
+    return fixedPropertyIncident.Property
+  }
+}
+
+function getAddressOwner() : gw.api.address.PolicyLocationAddressOwner {
+  return new gw.api.address.PolicyLocationAddressOwner(fixedPropertyIncident, newPolicyLocation()) 
+}]]></Code>
+  </Popup>
+</PCF>

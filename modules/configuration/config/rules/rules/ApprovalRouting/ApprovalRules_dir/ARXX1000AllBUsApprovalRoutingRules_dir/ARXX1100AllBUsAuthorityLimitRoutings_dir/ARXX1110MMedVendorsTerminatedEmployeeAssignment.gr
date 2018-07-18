@@ -1,0 +1,31 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100AllBUsAuthorityLimitRoutings_dir
+
+@gw.rules.RuleName("ARXX1110M - MedVendors Terminated Employee Assignment")
+internal class ARXX1110MMedVendorsTerminatedEmployeeAssignment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/ transactionSet.Subtype == "CheckSet" and
+ ((transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == CheckCategoryExt.TC_HCS ||
+ (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == CheckCategoryExt.TC_MITCHELL ||
+ (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == CheckCategoryExt.TC_OCCM)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var expoAssignedUser = transactionSet.Exposures[0].AssignedUser
+  if(util.user.GroupsHelper.getUsersGroup(expoAssignedUser).Name == util.user.GroupsHelper.TERMINATED_EMPLOYEES_GROUPNAME) {
+
+   var user:User = transactionSet.Claim.AssignedGroup.Supervisor
+   var group:Group = transactionSet.Claim.AssignedGroup;
+   transactionSet.setApprovingUser(user, group)  
+   
+   actions.exit()
+  }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

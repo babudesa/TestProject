@@ -1,0 +1,43 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir.EVXX1280PartyInformation_dir
+
+@gw.rules.RuleName("EVXX1281- Claimant Name")
+internal class EVXX1281ClaimantName {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!util.WCHelper.isWCorELLossType(exposure.Claim)
+//Defect 7750 - cmullin - Claimant Name validation moved to ISO/Claim-level for Workers' Comp/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var msg = ""
+var validationLevel = ""  
+validationLevel=(exposure.Claim.ISOEnabled==true)?"iso":"payment"
+if(exposure.Claimant==null){
+  exposure.reject( validationLevel, "Claimant cannot be null", null, null )
+} else if(exposure.Claimant typeis Person){
+    //validation for first name
+    msg = exposure.Claim.performNameValidation(exposure.Claimant.FirstName)
+    if(msg == "1") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant must have a first name of at least 1 character.", null, null )
+    } else if(msg == "3") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant first name must be a real name. Substitutions are not valid in place of a real name.", null, null )
+    }
+    //validation for last name.
+    msg = exposure.Claim.performNameValidation(exposure.Claimant.LastName)
+    if(msg == "1") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant must have a last name.", null, null )
+    //3/10/10 erawe defect 2968 - took out check for claimant last name of 1 character
+    //} else if(msg == "2") {
+    //  exposure.rejectField( "Claimant.Name", "iso", "Claimant last name must be longer than 1 character.", null, null )
+    } else  if(msg == "3") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant last name must must be a real name. Substitutions are not valid in place of a real name.", null, null )
+    }
+} else if(exposure.Claimant typeis Company){
+    msg = exposure.Claim.performNameValidation(exposure.Claimant.Name)
+    if(msg == "1") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant must have a company name of at least 1 character.", null, null )
+    } if(msg == "3") {
+      exposure.rejectField( "Claimant.Name", validationLevel, "Claimant company name must be a real name. Substitutions are not valid in place of a real name..", null, null )
+    }
+}/*end00rule*/
+  }
+}

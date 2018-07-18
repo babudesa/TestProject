@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewedbclaimact"
+    id="DashboardClaimActivity"
+    title="displaykey.Java.Dashboard.Title(displaykey.Java.Dashboard.ClaimActivity.Title(dashboard.DashboardUtil.getHelper().Period))">
+    <LocationEntryPoint
+      signature="DashboardClaimActivity(GroupInfo : dashboard.DashboardTreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="dashboard.DashboardTreeGroupInfo"/>
+    <Variable
+      initialValue="dashboard.DashboardUtil.getHelper()"
+      name="Stats"
+      type="dashboard.DashboardStatsHelper"/>
+    <Screen
+      id="DashboardClaimActivityScreen">
+      <Toolbar>
+        <PrintToolbarButton
+          available="perm.User.printlistviews"
+          id="PrintButton"
+          label="displaykey.Button.Print"/>
+        <ToolbarDivider/>
+        <ToolbarInput
+          boldLabel="true"
+          editable="false"
+          id="label"
+          label="displaykey.Java.Dashboard.AsOf"
+          value="Stats.WhenLastCalculatedString"/>
+      </Toolbar>
+      <PanelRef
+        def="ClaimActivityByOrgLevelLV(Stats.getOrgStatsAsArray(GroupInfo.AllGroups as entity.Group[]))"/>
+      <PanelRef
+        def="ClaimActivityByLOBLV(Stats.LOBStats as entity.DashboardStats[])"
+        visible="GroupInfo.isRoot() &amp;&amp; dashboard.DashboardUtil.isShowByLineOrLoss()">
+        <Toolbar/>
+      </PanelRef>
+      <PanelRef
+        def="ClaimActivityByLossTypeLV(Stats.LossTypeStats as entity.DashboardStats[])"
+        visible="GroupInfo.isRoot() &amp;&amp; dashboard.DashboardUtil.isShowByLineOrLoss()">
+        <Toolbar/>
+      </PanelRef>
+      <PanelRef
+        def="ClaimActivityByCoverageTypeLV(Stats.CoverageTypeStats as entity.DashboardStats[])"
+        visible="GroupInfo.isRoot() &amp;&amp; dashboard.DashboardUtil.isShowByCoverage()">
+        <Toolbar/>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

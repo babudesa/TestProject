@@ -1,0 +1,19 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVWC1000WorkersCompExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVWC1100 - Settlement Type Required")
+internal class ECVWC1100SettlementTypeRequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* Defect 8006 - cmullin - 11.19.15 - Settlement Type is required before closing a WC feature.
+   This should work the same as Method of Settlement - See Enterprise rule ECVXX1410 - 
+   except that Settlement Type is required for Loss and Expense payments, not just Loss.
+*/
+exposure.SettleMethod==null and
+exists(transaction in exposure.getTransactionsIterator(false) where
+      (transaction as Transaction).Subtype=="Payment"
+      and (transaction as Transaction).Exposure==exposure)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.reject( "payment", displaykey.Rules.Validation.ExposureClosed.WorkersComp.SettlementType(exposure), null, null )/*end00rule*/
+  }
+}

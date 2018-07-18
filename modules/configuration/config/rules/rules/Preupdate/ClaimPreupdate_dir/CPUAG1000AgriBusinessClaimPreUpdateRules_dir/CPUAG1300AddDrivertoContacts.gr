@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUAG1300 - Add Driver to Contacts")
+internal class CPUAG1300AddDrivertoContacts {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Exposures.length > 0 && 
+!exists(Role in claim.getClaimContact( claim.Driver_Ext ).Roles where Role.Role=="driver")
+&& 
+claim.Driver_Ext.Changed
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(Exposure in claim.Exposures)
+{
+  Exposure.addRole( "driver", Claim.Driver_Ext )
+}
+
+/*end00rule*/
+  }
+}

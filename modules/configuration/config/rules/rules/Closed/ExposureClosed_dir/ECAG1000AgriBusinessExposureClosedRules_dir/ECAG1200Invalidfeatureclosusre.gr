@@ -1,0 +1,46 @@
+package rules.Closed.ExposureClosed_dir.ECAG1000AgriBusinessExposureClosedRules_dir
+
+@gw.rules.RuleName("ECAG1200 - Invalid feature closusre")
+internal class ECAG1200Invalidfeatureclosusre {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.ClosedOutcome == "invalidfeature" and
+!exists(act in exposure.Claim.Activities where act.Status == "open" and act.ActivityPattern.Type == "Approval")/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.ArrayList;
+
+try{
+  var createList : List = new ArrayList();
+  var tempAct = exposure.Claim.createActivityFromPattern( null, util.custom_Ext.finders.findActivityPattern("review_auto_closed_acts") )
+
+  //notify the adjuster regardless if activites are open for them or not
+  createList.add(exposure.Claim.AssignedUser)
+  tempAct.Description = "Review Feature " + exposure + ". Activities closed automatically by ClaimCenter, resulting from significant policy detail changes.  These change were requested by "+ exposure.UpdateUser + "."
+  tempAct.AssignedUser = exposure.Claim.AssignedUser
+
+  //find activities and close and notify if open
+  for(act in exposure.Claim.Activities){
+    if(act.Exposure == exposure and act.Status == "open"){
+      if(act.Description == null){
+        act.Description = "This activity was automatically approved by super user as part of an invalid feature closing."
+      }
+      else{
+        act.Description = act.Description + " This activity was automatically approved by super user as part of an invalid feature closing."  
+      }
+      if(!createList.contains( act.AssignedUser )){
+        createList.add( act.AssignedUser )      
+        var createdAct = exposure.Claim.createActivityFromPattern( null, util.custom_Ext.finders.findActivityPattern("review_auto_closed_acts") )
+        createdAct.AssignedUser = act.AssignedUser
+        createdAct.Description = "Review Feature " + exposure + ". Activities closed automatically by ClaimCenter, resulting from significant policy detail changes.  These change were requested by "+ exposure.UpdateUser +"."
+      }
+      act.complete()     
+    }
+  
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )  
+}/*end00rule*/
+  }
+}

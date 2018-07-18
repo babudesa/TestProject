@@ -1,0 +1,46 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARAG1000AgriBusinessApprovalRoutingRules_dir.ARAG1100CheckSetRoutingRules_dir
+
+@gw.rules.RuleName("ARAG1110 - Automated Bulk Invoices")
+internal class ARAG1110AutomatedBulkInvoices {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*Determines the approval routing for automated bulk invoices
+  Sprint/Maintenance Release: AgriBusiness Sprint 14
+  Author: Ravi
+  Updated Date: June 25, 2008
+  Updated: sprzygocki 5/17/11 - BulkInvoiceItem now accessed through BulkInvoiceItemInfo
+*/
+(transactionSet as CheckSet).PrimaryCheck.Bulked and
+(transactionSet as CheckSet).PrimaryCheck.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.AutomatedInvoiceFlagExt/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var user = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", transactionSet.Claim.LossType )
+var group = util.GlobalParameters.ParameterFinder.getGroupParameter( "agribusunit", transactionSet.Claim.LossType )
+var checkSet = transactionSet as CheckSet
+try{
+  for (var c in checkSet.Checks) {
+    if (c.GrossAmountExt > 20000) {
+      //checkSet.setApprovingUser( user , Group( "group:10002" /* Agribusiness Business Unit */ ) )
+      checkSet.setApprovingUser( user, group )
+      actions.exit()
+    }
+  }
+}
+catch(e){
+  if(java.lang.System.getProperty( "gw.cc.env" ) ==  "prod"){
+    gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+      "ClaimCenterSupport@gaig.com", "ClaimCenterSupport", 
+      "ClaimCenter@gaig.com", "ClaimCenter", 
+      "ClaimCenter Notification", "AgriBusiness approval routing " + user)
+  }
+  else{
+    gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+      ScriptParameters.ClaimCenterDevEmail, "ClaimCenterDevEmail", 
+      "ClaimCenter@gaig.com", "ClaimCenterDev", 
+      "ClaimCenterDev Notification", "AgriBusiness approval routing " + user)
+  }
+}/*end00rule*/
+  }
+}

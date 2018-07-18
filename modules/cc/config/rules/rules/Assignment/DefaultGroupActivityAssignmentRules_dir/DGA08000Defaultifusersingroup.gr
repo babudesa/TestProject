@@ -1,0 +1,19 @@
+package rules.Assignment.DefaultGroupActivityAssignmentRules_dir
+
+@gw.rules.RuleName("DGA08000 - Default - if users in group")
+internal class DGA08000Defaultifusersingroup {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//* As long as the group contains at least 1 user */
+exists( aUser in activity.CurrentAssignment.AssignedGroup.Users where true )/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/
+if ( activity.CurrentAssignment.assignUserByRoundRobin(false, activity.CurrentAssignment.AssignedGroup ) )
+{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Activity(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(activity.AssignedUser))
+	actions.exit()
+	}/*end00rule*/
+  }
+}

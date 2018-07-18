@@ -1,0 +1,13 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14G0 - insure no payments on disconnected features")
+internal class TVXX14G0insurenopaymentsondisconnectedfeatures {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.New and exists(exp in transactionSet.Exposures where exp.ReconnectFailExt)  //require to reconnect before paying
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/transactionSet.reject( "payment", "Be sure all your features have been reconnected before creating a check.", null, null )/*end00rule*/
+  }
+}

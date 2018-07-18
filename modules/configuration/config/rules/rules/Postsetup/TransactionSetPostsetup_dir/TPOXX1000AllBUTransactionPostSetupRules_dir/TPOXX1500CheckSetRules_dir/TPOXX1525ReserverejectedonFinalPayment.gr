@@ -1,0 +1,22 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1525 - Reserve rejected on Final Payment")
+internal class TPOXX1525ReserverejectedonFinalPayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*
+Raj Akula (rakula)
+Moving this from equine to all business units per defect 3919
+*/
+
+exists(pay in transactionSet.Transactions where
+pay.Subtype == "Payment" 
+and (pay as Payment).PaymentType == "final" 
+and ((pay as Payment).New or pay.Status == "submitting" or pay.Status == "submitted")
+and (!((transactionSet as CheckSet).PrimaryCheck.Status == "pendingvoid") or !((transactionSet as CheckSet).PrimaryCheck.Status == "pendingstop")))==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/transactionSet.removePendingReserves()
+/*end00rule*/
+  }
+}

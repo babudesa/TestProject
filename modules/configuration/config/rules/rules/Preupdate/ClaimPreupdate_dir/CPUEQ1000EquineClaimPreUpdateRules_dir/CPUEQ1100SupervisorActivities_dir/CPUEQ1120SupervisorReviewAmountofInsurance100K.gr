@@ -1,0 +1,25 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1100SupervisorActivities_dir
+
+@gw.rules.RuleName("CPUEQ1120 - Supervisor Review Amount of Insurance > 100K")
+internal class CPUEQ1120SupervisorReviewAmountofInsurance100K {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 6/2/2008 - zjthomas - Defect 1682, Replaced user specific rules with global rules "CPUEQ1100 - Supervisor Activities".
+// 2/19/2014 - mbendure - Defect 6703, added a check for the policy refreshing.  During a policy refresh the data returned from claim.FixedPropertyIncidentsOnly was not always correct
+
+!exists( Activity in claim.Activities
+    where (Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_supreview_100K"))) and !claim.PolicyRefreshedExt/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for (injuredhorse in claim.FixedPropertyIncidentsOnly){
+  if (claim.DeathDate != null && injuredhorse.Property.ex_AmountofInsurance >= 100000){
+    claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_supreview_100K"), "Supervisor Review - " + injuredhorse.Property.RoundUpThePropertyValue() + " DEAD", " ", "normal", false, null, null)
+    actions.exitToNext()
+  }
+  if (claim.DeathDate == null && injuredhorse.Property.ex_AmountofInsurance >= 100000) {
+    claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_supreview_100K"), "Supervisor Review - " + injuredhorse.Property.RoundUpThePropertyValue(), " ", "normal", false, null, null)
+    actions.exitToNext()
+  }
+}  /*end00rule*/
+  }
+}

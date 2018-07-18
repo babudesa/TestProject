@@ -1,0 +1,23 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1500ClearClaimFlagReason_dir
+
+@gw.rules.RuleName("CPUAG1510 - Clear UnVerified ClaimFlagReason ")
+internal class CPUAG1510ClearUnVerifiedClaimFlagReason {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.Verified and
+(exists(change in claim.Policy.ChangedFields where change=="Verified"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/  var flaggedReason = "This Claim has an unverified policy associated to it."
+   var noteFlag :Boolean =false
+
+try{
+  
+       claim.removeFlagReason(flaggedReason)
+
+ 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

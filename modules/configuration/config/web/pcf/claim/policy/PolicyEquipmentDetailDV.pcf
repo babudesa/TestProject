@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    id="PolicyEquipmentDetailDV">
+    <Require
+      name="Policy"
+      type="Policy"/>
+    <Require
+      name="PolicyVehicle"
+      type="VehicleRU"/>
+    <!-- Sprint 12 Agri 3/25/08 ER -->
+    <Variable
+      initialValue="PolicyVehicle!=null ? PolicyVehicle.setRiskCoverageDates(): null"
+      name="setcoveragedates"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Equipment.Basics"/>
+      <Input
+        editable="true"
+        id="Number"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Item.Number"
+        required="true"
+        value="PolicyVehicle.RUNumber"/>
+      <Input
+        editable="true"
+        id="Year"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.Year"
+        value="PolicyVehicle.Vehicle.Year"/>
+      <Input
+        editable="true"
+        id="Make"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.Make"
+        required="true"
+        value="PolicyVehicle.Vehicle.Make"/>
+      <Input
+        editable="true"
+        id="Model"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.Model"
+        required="true"
+        value="PolicyVehicle.Vehicle.Model"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.NVV.Policy.LocationDetail.Property.EffectiveDate"
+        validationExpression="PolicyVehicle.effDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(PolicyVehicle.Policy.EffectiveDate, PolicyVehicle.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(PolicyVehicle.Vehicle.VehicleEffDateExt, PolicyVehicle.Vehicle.VehicleExpDateExt) ? displayKey.Web.Dates.EffDateAfterExpDate : null"
+        value="PolicyVehicle.Vehicle.VehicleEffDateExt"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.NVV.Policy.LocationDetail.Property.ExpirationDate"
+        validationExpression="PolicyVehicle.expDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(PolicyVehicle.Policy.EffectiveDate, PolicyVehicle.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(PolicyVehicle.Vehicle.VehicleEffDateExt, PolicyVehicle.Vehicle.VehicleExpDateExt) ? displayKey.Web.Dates.EffDateAfterExpDate : null"
+        value="PolicyVehicle.Vehicle.VehicleExpDateExt"/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Equipment.IDInfo"/>
+      <Input
+        editable="true"
+        id="VINSN"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Equipment.VINSN"
+        value="PolicyVehicle.Vehicle.SerialNumber"
+        visible="true"/>
+      <RangeInput
+        editable="true"
+        id="State"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Equipment.State"
+        value="PolicyVehicle.Vehicle.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"
+        visible="true"/>
+    </InputColumn>
+    <InputFooterSection>
+      <!-- Lienholders -->
+      <ListViewInput
+        def="EditableVehicleLienholdersLV(PolicyVehicle.Vehicle, PolicyVehicle.Policy.Claim)"
+        editable="true"
+        id="Lienholders"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.Lienholders"
+        labelAbove="true"
+        validationExpression="PolicyVehicle.Vehicle.validateLienholders()"
+        visible="Policy.Verified">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- Additional Interests -->
+      <ListViewInput
+        def="EditableAdditionalInterestVehicleRisksLV(PolicyVehicle.Vehicle, PolicyVehicle.Policy.Claim)"
+        editable="true"
+        id="AdditionalInterest"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.AdditionalInterest"
+        labelAbove="true"
+        validationExpression="PolicyVehicle.Policy.checkCoveredPartyConstraints().formatUserMessage()"
+        visible="Policy.Verified">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- Coverages -->
+      <ListViewInput
+        def="EditableEquipmentCoveragesLV(PolicyVehicle.Vehicle, PolicyVehicle)"
+        editable="true"
+        id="Coverages"
+        label="displaykey.NVV.Policy.PolicyVehicleDetail.Vehicle.Coverages"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

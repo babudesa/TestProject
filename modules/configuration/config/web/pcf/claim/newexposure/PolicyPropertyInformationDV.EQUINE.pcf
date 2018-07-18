@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    editable="false"
+    id="PolicyPropertyInformationDV"
+    mode="EQUINE">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="PolicyProperty"
+      type="LocationBasedRU"/>
+    <Variable
+      initialValue="Claim.Policy"
+      name="Policy"
+      type="Policy"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="PropertyNumber"
+        label="displaykey.GAIC.Equine.LV.Policy.Locations.AnimalNumber"
+        requestValidationExpression="VALUE &lt;= 0 ? displaykey.GAIC.Equine.LocationDetailDV.NumZero : exists (prop in PolicyProperty.Policy.Properties where (prop.RUNumber == VALUE and prop != PolicyProperty)) ? displaykey.GAIC.Equine.LocationDetailDV.UniqueNum : null"
+        value="PolicyProperty.RUNumber"/>
+      <Input
+        editable="true"
+        id="Name"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Name"
+        required="true"
+        value="PolicyProperty.Property.LocationNumber"/>
+      <Input
+        editable="true"
+        id="BarnName"
+        label="displaykey.GAIC.Equine.LocationDetailDV.BarnName"
+        value="PolicyProperty.Property.ex_BarnName"/>
+      <Input
+        editable="true"
+        id="breed"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Breed"
+        required="false"
+        value="PolicyProperty.Property.ex_Breed"/>
+      <Input
+        editable="true"
+        id="DOB"
+        label="displaykey.GAIC.Equine.LocationDetailDV.DOB"
+        onChange="//(util.custom_Ext.DateTime.getAge(PolicyProperty.Property.ex_DateofBirth) &gt;= 60 ) ? GeneralErrorWorksheet.goInWorkspace(displaykey.GAIC.Equine.LocationDetailDV.YearofBirth.HighValidation) : null"
+        postOnChange="true"
+        validationExpression="(util.custom_Ext.DateTime.getAge(PolicyProperty.Property.ex_DateofBirth) &lt; 0) ? displaykey.GAIC.Equine.LocationDetailDV.YearofBirth.NegativeValidation : null"
+        value="PolicyProperty.Property.ex_DateofBirth"/>
+      <Input
+        editable="true"
+        id="Sex"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Sex"
+        required="false"
+        value="PolicyProperty.Property.ex_Sex"/>
+      <Input
+        editable="true"
+        id="Use"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Use"
+        postOnChange="true"
+        required="false"
+        value="PolicyProperty.Property.ex_AnimalUse"/>
+      <Input
+        editable="PolicyProperty.Property.ex_AnimalUse !=Null"
+        id="Use2"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Use2"
+        required="false"
+        value="PolicyProperty.Property.AnimalUse2Ext"
+        visible="PolicyProperty.Property.ex_AnimalUse !=Null"/>
+      <Input
+        id="Age"
+        label="displaykey.GAIC.Equine.LocationDetailDV.YearofBirth"
+        value="PolicyProperty.Property.getAge()"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.NVV.Policy.LocationDetail.Property.EffectiveDate"
+        validationExpression="PolicyProperty.effDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(PolicyProperty.Policy.EffectiveDate, PolicyProperty.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(PolicyProperty.Property.PhyPropEffDateExt, PolicyProperty.Property.PhyPropExpDateExt) ? displayKey.Web.Dates.EffDateAfterExpDate : null"
+        value="PolicyProperty.Property.PhyPropEffDateExt"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.NVV.Policy.LocationDetail.Property.ExpirationDate"
+        validationExpression="PolicyProperty.expDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(PolicyProperty.Policy.EffectiveDate, PolicyProperty.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(PolicyProperty.Property.PhyPropEffDateExt, PolicyProperty.Property.PhyPropExpDateExt) ? displayKey.Web.Dates.EffDateAfterExpDate : null"
+        value="PolicyProperty.Property.PhyPropExpDateExt"/>
+    </InputColumn>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="AddressType"
+        label="displaykey.NVV.Policy.LocationDetail.Property.AddressType"
+        value="PolicyProperty.Property.ex_AnimalAddressType"/>
+      <TypeKeyInput
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="Country"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Country"
+        onChange="PolicyProperty.Property.Address.PostalCode = null"
+        postOnChange="true"
+        required="false"
+        value="PolicyProperty.Property.Address.Country"
+        visible="PolicyProperty.Property.Address.Country == null"/>
+      <TypeKeyInput
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="Country2"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Country"
+        onChange="PolicyProperty.Property.Address.PostalCode = null"
+        postOnChange="true"
+        required="false"
+        showNoneSelected="false"
+        value="PolicyProperty.Property.Address.Country"
+        visible="PolicyProperty.Property.Address.Country != null"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="Address"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Address"
+        value="PolicyProperty.Property.Address.AddressLine1"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="Address2"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Address2"
+        value="PolicyProperty.Property.Address.AddressLine2"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="City"
+        label="displaykey.NVV.Policy.LocationDetail.Property.City"
+        required="false"
+        value="PolicyProperty.Property.Address.City"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="State"
+        label="displaykey.NVV.Policy.LocationDetail.Property.State"
+        required="util.custom_Ext.finders.stateRequired(PolicyProperty.Property.Address.Country.Code, true)"
+        value="PolicyProperty.Property.Address.State"/>
+      <TextInput
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="ZipCode"
+        inputMask="util.custom_Ext.finders.getPostCodeMask(PolicyProperty.Property.Address.Country.Code)"
+        label="displaykey.NVV.Policy.LocationDetail.Property.ZipCode"
+        validationExpression="util.custom_Ext.finders.postCodeValidation(PolicyProperty.Property.Address) ? null : util.custom_Ext.finders.postCodeExpression(PolicyProperty.Property.Address.Country.Code)"
+        value="PolicyProperty.Property.Address.PostalCode"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="County"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        value="PolicyProperty.Property.Address.County"
+        visible="PolicyProperty.Property.Address.Country.Code != &quot;US&quot;"/>
+      <RangeInput
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="!(PolicyProperty.Property.Address.StandardizedExt)"
+        id="CountyChoiceFromState"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        value="PolicyProperty.Property.Address.County"
+        valueRange="PolicyProperty.Property.Address.Country.Code == &quot;US&quot; ? util.custom_Ext.addressFunctions.getValidCountyForState(PolicyProperty.Property.Address.State):null"
+        visible="PolicyProperty.Property.Address.Country.Code == &quot;US&quot;"/>
+      <Input
+        available="PolicyProperty.Property.Address.Country != null"
+        editable="PolicyProperty.Property.Address.StandardizedExt"
+        id="StandardizationIndicator"
+        label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+        postOnChange="true"
+        value="PolicyProperty.Property.Address.StandardizedExt"
+        visible="true"/>
+      <InputDivider/>
+      <ClaimContactInput
+        claim="PolicyProperty.Policy.Claim"
+        editable="true"
+        id="PrimaryTrainer"
+        label="displaykey.LV.Policy.EditablePropertyTrainers.Trainer"
+        newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+        required="false"
+        showSearchInMenu="false"
+        value="PolicyProperty.Property.ex_PrimaryTrainer"
+        valueRange="getClaimContacts()"/>
+      <ClaimContactInput
+        claim="PolicyProperty.Policy.Claim"
+        editable="true"
+        id="AlternateTrainer"
+        label="displaykey.LV.Policy.EditablePropertyTrainers.AltTrainer"
+        newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+        required="false"
+        showSearchInMenu="false"
+        value="PolicyProperty.Property.ex_AlternateTrainer"
+        valueRange="getClaimContacts()"/>
+    </InputColumn>
+    <InputFooterSection>
+      <!-- Lienholders -->
+      <InputDivider/>
+      <ListViewInput
+        def="EditablePropertyLienholdersLV(PolicyProperty.Property, PolicyProperty.Policy.Claim)"
+        editable="true"
+        id="Lienholders"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+        labelAbove="true"
+        validationExpression="PolicyProperty.Property.validateLienholders()">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <!-- Additional Interest, Risk -->
+      <ListViewInput
+        def="EditableAdditionalInterestRisksLV(PolicyProperty, PolicyProperty.Policy.Claim)"
+        editable="true"
+        id="AdditionalInterestRisk"
+        label="displaykey.NVV.Policy.LocationDetail.Property.AdditionalInterestRisk"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- Location coverages -->
+      <ListViewInput
+        def="PropertyCoveragesLV(PolicyProperty.Property, PolicyProperty)"
+        editable="true"
+        id="Coverages"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Coverages"
+        labelAbove="true"
+        mode="PolicyProperty.Policy.LossType">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+    </InputFooterSection>
+    <Code><![CDATA[function getClaimContacts():List{
+  var contactList = new java.util.ArrayList();
+  for(contact in PolicyProperty.Policy.Claim.Contacts){
+    if(!contact.hasRole( "agency" ) and !contact.hasRole( "underwriter" )) {
+      contactList.add(contact.Contact)
+    }
+  }
+  return contactList;
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

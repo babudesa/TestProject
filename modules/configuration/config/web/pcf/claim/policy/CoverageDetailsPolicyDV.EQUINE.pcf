@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="!Coverage.Policy.Verified"
+    id="CoverageDetailsPolicyDV"
+    mode="Equine">
+    <Require
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      initialValue="Coverage as PolicyCoverage"
+      name="PolicyCoverage"
+      type="PolicyCoverage"/>
+    <Variable
+      initialValue="Coverage.setClassDefaults()"
+      name="setDefaults"/>
+    <Variable
+      initialValue="PolicyCoverage.Type == null ? &quot;Coverage&quot; : PolicyCoverage.covTypeDisplayName()"
+      name="CoverageName"
+      recalculateOnRefresh="true"
+      type="String"/>
+    <!-- Sprint Agri 11 ER: The variable below used to populate coverage eff/exp dates to policy dates -->
+    <Variable
+      initialValue="Coverage.policyCoveragedates()"
+      name="setcoveragedates"/>
+    <Variable
+      initialValue="Coverage.Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <InputColumn>
+      <!-- <RangeInput
+        editable="true"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="PolicyCoverage.setEDWCvgCode()"
+        postOnChange="true"
+        required="true"
+        value="PolicyCoverage.Type"
+        valueRange="Coverage.getCoverages()"/> -->
+      <!-- Removed onchange function -->
+      <RangeInput
+        editable="PolicyCoverage.notUsedOnExposure()"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        optionLabel="(PolicyCoverage.Type!= null) ? PolicyCoverage.covTypeDisplayName() : VALUE.toString()"
+        postOnChange="true"
+        required="true"
+        value="PolicyCoverage.Type"
+        valueRange="Coverage.getCoverages()"/>
+      <RangeInput
+        editable="true"
+        id="RiskState"
+        label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        postOnChange="true"
+        required="Coverage.Policy.insured.PrimaryAddress.Country==&quot;US&quot;"
+        value="Coverage.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      <!-- Foundation sprint 5, erawe - added ClassCode and ClassDesc to Equine but NOT to be visible by user per Karen -->
+      <Input
+        id="Subline"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+        required="false"
+        value="Coverage.SublineExt"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+        value="Coverage.ClassCodeExt"
+        visible="false"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+        value="Coverage.ClassCodeDescExt"
+        visible="false"/>
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="IncidentLimit"
+        label="displaykey.LV.Policy.PolicyCoverages.CovLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.IncidentLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+        value="PolicyCoverage.IncidentLimit"/>
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="AggLimit"
+        label="displaykey.GAIC.LV.Policy.EditablePropertyCoverages.AggLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.AggregateLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+        value="PolicyCoverage.AggregateLimitExt"/>
+      <Input
+        editable="true"
+        id="CoverageBasis"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.CoverageBasis"
+        value="PolicyCoverage.CoverageBasisExt"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+        postOnChange="true"
+        requestValidationExpression="(ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;)) ? Coverage.effDateWarn() : null"
+        validationExpression="Coverage.effDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="PolicyCoverage.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+        postOnChange="true"
+        requestValidationExpression="(ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;)) ? Coverage.expDateWarn() : null"
+        validationExpression="Coverage.expDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="PolicyCoverage.ExpirationDate"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- 6/15/09 erawe - moved to another column with changes Joe requested with adding DeducBasis and DeductApply -->
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="Deductible"
+        label="displaykey.LV.Policy.EditablePropertyCoverage.Deductible"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.Deductible) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+        value="PolicyCoverage.Deductible"/>
+      <Input
+        editable="true"
+        id="Deducbasis"
+        label="displaykey.LV.Policy.EditablePropertyCoverage.DeductibleBasis"
+        value="PolicyCoverage.DeductLimitBasisExt"/>
+      <Input
+        editable="true"
+        id="Deducapply"
+        label="displaykey.LV.Policy.EditablePropertyCoverage.DeductibleAppliesTo"
+        value="PolicyCoverage.DeductLimitAppExt"/>
+    </InputColumn>
+    <!-- Added Sprint 8 Agribusiness Eric Rawe 11/15/07 -->
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        def="EditableCoverageReinsuranceLV(Coverage)"
+        id="Reinsurance"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurance"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

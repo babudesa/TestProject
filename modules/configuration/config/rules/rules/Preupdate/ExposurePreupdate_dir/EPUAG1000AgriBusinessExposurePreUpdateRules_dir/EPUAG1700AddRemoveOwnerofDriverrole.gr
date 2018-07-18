@@ -1,0 +1,34 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG1700 - Add/Remove Owner of Driver role")
+internal class EPUAG1700AddRemoveOwnerofDriverrole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*rule to add the role of driver and the owner of feature if that contact
+already exists and/or remove the role of driver owner from feature 
+to claim if no longer on that feature
+11/30/09:  erawe
+*/
+exists(change in exposure.ChangedFields where change=="DriverExt")==true
+//and !(exposure.DriverExt.New)
+//12/1/09 I needed to remove this New reference to be able to remove
+//the role of Driver with owner of feature on a policy driver
+
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/for(cont in exposure.Claim.Contacts){
+  if(cont.Contact.DisplayName !=exposure.DriverExt.DisplayName){
+    if(exists(role in cont.Roles where role.DisplayName=="Driver" and role.Exposure==exposure)){
+      exposure.removeRole( "Driver", cont.Contact ) //here we remove the driver role w/ feature owner
+      //12/1/09 Karen did not want the driver role w/ claim owner
+      //exposure.Claim.addRole( "Driver", cont.Contact ) //here we add the driver role w/ claim owner
+    }
+  }else{
+  exposure.addRole( "Driver", exposure.DriverExt )//add the role of driver when adding a person on the feature screen.
+  }
+}
+
+/*end00rule*/
+  }
+}

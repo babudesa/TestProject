@@ -1,0 +1,22 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11F0 - Validate Extenally Viewed Notes")
+internal class CVXX11F0ValidateExtenallyViewedNotes {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* kniese - 11/17/2015 - Defect 7942
+*  Only Allow users to select External Viewing for the following note
+*  topics: Contact, Fact Summary, First Notice of Loss, Plan of Action,
+*  Underwriter Claim Notes, and Agent Notification. Throw a warning message
+*  on these notes if the user selects Yes. 
+*/
+exists(note in claim.Notes where note.New and note.AllowExternalViewing) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(note in claim.Notes) {
+  if(note.New and note.AllowExternalViewing){
+   claim.reject(null, null, "newloss", "You have marked a note for external viewing.  Please ensure that the note does not contain any private information including PII or PHI or any attorney-client privileged information.") 
+  }
+}/*end00rule*/
+  }
+}

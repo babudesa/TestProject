@@ -1,0 +1,83 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1550 - CMS Medicare Payment Reminder")
+internal class TPOXX1550CMSMedicarePaymentReminder {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//**
+ * Defect 3771 - sprzygocki - 12/27/10 - Activities for CMS have been changed
+ * This activity will generate whenever CMS information is missing regardless of
+ * the Medicare Eligible flag being filled in or not. This will fire after a loss payment
+ * has been made against the feature. It is due 7 days from creation and has no escalation.
+ * 
+ */
+exists(payment in (transactionSet as CheckSet).PrimaryCheck.Payments where
+payment.CostType == "claimcost" and 
+payment.Amount >= 0 and
+(payment.Status == TransactionStatus.TC_SUBMITTING || 
+payment.Status == TransactionStatus.TC_SUBMITTED) and
+util.gaic.CMS.validation.CMSValidationUtil.generalPrecondition(payment.Exposure) and
+!exists(act in payment.Claim.Activities where
+act.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "cms_med_financials" ) and
+act.Exposure.Claimant == payment.Exposure.Claimant and 
+act.Status=="open")) and
+((transactionSet.Claim.ExternalHandlingExt==null)||
+(transactionSet.Claim.ExternalHandlingExt!=null && transactionSet.Claim.ExternalHandlingExt.MedReportingExt))
+//Defect # 9110 Medicare activities are generating on TPA claims with Medicare reporting set to No  /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//**
+ * Defect 8182 - cprakash - 1/19/2016 -  This rule has been modified to fire the activity upon making
+ * the loss payment and check becomes issued, the rule will ensure to fire only immediately,
+ *  this activity is no more recurring activity
+ */
+uses gw.api.util.Logger 
+uses util.gaic.CMS.validation.*
+
+var chk = (transactionSet as CheckSet).PrimaryCheck
+var pattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "cms_med_financials" )
+var missingInfo = ""
+//Check for payment conditions , it should be loss payment, status should be submitted,
+//amount >0 and Exposure should medicare eligible and claimant should be person or injured worker
+for(payment in chk.Payments.where(\ pmt -> pmt.CostType == CostType.TC_CLAIMCOST &&
+                             (pmt.Status == TransactionStatus.TC_SUBMITTED || 
+                              pmt.Status == TransactionStatus.TC_SUBMITTING) &&
+                              pmt.Amount >= 0 && 
+                              pmt.Exposure.MedicareExposureExt &&
+                              (typeof pmt.Exposure.Claimant == Person or 
+                              typeof pmt.Exposure.Claimant == InjuredWorkerExt)
+                              )){ 
+     Logger.logDebug("Payment is Valid, Check for Activity Creation ")
+                                
+    //Check for Any existing activities for the same claimant and in open state                             
+    if(!exists(act in payment.Claim.Activities where
+      act.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "cms_med_financials" ) and
+      act.Exposure.Claimant == payment.Exposure.Claimant and
+      act.Status=="open")){
+      Logger.logDebug("No Medicare Query Activity exists in open state, Checking for CMS, ORM informtion ")  
+      //Check for the CMS and ORM field information for the given medicare claimant
+      var cmsVal = new PaymentValidation(payment)
+      cmsVal.DoQueryData = true
+      cmsVal.DoReportingData = true
+      CMSValidationUtil.validate(cmsVal)
+     
+      if(cmsVal.Fields.HasElements)
+      {
+      Logger.logDebug("CMS, ORM  information is missing on the medicare claimant, creating activity now.. ")  
+      missingInfo = cmsVal.ValidationMessage
+      //Create Activity if there exists any medicare informtion missing.
+      var act = chk.Claim.createActivityFromPattern( payment.Exposure, pattern)
+      act.Description = displaykey.Rules.Activities.ISO.CMS.MedicareInformationMissing(payment.Exposure.Claimant, 
+       missingInfo)
+      //Defect 8350: schandanam - Associating Activity to both Exposure and Claimant causes Database inconsistencies,so commenting this line. 
+      //act.Claimant = payment.Exposure.Claimant
+      Logger.logDebug("CMS Medicare Payment Reminder Activity Created Successfully.. ")  
+    
+      }
+   }
+}
+
+
+/*end00rule*/
+  }
+}

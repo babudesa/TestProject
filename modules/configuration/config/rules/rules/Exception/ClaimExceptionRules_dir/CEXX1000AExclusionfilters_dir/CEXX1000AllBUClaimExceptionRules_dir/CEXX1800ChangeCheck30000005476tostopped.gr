@@ -1,0 +1,35 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1800 - Change Check 30000005476 to stopped")
+internal class CEXX1800ChangeCheck30000005476tostopped {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimNumber == "750603181"
+
+/* mbendure - defect 5372 - This is to update the status of one check in the production environment.
+Once the check 3000005476 on claim 750603181 has been changed to have a status of "stopped" then this rule
+can be removed./*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var checkList:List<Check> = claim.getChecksIterator(false).toList()as List<Check>
+var checks = checkList.where(\ c -> c.CheckNumber == "3000005476" && c.Status == "pendingstop").first()
+//Gathers a list of the check if the status is still pending stopped
+
+var transactionList:List<Transaction> = claim.getTransactionsIterator(false).toList()as List<Transaction>
+var transactions = transactionList.where(\ t -> t.Status =="pendingstop" && t.PublicID == "cc:367948")
+//Creates an array of the transaction if it's at pending stopped
+
+if(checks.Status == "pendingstop"){
+  //changes the status of the check
+  gw.transaction.Transaction.getCurrent().add(checks)
+  checks.Status="stopped"
+}
+    
+    
+for(transaction in transactions){
+  //updates the status of the transaction
+  gw.transaction.Transaction.getCurrent().add(transaction)
+  transaction.Status="stopped"
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,18 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir
+
+@gw.rules.RuleName("PVXX1287 - Policy State Required")
+internal class PVXX1287PolicyStateRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified &&
+policy.PolicyStateExt==null &&
+policy.PolicyType != typekey.PolicyType.TC_AC/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try {
+  policy.rejectField( "PolicyStateExt", "payment", displaykey.Rules.Validation.Policy.Enterprise.AbilityToPay.PolicyState, null, null );  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

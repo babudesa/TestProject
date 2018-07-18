@@ -1,0 +1,24 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir.EVXX1240TypeofLossRequired_dir
+
+@gw.rules.RuleName("EVXX1241 - Reject New Feature if TOL is Missing on Existing")
+internal class EVXX1241RejectNewFeatureifTOLisMissingonExisting {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Defect 2962 - sprzygocki - 5/10/10 - we need a new rule to reject new features
+//  from being created if TOL needs to be fixed on other features. Because of the Equine
+//  Exposure Post-Setup rule setting the incident types, the EVXX1242 gets run on every
+//  feature instead of just the newly created one, causing the new feature to reject.
+//  We need that post-setup rule, so to make things consistent, we are adding this rule.
+exposure.New and exposure.Claim.LossType!="Equine"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason:String = displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.TypeOfLoss
+
+for(exp in exposure.Claim.Exposures){
+  if(exp.ValidationLevel=="payment" and exp.typeOfLossIsIncomplete()){
+    exposure.reject("newloss", exp + ": " + reason, null, null)    
+  }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ReserveSetLV">
+    <Require
+      name="ReserveList"
+      type="Reserve[]"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(ReserveList.first().Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <RowIterator
+      editable="false"
+      elementName="Reserve"
+      pageSize="6"
+      value="ReserveList">
+      <Row>
+        <Cell
+          footerLabel="displaykey.Java.ListView.Sum"
+          id="Exposure"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Exposure"
+          sortOrder="1"
+          value="Reserve.Exposure.FullDescription == null ? displaykey.Web.Financials.Exposure.ClaimLevel : Reserve.Exposure.FullDescription"/>
+        <RangeCell
+          id="Coverage"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Coverage"
+          optionLabel="Reserve.Exposure.Coverage.covTypeDisplayName()"
+          sortOrder="2"
+          value="Reserve.Exposure.PrimaryCoverage"
+          valueRange="Reserve.Exposure.Coverage.getCoverages()"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.CostType"
+          sortOrder="3"
+          value="Reserve.CostType"/>
+        <Cell
+          id="InjuryType"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.InjuryType"
+          value="Reserve.WCInjuryTypeExt"
+          visible="isWCClaim"/>
+        <Cell
+          id="BureauBenefitType"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.BureauBenefit"
+          sortOrder="3"
+          value="Reserve.Exposure.BureauBenefitTypeExt"
+          visible="isWCClaim"/>
+        <Cell
+          id="FactorReserve"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.FactorReserve"
+          value="Reserve.FactorReserveExt"/>
+        <!-- <Cell
+          id="CostCategories"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.CostCategories"
+          value="Reserve.CostCategory"/>  defect 1245 -Enterprise Requirement - Reserve Details:Cost Category should be removed from display. -->
+        <Cell
+          footerSumValue="financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Reserve.ReserveLine)"
+          formatType="currency"
+          id="OpenReserves"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.OpenReserves"
+          value="financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Reserve.ReserveLine)"/>
+        <!-- old value - "Reserves.getOpenReserves()" this was causing exception, not sure how it ever worked. -->
+        <Cell
+          action="ClaimFinancialsTransactionsDetail.drilldown(Reserve.Claim, Reserve)"
+          footerSumValue="Reserve.TransactionAmountComponent"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Amount"
+          value="Reserve.TransactionAmountComponent"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

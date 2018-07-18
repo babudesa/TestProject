@@ -1,0 +1,60 @@
+package rules.EventMessage.EventFired_dir.Destination4CheckPrint_dir.Check_dir.CheckStatusChange_dir
+
+@gw.rules.RuleName("Print Check")
+internal class PrintCheck {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*//*kmboyd - 6/17/09 - Notes have been moved to Transaction Post-setup*/
+// Process the check
+//This is independ of the email and note above but the rule already existed so we left it here. 5/7/09 erawe
+//just added if PaymentMethod =="check" for the email and note so not to create for a manual check.
+
+//kmboyd - 5/10/2009 - Do not send to CheckWriter if the check comes from Local. This is due to 
+//duplicate checks being created in the EAM table, while we have multiple environments all of our data
+//ends up going to the CSDT table for local, DEV and INT. Since everyone has the same prefix for local, this
+//was causing the automated jobs to fail on the CheckWriter end, even in INT
+
+// dljohnson defect 3381 EM20: Issued date on ADIS check (we enter issued date) is being changed when check posting info is saved.  
+// Also updating the print date with the issue date, that was defaulting to the current date.
+ 
+(messageContext.Root as Check).Status == "requesting" || 
+(messageContext.Root as Check).Status == "notifying"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*///bestor 08/18/2011 - moved sending email notication for vendors with T or B
+//tax status into TransactionSetPreupdate rule as per advice from Guidewire
+//to prevent known limitations of calling gw.api.email.EmailUtil.sendEmailWithBody
+//within event fired rules. Please refer to incident request reference #110817-000007
+//for more details
+
+var env:String = gw.api.system.server.ServerUtil.getEnv();
+var msgCheck = messageContext.Root as Check
+var NONASCII = java.util.regex.Pattern.compile("[^\\x00-\\x7f]");
+
+if(!msgCheck.Bulked) {
+  if (msgCheck.ManualCheck and msgCheck.PaymentMethod =="manual" and msgCheck.IssueDate != null){
+    msgCheck.Status = TransactionStatus.TC_ISSUED
+    msgCheck.ex_DatePrinted = null
+  } else {
+    //djohnson end change 
+    if (msgCheck.Status == "requesting" and env != "local") {
+      var messageContent = templates.messaging.checkwriter.CheckData.renderToString(msgCheck)
+      
+      //Strip non-ascii chars out
+      messageContent = NONASCII.matcher(messageContent).replaceAll("");
+      
+      var message = messageContext.createMessage(messageContent)
+      //rpampush - commented out 7/11/11 6.0 upgrade, deprecated
+      //message.MessageCode = msgCheck.CheckNumber
+      message.putEntityByName("theCheck", msgCheck)
+      //rpampush - commented out 7/11/11 6.0 upgrade, deprecated
+      //message.submittingCheck( msgCheck )
+    } else {
+      msgCheck.IssueDate = now() as java.util.Date
+      msgCheck.Status = TransactionStatus.TC_ISSUED
+    }
+  }
+}
+/*end00rule*/
+  }
+}

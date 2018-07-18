@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsChecksDetail.go(Claim, OldCheck)"
+    afterCommit="ClaimFinancialsChecksDetail.go(Claim, OldCheck); NewCheck.syncBIOnTransfer();"
+    beforeCommit="gw.api.system.bundle.BundleCommitCondition.verify(NewCheck); updateNewCheckWCPayee()"
+    beforeValidate="//NewCheck.validateFinalPayment()"
+    canEdit="true"
+    canVisit="perm.Claim.viewpayments(Claim)"
+    id="CheckTransfer"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(NewCheck)"
+    parent="ClaimFinancialsChecksDetail(Claim, OldCheck)"
+    startInEditMode="true"
+    title="displaykey.JSP.Check.Transfer.Title">
+    <LocationEntryPoint
+      signature="CheckTransfer(Claim : Claim, OldCheck : Check)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="OldCheck"
+      type="Check"/>
+    <Variable
+      initialValue="prepNewCheck()"
+      name="NewCheck"
+      type="Check"/>
+    <Screen
+      id="CheckTransferScreen">
+      <Toolbar>
+        <!-- GW action="doTransfer()" -->
+        <ToolbarButton
+          action="validateTransfer();NewCheck.validateFinalPayment(); correctErode();  financials.CheckUtil.transferCheck(NewCheck, OldCheck, CurrentLocation); "
+          available="perm.Check.edit(OldCheck) and !exists(payment in NewCheck.Payments where payment.Exposure == null) and (NewCheck.Claim!=null) and checkCurrency()"
+          id="CheckTransfer_TransferButton"
+          label="displaykey.Button.Check.Transfer"
+          visible="perm.Check.edit(OldCheck)"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="CheckTransferDV(NewCheck, OldCheck, Claim)"/>
+    </Screen>
+    <Code><![CDATA[uses java.util.ArrayList
+
+function doTransfer() {
+  OldCheck.unlinkDeductibles()
+  NewCheck.linkDeductibles()
+  gw.api.financials.CheckUtil.transferCheck(NewCheck, OldCheck, CurrentLocation)
+}
+//Create NewCheck and remove data that needs to be selected - kmboyd - Defect 480 - 6/25/08
+    	function prepNewCheck() : Check{
+    		var tempCheck : Check;
+    		tempCheck = OldCheck.createCheckForTransfer();
+    		
+    		for(pay in tempCheck.Payments){
+    			pay.Exposure = null;
+    		}
+    		return tempCheck;
+    	}
+    	
+    	//Fix for payment type transferres - makes the new payments act the way they should be acting
+      	//Defect 1163 - kmboyd - 9/19/08
+    	function correctErode(){
+    		for(pay in NewCheck.Payments){
+    			if(pay.Exposure.ValidationLevel=="payment"){
+    				pay.setErode(pay.PaymentType)
+    			}
+    		}
+    	}
+    	function checkCurrency():boolean{
+    	  if(OldCheck.Claim.Policy.CurrencyTypeExt==NewCheck.Claim.Policy.CurrencyTypeExt)
+    	  {
+    	    return true;
+    	  }
+    	  else return false
+    	}
+    	
+
+/**
+* Validate the check transfer.  Currently Validating that a transfer of GAI as TPA or TOMIC check
+* is transferring to a Claim that is a valid destination (E&S only Claim).
+* kniese - Added validation to make sure transfer will not result in a negative total incurred. 
+*/   	
+function validateTransfer() {
+  var totalInc = OldCheck.Claim.getTotalIncurred()
+  
+  // Add supplemental payments to the calculation for total incurred
+  for(payment in OldCheck.Payments){
+    if(payment.PaymentType == PaymentType.TC_SUPPLEMENT and payment.Amount > 0.0){
+      totalInc = totalInc + payment.Amount
+    }
+  }
+  if(totalInc - NewCheck.GrossAmount.Amount < 0.0 and Claim.LossType != typekey.LossType.TC_PERSONALAUTO){
+      throw new gw.api.util.DisplayableException(displaykey.Error.TotalIncurred.NegativeIncurred)
+  }
+  if(NewCheck.Claim.LossType != LossType.TC_SPECIALTYES && NewCheck.ex_ManualPaymentMethod == ManualPaymentMethod.TC_TOMIC) {
+       
+       if(NewCheck.ex_ManualPaymentMethod == ManualPaymentMethod.TC_TOMIC) {
+         throw new com.guidewire.pl.web.controller.UserDisplayableException("TOMIC Checks can only be transferred to " +  LossType.TC_SPECIALTYES.Description +" Claims with a GAI as TPA Cost Type.")
+       }
+  }
+}
+
+// Sets the check payee to a person if it was an injured worker so the role claimaint does not appear on the destination claim
+// ivorobyeva - 03/29/2017: setting Injured Woreker - specific fields like MinorWorkerExt and DisciplinaryActionExt to NULL, 
+// as they should not be set on the contact with a Person subtype, only on Injured Worker. 
+// Otherwise, it causes database inconsistencies.
+function updateNewCheckWCPayee() {
+  //if(exists(payee in NewCheck.Payees where payee.ClaimContact.Contact.Subtype == typekey.Contact.TC_INJUREDWORKEREXT)){
+  if(NewCheck.Payees.where(\p -> p.ClaimContact.Contact.Subtype == typekey.Contact.TC_INJUREDWORKEREXT).Count>0){
+    for(payee in NewCheck.Payees){
+      if(payee.ClaimContact.Contact.Subtype == typekey.Contact.TC_INJUREDWORKEREXT){
+      	payee.ClaimContact.Contact.setFieldValue("Subtype", typekey.Contact.TC_PERSON)
+      	payee.ClaimContact.Contact.setFieldValue("MinorWorkerExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbHypertensionExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbDiabetesExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbBehavioralExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("UndocumentedWorkerExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbSmokingExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbHeartExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("ComorbObesityExt", NULL)
+      	payee.ClaimContact.Contact.setFieldValue("DisciplinaryActionExt", NULL)
+      }
+    }
+  }
+}]]></Code>
+  </Page>
+</PCF>

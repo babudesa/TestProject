@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="MattersLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ClaimMatters"
+      type="matter.ClaimMattersHelper"/>
+    <Variable
+      initialValue="exists(exp in Claim.Exposures where exp.ex_InSuit)"
+      name="isLitigated"
+      type="Boolean"/>
+    <RowIterator
+      editable="false"
+      elementName="Matter"
+      hasCheckBoxes="true"
+      value="Claim.Matters">
+      <ToolbarFlag
+        name="Matter"/>
+      <ToolbarFlag
+        condition="Matter.canClose(User.util.CurrentUser) and !ClaimMatters.isBeingEdited(Claim, Matter)"
+        name="CanCloseMatter"/>
+      <Row>
+        <Cell
+          id="MatterIdCell"
+          label="&quot;Legal Action ID&quot;"
+          value="Matter.LegalActionIDNumber"/>
+        <Cell
+          action="MatterDetailForward.drilldown(Claim, Matter)"
+          id="Name"
+          label="displaykey.LV.Matter.Matters.Name"
+          sortOrder="2"
+          value="Matter.Name"/>
+        <TypeKeyCell
+          id="MatterTypeCell"
+          label="displaykey.LV.Matter.Matters.Type"
+          value="isLitigated ? MatterType.TC_LITIGATED : MatterType.TC_NONLITIGATED"/>
+        <TypeKeyCell
+          id="StatusTypeCell"
+          label="displaykey.LV.Matter.Matters.Status"
+          value="Matter.StatusExt"/>
+        <DateCell
+          id="DateCell"
+          label="displaykey.LV.Matter.Matters.DateClosed"
+          value="Matter.CloseDate"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

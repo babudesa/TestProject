@@ -1,0 +1,27 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1800BulkRecovery_dir
+
+@gw.rules.RuleName("TVXX1830 - Recovery Added After Last")
+internal class TVXX1830RecoveryAddedAfterLast {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="RecoverySet" and transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+var msg = "This cash receipt number has already been used on a bulk recovery that has been completed. Please try again."
+  for(rec in transactions.Recoveries){
+    if(rec.Status=="pendingvoid" || rec.Status=="voided" || (rec.RecodeExt and rec.IsBulkedExt)){
+      actions.exitToNext()
+    } else {
+      var recov = find(x in Recovery where (x.LastBulkExt==true and x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber))
+      if(recov.getCount()>0){
+        transactionSet.reject( "payment", msg, null, null )
+      }
+    }
+  }
+
+   
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,38 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11A0 - Validate County")
+internal class CVXX11A0ValidateCounty {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossLocation.Country.Code == "US" and claim.LossLocation.County != null
+/*To verify county entered by user with County refernce file
+  Author: Eric Rawe
+  Date: 3/13/09
+  Sprint/Maint Defect: Defect 1636
+  Updated: tnewcomb 9/9/11 - Validate against the County typelist instead of CountyExt
+  Updated: tnewcomb 8/8/12 - Cleaning up Actions so there is no further confusion with CountyExt
+*//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  if (claim.LossLocation.County == null and claim.Catastrophe !=null){
+    claim.rejectField( claim.LossLocation.County, "newloss", "County required for Loss location for a Catastophe loss", null, null )
+  }else{
+    var counties : List<County> = County.getTypeKeys(false)
+    var states : List<State> = State.getTypeKeys(false)
+  
+    if(exists(cnty in counties where claim.LossLocation.County.equalsIgnoreCase(cnty.DisplayName))){
+      if(!exists(ste in states where claim.LossLocation.State == ste)){
+        claim.reject( "newloss", displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.StateExt, null, null )
+      }
+    }else{
+      claim.reject( "newloss", displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.CountyExt, null, null )
+    }
+  }
+} 
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().getDisplayName(), e, "" )  
+}
+/*end00rule*/
+  }
+}

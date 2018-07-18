@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  Lost Wages subviews
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="LostWagesSummaryDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Overall"/>
+      <RangeInput
+        id="PrimaryCoverage"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.PrimaryCoverage"
+        optionLabel="(Exposure.Coverage.Type!= null and Exposure.Coverage.Policy.Verified) ? Exposure.Coverage.covTypeDisplayName() : VALUE.toString()"
+        value="Exposure.PrimaryCoverage"
+        valueRange="Exposure.Coverage != null ? Exposure.Coverage.getCoverages() : new java.util.ArrayList()"/>
+      <!-- Coverage Subtype does not make sense for a work comp claim -->
+      <Input
+        action="UserContactDetailPopup.push(Exposure.AssignedUser)"
+        available="Exposure.AssignedUser.Contact != null"
+        id="AssignedUser_Name"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.AssignedUser.Name"
+        value="Exposure.AssigneeDisplayString"/>
+      <Input
+        id="AssignedGroup_Name"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.AssignedGroup.Name"
+        value="Exposure.AssigneeGroupOnlyDisplayString"/>
+      <Input
+        id="State"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.State"
+        value="Exposure.State"/>
+      <DateInput
+        dateFormat="short"
+        id="ReOpenDate"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.ReOpenDate"
+        value="Exposure.ReOpenDate"
+        visible=" exposure.ReOpenDate != null "/>
+      <Input
+        id="ReopenedReason"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.ReopenedReason"
+        value="Exposure.ReopenedReason"
+        visible=" exposure.ReOpenDate != null "/>
+      <Input
+        id="ClosedDate"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.ClosedDate"
+        value="Exposure.CloseDate"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <Input
+        id="ClosedOutcome"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.ClosedOutcome"
+        value="Exposure.ClosedOutcome"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <Input
+        id="CreateTime"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.CreateTime"
+        value="Exposure.CreateTime"/>
+      <InputSet
+        visible="Exposure.Claim.Policy.StatCodingEnabled">
+        <PolicyStatCodePickerInput
+          action="ClaimPolicyStatCodePickerPopup.push(Exposure.Claim)"
+          editable="true"
+          id="StatLine"
+          label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.StatLine"
+          value="Exposure.StatLine"
+          valueRange="Exposure.Claim.Policy.CappedStatCodes"/>
+        <InputSet
+          hideIfReadOnly="true"
+          visible="true">
+          <TextInput
+            id="StatLine_Warning"
+            value="displaykey.Java.StatCodes.StatCodeListCappedWarning(Exposure.Claim.Policy.StatCodeListCap, Exposure.Claim.Policy.StatCodes.length)"
+            visible="Exposure.Claim.Policy.StatCodeListCapped"/>
+        </InputSet>
+      </InputSet>
+      <InputDivider/>
+      <Label
+        id="RTWSection"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.RTW"/>
+      <InputSetRef
+        def="ReturnToWorkInputSet(Exposure.Claim.ensureClaimInjuryIncident(), true)"
+        id="RTW"
+        mode="&quot;WC&quot;"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Benefits.Compensation"/>
+      <Input
+        id="Exposure_WorkCompAWW"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.WorkCompAWW"
+        value="Exposure.Claim.EmploymentData.WageAmount"/>
+      <Input
+        editable="true"
+        id="DaysInWeek"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.DaysInWeek"
+        value="Exposure.DaysInWeek"/>
+      <InputDivider/>
+      <Input
+        editable="true"
+        id="LWImpairment"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.LWImpairment"
+        value="Exposure.Impairment"/>
+      <!-- <Input
+        editable="true"
+        id="LastDayWorked"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.LastDayWorked"
+        value="Exposure.LastDayWorked"/> -->
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.LostWages.Dependents"/>
+      <ListViewInput
+        def="EditableClaimantDependentsLV(Exposure.getClaimContactRolesByRole(&quot;claimantdep&quot;), Exposure, &quot;claimantdep&quot;)"
+        editable="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableWorkStatusChangesLV(Exposure.Claim.EmploymentData)"
+        editable="true"
+        label="displaykey.Web.Claim.LostWagesSummaryDV.WorkStatus"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Benefits.WageStatement"/>
+      <Input
+        editable="true"
+        id="Exposure_WageStmtSent"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtSent"
+        value="Exposure.WageStmtSent"/>
+      <Input
+        editable="true"
+        id="Exposure_WageStmtRecd"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtRecd"
+        value="Exposure.WageStmtRecd"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Coding"/>
+      <!-- <Input
+        editable="true"
+        id="JurisdictionState"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.JurisdictionState"
+        value="Exposure.JurisdictionState"/> -->
+      <Input
+        id="Segment"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Segment"
+        value="Exposure.Segment"/>
+      <Input
+        id="Strategy"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Strategy"
+        value="Exposure.Strategy"/>
+      <Input
+        id="ValidationLevel"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.ValidationLevel"
+        value="Exposure.ValidationLevel"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Financials"/>
+      <Input
+        formatType="currency"
+        id="RemainingReserves"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.RemainingReserves"
+        value="Exposure.ExposureRpt.RemainingReserves"/>
+      <Input
+        id="FuturePayments"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.FuturePayments"
+        value="Exposure.ExposureRpt.FuturePayments"/>
+      <Input
+        id="TotalPayments"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.TotalPayments"
+        value="Exposure.ExposureRpt.TotalPayments"/>
+      <Input
+        id="TotalRecoveries"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.TotalRecoveries"
+        value="Exposure.ExposureRpt.TotalRecoveries"/>
+      <Input
+        formatType="currency"
+        id="TotalIncurredNet"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.TotalIncurredNet"
+        value="Exposure.ExposureRpt.TotalIncurredNet"/>
+      <InputDivider/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

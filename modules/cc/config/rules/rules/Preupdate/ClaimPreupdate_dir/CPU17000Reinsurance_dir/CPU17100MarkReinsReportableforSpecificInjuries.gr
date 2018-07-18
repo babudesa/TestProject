@@ -1,0 +1,42 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPU17000Reinsurance_dir
+
+@gw.rules.RuleName("CPU17100 - Mark Reins Reportable for Specific Injuries")
+internal class CPU17100MarkReinsReportableforSpecificInjuries {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ReinsuranceReportable == null      
+
+  
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if (claim.LossType == LossType.TC_WC ) {
+  if (claim.ClaimInjuryIncident != null) {
+    if (claim.ClaimInjuryIncident.Severity == SeverityType.TC_FATAL /* death */) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Fatality
+    } else if (claim.ClaimInjuryIncident.BodyParts.hasMatch( \ b -> b.DetailedBodyPart == DetailedBodyPartType.TC_12 ) /* brain */) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Brain
+    } else if (claim.ClaimInjuryIncident.DetailedInjuryType == DetailedInjuryType.TC_02 /* amputation */ ) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Amputation
+    }
+  }
+} else {
+  for (incident in claim.InjuryIncidentsOnly) {
+    if (incident.Severity == SeverityType.TC_FATAL /* death */) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Fatality
+    } else if (incident.BodyParts.hasMatch( \ b -> b.DetailedBodyPart == DetailedBodyPartType.TC_12 ) /* brain */) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Brain
+    } else if (incident.DetailedInjuryType == DetailedInjuryType.TC_02 /* amputation */ ) {
+      claim.markClaimForReinsurance()
+      claim.ReinsuranceReason = displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.Injury.Amputation
+    }
+  }
+}/*end00rule*/
+  }
+}

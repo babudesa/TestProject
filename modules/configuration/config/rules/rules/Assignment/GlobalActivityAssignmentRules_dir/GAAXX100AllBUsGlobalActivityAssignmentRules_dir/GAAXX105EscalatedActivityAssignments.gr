@@ -1,0 +1,29 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAXX100AllBUsGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAXX105 - Escalated Activity Assignments")
+internal class GAAXX105EscalatedActivityAssignments {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/activity.Escalated==true/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(!util.user.GroupsHelper.isClaimManager(activity.AssignedUser)){ 
+    if(activity.AssignedUser!=activity.AssignedGroup.Supervisor){
+      activity.CurrentAssignment.assign( activity.AssignedGroup, activity.AssignedGroup.Supervisor );
+      actions.exit();
+    }else{
+      activity.CurrentAssignment.assign(activity.AssignedGroup.Parent, activity.AssignedGroup.Parent.Supervisor);
+      actions.exit();
+    }
+  }
+} catch(aex:gw.rules.AbortExecutionException) {
+    throw aex
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule().DisplayName, e, null )
+}
+
+
+/*end00rule*/
+  }
+}

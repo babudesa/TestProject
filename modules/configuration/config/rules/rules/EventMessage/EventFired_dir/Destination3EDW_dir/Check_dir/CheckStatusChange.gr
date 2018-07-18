@@ -1,0 +1,35 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Check_dir
+
+@gw.rules.RuleName("Check Status Change")
+internal class CheckStatusChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.EventName == "CheckStatusChanged") 
+// Kotteson 02/27/09 remove checkchanged  || MessageContext.EventName == "CheckChanged")/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.database.Query
+var aQuery = Query.make(Reserve)
+var msgCheck = messageContext.Root as Check;
+var f = util.gaic.EDW.EDWFunctionsFactory.getFinancialFunctions();
+
+f.sendCheckChanges( messageContext, msgCheck );
+
+if(msgCheck.Status == "voided" or msgCheck.Status == "stopped"){
+  for(payment in msgCheck.Payments){
+    aQuery.compare("Claim", Equals, msgCheck.Claim);
+    var reserves : java.util.List<Reserve> = aQuery.select().toList();
+    if (!reserves.Empty) {
+      for(reserve in reserves){
+        if(reserve.TransactionSet == payment.TransactionSet
+        && (payment.Status == "voided" || payment.Status == "stopped")
+        && reserve.Comments.equals("Offsetting reserve.")) {
+          f.sendReserveChanges(messageContext, reserve);
+        }
+      }  
+    }
+  }
+}
+/*end00rule*/
+  }
+}

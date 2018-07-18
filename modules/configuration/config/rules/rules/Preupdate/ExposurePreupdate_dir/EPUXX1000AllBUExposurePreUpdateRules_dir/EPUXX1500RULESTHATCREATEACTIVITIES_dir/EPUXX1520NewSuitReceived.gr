@@ -1,0 +1,56 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUXX1520 - New Suit Received")
+internal class EPUXX1520NewSuitReceived {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* New Suit Received
+  Sprint/Maintenance Release: 
+  Author: Eric Rawe
+  Date: ?
+  Updated: Eric Rawe - 4/22/10 - defect 3334 - Now for all Agri LOB only
+  Updated: dmonahan - 6/13 - added Agri/Excess/Umbrella loss types
+*/
+(exposure.Claim.LossType.Code== "AGRIAUTO" ||
+exposure.Claim.LossType.Code == "AGRILIABILITY" ||
+exposure.Claim.LossType.Code == "AGRIPROPERTY" ||
+exposure.Claim.LossType.Code == "AGRIXSUMBAUTO"||
+exposure.Claim.LossType.Code == "AGRIXSUMBLIAB" &&
+(exposure.Claim.AssignmentStatus == "assigned" &&
+exposure.Claim.IncidentReport == false &&
+exposure.Claim.State != "closed" &&
+exposure.Claim.State != "draft" &&
+//!exists(act in exposure.claim.Activities where act.ActivityPattern.Code=="ab_ecf_summons" and act.exposure==exposure ) &&
+exposure.ex_InSuit==false ))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for (document in exposure.Documents) { //this applies to each feature and not the claim
+    if((document.ex_Type== "Litigation" && document.ex_SubType=="Defense Attorney") &&
+    !exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="ab_ecf_summons" and act.Exposure==exposure )){
+    var ap = util.custom_Ext.finders.findActivityPattern( "ab_ecf_summons" )
+    var act=exposure.Claim.createActivityFromPattern( exposure, ap)    
+    act.assign(exposure.Claim.AssignedGroup, exposure.Claim.AssignedUser)
+   
+    }
+   }
+}
+catch(e){
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    gw.api.util.Logger.logDebug( gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenterSupport", 
+        "ClaimCenter@gaig.com", "ClaimCenter", 
+        "ClaimCenter Notification", "New Suit Received")
+  }
+  else{
+    gw.api.util.Logger.logDebug( gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenterDevemail", 
+        "ClaimCenter@gaig.com", "ClaimCenterDev", 
+        "ClaimCenterDev Notification", "New Suit Received")
+  }
+}
+ /*end00rule*/
+  }
+}

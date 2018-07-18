@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="MedicalDiagnosisLV"
+    validationExpression="validateCodes()">
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Variable
+      initialValue="gw.api.util.DateUtil.currentDate()"
+      name="currDate"/>
+    <Require
+      name="injury"
+      type="InjuryIncident"/>
+    <Require
+      name="isEditable"
+      type="Boolean"/>
+    <Variable
+      name="invalidCode"
+      type="String"/>
+    <!-- Toolbar flag defined here is used by toolbar buttons in the parent location -->
+    <RowIterator
+      editable="true"
+      elementName="aMedicalDiagnosis"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="injury.addToInjuryDiagnoses( aMedicalDiagnosis );"
+      toRemove="aMedicalDiagnosis.addNoteIfPrimaryDiagnosisIsRemoved(); removeICDCode(aMedicalDiagnosis.ICDCode.Code); injury.removeFromInjuryDiagnoses( aMedicalDiagnosis ); "
+      value="injury.InjuryDiagnoses">
+      <ToolbarFlag
+        condition="aMedicalDiagnosis.Contact != null and aMedicalDiagnosis.New != true and aMedicalDiagnosis.ICDCode != null"
+        name="reconfirmable"/>
+      <ToolbarFlag
+        condition="aMedicalDiagnosis.ICDCode != null and aMedicalDiagnosis.IsPrimary != true and aMedicalDiagnosis.Contact != null"
+        name="allowPrimary"/>
+      <Row
+        highlighted="aMedicalDiagnosis.IsPrimary == true"
+        id="MedicalDiagnosisRow">
+        <Cell
+          editable="aMedicalDiagnosis.ICDCode == null"
+          id="ICDCode"
+          inputConversion="findICD(VALUE)"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ICDCode"
+          numCols="6"
+          onChange="if (invalidCode != null){throw new gw.api.util.DisplayableException(&quot;Invalid ICD Code: &quot; + invalidCode)};"
+          postOnChange="true"
+          value="aMedicalDiagnosis.ICDCode"/>
+        <Cell
+          id="ICDDesc"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ICDCodeDescription"
+          value="aMedicalDiagnosis.ICDCode.CodeDesc"/>
+        <CheckBoxCell
+          editable="true"
+          id="Compensable"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.Compensable"
+          value="aMedicalDiagnosis.Compensable"/>
+        <CheckBoxCell
+          editable="true"
+          id="ICDMedicare"
+          label="&quot;ICD Medicare Reportable&quot;"
+          onChange="setICDCode(aMedicalDiagnosis)"
+          postOnChange="true"
+          value="aMedicalDiagnosis.ICDMedReportExt"/>
+        <CheckBoxCell
+          id="ICDPrimary"
+          label="&quot;Primary&quot;"
+          value="aMedicalDiagnosis.IsPrimary"/>
+        <TextCell
+          id="Version"
+          value="aMedicalDiagnosis.ICDCode.ICDVersionExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function findICD(icd: String): ICDCode {
+  pageProc.searchICDCode = icd
+  var value =   libraries.ICDCodeUtil.ICDSearch(icd, null, null, false, "ICD Codes", pageProc.getICDVersion(), true).FirstResult
+  if (value != null){
+    invalidCode = null
+    return value
+  }
+  else {
+    invalidCode = icd
+    return null
+  }
+}
+
+function validateCodes(): String{
+  if ((injury.InjuryDiagnoses.length > 1 && injury.InjuryDiagnoses.countWhere( \ i -> i.IsPrimary == true ) < 1 ) && isEditable){
+         return displaykey.Validation.ClaimFile.MedCaseMgmt.SelectPrimaryDiagnosisCode
+  }
+  for(code in injury.InjuryDiagnoses){
+    var count = 0
+    for(code2 in injury.InjuryDiagnoses){
+     if(code.ICDCode.Code == code2.ICDCode.Code){
+      count++ 
+     }
+    }
+    if(count > 1){
+      return "ICD Codes: Duplicate ICD Codes are not valid: " + code.ICDCode.Code
+    }
+  }
+  return null
+}
+
+function removeICDCode(code : String) {
+  if(pageProc.DiagnosticCodes.where(\ c -> c.ICDCode == code ).Count > 0){
+    pageProc.removeICDHelper(pageProc.DiagnosticCodes.where(\ c -> c.ICDCode == code ).first())
+  }
+ }
+
+function addICDCode(code : InjuryDiagnosis) {
+   var icd = pageProc.addDiagHelper()
+   icd.ICDCode = code.ICDCode.Code
+   pageProc.checkICDCode(icd.ContactICD, code.ICDCode.Code)  
+}
+
+function setICDCode(code : InjuryDiagnosis) {
+ if(code.ICDMedReportExt){
+     addICDCode(code)
+  } else{
+     if(pageProc.DiagnosticCodes.where(\ c -> c.ICDCode == code.ICDCode.Code ).Count > 0){
+       pageProc.removeICDHelper(pageProc.DiagnosticCodes.where(\ c -> c.ICDCode == code.ICDCode.Code ).first())
+     }
+  } 
+}]]></Code>
+  </ListViewPanel>
+</PCF>

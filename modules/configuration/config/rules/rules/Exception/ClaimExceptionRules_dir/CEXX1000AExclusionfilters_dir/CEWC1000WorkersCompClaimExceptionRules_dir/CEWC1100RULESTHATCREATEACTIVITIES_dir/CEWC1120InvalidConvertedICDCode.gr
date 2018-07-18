@@ -1,0 +1,28 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEWC1000WorkersCompClaimExceptionRules_dir.CEWC1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEWC1120 - Invalid Converted ICD Code")
+internal class CEWC1120InvalidConvertedICDCode {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isConvertedExt() &&
+exists(diagnosis in claim.ClaimInjuryIncident.InjuryDiagnoses where diagnosis.ICDCode.Code=="WCCONV")
+//If no valid ICD Code is available upon WC Claim Conversion, the ICD Code will be set to a default 
+//value of 'WCCONV'. If so, this rule will trigger an activity requesting the adjuster change the 
+//ICD Code to a valid value./*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "invalid_icd" ) 
+  if(!exists(act in claim.Activities where act.ActivityPattern.Code=="invalid_icd")){
+    claim.createActivityFromPattern(null, ap)
+  }else{
+    var lastActivity = claim.Activities.sortBy(\ a -> a.CreateTime).lastWhere(\ a -> a.ActivityPattern.Code=="invalid_icd")
+    if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( lastActivity.CreateTime, ScriptParameters.Activity_WCInvalidICDRecurrence )){
+      claim.createActivityFromPattern(null, ap)
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

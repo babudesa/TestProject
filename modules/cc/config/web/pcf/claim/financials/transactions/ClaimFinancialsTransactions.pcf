@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="perm.Claim.viewtransactiondetails(Claim)"
+    id="ClaimFinancialsTransactions"
+    title="perm.Claim.viewnettotalincurred(Claim) ? displaykey.JSP.ClaimFinancials.Financials.Incurred(util.CurrencyUtil.renderAsCurrency(util.Math.Nz(financials.FinancialsCalculationUtil.getTotalIncurredNet().getAmount(Claim).Amount), Claim.Currency), displaykey.JSP.ClaimFinancials.Financials.Transactions) : displaykey.JSP.ClaimFinancials.Financials.NoIncurred(displaykey.JSP.ClaimFinancials.Financials.Transactions)">
+    <LocationEntryPoint
+      signature="ClaimFinancialsTransactions(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="ClaimFinancialsTransactions(Claim : Claim, requestedOption : financials.ClaimFinancialsTransactionsOption)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="requestedOption"
+      type="financials.ClaimFinancialsTransactionsOption"/>
+    <Variable
+      initialValue="financials.ClaimFinancialsTransactionsUtil.getFilterOption(Claim, requestedOption)"
+      name="TxnFilterOption"
+      type="financials.ClaimFinancialsTransactionsOption"/>
+    <Screen
+      id="ClaimFinancialsTransactionsScreen">
+      <Toolbar>
+        <ToolbarRangeInput
+          id="TransactionsLVRangeInput"
+          postOnChange="true"
+          showNoneSelected="false"
+          sortValueRange="false"
+          value="TxnFilterOption"
+          valueRange="getFilterOptions()"/>
+      </Toolbar>
+      <PanelRef
+        def="TransactionsLV(Claim, TxnFilterOption)"
+        mode="TxnFilterOption.UiMode"/>
+    </Screen>
+    <Code><![CDATA[
+      function getFilterOptions() : financials.ClaimFinancialsTransactionsOption[] {
+        var options = new java.util.ArrayList<financials.ClaimFinancialsTransactionsOption>()
+        if(perm.Claim.genericviewtransactions) {
+          options.add(financials.ClaimFinancialsTransactionsOption.ALL)
+        }
+        if(perm.Claim.genericviewreserves) {
+          options.add(financials.ClaimFinancialsTransactionsOption.RESERVE)
+        }
+        if(perm.Claim.genericviewpayments) {
+          options.add(financials.ClaimFinancialsTransactionsOption.PAYMENT)
+        }
+        if(perm.Claim.genericviewrecoveries) {
+          options.add(financials.ClaimFinancialsTransactionsOption.RECOVERY)
+        }
+        if(perm.Claim.genericviewrecoveryreserves) {
+          options.add(financials.ClaimFinancialsTransactionsOption.RECOVERY_RESERVE)
+        }
+        options.add(financials.ClaimFinancialsTransactionsOption.CUSTOM)
+        return options as financials.ClaimFinancialsTransactionsOption[]
+      }
+      
+    ]]></Code>
+  </Page>
+</PCF>

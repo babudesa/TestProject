@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="(gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Properties&quot;) or gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Classcodes&quot;)) and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+    canVisit="(gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Properties&quot;) or gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Classcodes&quot;)) and perm.Policy.view(Claim) and perm.System.viewpolicy"
+    id="ClaimPolicyLocations"
+    title="displaykey.Web.ClaimPolicy.Locations">
+    <LocationEntryPoint
+      signature="ClaimPolicyLocations(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Screen
+      id="ClaimPolicyLocationsScreen">
+      <Toolbar>
+        <IteratorButtons
+          addVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+          hideIfReadOnly="false"
+          removeLabel="displaykey.Button.Delete"
+          removeVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"/>
+        <ToolbarButton
+          action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim)"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+          id="ClaimPolicyLocations_AddMoreLocationsButton"
+          label="displaykey.Button.AddMoreLocations"
+          visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim)"/>
+      </Toolbar>
+      <AlertBar
+        id="ClaimPolicyLocations_PartialListAlertBar"
+        label="displaykey.Web.ClaimPolicy.Locations.PartialList(Claim.Policy.TotalProperties)"
+        visible="Claim.Policy.Verified and (Claim.Policy.TotalProperties &gt;= 0) and (Claim.Policy.TotalProperties != Claim.Policy.Properties.length)"/>
+      <ListDetailPanel
+        selectionName="LocationBasedRU"
+        selectionType="LocationBasedRU">
+        <PanelRef
+          def="LocationsLV(Claim.Policy.Properties, Claim)"
+          mode="Claim.LossType"/>
+        <CardViewPanel>
+          <Card
+            id="LocationDetailCard"
+            title="displaykey.Web.ClaimPolicy.LocationDetail">
+            <PanelRef
+              def="LocationDetailPanelSet(LocationBasedRU)"
+              mode="Claim.LossType">
+              <Toolbar>
+                <ToolbarButton
+                  action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim, true);"
+                  confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+                  id="ClaimPolicyLocations_EditButton"
+                  label="displaykey.Button.Edit"
+                  visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim)"/>
+                <EditButtons
+                  cancelVisible="!Claim.Policy.Verified"
+                  editVisible="!Claim.Policy.Verified"
+                  updateVisible="!Claim.Policy.Verified"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+  </Page>
+</PCF>

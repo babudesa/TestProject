@@ -1,0 +1,24 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX2100MedicareRelated_dir
+
+@gw.rules.RuleName("EVXX2110 - Closed Exposure Updated")
+internal class EVXX2110ClosedExposureUpdated {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Closed && (exposure.Claimant as Person).MedicareEligibleExt != false 
+&&
+exposure.ClosedOutcome != ExposureClosedOutcomeType.TC_CLAIMDENIED/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.CMS.validation.*
+
+var cmsVal = new GeneralCMSValidation(exposure)
+CMSValidationUtil.validate(cmsVal)
+
+var validationMessage = cmsVal.ValidationMessage
+
+if(validationMessage != ""){
+  exposure.reject("newloss", validationMessage, null, null)
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,28 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir
+
+@gw.rules.RuleName("ClaimContactRole")
+internal class ClaimContactRole {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis ClaimContactRole &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.ClaimContact.Claim.LoadCommandID) &&
+messageContext.EventName == "ClaimContactRoleAdded"
+&& util.gaic.LitAdvisorFunctions.sendToLSS(messageContext.Root.ClaimContact.Claim.LossType)/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var claimContactRole = messageContext.Root as ClaimContactRole;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==claimContactRole.ClaimContact.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt){
+
+  var isClaimNew = false;
+
+  if (claimContactRole.ClaimContact.Claim.Changed && claimContactRole.ClaimContact.Claim.Policy.Changed){
+    isClaimNew = true;
+  }
+
+  if (claimContactRole.Role == "insured" || claimContactRole.Role == "claimant"){
+    util.gaic.LitAdvisorFunctions.sendClaimChanges( messageContext, claimContactRole.ClaimContact.Claim );
+  }
+}/*end00rule*/
+  }
+}

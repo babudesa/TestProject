@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Writing a Geocoding Plugin</title>
+    <link rel="StyleSheet" href="css/geocoding.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="geocoding.17.1.html#2057623">Geographic Data Integration</a> : Writing a Geocoding Plugin</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="2057623">Writing a Geocoding Plugin</a></div>
+      <div class="B_-_Body"><a name="2058431">If you want to support another geocoding service, write your own geocoding plugin and register it with the </a>system. Although the primary plugin interface that you need to implement is <span class="cv_-_computer_voice">GeocodePlugin</span>, Guidewire provides a built-in implementation of that interface. Its default behaviors may save you work, particularly if you do not support all features of the plugin. The built-in implementation is called <span class="cv_-_computer_voice">AbstractGeocodePlugin</span> and it is defined in the package <span class="cv_-_computer_voice">gw.api.geocode</span>.</div>
+      <div class="B_-_Body"><a name="2058485">If you use </a><span class="cv_-_computer_voice">AbstractGeocodePlugin</span> as your base class, effectively there are only three required methods to support basic geocoding and driving directions. You can to add (override) other methods if you want to support other features. </div>
+      <div class="B_-_Body"><a name="2057694">If those were the only methods you implement, the plugin works. However, it does not support some optional </a>features, such as address correction and finding addresses based on latitude and longitude coordinates. </div>
+      <div class="HS_-_Head_Sub"><a name="2057884">To write a geocoding plugin:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2057885">Write a new class in Studio that extends </a><span class="cv_-_computer_voice">AbstractGeocodePlugin</span>:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="2058897">class MyGeocodePlugin extends AbstractGeocodePlugin {</a></div>
+      <div class="LP_-_List_Para"><a name="2058898">Omit “</a><span class="cv_-_computer_voice">implements GeocodePlugin</span>” because <span class="cv_-_computer_voice">AbstractGeocodePlugin</span> already implements the interface.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2058899">To support geocoding, implement this required method:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2057999">geocodeAddressBestMatch</a></span> - Perform geocoding of addresses, returning lattitude and longitude properties within the returned <span class="cv_-_computer_voice">Address</span> objects.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2057943">To implement geocoding, see </a><a href="javascript:WWHClickedPopup('integration', 'geocoding.17.4.html#2057619', '');" title="Writing a Geocoding Plugin">"Geocoding an Address"</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2058014">To support driving directions, implement these required methods:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2058015">getDrivingDirections</a></span> - Get driving directions based on a start address and a destination address, as well as a switch that specifies miles or kilometers.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2058016">pluginSupportsDrivingDirections</a></span> - Return <span class="cv_-_computer_voice">true</span> from this simple method</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2058020">To implement driving directions, see </a><a href="javascript:WWHClickedPopup('integration', 'geocoding.17.4.html#2061833', '');" title="Writing a Geocoding Plugin">"Getting Driving Directions"</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2057924">If you want to support optional features, override additional methods. Be sure to let ClaimCenter know your </a>plugin supports these features by implementing the simple methods that identify feature support, such as <span class="cv_-_computer_voice">pluginSupportsMultipleCorrections</span>, which is discussed in the next section.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="2057619">Geocoding an Address</a></div>
+      <div class="B_-_Body"><a name="2057620">The </a><span class="e_-_emphasis">geocoding plugin</span> (<span class="cv_-_computer_voice">GeocodePlugin</span>) interface has one main method for geocoding that is required, the <span class="cv_-_computer_voice">geocodeAddressBestMatch</span> method. If that is the only method you override from <span class="cv_-_computer_voice">AbstractGeocodePlugin</span>, your plugin does not support optional features such as address correction. A Guidewire application communicates with the geocoding plugin through <span class="cv_-_computer_voice">Address</span> entities. Each <span class="cv_-_computer_voice">Address</span> entity contains standard <span class="cv_-_computer_voice">Address</span> properties such as <span class="ps_-_parameter_in_code_snippets">address</span><span class="cv_-_computer_voice">.AddressLine1</span> and <span class="ps_-_parameter_in_code_snippets">address</span><span class="cv_-_computer_voice">.Country</span>. </div>
+      <div class="B_-_Body"><a name="2058953">If ClaimCenter wants to geocode an address immediately, ClaimCenter calls one of the geocoding plugin </a>methods. In situations in which ClaimCenter wants only the best match for a geocoding request, it calls the plugin method <span class="cv_-_computer_voice">geocodeAddressBestMatch</span>.</div>
+      <div class="B_-_Body"><a name="2059546">If you trigger geocoding from the user interface, geocoding is synchronous. In other words, the user interface </a>blocks until the plugin returns the geocoding result. There is no built-in timeout between the application and the geocoding plugin. Your own geocoding plugin must encode a timeout so it can give up on the external system, throw a <span class="cv_-_computer_voice">RemoteException</span>, and let the user interface continue.</div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2061796">The included MapPoint geocoding plugin implements a timeout for its connection to MapPoint. It </a>returns an error to ClaimCenter if it does not get a response within that amount of time. This timeout is implemented in its outgoing web service request to MapPoint. If you look in Studio, notice that MapPoint is registered as a web service and the configuration pane includes a timeout value.</div>
+      <div class="B_-_Body"><a name="2061800">ClaimCenter also geocodes in the background as a batch script and calls this plugin as necessary to geocode an </a>address. See the <a href="javascript:WWHClickedPopup('admin', 'configndeploy.04.5.html#1816246', '');" title="Using the Geocoding Feature">"Using the Geocoding Feature"</a> for more configuration information.</div>
+      <div class="B_-_Body"><a name="2059241">The </a><span class="cv_-_computer_voice">geocodeAddressBestMatch</span> method takes an address (<span class="cv_-_computer_voice">Address</span>) entity and returns another address with an appropriate <span class="cv_-_computer_voice">GeocodeStatus</span> value. The <span class="cv_-_computer_voice">GeocodeStatus</span> property contains a status from the <span class="cv_-_computer_voice">GeocodeStatus</span> typelist. Values in this typelist include <span class="cv_-_computer_voice">EXACT</span>, <span class="cv_-_computer_voice">FAILURE</span>, <span class="cv_-_computer_voice">STREET</span>, <span class="cv_-_computer_voice">POSTALCODE</span>, or <span class="cv_-_computer_voice">CITY</span>. For more information, see <a href="javascript:WWHClickedPopup('integration', 'geocoding.17.5.html#2058217', '');" title="Geocoding Status Codes">"Geocoding Status Codes"</a>. If geocoding was successful, also set the <span class="cv_-_computer_voice">Latitude</span> and <span class="cv_-_computer_voice">Longitude</span> properties in the address.</div>
+      <div class="B_-_Body"><a name="2059150">Do </a><span class="s_-_strong">not</span> modify the incoming address parameter. However, you can clone it with <span class="cv_-_computer_voice">address.clone()</span> to make a copy or create a new address with the Gosu code “<span class="cv_-_computer_voice">new</span><span class="cv_-_computer_voice">&nbsp;</span><span class="cv_-_computer_voice">Address()</span>”.</div>
+      <div class="B_-_Body"><a name="2062981">For example, create a new address with exact geocoding status and explicit coordinates:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2059156">a = new Address()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2059166">a.GeocodeStatus = GeocodeStatus.TC_EXACT</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2059195">a.Latitude = 42.452389</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2059211">a.Longitude = -71.375942</a></PRE>
+      <div class="B_-_Body"><a name="2059403">In a real implementation, your code gets the coordinate values from an external service such as a web service </a>rather than setting them explicitly.</div>
+      <div class="B_-_Body"><a name="2062859">If the geocoding system modified other properties as part of correction or clarification, set those properties as </a>well. All blank properties in a returned address are assumed to be blank purposely. </div>
+      <div class="B_-_Body"><a name="2062886">For example, address properties in return data might be unknown or inappropriate for that geocode status. If the </a>geocode status represents the weighted center of a city, the street address might be blank because the coordinates do not represent a specific street address. ClaimCenter treats the set of properties returned by the geocoding plugin to be the full set of properties to show to the user or log to the geocoding corrections table.</div>
+      <div class="B_-_Body"><a name="2063328">The returned addresses might return variants of an address. For example, the street address “123 Main Street” </a>might match the geocoding data for “123 North&nbsp;Main Street” and “123 South Main Street”, each with different coordinates. The geocoding system might return both results for the user to select among. Differences might be due to differences in geocoding data (<span class="cv_-_computer_voice">Street</span> versus <span class="cv_-_computer_voice">St</span>), rather than actual mistakes. Similarly, some services automatically remove Suite/Apartment/Floor numbers from addresses, or other changes. For the <span class="cv_-_computer_voice">geocodeAddressBestMatch</span> method, <span class="s_-_strong">only return the best match</span>. In contrast, you can return multiple results in a different plugin method, see <a href="javascript:WWHClickedPopup('integration', 'geocoding.17.4.html#2062484', '');" title="Writing a Geocoding Plugin">"Supporting Multiple Address Corrections"</a>.</div>
+      <div class="B_-_Body"><a name="2063152">The following is a longer example of how someone might interact with an external system and return a standard </a>best match geocoding response.</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063160">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063161">  override function geocodeAddressBestMatch(address: Address) : Address</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063162">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063163">    if (address == null) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063164">      return null;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063165">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063166">    var newAddress = new Address();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063167">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063209">&nbsp;</a>&nbsp;&nbsp;&nbsp;newAddress.markAsNotPersisting();</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063168">    var results : soap.MapPoint.entity.FindResults;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063208">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063169">    try {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063170">      results = getGeocodeInternal(address, _bestMatchFindOptions);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063171">    } </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063207">&nbsp;</a>&nbsp;&nbsp;&nbsp;catch (e : org.apache.axis.AxisFault) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063172">      var faultActor = e.FaultActor;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063173">      java.lang.System.Err.println("FaultActor: "+faultActor);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063174">      e.printStackTrace();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063178">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063200">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (e.getCause() == null &amp;&amp; faultActor != null &amp;&amp; faultActor.contains("mappoint.net")) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063179">        newAddress.GeocodeStatus = GeocodeStatus.TC_FAILURE;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063180">        address.GeocodeStatus = GeocodeStatus.TC_FAILURE;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063181">        return newAddress;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063182">      } else {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063183">        throw new RuntimeException("Unable to geocode address: '" + this + "'", e);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063184">      }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063185">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063186">    if (results == null || results.NumberFound == 0) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063187">      newAddress.GeocodeStatus = GeocodeStatus.TC_FAILURE;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063188">      address.GeocodeStatus = GeocodeStatus.TC_FAILURE;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063189">      return newAddress;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063190">    } </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063214">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063191">    var firstFound = results.Results.FindResult[0];</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063192">    setAddressFieldsFromFindResult(newAddress, firstFound);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063193">    address.GeocodeStatus = newAddress.GeocodeStatus;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063194">    address.Latitude = newAddress.Latitude</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063195">    address.Longitude = newAddress.Longitude</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063196">    return newAddress;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063155">  }</a></PRE>
+      <div class="HS_-_Head_Sub"><a name="2062484">Supporting Multiple Address Corrections</a></div>
+      <div class="B_-_Body"><a name="2063252">If your geocoding system can provide a </a><span class="s_-_strong">list</span> of potential addresses with address corrections, implement the <span class="cv_-_computer_voice">geocodeAddressWithCorrections</span> method. Additionally, implement the <span class="cv_-_computer_voice">pluginSupportsCorrections</span> method and return <span class="cv_-_computer_voice">true</span> to tell the application you support this feature.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2098272">The default configuration of ClaimCenter never calls the methods </a><span class="cv_-_computer_voice">pluginSupportsCorrections</span> or <span class="cv_-_computer_voice">geocodeAddressWithCorrections</span>. If you modify the application to implement corrections behavior, your new PCF code would call the plugin methods <span class="cv_-_computer_voice">pluginSupportsCorrections</span> and <span class="cv_-_computer_voice">geocodeAddressWithCorrections</span> to connect to the external system.</div>
+      <div class="B_-_Body"><a name="2062485">In contrast to the </a><span class="cv_-_computer_voice">geocodeAddressBestMatch</span> method, this method returns a list of addresses rather than a single address. Despite what the name might imply, both methods can return address corrections or clarifications, or leave some properties blank if they were not used to generate the coordinates. (See earlier in this section for a discussion of address correction). However, the system calls this method if the context can handle a list of corrections. For example, a user interface context might support a user choosing among geocoding results to identify the truly intended address.</div>
+      <div class="B_-_Body"><a name="2063234">The result list must be a standard </a><span class="cv_-_computer_voice">List</span> (<span class="cv_-_computer_voice">java.util.List</span>) containing only <span class="cv_-_computer_voice">Address</span> entities. This type of object can be described in Gosu using the generic syntax <span class="cv_-_computer_voice">List&lt;Address&gt;</span>. See <a href="javascript:WWHClickedPopup('gosu', 'generics.18.1.html#1455314', '');" title="Gosu Generics">“Gosu Generics” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('gosu', 'generics.18.1.html#1455314', '');" title="Gosu Generics">Gosu Reference Guide</a></span> for more about how generics provide a powerful language tool for abstracting collections in a strongly-typed way. </div>
+      <div class="B_-_Body"><a name="2062493">If the geocoding service does not support multiple corrections, this method may simply return a one-item list </a>containing the results of a call to <span class="cv_-_computer_voice">geocodeAddressBestMatch</span>. The built-in <span class="cv_-_computer_voice">AbstractGeocodePlugin</span> class implements this behavior, and you can base your class on it.</div>
+      <div class="HS_-_Head_Sub"><a name="2061665">Geocoding Error Handling</a></div>
+      <div class="B_-_Body"><a name="2061666">If the plugin fails to connect to the remote geocoding data source, this method throws the exception </a><span class="cv_-_computer_voice">java.rmi.RemoteException</span>. This plugin must <span class="s_-_strong">never</span> set the geocode status of an address to <span class="cv_-_computer_voice">NONE</span>. Instead, throw an exception if it is a retryable error. See <a href="javascript:WWHClickedPopup('integration', 'geocoding.17.5.html#2058217', '');" title="Geocoding Status Codes">"Geocoding Status Codes"</a> for more information.</div>
+      <div class="H2_-_Heading_2"><a name="2061698">Getting an Address from Coordinates (Reverse Geocoding)</a></div>
+      <div class="B_-_Body"><a name="2062044">Some geocoding services support getting an address from latitude and longitude coordinates, sometimes called </a><span class="e_-_emphasis">reverse geocoding</span>. If your service supports this, then you can override the following methods in <span class="cv_-_computer_voice">AbstractGeocodePlugin</span> to implement this. There are two types of reverse geocoding supported in ClaimCenter, returning a single address, and returning multiple addresses, and you can support one or both. Implementing this method is required if you want to support all mapping.</div>
+      <div class="B_-_Body"><a name="2062106">To implement single-result reverse geocoding, first implement the method </a><span class="cv_-_computer_voice">pluginSupportsFindByGeocode</span> and return <span class="cv_-_computer_voice">true</span>. Next, implement the <span class="cv_-_computer_voice">getAddressByGeocodeBestMatch</span> method, which takes a latitude coordinate and a longitude coordinate. Return an address with as many properties set as your geocoding system provides.</div>
+      <div class="B_-_Body"><a name="2062138">To implement multiple-result reverse geocoding, first implement the method </a><span class="cv_-_computer_voice">pluginSupportsFindByGeocodeMultiple</span> and return <span class="cv_-_computer_voice">true</span>. Next, implement the <span class="cv_-_computer_voice">getAddressByGeocode</span> method, which takes a latitude coordinate, a longitude coordinate, and a maximum number of results. If maximum number of results parameter is zero or negative, this method must return all results. As with the geocoding multiple-result methods, this returns a list of <span class="cv_-_computer_voice">Address</span> entities, specified with the generics syntax <span class="cv_-_computer_voice">List&lt;Address&gt;</span>. See the geocoding section for a more information about generics syntax.</div>
+      <div class="H2_-_Heading_2"><a name="2061833">Getting Driving Directions</a></div>
+      <div class="B_-_Body"><a name="2061827">ClaimCenter </a>and ContactCenter optionally can display driving directions and other travel information. You can support this by implementing methods on the <span class="cv_-_computer_voice">GeocodePlugin</span> interface. To support driving directions, implement these required methods:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2059589">getDrivingDirections</a></span> - Get driving directions based on a start address and a destination address, as well as a switch that specifies miles or kilometers.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2059610">pluginSupportsDrivingDirections</a></span> - Return <span class="cv_-_computer_voice">true</span> from this simple method</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2063682">Driving directions are enabled by default if you have geocoding enabled in the user interface. To disable driving </a>directions even in cases in which geocoding is enabled, you need to edit the relevant PCF pages. </div>
+      <div class="B_-_Body"><a name="2059614">It is important to understand that ClaimCenter does </a><span class="s_-_strong">not</span> require that the driving directions request be handled by the same external service as geocoding requests. If desired, the plugin could contact different services for these types of requests. </div>
+      <div class="B_-_Body"><a name="2071614">The interface for driving directions is a single method called </a><span class="cv_-_computer_voice">getDrivingDirections</span>. If the user requests driving directions, ClaimCenter calls the geocoding plugin method <span class="cv_-_computer_voice">getDrivingDirections</span> once for each request. From a programming perspective, the method and the request are <span class="e_-_emphasis">synchronous</span> in the sense that the method must not return until the request is complete. However, from a user perspective it may seem <span class="e_-_emphasis">asynchronous</span> because ClaimCenter may request multiple driving directions requests without showing them to the user immediately. For example, ClaimCenter may request directions from one insured’s home address to nine different auto repair shops in preparation for users to request a map for one of them.</div>
+      <div class="B_-_Body"><a name="2071624">This method takes two </a><span class="cv_-_computer_voice">Address</span> entities. The method must send these addresses to a remote driving directions service and return the results. If driving time and a map illustrating the route between the two addresses are available, the method returns those also. </div>
+      <div class="B_-_Body"><a name="1934833">The address properties already includes latitude and longitude coordinates before calling the plugin. Because </a>some services just use the latitude and longitude, driving directions can be to or from an inexact address such as a postal code rather than exact addresses. </div>
+      <div class="B_-_Body"><a name="2060964">The plugin must return a </a><span class="cv_-_computer_voice">DrivingDirections</span> object that encapsulates the results. This class is in the <span class="cv_-_computer_voice">gw.api.contact</span> package namespace. To create one, you have two options.</div>
+      <div class="B_-_Body"><a name="2063733">You can directly create a new driving directions object:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2063734">var dd = new DrivingDirections()</a></div>
+      <div class="B_-_Body"><a name="2063735">Alternatively, you can use a helper method to initialize the object:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2060979">uses gw.api.geocode.GeocodeUtils</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2062736">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2062737">var dd = GeocodeUtils.createPreparedDrivingDirections(startAddress, endAddress, unitOfDist)</a></PRE>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2096743">The driving directions object is implemented as a Guidewire internal Java class, </a><span class="s_-_strong">not</span> a Guidewire entity. This distinction is important because you cannot extend its data model.</div>
+      <div class="HS_-_Head_Sub"><a name="2096744">Overview Maps</a></div>
+      <div class="B_-_Body"><a name="2063769">If your service supports overview maps, first implement the method </a><span class="cv_-_computer_voice">pluginReturnsOverviewMapWithDrivingDirections</span> and return <span class="cv_-_computer_voice">true</span>.</div>
+      <div class="B_-_Body"><a name="2063770">Next, set the following properties on the driving directions object.</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2062244">MapOverviewUrl</a></span> - a URL of the overview map shows the entire journey, as a <span class="cv_-_computer_voice">MapImageUrl</span> object, which is a simple object containing two properties:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2062245">MapImageUrl</a></span> - A fully-formed and valid URL string</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2062246">MapImageTag</a></span> - The text of the best HTML image element (in other words, an HTML <span class="cv_-_computer_voice">&lt;IMG&gt;</span> tag) that properly displays this map. This text may include, for example, the <span class="cv_-_computer_voice">height</span> and <span class="cv_-_computer_voice">width</span> attributes of the map, if they are known.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2063776">hasMapOverviewUrl</a></span> - Set to <span class="cv_-_computer_voice">true</span> if there is a URL of the overview map shows the entire journey</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2063746">For example:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2063747">dd.MapOverviewUrl = new MapImageUrl()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063753">dd.MapOverviewUrl.MapImageUrl = "http://myserver/mapengine?lat=3.9&amp;long=5.5"</a></PRE>
+      <div class="B_-_Body"><a name="2063782">If you want to know how map data is used in the user interface, see the PCF file </a><span class="cv_-_computer_voice">AddressBookDirectionsDV.pcf</span>.</div>
+      <div class="HS_-_Head_Sub"><a name="2062428">Adding Segments of the Journey with Optional Maps</a></div>
+      <div class="B_-_Body"><a name="2062429">If you want to provide actual driving directions, you must also add driving directions elements that represent the </a>segments of the journey.</div>
+      <div class="B_-_Body"><a name="2063730">Each </a><span class="cv_-_computer_voice">DrivingDirections</span> object contains various properties that relate to the entire journey, and then contains a list of journey segments in the form of an array of <span class="cv_-_computer_voice">DrivingDirectionsElem</span> objects. Each object in the array represents one segment such as “Turn right on Main Street and drive 40 miles”. Many properties are set up automatically if you use <span class="cv_-_computer_voice">createPreparedDrivingDirections</span> as described earlier. </div>
+      <div class="B_-_Body"><a name="2062206">For each new segment, you do not need to create </a><span class="cv_-_computer_voice">DrivingDirectionsElem</span> directly, instead call the <span class="cv_-_computer_voice">addNewElement</span> method on the <span class="cv_-_computer_voice">DrivingDirections</span> object:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2061108">drivingdirections.addNewElement(String formattedDirections, Double distance, Integer duration)</a></div>
+      <div class="B_-_Body"><a name="2062338">The </a><span class="cv_-_computer_voice">formattedDirections</span> object may represent either a discrete stage in the directions such as <span class="cv_-_computer_voice">"Turn left </span><span class="cv_-_computer_voice">onto I-80 for 10 miles"</span>. It also could represent a note or milestone not corresponding to a stage, for example <span class="cvt_-_computer_voice_table">"</span><span class="cv_-_computer_voice">Start trip"</span>. The exact format and content of the textual description depends greatly on your geocoding service, and may or may not include HTML formatting.</div>
+      <div class="B_-_Body"><a name="2062339">If your service supports multiple individual maps other than the overview, repeatedly call the method </a><span class="cv_-_computer_voice">addNewMapURL(</span><span class="ps_-_parameter_in_code_snippets">urlString</span><span class="cv_-_computer_voice">)</span> on the driving directions object to add URLs for maps. There is no requirement for the number of maps to match the number of segments of the journey. The position in the map URL list does not have a fixed correspondence to a segment number. However, always add map URLs in chronological order for the journey. In other words, generate the segments in the expected order from the start address to the end address.</div>
+      <div class="B_-_Body"><a name="2062317">If you add individual maps like this, also implement the method </a><span class="cv_-_computer_voice">pluginReturnsStepByStepMapsWithDrivingDirections</span> and return <span class="cv_-_computer_voice">true</span>.</div>
+      <div class="HS_-_Head_Sub"><a name="2062360">Extracting Data from Driving Directions in PCF Files</a></div>
+      <div class="B_-_Body"><a name="2063847">If you want to extract information from </a><span class="cv_-_computer_voice">DrivingDirections</span> in PCF code or other Gosu code, be aware there are properties you can extract, such as <span class="cv_-_computer_voice">TotalDistance</span>, <span class="cv_-_computer_voice">TotalTimeInMinutes</span>, <span class="cv_-_computer_voice">GCDistance</span>, and <span class="cv_-_computer_voice">GCDistanceString</span>. Methods with GC in the name refer to the great circle and great circle distance, which is the distance between two points on the surface of a sphere. It is measured along a path on the surface of the Earth’s curved 3D surface, in contrast to point-to-point through the Earth’s interior. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2063890">In Gosu, the address entity contains utility methods for calculating great circle distances. For </a>example, <span class="cv_-_computer_voice">address.getDistanceFrom( latitudeValue, longitudeValue )</span></div>
+      <div class="B_-_Body"><a name="2063848">The </a><span class="cv_-_computer_voice">description</span> properties from the start and end addresses are also copied into the <span class="cv_-_computer_voice">Start</span> and <span class="cv_-_computer_voice">Finish</span> properties on <span class="cv_-_computer_voice">DrivingDirections</span>. </div>
+      <div class="B_-_Body"><a name="2063908">Refer to the Gosu API Reference in Studio for the full set of properties. </a></div>
+      <div class="HS_-_Head_Sub"><a name="1927959">Error Handling</a></div>
+      <div class="B_-_Body"><a name="2062366">If the plugin fails to connect to the remote service, throw the exception </a><span class="cv_-_computer_voice">java.rmi.RemoteException</span>.</div>
+      <div class="H2_-_Heading_2"><a name="2062535">Getting a Map For an Address</a></div>
+      <div class="B_-_Body"><a name="2062653">Some geocoding services support getting a map from an address. If your service supports it, first implement the </a><span class="cv_-_computer_voice">pluginSupportsMappingByAddress</span> method and return true to tell the application you support this feature. Next, implement the method <span class="cv_-_computer_voice">getMapForAddress</span>, which takes an <span class="cv_-_computer_voice">Address</span> and a unit of distance (miles or kilometers).</div>
+      <div class="B_-_Body"><a name="2062654">Your </a><span class="cv_-_computer_voice">getMapForAddress</span> method must return a map image URL in a <span class="cv_-_computer_voice">MapImageUrl</span> object. This is a simple wrapper object containing a <span class="cv_-_computer_voice">String</span> for a map URL.</div>
+      <div class="B_-_Body"><a name="2063708">The following demonstrates a simple (fake) implementation:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2063714">override function getMapForAddress(address: Address, unit: UnitOfDistance) : MapImageUrl {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063821">&nbsp;</a>&nbsp;&nbsp;var i = new MapImageUrl()&nbsp;&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063798">&nbsp;</a>&nbsp;i.MapImageUrl = "http://myserver/mapengine?lat=3.9&amp;long=5.5"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063715">&nbsp;</a>&nbsp;return i;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063716">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2063709">&nbsp;</a></PRE>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

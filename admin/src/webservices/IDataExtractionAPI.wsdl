@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://api.webservices.cc.guidewire.com/" xmlns:intf="http://api.webservices.cc.guidewire.com/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://entity.webservices.cc.guidewire.com/" xmlns:tns2="http://fault.webservices.cc.guidewire.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><wsdl:types><schema targetNamespace="http://entity.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="NVParam"><xsd:annotation><xsd:documentation>A simple container for a name/value pair</xsd:documentation></xsd:annotation><sequence><element name="ParamName" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The name of the parameter</xsd:documentation></xsd:annotation></element><element name="ParamValue" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The value of the parameter</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="ArrayOfNVParam"><complexContent><restriction base="soapenc:Array"><attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:NVParam[]"/></restriction></complexContent></complexType></schema><schema targetNamespace="http://fault.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="SOAPException"><xsd:annotation><xsd:documentation>A generic SOAP exception.</xsd:documentation></xsd:annotation><sequence><element name="Message" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The message associated with this exception</xsd:documentation></xsd:annotation></element><element name="OtherMessages" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Other messages attached to this exception. This message may contain information
+related to other exceptions that occurred during a SOAP call, but not directly
+associated with this particular exception.</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="SOAPSenderException"><xsd:annotation><xsd:documentation>SOAPSenderException is the base class for all exceptions that resulted from
+a sender error. This usually means that required data was not properly encoded
+or was absent. Senders should not send the message again unless some steps have
+been taken to make the encoded data valid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="DataConversionException"><xsd:annotation><xsd:documentation>Thrown by many APIs when they encounter a problem translating a SOAP data object into
+an internal system object.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="BadIdentifierException"><xsd:annotation><xsd:documentation>Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect).</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="PermissionException"><xsd:annotation><xsd:documentation>Thrown when the authenticated SOAP user does not have permission to
+perform the requested operation</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="SOAPServerException"><xsd:annotation><xsd:documentation>SOAPServerException is the base class for all exceptions that resulted from
+a server error. This is something of a catch-all exception type insofar as
+some things which might in fact be considered SOAPSenderExceptions are reported
+as SOAPServerExceptions. Perhaps a rule failed or something else. Generally it
+indicates a problem in the server that is likely retryable at some future time.
+The database being down, an unavailable plugin, etc would fall into this catagory.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="ServerStateException"><xsd:annotation><xsd:documentation>ServerStateException is thrown when a request is made at a time the
+server is in a state that disallows the request. An example is if
+an attempt is made to add a claim and the server is in maintenance
+mode.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="SOAPRetryableException"><xsd:annotation><xsd:documentation>SOAPRetryableException is the class for all exceptions that are retryable
+immediately. The primary example of this is ConcurrentDataChangeException.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="LoginException"><xsd:annotation><xsd:documentation>Class of exceptions thrown when a user tries to log in and an authentication failure occurs.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:PermissionException"><sequence/></extension></complexContent></complexType><complexType name="EntityStateException"><xsd:annotation><xsd:documentation>Thrown when an attempt is made to manipulate an object that is in a state
+that prevents the operation from being performed. An example is trying to
+modify a Claim that is marked as closed.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="DuplicateKeyException"><xsd:annotation><xsd:documentation>Throws if a duplicate data exception is detected in the database. I.e. a unique index violation.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldConversionException"><xsd:annotation><xsd:documentation>Thrown when a data type cannot be converted into the native data type.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldFormatException"><xsd:annotation><xsd:documentation>Thrown when the input type does not match the format specified in the metadata. I.e. a string is too long.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="RequiredFieldException"><xsd:annotation><xsd:documentation>Thrown when required data is missing from a bean.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="UnknownTypeKeyException"><xsd:annotation><xsd:documentation>Thrown when a typekey value isn't available on the server. This exception can only
+happen if the SOAP WSDL that is being used on the remote side is invalid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="BatchProcessException"><xsd:annotation><xsd:documentation>SOAP Exception specific to batch process operations</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="AlreadyExecutedException"><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType></schema></wsdl:types>
+  <wsdl:message name="findCreatedExposuresAndRenderWithTemplateByNameResponse">
+    <wsdl:part name="findCreatedExposuresAndRenderWithTemplateByNameReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Info for each exposure created in the given time period.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="viewClaimAndRenderWithTemplateByNameRequest">
+    <wsdl:part name="claimNumber" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">     the number of the claim. Either this or claimId should be non null.
+If both claimId and claimNumber are specified, claimNumber is ignored</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="claimId" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">         the public id of the claim. Either this or claimNumber should be non null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="params" type="tns1:ArrayOfNVParam">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">          parameters (name value pairs) to be inserted into the template</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="templateFileName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The name of the template file, which must be in config/templates/dataextraction</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="PermissionException">
+    <wsdl:part name="fault" type="tns2:PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="BadIdentifierException">
+    <wsdl:part name="fault" type="tns2:BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="findClaimAndRenderWithTemplateByNameRequest">
+    <wsdl:part name="policyNumber" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">    the number of the policy. Either this or policyId should be non null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="policyId" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">        the public id of the policy. Either this or policyNumber should be non null.
+If both policyId and policyNumber are specified, policyNumber is ignored</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="params" type="tns1:ArrayOfNVParam">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">          parameters (name value pairs) to be inserted into the template</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="templateFileName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The name of the template file, which must be in config/templates/dataextraction</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="viewClaimAndRenderWithTemplateByNameResponse">
+    <wsdl:part name="viewClaimAndRenderWithTemplateByNameReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the result of executing the template with the given claim and parameters</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="findEntityAndRenderWithTemplateByNameResponse">
+    <wsdl:part name="findEntityAndRenderWithTemplateByNameReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the result of executing the template with the given entity and parameters</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ServerStateException">
+    <wsdl:part name="fault" type="tns2:ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPException">
+    <wsdl:part name="fault" type="tns2:SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="findCreatedExposuresAndRenderWithTemplateByNameRequest">
+    <wsdl:part name="startDate" type="xsd:dateTime">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">       The start of the desired time period. Can be null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="endDate" type="xsd:dateTime">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">         The end of the desired time period. Can be null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="templateFileName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The name of the template file, which must be in config/templates/dataextraction</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="viewUserAndRenderWithTemplateByNameResponse">
+    <wsdl:part name="viewUserAndRenderWithTemplateByNameReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the result of executing the template with the user, activities, claims and parameters</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="findClaimAndRenderWithTemplateByNameResponse">
+    <wsdl:part name="findClaimAndRenderWithTemplateByNameReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the result of executing the template with the found claims and parameters</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="viewUserAndRenderWithTemplateByNameRequest">
+    <wsdl:part name="userName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">        the user name of the user to be viewed</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="getActivities" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">   if true, the users activities will be available to the template as &quot;activities&quot;.
+if false, &quot;activities&quot; will be null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="getClaims" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">       if true, the users claims will be available to the template as &quot;claims&quot;.
+if false, &quot;claims&quot; will be null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="params" type="tns1:ArrayOfNVParam">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">          parameters (name value pairs) to be inserted into the template</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="templateFileName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The name of the template file, which must be in config/templates/dataextraction</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="findEntityAndRenderWithTemplateByNameRequest">
+    <wsdl:part name="entityType" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">    the name of the entity type, for example User or Activity</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="entityPublicId" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the public id of the entity to find</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="params" type="tns1:ArrayOfNVParam">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">        parameters (name value pairs) to be inserted into the template</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="templateName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">  The name of the template file, which must be in config/templates/dataextraction</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="IDataExtractionAPI">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Guidewire Software
+Data extraction API that uses Gosu to render the results
+@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates
+</wsdl:documentation>
+    <wsdl:operation name="findClaimAndRenderWithTemplateByName" parameterOrder="policyNumber policyId params templateFileName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds the claims with the given policy number and then evaluates the named template. The list of matching claims
+is available as &quot;claim&quot; in the evaluation context of the template. Also, the array of parameters is available in
+the context as a Map called &quot;parameters&quot;
+&lt;br&gt;@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates</wsdl:documentation>
+      <wsdl:input message="impl:findClaimAndRenderWithTemplateByNameRequest" name="findClaimAndRenderWithTemplateByNameRequest"/>
+      <wsdl:output message="impl:findClaimAndRenderWithTemplateByNameResponse" name="findClaimAndRenderWithTemplateByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="findCreatedExposuresAndRenderWithTemplateByName" parameterOrder="startDate endDate templateFileName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds the exposures created in the given time period and then evaluates the named template. The list of exposures
+is available as &quot;exposures&quot; in the evaluation context of the template. Also, the array of parameters is available
+in the context as a Map called &quot;parameters&quot;
+&lt;br&gt;@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates</wsdl:documentation>
+      <wsdl:input message="impl:findCreatedExposuresAndRenderWithTemplateByNameRequest" name="findCreatedExposuresAndRenderWithTemplateByNameRequest"/>
+      <wsdl:output message="impl:findCreatedExposuresAndRenderWithTemplateByNameResponse" name="findCreatedExposuresAndRenderWithTemplateByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="findEntityAndRenderWithTemplateByName" parameterOrder="entityType entityPublicId params templateName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds the specified entity and evaluates the given template, given by its name. The entity is available as
+&quot;entityRoot&quot; in the evaluation context of the template. Also, the array of parameters is available in the
+context as a Map called &quot;parameters&quot;
+&lt;br&gt;@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates</wsdl:documentation>
+      <wsdl:input message="impl:findEntityAndRenderWithTemplateByNameRequest" name="findEntityAndRenderWithTemplateByNameRequest"/>
+      <wsdl:output message="impl:findEntityAndRenderWithTemplateByNameResponse" name="findEntityAndRenderWithTemplateByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="viewClaimAndRenderWithTemplateByName" parameterOrder="claimNumber claimId params templateFileName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Looks up a claim by number or public id and evaluates the named template. The claim is available as &quot;claim&quot;
+in the evaluation context of the template. Also, the array of parameters is available in the context as a Map
+called &quot;parameters&quot;
+&lt;br&gt;@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates</wsdl:documentation>
+      <wsdl:input message="impl:viewClaimAndRenderWithTemplateByNameRequest" name="viewClaimAndRenderWithTemplateByNameRequest"/>
+      <wsdl:output message="impl:viewClaimAndRenderWithTemplateByNameResponse" name="viewClaimAndRenderWithTemplateByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="viewUserAndRenderWithTemplateByName" parameterOrder="userName getActivities getClaims params templateFileName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds the user with the given user name and then evaluates the named template. The user is available as &quot;user&quot;
+in the evaluation context of the template. Optionally also makes available the user's activities (&quot;activities&quot;)
+and claims (&quot;claims&quot;). The array of parameters is available in the context as a Map called &quot;parameters&quot;
+&lt;br&gt;@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates</wsdl:documentation>
+      <wsdl:input message="impl:viewUserAndRenderWithTemplateByNameRequest" name="viewUserAndRenderWithTemplateByNameRequest"/>
+      <wsdl:output message="impl:viewUserAndRenderWithTemplateByNameResponse" name="viewUserAndRenderWithTemplateByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="IDataExtractionAPISoapBinding" type="impl:IDataExtractionAPI">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="findClaimAndRenderWithTemplateByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="findClaimAndRenderWithTemplateByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="findClaimAndRenderWithTemplateByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="findCreatedExposuresAndRenderWithTemplateByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="findCreatedExposuresAndRenderWithTemplateByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="findCreatedExposuresAndRenderWithTemplateByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="findEntityAndRenderWithTemplateByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="findEntityAndRenderWithTemplateByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="findEntityAndRenderWithTemplateByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="viewClaimAndRenderWithTemplateByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="viewClaimAndRenderWithTemplateByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="viewClaimAndRenderWithTemplateByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="viewUserAndRenderWithTemplateByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="viewUserAndRenderWithTemplateByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="viewUserAndRenderWithTemplateByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP Admin permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="IDataExtractionAPIService">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Guidewire Software
+Data extraction API that uses Gosu to render the results
+@deprecated This web service is deprecated and should be replaced by custom web services, which can be tailored to take exactly the right parameters and to construct a string using Gosu code or templates
+</wsdl:documentation>
+    <wsdl:port binding="impl:IDataExtractionAPISoapBinding" name="IDataExtractionAPI">
+      <wsdlsoap:address location="http://dontuse.defaultvalue.com/IDataExtractionAPI"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

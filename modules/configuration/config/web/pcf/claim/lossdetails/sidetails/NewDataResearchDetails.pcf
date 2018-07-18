@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="Claim.removeFromSIUInvestigationsExt(Investigation);ClaimLossDetails.go(Claim)"
+    afterCommit="SIDetails.go(Claim)"
+    afterEnter="Claim.addToSIUInvestigationsExt(Investigation);setDefaults(Investigation)"
+    beforeCommit="Claim.sendDataResearchEmail(Investigation, true);Claim.createDataResearchNote(Investigation); Claim.createNewSIUActivity(Investigation);"
+    canEdit="perm.System.createSIUDataResearch"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewclaimbasics and perm.System.createSIUDataResearch"
+    id="NewDataResearchDetails"
+    parent="Claim(Claim)"
+    startInEditMode="true"
+    title="displaykey.Web.Claim.DataResearch">
+    <LocationEntryPoint
+      signature="NewDataResearchDetails(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new SIUInvestigationExt()"
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Screen
+      editable="true"
+      id="NewDataResearchDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          updateLabel="displaykey.Web.Claim.DataResearch.Submit"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim, Investigation)"
+          id="LinkDocument"
+          label="displaykey.NVV.SIU.LinkDocument"
+          onPick="Claim.linkDocumentToInvestigation(PickedValue, Investigation)"
+          visible="perm.System.viewdocs"/>
+      </Toolbar>
+      <PanelRef
+        def="DataResearchDetailsDV(Claim, Investigation)"/>
+    </Screen>
+    <Code><![CDATA[
+    function setDefaults(invest : SIUInvestigationExt){
+     	invest.SIUReferralType = "data";
+     	invest.ReferralDate = gw.api.util.DateUtil.currentDate();
+     	invest.SIUOpenDate = gw.api.util.DateUtil.currentDate();
+     	invest.SIUCloseDate = gw.api.util.DateUtil.currentDate();
+     	invest.ClaimOrder = Claim.SIUInvestigationsExt.length;
+    }
+    ]]></Code>
+  </Page>
+</PCF>

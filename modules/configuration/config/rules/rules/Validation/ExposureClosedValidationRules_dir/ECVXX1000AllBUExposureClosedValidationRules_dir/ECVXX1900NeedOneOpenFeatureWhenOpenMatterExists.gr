@@ -1,0 +1,37 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1900 - Need One Open Feature When Open Matter Exists.")
+internal class ECVXX1900NeedOneOpenFeatureWhenOpenMatterExists {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.LegalExpenseExt == true &&
+
+exists(mat in exposure.Claim.Matters where
+        mat.StatusExt == MatterStatus.TC_OPEN) &&
+        
+!exists(exp in exposure.Claim.Exposures where
+         exp.LegalExpenseExt == true && !exp.Closed && exp != exposure)
+           
+         
+   
+
+
+
+     
+ /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+    
+  
+    var msg= "This is the only open Feature with Legal Expense set to Yes. " +
+     "You must have at least one open Feature with Legal Expense set to Yes when there are any open Legal Actions."
+              
+     exposure.reject( "newloss",msg ,null,null)
+  
+  
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

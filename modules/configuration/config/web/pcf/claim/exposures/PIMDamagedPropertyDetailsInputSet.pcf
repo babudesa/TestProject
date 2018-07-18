@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="PIMDamagedPropertyDetailsInputSet">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="setDefault()"
+      name="setDefaults"/>
+    <InputSet
+      visible="Exposure.ExposureType==&quot;im_EquipBrkdwn&quot;">
+      <Input
+        editable="true"
+        id="InvolveOthDirDmg"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveOthDirDmg"
+        value="Exposure.InvolveOthDirDmgExt"/>
+    </InputSet>
+    <InputSet
+      visible="Exposure.ExposureType==&quot;im_Building&quot; ||              Exposure.ExposureType==&quot;im_PropOfOthers&quot; ||              Exposure.ExposureType==&quot;im_PersonalProp&quot; ||             Exposure.ExposureType==&quot;im_BusinessInc&quot;">
+      <Input
+        editable="true"
+        id="InvolveLawOrd"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveLawOrd"
+        postOnChange="true"
+        value="Exposure.InvolveLawOrdExt"/>
+      <Input
+        editable="true"
+        id="AmtLawOrd"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.AmtLawOrd"
+        required="true"
+        validationExpression="((Exposure.LawOrdAmountExt &lt;= 0) || (Exposure.LawOrdAmountExt.intValue() != Exposure.LawOrdAmountExt)) ? displaykey.Java.Validation.Number.NoNonWholePositives(&quot;Ordinance or Law&quot;) : null"
+        value="Exposure.LawOrdAmountExt"
+        visible="Exposure.InvolveLawOrdExt==true"/>
+      <Input
+        editable="true"
+        id="InvolveGreenCvg"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveGreenCvg"
+        postOnChange="true"
+        value="Exposure.InvolveGreenCvgExt"/>
+      <Input
+        editable="true"
+        id="AmtGreenCvg"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.AmtGreenCvg"
+        required="true"
+        validationExpression="((Exposure.GreenCvgAmountExt &lt;= 0) || (Exposure.GreenCvgAmountExt.intValue() != Exposure.GreenCvgAmountExt)) ? displaykey.Java.Validation.Number.NoNonWholePositives(&quot;Green Coverage&quot;) : null"
+        value="Exposure.GreenCvgAmountExt"
+        visible="Exposure.InvolveGreenCvgExt==true"/>
+    </InputSet>
+    <Input
+      editable="true"
+      id="InvolveAddlCvg"
+      label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveAddlCvg"
+      value="Exposure.InvolveAddlCvgExt"
+      visible="Exposure.ExposureType==&quot;im_Building&quot; || Exposure.ExposureType==&quot;im_PropOfOthers&quot; || Exposure.ExposureType==&quot;im_PersonalProp&quot;"/>
+    <Input
+      editable="true"
+      id="InvolveBuiltCvg"
+      label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveBuiltCvg"
+      value="Exposure.InvolveBuiltCvgExt"
+      visible="Exposure.ExposureType==&quot;im_BusinessInc&quot;"/>
+    <InputSet
+      visible="Exposure.ExposureType==&quot;im_ContractEquip&quot;">
+      <Input
+        editable="true"
+        id="InvolveWaterProp"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveWaterProp"
+        value="Exposure.InvolveWaterPropExt"/>
+      <Input
+        editable="true"
+        id="InvolveCranes"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveCranes"
+        postOnChange="true"
+        value="Exposure.InvolveCranesExt"/>
+      <Input
+        editable="true"
+        id="InvolveOutrigging"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveOutrigging"
+        value="Exposure.InvolveOutriggingExt"
+        visible="Exposure.InvolveCranesExt"/>
+      <Input
+        editable="true"
+        id="InvolvePropLeasedFrom"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolvePropLeasedFrom"
+        value="Exposure.InvolvePropLsFromExt"
+        visible="Exposure.ExposureType != ExposureType.TC_IM_CONTRACTEQUIP"/>
+      <Input
+        editable="true"
+        id="InvolvePropLeasedTo"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolvePropLeasedTo"
+        value="Exposure.InvolvePropLsToExt"
+        visible="Exposure.ExposureType != ExposureType.TC_IM_CONTRACTEQUIP"/>
+      <Input
+        editable="true"
+        id="InvolveEmpProp"
+        label="displaykey.NVV.Exposure.DamagedPropertyDetail.InvolveEmpProp"
+        value="Exposure.InvolveEmpPropExt"/>
+    </InputSet>
+    <Code><![CDATA[function setDefault(){
+  if (CurrentLocation.InEditMode and Exposure.Coverage.Type != CoverageType.TC_SP_MTPFLTUILOBMTPFLTR and Exposure.Coverage.Type != CoverageType.TC_SP_MTPFLTRMANU){
+    Exposure.InvolveLawOrdExt = false
+    Exposure.InvolveGreenCvgExt = false
+  }
+}]]></Code>
+  </InputSet>
+</PCF>

@@ -1,0 +1,29 @@
+package rules.Closed.ClaimClosed_dir.CCEN1000EnvironmentalClaimClosedRules_dir
+
+@gw.rules.RuleName("CCEN1100 - Closed Notification")
+internal class CCEN1100ClosedNotification {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+var body : String = templates.email.AgriClaimClosed.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var emailHelper=new EmailHelper()
+
+  if(java.lang.System.getProperty( "gw.cc.env" ) == "prod"){
+    //should send e-mail to the underwriter of this policy
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        claim.AssignedUser.Contact.EmailAddress1, claim.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Notice of Closed Claim (Environmental)" , body)  
+  }
+  else{
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, claim.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Notice of Closed Claim (Environmental)" , body)
+  }/*end00rule*/
+  }
+}

@@ -1,0 +1,21 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUXXABUAllBussinesUnit_dir
+
+@gw.rules.RuleName("PPUXX1900 - Set ClaimUpdateTime")
+internal class PPUXX1900SetClaimUpdateTime {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Claim.State != "draft" and 
+(policy.Claim.OriginalVersion as Claim).State != "draft"/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  var claimUpdateTime:util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+  
+  claimUpdateTime.setClaimUpdateTime(policy.Claim.ClaimNumber, gw.api.util.DateUtil.currentDate())
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

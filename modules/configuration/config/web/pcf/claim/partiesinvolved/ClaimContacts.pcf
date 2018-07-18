@@ -1,0 +1,299 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    beforeValidate="claim.createMNIRelatedDBAClaimContact()"
+    canEdit="perm.Claim.managepartiesinvolved(claim)"
+    canVisit="perm.Claim.view(claim) and perm.System.viewclaimparties"
+    handlesValidationIssue="VALUE typeis entity.Contact"
+    id="ClaimContacts"
+    title="displaykey.Web.ClaimContacts.Title"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="ClaimContacts(claim : Claim)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="User.util.getCurrentUser()==claim.AssignedUser || User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;))"
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <Variable
+      initialValue="perm.Claim.managepartiesinvolved(claim)"
+      name="canAccessLinkButtons"
+      type="boolean"/>
+    <Variable
+      initialValue="null"
+      name="alertContact"
+      type="Contact"/>
+    <Variable
+      initialValue="null"
+      name="reviewType"
+      type="ReviewType"/>
+    <Variable
+      initialValue="new pcf_gs.Medicare_PageProc()"
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Screen
+      id="ClaimContactsScreen">
+      <AlertBar
+        id="ContactDetailScreen_MoreNamedInsuredDBAAlertBar"
+        label="displaykey.JSP.ContactDetailScreen.MoreNamedInsured.RelatedMNIDoingBusinessAs"
+        visible="Claim.hasRelatedMNIDBAContact(alertContact)"/>
+      <ListDetailPanel
+        id="PeopleInvolvedDetailedListDetail"
+        lockWhileEditing="true"
+        selectionName="selectedClaimContact"
+        selectionType="ClaimContact">
+        <Variable
+          initialValue="setAlertContact(selectedClaimContact)"
+          name="setAlertContact"
+          recalculateOnRefresh="true"/>
+        <PanelRef
+          def="PeopleInvolvedDetailedLV(claim)">
+          <Toolbar>
+            <ToolbarButton
+              hideIfEditable="true"
+              id="ClaimContacts_CreateNewContactButton"
+              label="displaykey.Web.ClaimContacts.Button.CreateNewContact"
+              shortcut="N"
+              visible="perm.Claim.managepartiesinvolved(claim) and perm.Contact.createlocal and claim.Policy.Verified">
+              <MenuItem
+                action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_PERSON)"
+                id="ClaimContacts_NewPerson"
+                label="displaykey.Web.NewContactMenu.Person"/>
+              <MenuItem
+                action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_COMPANY)"
+                id="ClaimContacts_Company"
+                label="displaykey.Web.NewContactMenu.Company"/>
+              <MenuItem
+                id="ClaimContacts_NewVendor"
+                label="displaykey.Web.NewContactMenu.Vendor">
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_ATTORNEY)"
+                  id="ClaimContacts_ClaimAttorney"
+                  label="displaykey.Web.NewContactMenu.ClaimAttorney"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_AUTOREPAIRSHOP)"
+                  id="ClaimContacts_AutoRepairShop"
+                  label="displaykey.Web.ContactDetail.Name.AutoBodyRepair"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_COMPANYVENDOR)"
+                  id="ClaimContacts_CompanyVendor"
+                  label="displaykey.Web.NewContactMenu.CompanyVendor"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_DOCTOR)"
+                  id="ClaimContacts_ClaimDoctor"
+                  label="displaykey.Web.NewContactMenu.ClaimDoctor"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_LAWFIRM)"
+                  id="ClaimContacts_ClaimLawFirm"
+                  label="displaykey.Web.NewContactMenu.ClaimLawFirm"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_MEDICALCAREORG)"
+                  id="ClaimContacts_ClaimMedicalCareOrg"
+                  label="displaykey.Web.NewContactMenu.ClaimMedicalCareOrg"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_PERSONVENDOR)"
+                  id="ClaimContacts_PersonVendor"
+                  label="displaykey.Web.NewContactMenu.PersonVendor"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_GAIVENDOR)"
+                  id="ClaimContacts_Ex_GAIVendor"
+                  label="displaykey.Web.NewContactMenu.GAIVendor"
+                  visible="(User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;))"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_LEGACYVENDORCOMPANYEXT)"
+                  id="ClaimContacts_LegacyVendor"
+                  label="&quot;Legacy Vendor&quot;"
+                  visible="false"/>
+              </MenuItem>
+              <MenuItem
+                id="ClaimContacts_NewNonVendorPayeeExt"
+                label="displaykey.Web.NewContactMenu.NonVendorPayeeExt"
+                visible="User.util.getCurrentUser().hasUserRole(&quot;Non-Vendor Payee Admin&quot;)">
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_NONVENDORPAYEECOMPANYEXT) //NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNPERVNDRATTNY)"
+                  id="ClaimContacts_NonVendorPayeeCompanyExt"
+                  label="displaykey.Web.NewContactMenu.NonVendorPayeeCompanyExt"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_NONVENDORPAYEEPERSONEXT)"
+                  id="ClaimContacts_NonVendorPayeePersonExt"
+                  label="displaykey.Web.NewContactMenu.NonVendorPayeePersonExt"/>
+              </MenuItem>
+              <MenuItem
+                id="ClaimContacts_NewForeignVendor"
+                label="displaykey.Web.NewContactMenu.NewForeignVendor">
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNPERVNDRATTNY)"
+                  id="ClaimContacts_Ex_ForeignPerVndrAttny"
+                  label="displaykey.Web.NewContactMenu.Ex_ForeignPerVndrAttny"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_FRGNAUTOREPAIRSHOPEXT)"
+                  id="ClaimContacts_FrgnAutoRepairShopExt"
+                  label="displaykey.Web.NewContactMenu.FrgnAutoRepairShop"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNCOVENDOR)"
+                  id="ClaimContacts_ForeignCompanyVendor"
+                  label="displaykey.Web.NewContactMenu.ForeignCompanyVendor"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNPERVNDRDOC)"
+                  id="ClaimContacts_Ex_ForeignPerVndrDoc"
+                  label="displaykey.Web.NewContactMenu.Ex_ForeignPerVndrDoc"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNCOVENLAWFRM)"
+                  id="ClaimContacts_Ex_ForeignCoVenLawFrm"
+                  label="displaykey.Web.NewContactMenu.Ex_ForeignCoVenLawFrm"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNCOVENMEDORG)"
+                  id="ClaimContacts_Ex_ForeignCoVenMedOrg"
+                  label="displaykey.Web.NewContactMenu.Ex_ForeignCoVenMedOrg"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_EX_FOREIGNPERSONVNDR)"
+                  id="ClaimContacts_ForeignPersonVendor"
+                  label="displaykey.Web.NewContactMenu.ForeignPersonVendor"/>
+              </MenuItem>
+            </ToolbarButton>
+            <PickerToolbarButton
+              action="AddressBookPickerPopup.push(entity.Contact, true, claim)"
+              hideIfEditable="true"
+              id="ClaimContacts_AddExistingButton"
+              label="displaykey.Web.ClaimContacts.Button.AddExisting"
+              onPick="AddExistingPartyInvolvedPopup.push(claim, new contact.TemporaryContact(PickedValue))"
+              shortcut="G"
+              visible="perm.Claim.managepartiesinvolved(claim) and perm.Contact.viewlocal"/>
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="claimparties.ClaimContactUtil.deleteClaimContacts(CurrentLocation, claim, CheckedValues, CheckedValuesErrors)"
+              flags="any ClaimContact"
+              hideIfEditable="true"
+              id="ClaimContacts_DeleteButton"
+              iterator="PeopleInvolvedDetailedLV"
+              label="displaykey.Button.Delete"
+              shortcut="L"
+              visible="false"/>
+            <!-- visible="perm.Claim.managepartiesinvolved(claim)" -->
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="if(!((CheckedValues.hasMatch(\ c -&gt; c.Roles.hasMatch(\ c1 -&gt; c1.Role == typekey.ContactRole.TC_CLAIMANT)))/* || selectedClaimContact.hasRole(&quot;Claimant&quot;))*/ and util.WCHelper.isWCorELLossType(claim))) { claimparties.ClaimContactUtil.mergeClaimContacts(CurrentLocation, CheckedValues, selectedClaimContact, CheckedValuesErrors)} "
+              confirmMessage="displaykey.Web.ClaimContacts.Button.MergeRoles.ConfirmMessage(selectedClaimContact)"
+              flags="any ClaimContact, no VerifiedPolicyContact, no CheckPayee, no PolicyContact, no FeatureDriver, no WCClaimant"
+              hideIfEditable="true"
+              id="ClaimContacts_MergeRolesButton"
+              iterator="PeopleInvolvedDetailedLV"
+              label="displaykey.Web.ClaimContacts.Button.MergeRoles"
+              showConfirmMessage="selectedClaimContact != null ? selectedClaimContact.hasRole(&quot;Claimant&quot;) and util.WCHelper.isWCorELLossType(claim) : null"
+              visible="perm.Claim.managepartiesinvolved(claim)"/>
+          </Toolbar>
+        </PanelRef>
+        <CardViewPanel>
+          <Variable
+            initialValue="selectedClaimContact.Contact==null ? null : selectedClaimContact.Contact.generateLinkStatus()"
+            name="linkStatus"
+            recalculateOnRefresh="true"/>
+          <Variable
+            initialValue="User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)) ? true : (((selectedClaimContact.Contact typeis PersonVendor) || (selectedClaimContact.Contact typeis CompanyVendor)) ? false : currentUserIsAdjuster)"
+            name="currentUserHasPerm"
+            recalculateOnRefresh="true"
+            type="boolean"/>
+          <Card
+            id="BasicsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Basics">
+            <PanelRef
+              def="ContactBasicsDV(selectedClaimContact, true, linkStatus, claim)"
+              mode="selectedClaimContact.Contact.Subtype">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+          <Card
+            id="AddressesCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Addresses"
+            visible="!(selectedClaimContact.Contact typeis Place)">
+            <PanelRef
+              def="AddressesPanelSet(selectedClaimContact)">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+          <Card
+            id="RelatedContactsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.RelatedContacts">
+            <PanelRef
+              def="ContactRelatedContactDV(claim, selectedClaimContact)">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  available="libraries.ClaimsUI.LossDetailsUIHelper.claimContactDisconnectCheck(claim)"
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+          <!-- <Card
+            id="ReviewsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Reviews"
+            visible="util.ReviewPageHelper.shouldDisplayReviewTab(selectedClaimContact.Contact) and perm.Review.list">
+            <PanelRef
+              def="ReviewsPanelSet(claim,selectedClaimContact.Contact,true,false)">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card> -->
+          <Card
+            id="MedicareCard"
+            title="&quot;Medicare&quot;"
+            visible="selectedClaimContact.Contact typeis Person and !(selectedClaimContact.Contact typeis Attorney) and !(selectedClaimContact.Contact typeis Ex_ForeignPerVndrAttny) and !(selectedClaimContact.Contact typeis Doctor) and !(selectedClaimContact.Contact typeis Ex_ForeignPerVndrDoc)  and !(selectedClaimContact.Contact typeis PersonVendor) and !(selectedClaimContact.Contact typeis Ex_ForeignPersonVndr) and !(selectedClaimContact.Contact typeis NonVendorPayeePersonExt)">
+            <PanelRef
+              def="ContactMedicareDataDV(claim, initContactISOMedicare(selectedClaimContact), pageProc, null)">
+              <Toolbar>
+                <ToolbarButtonSetRef>
+                  <ToolbarButtonSet>
+                    <EditButtons
+                      editVisible="!selectedClaimContact.Contact.ObsoletePolicyContactExt"/>
+                  </ToolbarButtonSet>
+                </ToolbarButtonSetRef>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+    <Code><![CDATA[function setAlertContact(selClaimContact : ClaimContact) : Boolean {
+  if (selClaimContact != null) {
+    alertContact = selClaimContact.Contact;
+    return true;
+  } else {
+    alertContact = null;
+    return false;
+  }
+}
+
+function initContactISOMedicare(selectedContact : ClaimContact) : ContactISOMedicareExt {
+  
+  if(selectedContact == null)
+    return new ContactISOMedicareExt()
+
+  if(selectedContact.Contact.ContactISOMedicareExt == null && typeof selectedContact.Contact == Person)
+    selectedContact.Contact.ContactISOMedicareExt = new ContactISOMedicareExt()
+    
+  return selectedContact.Contact.ContactISOMedicareExt
+}]]></Code>
+    <!-- <Card
+      id="EFTCard"
+      title="displaykey.Web.ClaimContacts.ContactDetails.EFTInfo"
+      visible="(!(selectedClaimContact.Contact typeis Ex_ForeignCoVenLawFrm) AND !(selectedClaimContact.Contact typeis Ex_ForeignCoVenMedOrg) AND                          !(selectedClaimContact.Contact typeis Ex_ForeignCoVendor) AND !(selectedClaimContact.Contact typeis Ex_ForeignPerVndrAttny) AND                          !(selectedClaimContact.Contact typeis Ex_ForeignPerVndrDoc) AND !(selectedClaimContact.Contact typeis Ex_ForeignPersonVndr))">
+      <PanelRef
+        def="EFTAccountPanelSet(selectedClaimContact, currentUserHasPerm)"
+        editable="((selectedClaimContact.Contact typeis PersonVendor) || (selectedClaimContact.Contact typeis CompanyVendor)) ? false : true">
+        <Toolbar>
+          <ToolbarButtonSetRef
+            toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus)"/>
+        </Toolbar>
+      </PanelRef>
+    </Card> -->
+  </Page>
+</PCF>

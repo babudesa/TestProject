@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  Bodily Injury Damage subviews
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="AviationBusinessIncDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.ExposureType.Description"
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, &quot;AVBusinessInc&quot;)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, &quot;AVBusinessInc&quot;)"/>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <InputSet
+        visible="Exposure.ExposureType == ExposureType.TC_AV_PHYSICALDAMAGE">
+        <Label
+          label="displaykey.NVV.Exposure.SubView.PhysicalDamage.LossPayee"/>
+        <Label/>
+        <InputDivider/>
+      </InputSet>
+      <InputSet
+        visible="Exposure.ExposureType != typekey.ExposureType.TC_AV_PHYSICALDAMAGE">
+        <!-- DAMAGED PROPERTY VALUE SECTION -->
+        <Label
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.DamagPropDesc"/>
+        <Input
+          formatType="exactNumber"
+          id="InsurLimit"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InsuranceLimit"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          value="Exposure.Coverage.IncidentLimit"/>
+        <InputDivider
+          visible="Exposure.ExposureType != typekey.ExposureType.TC_AV_BUSINESSINC"/>
+      </InputSet>
+      <InputSet
+        visible="Exposure.ExposureType==typekey.ExposureType.TC_AV_PHYSICALDAMAGE">
+        <!-- Loss Description Section -->
+        <Label
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+        <TextAreaInput
+          id="Description"
+          numCols="60"
+          numRows="3"
+          value="Exposure.Claim.Description"/>
+      </InputSet>
+      <Input
+        editable="true"
+        id="Severity"
+        label="displaykey.NVV.Exposure.SubView.PIP.Exposure.Severity"
+        required="false"
+        value="Exposure.Incident.Severity"/>
+      <InputDivider/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <InputSet
+        id="RecoveryInput"
+        visible="Exposure.ExposureType==ExposureType.TC_AV_PHYSICALDAMAGE">
+        <!-- Recovery Section -->
+        <Label
+          label="displaykey.NVV.Exposure.Subview.NewBodilyInjuryDamage.Exposure.Recovery"/>
+        <Input
+          editable="true"
+          id="ContributionPotential"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.ContributionPotential"
+          required="true"
+          value="Exposure.ContribPotentialExt"/>
+        <Input
+          editable="true"
+          id="SubroPotential"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SubroPotential"
+          required="Exposure.UIHelper.IsSubgrogationPotentialRequired"
+          value="Exposure.SubrogPotentialExt"/>
+        <Input
+          editable="true"
+          id="DeductibleBooleanRadioInput"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.IsThereDeductible"
+          required="true"
+          value="Exposure.DeductibleExistsExt"
+          visible="Exposure.UIHelper.IsDeductibleVisible"/>
+        <InputDivider/>
+      </InputSet>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

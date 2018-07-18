@@ -1,0 +1,46 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABELD1000ELDActivityBatchRules_dir
+
+@gw.rules.RuleName("ABELD1300 - 6 Month Reserve Review")
+internal class ABELD13006MonthReserveReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="6_month_reserve")) 
+&& (claim.Policy.PolicyType.Code == "APX" || claim.Policy.PolicyType.Code == "ASX" ||
+claim.Policy.PolicyType.Code == "CAX" || claim.Policy.PolicyType.Code == "CDX" ||
+claim.Policy.PolicyType.Code == "CEX" || claim.Policy.PolicyType.Code == "CMX" ||
+claim.Policy.PolicyType.Code == "CPX" || claim.Policy.PolicyType.Code == "DFX" ||
+claim.Policy.PolicyType.Code == "DXL" || claim.Policy.PolicyType.Code == "EPX" ||
+claim.Policy.PolicyType.Code == "FDX" || claim.Policy.PolicyType.Code == "GPX" ||
+claim.Policy.PolicyType.Code == "ICX" || claim.Policy.PolicyType.Code == "IDX" ||
+claim.Policy.PolicyType.Code == "IXX" || claim.Policy.PolicyType.Code == "MEX" ||
+claim.Policy.PolicyType.Code == "MPX" || claim.Policy.PolicyType.Code == "NMX" ||
+claim.Policy.PolicyType.Code == "NPX" || claim.Policy.PolicyType.Code == "NSX" ||
+claim.Policy.PolicyType.Code == "PEX" || claim.Policy.PolicyType.Code == "THX" ||
+claim.Policy.PolicyType.Code == "DMX" ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_BRX ||claim.Policy.PolicyType.Code == typekey.PolicyType.TC_CBX ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_SRX || claim.Policy.PolicyType.Code == typekey.PolicyType.TC_CSX ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_TIX || claim.Policy.PolicyType.Code == typekey.PolicyType.TC_CTX ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_TCX || claim.Policy.PolicyType.Code == typekey.PolicyType.TC_CCX ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_SXL || claim.Policy.PolicyType.Code == typekey.PolicyType.TC_CXS ||
+claim.Policy.PolicyType.Code == typekey.PolicyType.TC_SDO)
+&& gw.api.util.DateUtil.currentDate() >  gw.api.util.DateUtil.addDays(claim.getLatestDate(),ScriptParameters.ELDActivity_6_MonthReserveReview)
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14- Modified to generate the activity 163 calendar
+days (rather than 170 calender days) and Start the 163 day count over when either 
+there is a "Reserve" Note topic added in addition to when the reserve amounts have 
+changed.
+*/
+try{     
+    //create the activity
+    var res = gw.api.util.StringUtil.formatNumber(gw.api.financials.FinancialsCalculationUtil.getOpenReserves().   getAmount(claim), "$#,##0.00")
+    var ap = util.custom_Ext.finders.findActivityPattern( "6_month_reserve" )
+    claim.createActivity(null, ap, null, "Current reserves are " + res +",are reserves appropriate?", null, null,null , null)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(claim, actions.getRule().DisplayName, e, "")
+}/*end00rule*/
+  }
+}

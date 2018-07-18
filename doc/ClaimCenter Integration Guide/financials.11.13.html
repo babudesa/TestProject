@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Exchange Rate Integration</title>
+    <link rel="StyleSheet" href="css/financials.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="financials.11.01.html#3238179">Financials Integration</a> : Exchange Rate Integration</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="3238179">Exchange Rate Integration</a></div>
+      <div class="B_-_Body"><a name="3237460">To make financial transactions in multiple currencies, ClaimCenter needs a way of describing current currency </a>exchange rates around the world. Do this using the exchange rate set plugin (<span class="cv_-_computer_voice">IExchangeRateSetPlugin</span>) interface, whose main task is to create <span class="cv_-_computer_voice">ExchangeRate</span> entities encapsulated in a <span class="cv_-_computer_voice">ExchangeRateSet</span> entity.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3238342">For more information about multicurrency, see </a><a href="javascript:WWHClickedPopup('app', 'multicurrency.22.1.html#4823749', '');" title="Multiple Currencies">“Multiple Currencies”</a>.</div>
+      <div class="B_-_Body"><a name="3239181">This plugin interface has one method, </a><span class="cv_-_computer_voice">createExchangeRateSet</span>, which takes no arguments and returns a <span class="cv_-_computer_voice">ExchangeRateSet</span>. This method must populate the <span class="cv_-_computer_voice">ExchangeRateSet</span> with <span class="cv_-_computer_voice">ExchangeRate</span> entities, with a total of at least the total number of currencies minus one. Each one must describe the exchange rate from the reporting currency (the system main/default currency) to each non-reporting currency (secondary currency). You must provide each of these conversions. For example, if there are 20 registered currencies, your plugin implementation must populate at least 19 entities (20 minus 1) to describe the rate changes. In other words, create one entity for each non-reporting currency.</div>
+      <div class="B_-_Body"><a name="3237862">If ClaimCenter commits an </a><span class="cv_-_computer_voice">ExchangeRateSet</span> entity to the database, ClaimCenter automatically creates <span class="cv_-_computer_voice">ExchangeRate</span> entities for <span class="s_-_strong">all remaining permutations</span> of currencies, including all combinations of two currencies, in both directions.</div>
+      <div class="B_-_Body"><a name="3237466">For example, suppose the application has three currencies: USD, EUR, GBP. Suppose USD is the application </a>default. To create an <span class="cv_-_computer_voice">ExchangeRateSet</span>, specify two rates because two is one fewer than the three currencies. Suppose you specify the set: </div>
+      <div class="LP_-_List_Para"><a name="3237841">{ USD→EUR=0.5, USD→GBP=0.33 }</a></div>
+      <div class="B_-_Body"><a name="3237842">The final </a><span class="cv_-_computer_voice">ExchangeRateSet</span> that commits to the database has <span class="cv_-_computer_voice">n^2=9</span> rates, with the following approximate values: </div>
+      <div class="LP_-_List_Para"><a name="3237929">{USD→EUR=0.5, EUR→USD=2.0, USD→GBP=0.33, GBP→USD=3.0, EUR→GBP=0.66, </a>GBP→EUR=1.5, USD→USD=1.0, EUR→EUR=1.0, GBP→GBP=1.0}</div>
+      <div class="B_-_Body"><a name="3237942">You may specify more </a><span class="cv_-_computer_voice">ExchangeRate</span> values, but the set of currency conversions from the <span class="e_-_emphasis">reporting</span> currency to each <span class="e_-_emphasis">non-reporting</span><span class="s_-_strong" style="font-style: normal"> </span>currency are required at a minimum. If you specify additional conversions and the <span class="cv_-_computer_voice">ExchangeRateSet</span> commits, ClaimCenter does not automatically compute rates that you explicitly specified. For example, if you specify both USD→EUR and EUR→USD, it does not automatically compute the rate for EUR→USD. Instead, it uses use the rate you explicitly specified.</div>
+      <div class="HS_-_Head_Sub"><a name="3239257">Sample Exchange Rate Plugin Implementation</a></div>
+      <div class="B_-_Body"><a name="3239258">ClaimCenter provides a sample Gosu implementation of the exchange rate plugin that illustrates useful new </a>features including outbound SOAP calls (to a third-party service) and XML processing. </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3238027">The sample is an example only and may not work with all currencies. ClaimCenter </a>does&nbsp;<span class="s_-_strong">not</span> guarantee that the service it queries works at any given moment, either now or in the future.</div>
+      <div class="B_-_Body"><a name="3237473">The sample plugin implementation connects to a service provided by the Federal Reserve Bank of New York. </a>The service provides a method for retrieving an exchange rate between two currencies. The response from the service is an XML document, and its exchange rate is within the <span class="cv_-_computer_voice">&lt;frbny:OBS_VALUE&gt;</span> element. </div>
+      <div class="B_-_Body"><a name="3238057">Additional calculation must be done because the value may be the actual rate you want, or it may be the recip</a>rocal. Note the creation of <span class="cv_-_computer_voice">ExchangeRates</span> added to the newly created <span class="cv_-_computer_voice">ExchangeRateSet</span>, and the number of them is one fewer than the registered number of currencies.</div>
+      <div class="B_-_Body"><a name="3238087">Real implementations follow this general pattern:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="3239272">package gw.plugin.exchangerate.impl;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239273">uses java.util.Date;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239274">uses gw.plugin.exchangerate.IExchangeRateSetPlugin</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239275">uses gw.api.util.CurrencyUtil</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239276">uses soap.ExchangeRateService.api.FXWS</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239277">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239278">class SampleExchangeRateSetPlugin implements IExchangeRateSetPlugin</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239279">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239284">&nbsp;</a>&nbsp;public override function createExchangeRateSet() : ExchangeRateSet {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239285">    var erSet = new ExchangeRateSet();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239286">    // the sample ExchangeRateService uses newyorkfed.org, which only provides </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247010">&nbsp;</a>&nbsp;&nbsp;&nbsp;// exchange rates to and from USD</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239287">    var defaultCurrency = typekey.Currency.TC_USD;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239288">    var api = new FXWS();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239289">    for (var currency in typekey.Currency.TypeKeys) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239290">      if (currency != defaultCurrency) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239291">        var er = new ExchangeRate();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239292">        er.BaseCurrency = currency;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239293">        er.PriceCurrency = defaultCurrency;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239294">        if( currency == typekey.Currency.TC_RUB ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239295">          // newyorkfed.org doesn't provide exchange rates in Rubles, </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239358">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// so for example only use an arbitrary sample value here...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239296">          er.Rate = .04156103;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239297">        } else {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239298">          er.Rate = extractRate(api,defaultCurrency,currency);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239299">        }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239300">        erSet.addToExchangeRates(er);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239301">      }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239302">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239303">    erSet.Name = "Test ExchangeRateSet";</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239304">    erSet.Description = "From SampleExchangeRateSetPlugin.";</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239305">    erSet.MarketRates = true;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239306">    erSet.EffectiveDate = gw.api.util.DateUtil.currentDate();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239307">    return erSet;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239308">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239309">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239310">  /**</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239311">   * @return  the number in units of defaultCurrency per unit of currency</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247017">   */</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247018">  private function extractRate(api : FXWS, defaultCurrency : Currency, currency : Currency) : float {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247025">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247032">&nbsp;</a>&nbsp;&nbsp;&nbsp;var response = api.getLatestNoonRate(currency.Code)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239350">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3247027">// The response from the external service is an XML document.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239316">    // The value you want is the number within the frbny:OBS_VALUE element.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239317">    // If the UNIT attribute of the frbny:Series element is "USD", the conversion rate</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239318">    // you want is the reciprocal of the value you got.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239319">    // Otherwise, just return the value.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239320">    var node = gw.api.xml.XMLNode.parse(response);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239321">    var match = node.findFirst(\x -&gt; x.ElementName == "frbny:OBS_VALUE") as gw.api.xml.XMLNode;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239322">    var value = java.lang.Float.valueOf(match.Text);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239323">    var unit = node.findFirst(\x -&gt; x.ElementName == "frbny:Series").Attributes["UNIT"];</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239324">    if (unit == defaultCurrency.Code.toUpperCase()) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239325">      return value;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239326">    } else {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239327">      return 1/value;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239328">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3239329">  }</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="3239330">}</a></PRE>
+      <div class="HS_-_Head_Sub"><a name="3237518">Invoking the Exchange Rate Plugin</a></div>
+      <div class="B_-_Body"><a name="3237519">The ClaimCenter exposes the plugin functionality with the Gosu static method:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="3237521">gw.api.util.CurrencyUtil.invokeMarketExchangeRateSetPlugin();</a></div>
+      <div class="B_-_Body"><a name="3237455">This method invokes the plugin and commits the newly created </a><span class="cv_-_computer_voice">ExchangeRateSet</span>. Use this method if you need to update the exchange rate data. </div>
+      <div class="B_-_Body"><a name="3238124">After calling this method, any subsequent financial transactions that require exchange rate information by default </a>use the new <span class="cv_-_computer_voice">ExchangeRateSet</span> that the plugin creates. </div>
+      <div class="B_-_Body"><a name="3251716">In the user interface, some transaction screens allow optional overriding of the exchange rate.</a></div>
+      <div class="HS_-_Head_Sub"><a name="3238264">Batch Process</a></div>
+      <div class="B_-_Body"><a name="3238271">You can trigger the related batch process using the command line:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="3238283">maintenance_tools.bat -password gw -startprocess exchangerate </a></PRE>
+      <div class="B_-_Body"><a name="3238301">For more information about running batch process, see </a><a href="javascript:WWHClickedPopup('admin', 'batch.13.01.html#1030690', '');" title="Batch Processes and Work Queues">“Batch Processes and Work Queues”</a> and also using web services in <a href="javascript:WWHClickedPopup('integration', 'webservices-general.06.4.html#2586381', '');" title="Maintenance Web Services">“Maintenance Web Services”</a>.</div>
+      <div class="B_-_Body"><a name="3238331">For more information about multicurrency, see </a><a href="javascript:WWHClickedPopup('app', 'multicurrency.22.1.html#4823749', '');" title="Multiple Currencies">“Multiple Currencies” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('app', 'multicurrency.22.1.html#4823749', '');" title="Multiple Currencies">Application Guide</a></span>.</div>
+      <div class="B_-_Body"><a name="3264288">&nbsp;</a></div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+<project name="ClaimCenter Database Build" xmlns:ac="antlib:net.sf.antcontrib" default="build-all">
+
+	<property file="build.properties" />
+	
+	<property name="messaging-tools-path" location="${gw.init.devroot.dir}/admin/bin/messaging_tools.bat" />
+	<property name="batch-file-path" location="${gw.init.devroot.dir}/admin/bin/import_tools.bat" />
+	<property name="system-tools-path" location="${gw.init.devroot.dir}/admin/bin/system_tools.bat" />
+	<property name="zone-import-path" location="${gw.init.devroot.dir}/admin/bin/zone_import.bat" />
+	<property name="table-import-path" location="${gw.init.devroot.dir}/admin/bin/table_import.bat" />
+	<property name="sql.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+    <property name="sql.url" value="jdbc:sqlserver://localhost:1433" />
+    <property name="sql.user" value="sa" />
+    <property name="sql.pass" value="123" />
+    <property name="sql.jar" value="${gw.init.devroot.dir}/admin/lib/sqljdbc.jar" />
+    
+	<target name="build-all" description="Drop and rebuild ClaimCenter database.">
+		<sequential>
+			<ant antfile="build.xml" dir="${basedir}" target="dev-stop"/>
+			<echo message="Waiting for server to shut down..." />
+			<waitfor maxwait="2" maxwaitunit="minute" checkevery="100">
+				<not>
+					<socket server="localhost" port="8080"/>
+				</not>
+			</waitfor>
+			<antcall target="drop-db" />
+			<antcall target="create-db" />
+		</sequential>
+		<parallel>
+			<ant antfile="build.xml" dir="${basedir}" target="dev-start" />
+			<sequential>
+				<waitfor maxwait="5" maxwaitunit="minute" checkevery="500">
+					<http url="http://localhost:8080/cc" />
+				</waitfor>
+				<antcall target="update-tables" />
+				<antcall target="import-admin-files" />
+				<antcall target="suspend-message-queues" />
+				<antcall target="import-address-data" />
+				<antcall target="backup-db" />
+				<antcall target="copy-db" />
+			</sequential>
+		</parallel>
+	</target>
+
+	<target name="query-destinationID">
+		<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" output="resultSet.txt" print="true" showheaders="false" showtrailers="false" classpath="${sql.jar}">
+				USE ClaimCenter		
+				SELECT DISTINCT DestinationID
+				FROM cc_instrumentedmessage;
+		</sql>
+	</target>
+
+	<target name="suspend-message-queues" depends="query-destinationID" description="Suspend all event message queues">
+		<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar" />
+		<loadfile property="resultSet" srcFile="resultSet.txt" />
+		<foreach list="${resultSet}" target="suspend" param="destinationID" delimiter="${line.separator}" />
+		<delete file="resultSet.txt" />
+	</target>
+
+	<target name="suspend" description="Command to be executed for each message destinationID">
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${messaging-tools-path} -suspend ${destinationID} -password gw -user su -server http://localhost:8080/cc" />
+		</exec>
+	</target>
+
+	<target name="drop-db" unless="server.running" description="Drop ClaimCenter database">
+		<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" classpath="${sql.jar}">
+				IF EXISTS (SELECT * FROM sys.databases WHERE name ='ClaimCenter')
+				DROP DATABASE ClaimCenter;
+		</sql>
+	</target>
+
+	<target name="create-db" description="Create ClaimCenter database and run Alter query">
+		<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" classpath="${sql.jar}">
+				CREATE DATABASE ClaimCenter
+				ALTER DATABASE ClaimCenter SET COMPATIBILITY_LEVEL = 100
+				ALTER DATABASE ClaimCenter SET READ_COMMITTED_SNAPSHOT ON
+				WITH ROLLBACK IMMEDIATE
+		</sql>
+	</target>
+
+	<target name="update-tables" description="Create ClaimCenter database and run Alter query">
+		<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" classpath="${sql.jar}">
+				USE ClaimCenter
+				update cc_credential set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+				update cc_credential set PublicID = 'default_data:2' where PublicID = 'systemTables:2'
+				update cc_user set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+				update cc_user set PublicID = 'default_data:2' where PublicID = 'systemTables:2'
+				update cc_contact set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+				update cc_contact set PublicID = 'default_data:2' where PublicID = 'systemTables:2'
+				update cc_usersettings set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+				update cc_usersettings set PublicID = 'default_data:2' where PublicID = 'systemTables:2'
+				update cc_organization set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+				update cc_organization set carrier = 0 where PublicID = 'cc_systemTables:1'
+				update cc_group set PublicID = 'cc_systemTables:1' where PublicID = 'systemTables:1'
+		</sql>
+	</target>
+
+	<target name="import-admin-files" description="Import all config/import/gen files directly to ClaimCenter">
+		<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar" />
+		<foreach target="import" param="fileName">
+			<path>
+				<fileset dir="${gw.init.devroot.dir}/modules/configuration/config/import/gen" casesensitive="yes">
+					<include name="**/*.xml" />
+				</fileset>
+			</path>
+		</foreach>
+	</target>
+
+	<target name="import" description="Command to be executed on each xml file in config/import/gen folder">
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${batch-file-path} -import ${fileName} -password gw -user su -server http://localhost:8080/cc" />
+		</exec>
+	</target>
+	
+	<target name="import-address-data" description="Import US and Guam address data directly to ClaimCenter">
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${system-tools-path} -password gw -user su -server http://localhost:8080/cc -maintenance" />
+		</exec>
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${zone-import-path} -country US -import ${gw.init.devroot.dir}/modules/configuration/config/geodata/US-Locations.txt -password gw -user su -server http://localhost:8080/cc" />
+		</exec>
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${zone-import-path} -country US -clearproduction -password gw -user su -server http://localhost:8080/cc" />
+		</exec>
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${table-import-path} -integritycheckandload -zonedataonly -password gw -user su -server http://localhost:8080/cc" />
+		</exec>
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="${system-tools-path} -password gw -user su -server http://localhost:8080/cc -multiuser" />
+		</exec>
+	</target>
+	
+	<target name="backup-db" description="Backup the new database and drop to ClaimCenterDatabase">
+  		<echo message="Backing up ClaimCenter database..."/>
+  		<sequential>
+	  		<ant antfile="build.xml" dir="${basedir}" target="dev-stop"/>
+			<waitfor maxwait="2" maxwaitunit="minute" checkevery="100">
+				<not>
+					<socket server="localhost" port="8080"/>
+				</not>
+			</waitfor>
+	  		<delete file="${cc.backup}" />
+			<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" classpath="${sql.jar}">
+					BACKUP DATABASE ClaimCenter 
+					TO DISK = 'ClaimCenter.bkp';
+	        </sql>
+        </sequential>
+	</target>
+	
+	<target name="copy-db" description="Copy the new database to the ClaimCenterDB directory.">
+  		<echo message="Copying new ClaimCenter database..."/>
+		<copy file="${cc.backup}" todir="${cc.dbdir}" />
+	</target>
+</project>

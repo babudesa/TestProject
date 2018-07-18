@@ -1,0 +1,19 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVSP1000SpecialtyESExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVSP1100 - Severity Required to Close Exposure")
+internal class ECVSP1100SeverityRequiredtoCloseExposure {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.ExposureType == ExposureType.TC_SP_MEDICAL_PAYMENT ||
+exposure.ExposureType == ExposureType.TC_SP_BODILY_INJURY ||
+exposure.ExposureType == ExposureType.TC_SP_PERSONAL_INJURY) &&
+exposure.Incident.Severity == null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+    exposure.rejectField("Incident.Severity", "newloss", displaykey.Rules.Validation.Exposure.SpecialtyES.SeverityRequired, null, null)
+} catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

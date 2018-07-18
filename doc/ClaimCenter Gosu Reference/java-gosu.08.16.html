@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Testing Your Entity Code in Java (EntityMock)</title>
+    <link rel="StyleSheet" href="css/java-gosu.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="java-gosu.08.01.html#2074373">Java and Gosu</a> : Testing Your Entity Code in Java (EntityMock)</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="2074373">Testing Your Entity Code in Java (EntityMock)</a></div>
+      <div class="B_-_Body"><a name="2074377">To help you test Java code that uses entity libraries, ClaimCenter includes a utility class called </a><span class="cv_-_computer_voice">EntityMock.</span> This class generates a <span class="e_-_emphasis">mock</span> (fake) instance of a ClaimCenter entity. </div>
+      <div class="B_-_Body"><a name="2074384">For example, suppose you were writing a </a><span class="cv_-_computer_voice">MessageTransport</span> plugin in Java to send messages to an external system. The main task of this plugin interface is to get the payload of a <span class="cv_-_computer_voice">Message</span> entity and send it using some sort of messaging system. Optionally, the plugin acknowledges that the message sent successfully. While developing the code, it might be useful to quickly test changes to the code without having to deploy it in a live ClaimCenter server as a ClaimCenter plugin. </div>
+      <div class="B_-_Body"><a name="2074391">For such cases, a Java unit test could use the </a><span class="cv_-_computer_voice">EntityMock</span> utility class to create a mock version of the <span class="cv_-_computer_voice">Message</span> entity. The unit test calls code that takes a <span class="cv_-_computer_voice">Message</span>, reads its properties, and sends the <span class="cv_-_computer_voice">Message</span>. After you test the code’s logic, deploy and deploy and test your code in a real ClaimCenter servers. </div>
+      <div class="B_-_Body"><a name="2074395">In some cases, integration code that uses entities does more than just get and set properties. Fortunately, </a><span class="cv_-_computer_voice">EntityMock</span> allows you to fake the behavior of domain methods with as much (or as little) functionality necessary to test your code’s behavior. Alternatively, extend the entity with new custom methods that might make testing easier.</div>
+      <div class="H2_-_Heading_2"><a name="2074396">How EntityMock Works</a></div>
+      <div class="B_-_Body"><a name="2074398">Creating a mock entity with </a><span class="cv_-_computer_voice">EntityMock</span> creates a proxy that implements setter methods (<span class="cv_-_computer_voice">set</span><span class="p_-_parameter">...</span>) on the entity to store properties of the entity and getter methods (<span class="cv_-_computer_voice">get...</span>)<span class="cv_-_computer_voice"> </span>to return a stored values. By default, it also provides an implementation of <span class="cv_-_computer_voice">equals()</span>, <span class="cv_-_computer_voice">hashcode()</span> and <span class="cv_-_computer_voice">toString()</span> that works for most situations. After creating a mock entity, you may also add a <span class="e_-_emphasis">delegate object</span>. A delegate object is a class that you designate can handle (or pretend to handle) one or more methods on that type.</div>
+      <div class="B_-_Body"><a name="2074400">The delegate can override any method on the entity, as well as decorate the entity with additional methods for </a>testing. If you add entirely new methods, you must extend the original entity interface to add signatures for the new methods, and then implement those methods on the delegate object.</div>
+      <div class="B_-_Body"><a name="2074401">If any code invokes a method on the mock entity, the proxy’s invocation handler follows the following rules:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2074402">The handler examines the mock entity’s delegate objects to see if any of them declare a method with exactly </a>the same signature. If a matching method exists on a delegate object, the libraries invoke the method on the delegate. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2074403">If no such matching methods existed on delegate object, the handler checks if the method is </a><span class="cv_-_computer_voice">equals()</span>, <span class="cv_-_computer_voice">hashcode()</span>, or <span class="cv_-_computer_voice">toString()</span>. In any of those cases, the handler runs the default logic. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2074404">If neither of the rules mentioned earlier applies, the handler checks if the method is a getter or setter method </a>and handles those by storing or retrieving values. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2074405">If any code calls other methods not explicitly defined by a delegate object, the handler throws an </a><span class="cv_-_computer_voice">IllegalArgumentException</span> exception.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="2074406">Using EntityMock</a></div>
+      <div class="B_-_Body"><a name="2074410">In its simplest form, you can create a mock </a><span class="cv_-_computer_voice">Claim</span> entity using Java code such as:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2074417">import com.guidewire.cc.external.entity.Claim;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074418">...</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2074425">myClaim = EntityMock.newEntityMock(Claim.class);</a></PRE>
+      <div class="B_-_Body"><a name="2074426">That type of mock entity supports basic getter and setter methods.</a></div>
+      <div class="B_-_Body"><a name="2074427">However, suppose you want to test a </a><span class="cv_-_computer_voice">MessageTransport</span> plugin interface implementation, including the acknowledgements. Suppose you want to capture method calls to <span class="cv_-_computer_voice">message.reportAck(...)</span> and confirm that the call happened. You can add a <span class="cv_-_computer_voice">reportAckCalled</span> method to the <span class="cv_-_computer_voice">Message</span>. Your version of the <span class="cv_-_computer_voice">reportAck</span> method set some internal flag and your new <span class="cv_-_computer_voice">reportAckCalled</span> method returns the status of the flag. You can use that to if any code actually called <span class="cv_-_computer_voice">reportAck()</span>. </div>
+      <div class="B_-_Body"><a name="2074428">To do this, first create a mock </a><span class="cv_-_computer_voice">Message</span> entity interface that extends <span class="cv_-_computer_voice">com.guidewire.</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">cc</span><span class="cv_-_computer_voice">.external.entity.Message</span>. Next, call this new interface <span class="cv_-_computer_voice">MessageMock</span>. Declare any <span class="s_-_strong">new</span> methods that you want the delegate to intercept, in this case your custom method <span class="cv_-_computer_voice">Message.reportAckCalled()</span>. In your new file <span class="cv_-_computer_voice">MessageMock.java</span>:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074432">package examples.plugins.messaging;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074433">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074437">import com.guidewire.cc.external.entity.Message;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074438">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074439">// Mock interface for testing that extends the entity com.guidewire.cc.external.entity.Message</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074443">public interface MessageMock extends Message {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074444">  boolean reportAckCalled();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074445">&nbsp;</a></PRE>
+      <div class="B_-_Body"><a name="2074446">Next, create a delegate class that implements these two methods </a><span class="cv_-_computer_voice">reportAck</span> and <span class="cv_-_computer_voice">reportAckCalled</span>. This class does <span class="s_-_strong">not</span> implement the <span class="cv_-_computer_voice">MessageMock</span> interface. This class only implements the method that you added (the <span class="cv_-_computer_voice">reportAckCalled</span> method) and an existing method on <span class="cv_-_computer_voice">Message</span> (the <span class="cv_-_computer_voice">reportAck</span> method)</div>
+      <div class="B_-_Body"><a name="2074447">The following code calls the new class </a><span class="cv_-_computer_voice">MessageDelegate</span>:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2074448">package examples.plugins.messaging;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074449">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074450">/**</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074451"> * Extension delegate that implements testing methods for your</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074452"> * {@link MessageMock} instance.  Tests create an</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074453"> * implementation of the MessageMock interface using</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074454"> * {@link com.guidewire.external.entity.EntityMock}, passing in an</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074455"> * instance of this delegate.  Any calls to message.reportAck()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074456"> * or message.reportAckCalled() will be handled by the delegate</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074457"> * and will override the basic implementation generated by</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074458"> * EntityMock.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074459"> */</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074460">public class MessageDelegate {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074461">  private boolean _reportAckCalled = false;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074462">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074463">&nbsp;</a>&nbsp;// intercept the built-in domain method</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074464">  public void reportAck() { </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074465">    _reportAckCalled = true;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074466">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074467">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074468">&nbsp;</a>&nbsp;// create a custom method on the mock entity</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074469">  public boolean reportAckCalled() { </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074470">    return _reportAckCalled;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2074471">}</a></PRE>
+      <div class="B_-_Body"><a name="2074472">Finally, in your test code, create a mock </a><span class="cv_-_computer_voice">Message</span> entity and assign your delegate object as the delegate. The delegate object intercepts any method requests and runs the delegate’s methods instead. You can naturally test your message transport plugin code that uses the <span class="cv_-_computer_voice">Message</span> entity without running as an actual plugin in a ClaimCenter server:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074476">// Create a new message to send.  Note the use of a MOCK implementation of the Message entity</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074477">MessageMock message = (MessageMock) EntityMock.newEntityMock(MessageMock.class);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074478">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074479">// Add a delegate object that handles entity methods</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074480">MessageDelegate delegate = new MessageDelegate();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074481">EntityMock.addDelegate(message, delegate);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074482">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074483">// set an ID (the primary key for this entity) -- this might not be required in all cases, but</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074484">// it is good practice to set it in case any code tries to check entity.getID()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074485">EntityMock.setId(message, 1);</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074486">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074487">// Create an instance of the transport plugin. This is test code, but in real Java plugin usage, </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074494">// the ClaimCenter server would create this internally in the ClaimCenter JVM!</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074495">MessageTransportImpl transport = new MessageTransportImpl();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074496">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074497">// Send the message, which must put it on the queue and then acknowledge the message.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074498">transport.send(message, message.getPayload());</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074499">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074500">// Block until the queue has emptied and listeners have been notified</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074501">// This example assumes that the queue might be multithreaded</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074502">queue.waitUntilEmpty();</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074503">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074504">// USE THE CUSTOM METHOD on the mock Message Object to test it!!!!!</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2074505">assertTrue(message.reportAckCalled());</a></PRE>
+      <div class="H2_-_Heading_2"><a name="2074507">Modifying EntityFactory for Mock Entities</a></div>
+      <div class="B_-_Body"><a name="2074511">As mentioned earlier, in its simplest form, you can create a mock </a><span class="cv_-_computer_voice">Claim</span> entity using Java code such as:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2074515">import com.guidewire.cc.external.entity.Message;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2074516">...</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2074523">myClaim = EntityMock.newEntityMock(Claim.class);</a></PRE>
+      <div class="B_-_Body"><a name="2074524">Alternatively, you can configure the entity library’s default entity factory to create only mock entities. For </a>example, this would allow you to test code that generates a complex graph of entities without creating real entities that persist in the ClaimCenter database.</div>
+      <div class="B_-_Body"><a name="2074528">This would cause all code that changes the behavior of calls such as the following:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2074532">EntityFactory.getInstance().newEntity("Claim")</a></div>
+      <div class="B_-_Body"><a name="2074533">Code like that now return mock entities as if it had called:</a></div>
+      <PRE class="CL_-_Code_Last_Line"><a name="2074540">myClaim = EntityMock.newEntityMock(Claim.class);</a></PRE>
+      <div class="B_-_Body"><a name="2074541">To make this change, include this command in your test code:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2074542">EntityMock.initEntityFactory();</a></div>
+      <div class="B_-_Body"><a name="2074546">For more information about the </a><span class="cv_-_computer_voice">EntityFactory</span>, see <a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.10.html#2074121', '');" title="Java Entity Utility APIs">“Java Entity Utility APIs”</a>.</div>
+      <div class="B_-_Body"><a name="1444253">&nbsp;</a></div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

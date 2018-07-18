@@ -1,0 +1,16 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Policy_dir
+
+@gw.rules.RuleName("PolicyChanged")
+internal class PolicyChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "PolicyChanged"
+&& (!((messageContext.Root as Policy).Changed && (messageContext.Root as Policy).Claim.Changed))/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var policy = messageContext.Root as Policy;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==policy.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendChangesToLSS( messageContext, policy.Claim.Exposures);/*end00rule*/
+  }
+}

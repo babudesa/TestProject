@@ -1,0 +1,38 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAV1000AviationExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAV1100 - Add/Remove Claim Loss Payee Role")
+internal class EPUAV1100AddRemoveClaimLossPayeeRole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.LossPayeeExt.New || 
+(exposure.LossPayeeExt != (exposure.OriginalVersion as Exposure).LossPayeeExt)) &&
+exposure.LossPayeeExt != null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var originalCont = (exposure.OriginalVersion as Exposure).LossPayeeExt
+  var claimContactRole = new ClaimContactRole()
+  claimContactRole.Role ="claimlosspayee"
+  claimContactRole.Exposure = exposure
+    
+  for(con in exposure.Claim.Contacts){
+   if(exposure.LossPayeeExt != null && exposure.LossPayeeExt == con.Contact){
+    if(!con.hasRole("claimlosspayee")){    
+      con.addToRoles(claimContactRole)
+    }
+   }
+   if (originalCont != null && originalCont == con.Contact){
+     for (r in con.Roles){
+       if (r.Role == "claimlosspayee"){
+         originalCont.createFormerRole(exposure.Claim, r)
+         exposure.removeRole(r)
+       }
+     }
+   }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,28 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1800BulkRecovery_dir
+
+@gw.rules.RuleName("TVXX1850 - Recovery Amounts Must Match")
+internal class TVXX1850RecoveryAmountsMustMatch {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+var msg = " - The total amount for this cash ticket does not match the amounts of the individual recoveries. Please check your amounts and try again."
+var totalAmounts : double = 0.00
+
+  for(rec in transactions.Recoveries){
+    if(rec.IsBulkedExt==true and rec.LastBulkExt==true and
+        !exists(doc in rec.Claim.Documents where doc.Name=="CashReceivedTicket_" + rec.BulkRecoveryExt.CashReceiptNumberExt)){
+      var recoveries = find(x in Recovery where (x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber ))
+      for(recov in recoveries){
+        totalAmounts = totalAmounts + recov.Amount as double
+      }
+      totalAmounts = totalAmounts + rec.Amount as double
+      if(totalAmounts != rec.BulkRecoveryExt.TotalAmountExt){
+        transactionSet.reject("payment", "Receipt: " + rec.BulkRecoveryExt.CashReceiptNumberExt + msg, null, null)
+      }
+    }
+  }/*end00rule*/
+  }
+}

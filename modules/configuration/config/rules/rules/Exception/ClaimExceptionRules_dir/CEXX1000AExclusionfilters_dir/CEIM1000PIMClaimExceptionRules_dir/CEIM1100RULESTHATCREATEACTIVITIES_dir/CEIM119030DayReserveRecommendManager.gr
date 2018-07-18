@@ -1,0 +1,38 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEIM1190 - 30 Day Reserve Recommend - Manager")
+internal class CEIM119030DayReserveRecommendManager {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Changes made with respect to defect #6145 - 'Activity generating on closed claim'.I have moved the rule inside the loop to make the parent conditions applicable.
+by gyemula 15/may/2013.
+*/
+(claim.LevelOfReserveExt=="over_10k" || claim.LevelOfReserveExt==null) && (claim.ReserveLines.length==0) and
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_man"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap2 = util.custom_Ext.finders.findActivityPattern( "30_day_reserve_man" )
+var ap2desc = "Any feature  with no reserve must be reviewed by the Claim Supervisor/Manager after 30 days from reported date when the level of reserve is either Over $10,000 or has not been selected"
+try{
+  if(claim.Exposures.length==0){
+    if((gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 30 ))){
+       claim.createActivity(null, ap2, null, ap2desc , null, null, null, null)
+     }
+  }
+  else{
+     for(exp in claim.Exposures){
+      if((exp.ReserveLines.getCount()==0) and (!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_man"))){
+        if((gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 30 )) ){
+            claim.createActivity(null, ap2, null, ap2desc , null, null, null, null)
+        }
+       }
+     }
+  }
+          
+}
+   
+ catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,164 @@
+package rules.EventMessage.EventFired_dir.Destination8Taxport1099_dir.Payment_dir
+
+@gw.rules.RuleName("Payment Status Changed")
+internal class PaymentStatusChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "PaymentStatusChanged" 
+
+
+ 
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var payment = MessageContext.Root as Payment
+
+if(payment.Check.Reportability == "reportable"){
+if(!((payment.Check.Status == "Voided")||(payment.Check.Status == "stopped")|| (payment.Status == "Voided") ||(payment.Status == "stopped")||
+(payment.Check.Status == "pendingvoid")||(payment.Check.Status == "pendingstop")|| (payment.Status == "pendingvoid") ||(payment.Status == "pendingstop")||
+(payment.Check.Status == "transferred")||(payment.Check.Status == "pendingtransfer")|| (payment.Status == "transferred")||(payment.Status == "pendingtransfer")
+||(payment.TransferOnset)||(payment.TransferOffset))){
+
+   if(payment.OnsetPayment==true){
+          
+      // if( payment.Check.BackupWithholdingCheckExt != Boolean ){ 
+        var amountToSend : java.math.BigDecimal;
+        
+      if(payment.Check.Payees[0].Payee.Ex_TaxStatusCode == "B"){
+            
+         if( payment.Check.BackupWithholdingCheckExt == true ){
+             for (l in payment.LineItems){
+                if (l.LineCategory != null){ // if line category is not null (not specified)									
+                  for (bn in IRS1099BoxNumber.TypeKeys){ // loop through all 1099 Box Numbers													
+                    if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                      l.IRS1099BoxNumberExt=bn // set the box number            
+                      amountToSend = (l.Amount);
+          if(l.Changed){
+            var messageContent04 = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, "04");
+             if (messageContent04 != "") {
+            var message04 = messageContext.createMessage(messageContent04);
+             }
+            var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code         );
+             if (messageContentxx != "") {
+            var messagexx = messageContext.createMessage(messageContentxx);
+                      }
+                   }
+                }
+             }
+           }
+         }
+       }
+            else{
+              for (l in payment.LineItems){
+                 if (l.LineCategory != null){ // if line category is not null (not specified)									
+                   for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                        l.IRS1099BoxNumberExt=bn // set the box number            
+                        amountToSend = (l.Amount);
+            if(l.Changed){
+              var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code );
+               if (messageContentxx != "") {
+               var messagexx = messageContext.createMessage(messageContentxx);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+       }
+          else {
+            for (l in payment.LineItems){
+                 if (l.LineCategory != null){ // if line category is not null (not specified)									
+                   for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                        l.IRS1099BoxNumberExt=bn // set the box number            
+                        amountToSend = (l.Amount);
+            if(l.Changed){
+             var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code );
+             if (messageContentxx != "") {
+            var messagexx = messageContext.createMessage(messageContentxx);
+                      }
+                    }
+                  }
+                }
+              }
+            }    
+          }
+    }          
+    
+   
+   if(payment.OffsetPayment==true){
+     
+          
+      // if( payment.Check.BackupWithholdingCheckExt != Boolean ){ 
+        var amountToSend : java.math.BigDecimal;
+        
+      if(payment.Check.Payees[0].Payee.Ex_TaxStatusCode == "B"){
+            
+         if( payment.Check.BackupWithholdingCheckExt == true ){
+             for (l in payment.LineItems){
+                if (l.LineCategory != null){ // if line category is not null (not specified)									
+                  for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                    if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                      l.IRS1099BoxNumberExt=bn // set the box number            
+                      amountToSend = (l.Amount);
+          if(l.Changed){
+            var messageContent04 = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, "04");
+             if (messageContent04 != "") {
+            var message04 = messageContext.createMessage(messageContent04);
+             }
+            var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code         );
+             if (messageContentxx != "") {
+            var messagexx = messageContext.createMessage(messageContentxx);
+                      }
+                   }
+                }
+             }
+           }
+         }
+       }
+            else{
+              for (l in payment.LineItems){
+                 if (l.LineCategory != null){ // if line category is not null (not specified)									
+                   for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                        l.IRS1099BoxNumberExt=bn // set the box number            
+                        amountToSend = (l.Amount);
+            if(l.Changed){
+              var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code );
+               if (messageContentxx != "") {
+               var messagexx = messageContext.createMessage(messageContentxx);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+      }
+          else {
+            for (l in payment.LineItems){
+                 if (l.LineCategory != null){ // if line category is not null (not specified)									
+                   for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                        l.IRS1099BoxNumberExt=bn // set the box number            
+                        amountToSend = (l.Amount);
+            if(l.Changed){
+             var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(payment.Check, amountToSend, l.IRS1099BoxNumberExt.Code );
+             if (messageContentxx != "") {
+            var messagexx = messageContext.createMessage(messageContentxx);
+                      }
+                    }
+                  }
+                }
+              }
+            }    
+          }
+    } 
+    
+}
+}
+/*end00rule*/
+  }
+}

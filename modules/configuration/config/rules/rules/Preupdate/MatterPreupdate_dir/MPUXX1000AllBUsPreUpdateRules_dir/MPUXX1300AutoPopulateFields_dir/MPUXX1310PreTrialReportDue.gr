@@ -1,0 +1,23 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir.MPUXX1300AutoPopulateFields_dir
+
+@gw.rules.RuleName("MPUXX1310 - Pre-Trial Report Due")
+internal class MPUXX1310PreTrialReportDue {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.TrialDate != null &&
+exists(ma in matter.MatterAssignmentsExt where
+       ma.PreTrialReportDueDate == null)/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{  
+  
+  for(ma in matter.MatterAssignmentsExt
+        .where(\ m -> m.PreTrialReportDueDate == null )){    
+     ma.PreTrialReportDueDate = 
+     ma.Matter.TrialDate.addDays(-45)
+  }
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

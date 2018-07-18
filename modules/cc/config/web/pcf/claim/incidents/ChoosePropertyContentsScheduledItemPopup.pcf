@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    id="ChoosePropertyContentsScheduledItemPopup"
+    returnType="PropertyContentsScheduledItem[]"
+    title="displaykey.Web.ChoosePropertyContentsScheduledItem.Title">
+    <LocationEntryPoint
+      signature="ChoosePropertyContentsScheduledItemPopup(incident : PropertyContentsIncident, policyLocation : PolicyLocation)"/>
+    <Variable
+      name="incident"
+      type="PropertyContentsIncident"/>
+    <Variable
+      name="policyLocation"
+      type="PolicyLocation"/>
+    <Variable
+      initialValue="incident.PropertyContentsScheduledItems.map(\ i -&gt; i.PropertyItem).toSet()"
+      name="alreadyChosen"/>
+    <Screen>
+      <Toolbar>
+        <CheckedValuesToolbarButton
+          flags="all Present"
+          id="AddCheckedItems"
+          iterator="HighValueItems"
+          label="displaykey.Web.ChoosePropertyContentsScheduledItem.AddCheckedItems"
+          pickValue="CheckedValues.map(\ item -&gt; incident.createOrderedPropertyContentsScheduledItem(item))"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="ToolbarButton"
+          label="displaykey.Web.ChoosePropertyContentsScheduledItem.Cancel"/>
+      </Toolbar>
+      <ListViewPanel>
+        <RowIterator
+          checkBoxVisible="!alreadyChosen.contains(item)"
+          editable="false"
+          elementName="item"
+          hasCheckBoxes="true"
+          id="HighValueItems"
+          value="policyLocation.HighValueItems">
+          <ToolbarFlag
+            name="Present"/>
+          <Row>
+            <Cell
+              id="ItemDescription"
+              label="displaykey.Web.ChoosePropertyContentsScheduledItem.ItemDescription"
+              sortOrder="1"
+              value="item.Description"/>
+            <Cell
+              id="ItemValue"
+              label="displaykey.Web.ChoosePropertyContentsScheduledItem.ItemValue"
+              value="item.AppraisedValue"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </Screen>
+  </Popup>
+</PCF>

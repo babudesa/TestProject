@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="InjuredPartyRepLV">
+    <Require
+      name="contactISO"
+      type="ContactISOMedicareExt"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <RowIterator
+      editable="true"
+      elementName="contactContact"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="10"
+      toCreateAndAdd="pageProc.addInjRepHelper()"
+      toRemove="pageProc.removeInjRepHelper(contactContact)"
+      value="pageProc.injContactContacts">
+      <ToolbarFlag
+        name="relationship"/>
+      <Row
+        editable="isRelatedContactEditable(contactContact.conContact)">
+        <ClaimRelatedContactCell
+          claim="claim"
+          editable="true"
+          forceContactSubtype="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact.conContact, contactISO.Contact, claim).OtherContactType"
+          id="Contact"
+          label="&quot;Name&quot;"
+          newContactMenu="ClaimNewRelatedContactPickerMenuItemSet"
+          onPick="addRoleOnPick(contactContact.conContact)"
+          parentContact="Contact"
+          postOnChange="true"
+          required="true"
+          sortBy="contactContact.conContact.getOtherContact(Contact).PrimarySortValue,contactContact.conContact.getOtherContact(Contact).SecondarySortValue,contactContact.conContact.getOtherContact(Contact).TertiarySortValue,contactContact.conContact.getOtherContact(Contact).QuaternarySortValue"
+          sortOrder="2"
+          validationExpression="validateInjuredParty(contactContact, claim) == &quot;&quot; ? null : validateInjuredParty(contactContact, claim)"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact.conContact, contactISO.Contact, claim).OtherContact"
+          valueRange="claim.getContactsFromRelatedContacts(contactISO.Contact)"/>
+        <!-- <Cell
+          editable="true"
+          id="ContactSSN"
+          label="&quot;SSN&quot;"
+          required="Contact typeis Person ? true : false"
+          value="contactContact.conContact.getOtherContact(contactISO.Contact).TaxID"/> -->
+        <RangeCell
+          editable="true"
+          filter="pageProc.isRoleDisplayable(VALUE)"
+          id="Rel"
+          label="displaykey.Web.Medicare.Role"
+          postOnChange="true"
+          required="true"
+          sortOrder="1"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact.conContact, contactISO.Contact, claim).BidiRel"
+          valueRange="Contact.getFilteredMedicareContactRelationships(contactContact.conContact.getOtherContact(contactISO.Contact))"/>
+        <Cell
+          id="Role"
+          label="displaykey.LV.Claim.PeopleInvolvedDetailed.PeopleInvolved.Roles"
+          value="displayContactRoles(getCorrectContact(contactContact.conContact, Contact))"
+          valueVisible="contactContact.conContact.RelatedContact != null"/>
+        <!-- <Cell
+          action="ClaimRelatedContactDetailPopup.push(contactContact.conContact.RelatedContact, claim)"
+          actionAvailable="contactContact.conContact.RelatedContact != null"
+          id="AddRole"
+          label="&quot;Role&quot;"
+          outputConversion="CurrentLocation.InEditMode? &quot;Additional Role?&quot; : &quot;&quot;"
+          required="false"
+          value="&quot;Additional Role?&quot;"
+          visible="CurrentLocation.InEditMode ? true : false"/> -->
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses gw.api.util.Logger //Added for logging in Debug - SR
+property get Contact() : Contact { return contactISO.Contact; }
+      
+function isRelatedContactEditable(contContact:ContactContact):Boolean{
+         if(contContact.getBidiRel(Contact) == "morenamedinsured" || contContact.getBidiRel(Contact) == "morenamedinsureddba"){
+	      return false;
+	 }else{
+	      return true;
+	}
+}
+
+function isRepDisplayable(cont : Contact): boolean{
+  
+  return !(claim.getContactsFromRelatedContacts(contactISO.Contact).contains(cont))
+}
+
+function getCorrectContact(contCont:ContactContact, con:Contact):Contact{
+  if(con == contCont.RelatedContact){
+   return contCont.SourceContact 
+  }
+  return contCont.RelatedContact
+  
+}
+
+function displayContactRoles(cont:Contact):String{
+  
+  for(con in claim.Contacts){
+   if(cont == con.Contact){
+     return con.formatRolesDisplay()
+   }
+  }
+  return null
+  
+  
+}
+
+function validateInjuredParty(contactContact:pcf_gs.InjPartyRepContactContactHelper, cl : Claim) : String{
+  var missingInfo = ""
+  if(Contact.TargetRelatedContacts.Count != 0 and Contact.TargetRelatedContacts.where(\ c -> c.InjuredPartyFlagExt ).Count != 0){
+    if(contactContact.conContact.RelatedContact != null){
+     if(contactContact.conContact.RelatedContact typeis Person and contactContact.conContact.RelatedContact.FirstName == null){
+       missingInfo = missingInfo + "First Name, "
+     }
+      if(contactContact.conContact.RelatedContact.PrimaryAddress == null){
+       missingInfo = missingInfo + "Address, "
+       
+      }
+      if(contactContact.conContact.RelatedContact.HomePhone == null and contactContact.conContact.RelatedContact.CellPhoneExt == null and contactContact.conContact.RelatedContact.WorkPhone == null){
+       for(claimCont in cl.Contacts){
+        if(claimCont.Contact == contactContact.conContact.RelatedContact){
+         if(claimCont.cscCellPhoneExt == null and claimCont.cscHomePhoneExt == null and claimCont.cscWorkPhoneExt == null){
+           missingInfo = missingInfo + "Phone Number, "
+         }
+        }
+       }
+      }
+      //changed to logging in Debug - SR
+      Logger.logDebug(displayContactRoles(getCorrectContact(contactContact.conContact, Contact)))
+      if(displayContactRoles(getCorrectContact(contactContact.conContact, Contact)) == null){
+        missingInfo = missingInfo + "Role, "
+      }
+      if(missingInfo != ""){
+        missingInfo = missingInfo.trim()
+        if(missingInfo.endsWith( "," )){
+          missingInfo = missingInfo.substring( 0, missingInfo.lastIndexOf( "," ) )
+        }
+        missingInfo = "Enter " + missingInfo + " for the Injured Party Representative " + contactContact.conContact.RelatedContact
+      }
+    }
+  }
+ return missingInfo
+}
+
+/**
+ * A hideous way of ensuring a related contact is added as a claim contact if they are picked from AB.
+ */
+function addRoleOnPick(conContact : ContactContact){
+  if(conContact.RelatedContact != null && !claim.Contacts*.Contact.contains(conContact.RelatedContact)){
+    AddExistingRelatedContactPopup.push(claim, conContact) 
+    
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

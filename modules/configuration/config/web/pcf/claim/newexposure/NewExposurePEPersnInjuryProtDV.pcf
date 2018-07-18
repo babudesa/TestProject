@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewExposurePEPersnInjuryProtDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="&quot;PIP&quot;"
+      name="ExpType"
+      type="String"/>
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, ExpType)"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- <InputSetRef
+        def="ExposureISOMedicareDataInputSet(Exposure)"/> -->
+    </InputColumn>
+    <InputColumn>
+      <!-- MEDICAL DETAILS SECTION -->
+      <InputSetRef
+        def="InjuryDetailsInputSet(Exposure, ExpType)"/>
+      <Input
+        editable="true"
+        id="RecipPIP"
+        label="displaykey.NVV.Exposure.SubView.PIP.Injury.ReciprocatingPIP"
+        onChange="setPIPLossParty()"
+        postOnChange="true"
+        value="Exposure.ReciprocatePIPExt"/>
+      <Input
+        id="AddInfo"
+        label="displaykey.NVV.Exposure.SubView.PIP.Injury.ReciprocatingPIP.AddInfo"
+        value=""/>
+      <InputDivider/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[function setPIPLossParty(){
+    	if(Exposure.ReciprocatePIPExt==true){
+    		Exposure.LossParty="third_party"
+    	} else {
+    		Exposure.LossParty="insured"
+    	}
+    	Exposure.Claimant=null
+    }]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,35 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEXX1580 - Valid feature for ISO Incomplete")
+internal class CEXX1580ValidfeatureforISOIncomplete {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(a in claim.Activities where 
+       a.ActivityPattern.Code == "validate_feature_iso" and 
+       a.Status == ActivityStatus.TC_OPEN and
+       gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays(a.CreateTime, 7),gw.api.util.DateUtil.currentDate()) < 0) == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var shouldCreateEscalation = \ expo : Exposure -> {
+  var originalExists : boolean = exists(a in claim.Activities where
+                                        a.Exposure == expo and
+                                        a.ActivityPattern.Code == "validate_feature_iso" and 
+                                        a.Status == ActivityStatus.TC_OPEN and
+                                        gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays(a.CreateTime, 7),gw.api.util.DateUtil.currentDate()) < 0)                                        
+                                        
+  var escalatedExists : boolean = exists(a in claim.Activities where 
+                                         a.Exposure==expo and 
+                                         a.Subject.equalsIgnoreCase("Validate Feature for ISO - Incomplete"))
+
+  //originalExists also checks that it has been at least 7 days since the original was created
+  return originalExists && !escalatedExists                                                                              
+}
+
+for(e in claim.Exposures.where(\ e -> e.State == ExposureState.TC_OPEN)){
+  if(shouldCreateEscalation(e)){
+    var ap = util.custom_Ext.finders.findActivityPattern( "validate_feature_iso" )
+    claim.createActivity(e, ap, "Validate Feature for ISO - Incomplete", null, null, null, null, null)
+  }
+}/*end00rule*/
+  }
+}

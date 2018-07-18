@@ -1,0 +1,32 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1170 - Pre-Trial Report Received Date cannot be future")
+internal class MVXX1170PreTrialReportReceivedDatecannotbefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (ma in matter.MatterAssignmentsExt where
+    ma.ChangedFields.contains("PreTrialReportReceivedDate") and
+    ma.PreTrialReportReceivedDate != null 
+    and gw.api.util.DateUtil.compareIgnoreTime(ma.PreTrialReportReceivedDate,
+        gw.api.util.DateUtil.currentDate()) > 0) == true/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+ 
+  for(ma in matter.MatterAssignmentsExt.where(\ m -> 
+        m.ChangedFields.contains("PreTrialReportReceivedDate")
+    and m.PreTrialReportReceivedDate != null 
+    and gw.api.util.DateUtil.compareIgnoreTime(m.PreTrialReportReceivedDate,
+        gw.api.util.DateUtil.currentDate()) > 0)){     
+       
+    msg="Please provide a Pre-Trial Report Received Date that is not a date in the future."
+    matter.rejectSubField(ma,"PreTrialReportReceivedDate", "newloss", msg,Null, Null )  
+  }
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

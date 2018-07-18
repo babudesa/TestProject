@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Correcting Issues with Multiple Exposures on Incidents</title>
+    <link rel="StyleSheet" href="css/procedure-db-b-c.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_3.html#1938405">Upgrading from 5.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-b-c.10.01.html#1938405">Upgrading the ClaimCenter 5.0.x Database</a> : Correcting Issues with Multiple Exposures on Incidents</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1938405">Correcting Issues with Multiple Exposures on Incidents</a></div>
+      <div class="B_-_Body"><a name="1938406">If you attempted a database upgrade, and the upgrade reported issues with multiple exposures pointing to the </a>same incident, follow instructions in this topic to resolve the issue. If you did not encounter this error, proceed to the next topic.</div>
+      <div class="B_-_Body"><a name="1938407">It is possible to have more than one exposure point to the same incident. This situation can potentially create a </a>problem during upgrade . The database upgrade uses the <span class="cv_-_computer_voice">ExposureType</span> to determine which subtype to make the incident. If these multiple exposures have different <span class="cv_-_computer_voice">ExposureTypes</span> (as indicated by the <span class="cv_-_computer_voice">CoverageSubtype</span>) that are associated with different <span class="cv_-_computer_voice">IncidentTypes</span>, then the upgrade cannot determine the incident subtype. A version check reports this error. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.21.html#1939469', '');" title="Starting the Server to Begin Automatic Database Upgrade">“Remapping Incidents”</a>.</div>
+      <div class="B_-_Body"><a name="1938411">If you modify the mapping of coverage subtypes to exposure types for ClaimCenter 6.0 to preserve your previous </a>line of business configuration, you will not encounter this issue. The database upgrade will not need to recalculate incident subtypes. You can modify the mapping in Studio.</div>
+      <div class="B_-_Body"><a name="1938412">Otherwise, there are two approaches to handling this issue. The first approach recodes typecodes for each </a><span class="cv_-_computer_voice">ExposureType</span> and <span class="cv_-_computer_voice">CoverageSubtype</span> that is associated with an incident with multiple exposures. This affects every reference to the altered <span class="cv_-_computer_voice">ExposureTypes</span> and <span class="cv_-_computer_voice">CoverageSubtypes</span>, since the change is made in the typelist. The second approach adds a new typecode for each <span class="cv_-_computer_voice">ExposureType</span> and <span class="cv_-_computer_voice">CoverageSubtype</span> that is associated with an incident with multiple exposures. This typecode is used only for problem exposures. Review both approaches before proceeding.</div>
+      <div class="B_-_Body"><a name="1938413">The first approach only works if the </a><span class="cv_-_computer_voice">ExposureTypes</span> in question are not those with an <span class="cv_-_computer_voice">ID</span> of 11 or below. <span class="cv_-_computer_voice">ExposureTypes</span> with an <span class="cv_-_computer_voice">ID</span> of 11 or below are special and cannot be changed. If one of the following <span class="cv_-_computer_voice">ExposureTypes</span> needs to be changed, follow <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.22.html#1938461', '');" title="Correcting Issues with Multiple Exposures on Incidents">Approach 2</a>.</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938417">BodilyInjuryDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938418">LossOfUseDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938419">PersonalPropertyDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938420">PropertyDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938421">VehicleDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938422">LostWages</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938423">WCInjuryDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938424">EmployerLiability</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938425">GeneralDamage</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938426">PIPDamages</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938427">MedPay</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1938428">Approach 1</a></div>
+      <div class="B_-_Body"><a name="1938429">Recode the existing </a><span class="cv_-_computer_voice">ExposureType</span> and <span class="cv_-_computer_voice">CoverageSubtype</span> typecodes so they do not collide with the new typecodes during upgrade. The general steps are:</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938430">Recode the typecodes in the pre-upgrade database.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938431">Add the recoded typecodes to the target configuration as retired typecodes.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938432">Upgrade the database.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1938433">After upgrading, existing exposures will have the recoded typecodes but new exposures will have the new type</a>codes. This might require you to update filters, searches, and any reporting that you are doing against exposures.</div>
+      <div class="B_-_Body"><a name="1938434">Note that this affects every reference to the altered </a><span class="cv_-_computer_voice">ExposureTypes</span> and <span class="cv_-_computer_voice">CoverageSubtypes</span>, since the change is made in the typelist.</div>
+      <div class="HS_-_Head_Sub"><a name="1938435">To recode legacy typecodes</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938436">You tried to upgrade and the upgrade reported the multi-exposure error. This error provides a SQL statement </a>that returns the ids of all <span class="cv_-_computer_voice">Incident</span> rows with multiple <span class="cv_-_computer_voice">Exposures</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938437">Determine which </a><span class="cv_-_computer_voice">ExposureTypes</span> and <span class="cv_-_computer_voice">CoverageSubtypes</span> are causing problems by running the following SQL queries:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938438">SELECT DISTINCT exposuretype FROM cc_exposure WHERE incidentid IN (&lt;</a><span class="pc_-_parameter_in_code">sql from the error</span>&gt;)</PRE>
+      <div class="LP_-_List_Para"><a name="1938439">and</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938440">SELECT DISTINCT coveragesubtype FROM cc_exposure WHERE incidentid IN (&lt;</a><span class="pc_-_parameter_in_code">sql from the error</span>&gt;)</PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938441">Change the typecodes in the database. You can do this with two SQL statements, provided by database plat</a>form. This example adds the prefix <span class="cv_-_computer_voice">old_</span> to the typecode:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938442">Oracle:</a></span></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938443">UPDATE cctl_exposuretype</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938444">SET typecode = CONCAT('old_' + typecode)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938445">WHERE id IN (&lt;first sql from step 1&gt;)</a></PRE>
+      <div class="LP_-_List_Para"><a name="1938446">and</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938447">UPDATE cctl_coveragesubtype</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938448">SET typecode = CONCAT('old_' + typecode)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938449">WHERE id IN (&lt;second sql from step 1&gt;)</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938451">Find the affected typecodes from the </a><span class="cv_-_computer_voice">CoverageSubtype</span> and <span class="cv_-_computer_voice">ExposureType</span> typelist configurations in the old configuration. Copy these into the target configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938452">In the target configuration, update the </a><span class="cv_-_computer_voice">typecode</span> field to match changes you made. Set these typecodes to <span class="cv_-_computer_voice">retired</span> so they do not appear in the user interface when making new exposures, and so forth.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938459">Start the ClaimCenter 6.0.8 server to upgrade the database. The exposures that were a problem before do not </a>change during the upgrade. The configuration in the new version for those <span class="cv_-_computer_voice">CoverageSubtypes</span> and <span class="cv_-_computer_voice">ExposureTypes</span> now looks the same as it did in the old version, besides the code field.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1938461">Approach 2</a></div>
+      <div class="B_-_Body"><a name="1938462">Add new typecodes in the pre-upgrade configuration for the problem exposures and then change only those </a>exposures to use the new typecodes. Using this approach, only the problem exposures have an unorthodox <span class="cv_-_computer_voice">ExposureType</span> and <span class="cv_-_computer_voice">CoverageSubtype</span>. All other references to those typecodes will remain. </div>
+      <div class="HS_-_Head_Sub"><a name="1938463">To recode legacy typecodes only for problem exposures</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938464">You tried to upgrade and the upgrade reported the multi-exposure error. This error provides a SQL statement </a>that returns the ids of all <span class="cv_-_computer_voice">Incident</span> rows with multiple <span class="cv_-_computer_voice">Exposures</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938465">Determine which </a><span class="cv_-_computer_voice">ExposureTypes</span> and <span class="cv_-_computer_voice">CoverageSubtypes</span> are causing problems by running the following SQL queries:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938466">SELECT DISTINCT exposuretype FROM cc_exposure WHERE incidentid IN (&lt;</a><span class="pc_-_parameter_in_code">sql from the error</span>&gt;)</PRE>
+      <div class="LP_-_List_Para"><a name="1938467">and</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938468">SELECT DISTINCT coveragesubtype FROM cc_exposure WHERE incidentid IN (&lt;</a><span class="pc_-_parameter_in_code">sql from the error</span>&gt;)</PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938469">Find the problem </a><span class="cv_-_computer_voice">ExposureTypes</span> and <span class="cv_-_computer_voice">CoverageSubtypes</span> in the configuration files in the pre-upgrade configuration. Copy each one, giving the copy a new code, such as the existing code prefixed with <span class="cv_-_computer_voice">old_</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938470">Start the pre-upgrade server so that the new typecodes are added to the database. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938471">Shut down the server.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938472">Update the problem </a><span class="cv_-_computer_voice">Exposure</span> rows so that the <span class="cv_-_computer_voice">CoverageSubtype</span> and <span class="cv_-_computer_voice">ExposureType</span> refer to the new copies. For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938473">UPDATE cc_exposure</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938474">SET exposuretype=&lt;new exposure type id&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938475">WHERE exposuretype=&lt;old exposure type id&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938476">AND incidentid IN (&lt;sql from error&gt;)</a></PRE>
+      <div class="LP_-_List_Para"><a name="1938477">and</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938478">UPDATE cc_exposure</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938479">SET coveragesubtype=&lt;new coverage subtype id&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938480">WHERE coveragesubtype=&lt;old coverage subtype id&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938481">AND incidentid IN (&lt;sql from error&gt;)</a></PRE>
+      <div class="LP_-_List_Para"><a name="1938482">Do this for each exposure type and coverage subtype that is causing the problem. Look up the id for the new </a>types in the typelist tables (<span class="cv_-_computer_voice">cctl_exposuretype</span> and <span class="cv_-_computer_voice">cctl_coveragesubtype</span>).</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938489">Add the new typecodes to the ClaimCenter 6.0.8 target configuration files. You might want to retire them so </a>that ClaimCenter does not display them.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938499">Start the ClaimCenter 6.0.8 server to upgrade the database.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

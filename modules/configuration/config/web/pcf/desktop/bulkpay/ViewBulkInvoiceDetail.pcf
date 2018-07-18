@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="helper.flushCache()"
+    afterCommit="helper.flushCache()"
+    beforeCommit="bulkInvoice.verifyChangesAllowed()"
+    beforeValidate="helper.prepBulkInvoiceForSave(bulkInvoice, CostType.TC_UNSPECIFIED, CostCategory.TC_UNSPECIFIED)"
+    canEdit="perm.BulkInvoice.edit"
+    canVisit="perm.BulkInvoice.view"
+    id="ViewBulkInvoiceDetail"
+    parent="BulkPay()"
+    showUpLink="true"
+    title="displaykey.Web.Financials.BulkPay.Invoice.BulkInvoiceDetail">
+    <LocationEntryPoint
+      signature="ViewBulkInvoiceDetail(bulkInvoice : BulkInvoice)"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalContactSource"/>
+    <Variable
+      initialValue="BulkInvoice.Payee!=null ? BulkInvoice.Payee.generateLinkStatus() : null"
+      name="payeeLinkStatus"
+      recalculateOnRefresh="true"/>
+    <Screen
+      editable="true"
+      id="ViewBulkInvoiceDetailScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <ToolbarButton
+          action="EditBulkInvoiceDetail.go(bulkInvoice)"
+          available="bulkInvoice.Editable and perm.BulkInvoice.edit &amp;&amp; (User.util.CurrentUser == bulkInvoice.CreateUser or User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)))"
+          id="EditButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Edit"/>
+        <ToolbarButton
+          action="validateBulkInvoice(bulkInvoice);"
+          available="bulkInvoice.Validateable and perm.BulkInvoice.edit"
+          hideIfEditable="true"
+          id="ValidateButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Validate"/>
+        <ToolbarButton
+          action="bulkInvoice.BulkInvoice_OnSubmit();submitBulkInvoice(bulkInvoice);"
+          available="bulkInvoice.Submittable and perm.BulkInvoice.edit &amp;&amp; (User.util.CurrentUser == bulkInvoice.CreateUser or User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)))"
+          hideIfEditable="true"
+          id="SubmitButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Submit"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="null"
+          confirmMessage="displaykey.Web.BulkPay.UpdateBulkInvoices.Warning"
+          hideIfEditable="true"
+          id="RefreshButton"
+          label="displaykey.Web.Financials.BulkPay.Button.UpdateStatus"/>
+        <ToolbarDivider/>
+        <!-- <ToolbarButton
+          action="BulkInvoicePrintout.push(bulkInvoice)"
+          id="PrintButton"
+          label="&quot;Print&quot;"/> -->
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="StopBulkInvoice.go(bulkInvoice)"
+          available="(bulkInvoice.Stoppable || bulkInvoice.Voidable) and bulkInvoice.Status != &quot;cleared&quot; and bulkInvoice.DatePrintedExt != null and bulkInvoice.EscheatStatusExt != &quot;escheated&quot;"
+          id="StopButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Stop"
+          visible="perm.BulkInvoice.edit"/>
+        <ToolbarButton
+          action="VoidBulkInvoice.go(bulkInvoice)"
+          available="(bulkInvoice.Stoppable || bulkInvoice.Voidable) and bulkInvoice.Status != &quot;cleared&quot; and bulkInvoice.DatePrintedExt != null and bulkInvoice.EscheatStatusExt != &quot;escheated&quot;"
+          id="VoidButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Void"
+          visible="perm.BulkInvoice.edit"/>
+      </Toolbar>
+      <PanelRef
+        def="ViewBulkInvoiceDetailDV(bulkInvoice, externalContactSource, payeeLinkStatus)"/>
+      <PanelRef
+        def="BulkInvoiceItemsLV(bulkInvoice, helper)">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[function submitBulkInvoice(invoice : BulkInvoice) {
+        CurrentLocation.startEditing();
+
+        var success =  false;
+        try {
+          invoice.submitForApproval();
+          CurrentLocation.commit();
+          success = true;
+        } finally {
+          if (!success) {
+            CurrentLocation.cancel();
+          }
+        }
+      }
+
+      function validateBulkInvoice(invoice : BulkInvoice) {
+        CurrentLocation.startEditing();
+
+        var success =  false;
+        try {
+          invoice.validate();
+          CurrentLocation.commit();
+          success = true;
+        } finally {
+          if (!success) {
+            CurrentLocation.cancel();
+          }
+        }
+      }]]></Code>
+  </Page>
+</PCF>

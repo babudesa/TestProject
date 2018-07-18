@@ -1,0 +1,65 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUAGAgriBusinessPolicyPreUpdaterules_dir.PPUAG1100FilterPackagePolicyDataperLossType_dir
+
+@gw.rules.RuleName("PPUAG1120 - Filter Policy Properties for Liability Claims")
+internal class PPUAG1120FilterPolicyPropertiesforLiabilityClaims {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.SortedMap;
+uses java.util.TreeMap;
+var hasPropertiesRemoved : boolean = false;
+var propsWithCovgs : SortedMap<String, LocationBasedRU> = new TreeMap<String, LocationBasedRU>();
+var sortedProperties : SortedMap<String, LocationBasedRU> = new TreeMap<String, LocationBasedRU>();
+var propCovgs : RUCoverage[];
+var cntCovgs : int = 0;
+var cntProps : int = 0;
+
+for (pp in policy.Properties) {
+  if (pp typeis PropertyRU && pp.Property != null and pp.Property.BuildingNumberExt == "0") {
+    if (pp.Coverages.length > 0) {
+      propsWithCovgs.put(pp.PropertyNumberExt + pp.Property.Address.DisplayName, pp);
+    }
+    sortedProperties.put(pp.PropertyNumberExt + pp.Property.Address.DisplayName, pp);
+  }
+  cntProps = cntProps + 1;
+}
+
+for (pp in policy.Properties) {
+  if (pp typeis PropertyRU && pp.Property != null and pp.Property.BuildingNumberExt == "0") {
+    if (propsWithCovgs.containsKey( pp.PropertyNumberExt + pp.Property.Address.DisplayName)) {
+        if (pp.Coverages.length == 0){
+          pp.remove();
+          hasPropertiesRemoved = true;
+          cntProps = cntProps - 1;
+        }
+      }
+  }
+}
+
+for (polprop in policy.Properties) {
+  var propfound = false;
+  for (spp in sortedProperties.keySet().iterator()) {
+    var spolprop = (sortedProperties.get(spp));
+    if (polprop.Property.PhysicalPropertyEBIExt.equals(spolprop.Property.PhysicalPropertyEBIExt)) {
+      sortedProperties.remove( spp );
+      propfound = true;
+      break;
+    }
+  }
+  propCovgs = polprop.Coverages;
+  if (!propfound and propCovgs.length == 0) {
+    polprop.remove();
+    hasPropertiesRemoved = true;
+    cntProps = cntProps - 1;
+  }
+}
+
+if (hasPropertiesRemoved) {
+  policy.TotalProperties = cntProps;
+}
+
+/*end00rule*/
+  }
+}

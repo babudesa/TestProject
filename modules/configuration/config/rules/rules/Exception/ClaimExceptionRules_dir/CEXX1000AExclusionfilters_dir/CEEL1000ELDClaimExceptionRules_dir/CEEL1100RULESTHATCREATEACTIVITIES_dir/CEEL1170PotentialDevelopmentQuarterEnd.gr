@@ -1,0 +1,38 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEEL1170 - Potential Development Quarter End")
+internal class CEEL1170PotentialDevelopmentQuarterEnd {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(claim) >= 100000 ||
+(claim.PotentialDevelopmentExt + gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(claim)) >= 100000 &&
+!exists(act in claim.Activities where act.ActivityPattern.Code == "potential_report" && act.Status == "open")
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6126 - C.Mullin - 4/17/13 - Activity modified to generate 3 weeks from the end of 
+each quarter (rather than 4 weeks). This three week period begins on the 7th day of each "quarter" month
+(March, June, September or December). The activity will trigger if the conditions are met any time on or 
+after the 7th day of these four months.
+*/
+
+var currentDate = gw.api.util.DateUtil.currentDate()
+var currentMonth = gw.api.util.DateUtil.getMonth(currentDate)
+
+try {
+  if ((currentMonth == 3 || currentMonth == 6 || currentMonth == 9 || currentMonth == 12) &&
+      currentDate.DayOfMonth >=7) {
+    if (!(exists(act in claim.Activities where act.ActivityPattern.Code == "potential_report" && 
+        gw.api.util.DateUtil.getMonth(act.CreateTime) == currentMonth && 
+        gw.api.util.DateUtil.getYear(act.CreateTime) == gw.api.util.DateUtil.getYear(currentDate)))){
+          var ap = util.custom_Ext.finders.findActivityPattern("potential_report")
+          claim.createActivityFromPattern(null, ap)
+      }  
+  }
+ } catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

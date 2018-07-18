@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="CMSMedicareInfoInputSet"
+    visible="true">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="util.WCHelper.isWCLossType(claim)"
+      name="isWCLossType"
+      type="Boolean"/>
+    <Label
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareReporting"/>
+    <Input
+      editable="(Person.TaxID!=null and Person.TaxID.toString().startsWith(&quot;9&quot;)) ? false : true"
+      id="HICN"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.HICN"
+      onChange="Person.setMediFields(); setDefaults();Person.setStopSendToCMS()"
+      postOnChange="true"
+      required="Person.MedicareEligibleExt==true and Person.TaxID==null and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+      value="Person.HICNExt"/>
+    <Input
+      editable="Person.isMediEditable() and (!Person.RefuseProvideExt and !Person.BelowThresholdExt) &amp;&amp; !Person.isUndocumentedWorker"
+      id="MedicareEligible"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareEligible"
+      onChange="setMedicareFields(); setDefaults();Person.setStopSendToCMS()"
+      postOnChange="true"
+      value="Person.MedicareEligibleExt"/>
+    <Input
+      editable="Person.MedicareEligibleExt != true? true: false"
+      id="StopSendToCMS"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.StopSendToCMS"
+      required="false"
+      value="Person.StopSendPartyToCMSExt"/>
+    <BooleanRadioInput
+      editable="true"
+      id="SendToCMS"
+      label="&quot;Defer Sending Data to CMS?&quot;"
+      required="Person.MedicareEligibleExt and Person.BelowThresholdExt != true and Person.RefuseProvideExt != true ? true : false"
+      validationExpression="!Person.SendPartyToCMSExt and Person.MedicareEligibleExt and validateCMSFields() != &quot;&quot;? validateCMSFields() : null"
+      value="Person.SendPartyToCMSExt"
+      visible="true"/>
+    <!-- <BooleanRadioInput
+      editable="true"
+      id="DeletePartyFromCMSBooleanRadioButtonInput"
+      label="displaykey.Web.Exposure.MedicareData.DeleteFromCMS"
+      required="false"
+      value="Person.DeleteFromCMSIndicatorExt"/> -->
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareReportingName"/>
+    <Input
+      editable="true"
+      id="LegalFName"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.LegalFName"
+      required="Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+      value="Person.LegalFNameExt"/>
+    <Input
+      editable="true"
+      id="LegalMName"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.LegalMName"
+      value="Person.LegalMNameExt"/>
+    <Input
+      editable="true"
+      id="LegalLName"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.LegalLName"
+      required="Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+      value="Person.LegalLNameExt"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Medicare.MedicareReportingOverride"/>
+    <BooleanRadioInput
+      editable="true"
+      id="BelowThres"
+      label="displaykey.Web.ContactDetail.Medicare.AmountBelowThreshold"
+      onChange="Person.setMedicare()"
+      postOnChange="true"
+      required="Person.RefuseProvideExt != null"
+      value="Person.BelowThresholdExt"/>
+    <BooleanRadioInput
+      editable="true"
+      id="Refused"
+      label="displaykey.Web.ContactDetail.Medicare.RefusedtoProvideSSNHICN"
+      onChange="Person.setMedicare()"
+      postOnChange="true"
+      required="Person.BelowThresholdExt != null"
+      value="Person.RefuseProvideExt"
+      visible="!isWCLossType"/>
+    <InputDivider/>
+    <Code><![CDATA[property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Claim.claimant.TaxID, Claim.claimant.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+property set TAXINFO(taxID : String) { Claim.claimant.TaxID = taxID } 
+
+property get Person() : Person { return pageProc.ContactISOMedicare.Contact as Person; }
+      
+      function setMedicareFields() {
+      	if(Person.MedicareEligibleExt==false){
+      		//Person.HICNExt = ""
+      		//Person.SendPartyToCMSExt = null
+      	}
+      	if(Person.MedicareEligibleExt){
+      	 Person.DateOfMedicareEligibleExt = gw.api.util.DateUtil.currentDate() 
+      	}
+      }
+      function setMediFields() {
+      	if(Person.HICNExt!="" and Person.HICNExt!=null){
+      		Person.MedicareEligibleExt = true
+      	}
+      }
+      function isMediEditable() : boolean {
+      	var result : boolean = false
+      	if(Person.TaxID!=null){
+      		if(!Person.TaxID.toString().startsWith("9") and Person.HICNExt==null){
+      			result = true
+      		}      	
+      	} else {
+      		if(Person.HICNExt==null){
+      			result =  true
+      		}
+      	}
+      	return result
+      }
+      
+      function validateCMSFields() : String {
+          var missingInfo = ""
+          if((pageProc.ContactISOMedicare.Contact as Person) != null and (pageProc.ContactISOMedicare.Contact as Person).BelowThresholdExt != true and (pageProc.ContactISOMedicare.Contact as Person).RefuseProvideExt != true){
+           if((pageProc.ContactISOMedicare.Contact.PrimaryAddress == null))
+            missingInfo = missingInfo + "Address, "
+           if(pageProc.ContactISOMedicare.Contact.TaxID == null and (pageProc.ContactISOMedicare.Contact as Person).HICNExt == null)
+            missingInfo = missingInfo + "SSN/HICN, " 
+            // - kniese - defect 6463: claimant phone number is not required for ISO and Medicare
+           //if(contactISO.Contact.HomePhone == null and contactISO.Contact.CellPhoneExt == null and contactISO.Contact.WorkPhone == null) 
+             //missingInfo = missingInfo + "Phone, "
+           if(missingInfo != ""){
+            missingInfo = missingInfo.trim()
+            if(missingInfo.endsWith( "," )){
+              missingInfo = missingInfo.substring( 0, missingInfo.lastIndexOf( "," ) )
+            }
+            missingInfo = "If 'Defer Sending Data to CMS' is No, the following is required: " + missingInfo
+           }
+          }
+    
+         return missingInfo
+        
+      }
+      
+function setDefaults() {
+  if(Person.MedicareEligibleExt){ 
+    if(pageProc.ContactISOMedicare.CMSIncidentDateExt == null){
+      pageProc.ContactISOMedicare.CMSIncidentDateExt = claim.LossDate
+    }
+    if(pageProc.ContactISOMedicare.StateOfVenueExt == null){
+      for(medSt in MedicareState.getTypeKeys(false)){
+        if(claim.LossLocation.Country != "US" and claim.LossLocation.Country != null){
+          if(medSt.Code == "FC"){
+            pageProc.ContactISOMedicare.StateOfVenueExt = medSt
+          }
+        }
+        if(medSt.Code == claim.LossLocation.State.Code){
+          pageProc.ContactISOMedicare.StateOfVenueExt = medSt
+        }
+      }
+    } 
+    if(pageProc.ContactISOMedicare.ProductLiabTypeExt == null){
+      pageProc.ContactISOMedicare.ProductLiabTypeExt = ProductLiabilityTypeExt.TC_NO
+    }
+    //ORM default logic
+    /*
+    if(!pageProc.ContactISOMedicare.ORMIndExt){
+      if(exposure != null){
+        pageProc.ContactISOMedicare.ORMIndExt = (exposure.MedicareExposureExt || exposure.IsMedicareExposureExt) && exposure.IsORMExposure ||
+          claim.Exposures.hasMatch(\ e -> (e.MedicareExposureExt || e.IsMedicareExposureExt) && e.IsORMExposure && e.Claimant == pageProc.ContactISOMedicare.Contact)         
+      }else{
+        claim.Exposures.hasMatch(\ e -> (e.MedicareExposureExt || e.IsMedicareExposureExt) && e.IsORMExposure && e.Claimant == pageProc.ContactISOMedicare.Contact)                 
+      }
+    }*/
+    
+    pageProc.updateORM() 
+  }
+}
+
+function setMedicareEligible():void{
+ if(Person.BelowThresholdExt or Person.RefuseProvideExt){
+  Person.MedicareEligibleExt = true 
+ }
+}]]></Code>
+  </InputSet>
+</PCF>

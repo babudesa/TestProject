@@ -1,0 +1,28 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir
+
+@gw.rules.RuleName("MVXX1200 - Opposing Law Firm Required ")
+internal class MVXX1200OpposingLawFirmRequired {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("CoverageOrExtraContractSuitExt") and
+matter.CoverageOrExtraContractSuitExt == true and
+exists (exp in matter.MatterAssignmentsExt*.AssignmentExposuresExt where
+        exp.OpposingCounselFirmExt == null)/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+    
+  var matterExpList = matter.MatterAssignmentsExt*.AssignmentExposuresExt
+                    .where(\ m -> m.OpposingCounselFirmExt == null)      
+   
+     msg="Opposing Counsel Law Firm is required for Legal Action " + 
+            matter + " with a coverage or extra-contractual suit."
+     matter.reject( "newloss",msg ,null,"OpposingCounselFirmExt")
+           
+  } catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

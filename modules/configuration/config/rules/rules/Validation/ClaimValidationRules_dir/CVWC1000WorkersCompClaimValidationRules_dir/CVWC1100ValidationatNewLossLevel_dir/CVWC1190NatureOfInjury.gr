@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVWC1190 - Nature Of Injury")
+internal class CVWC1190NatureOfInjury {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ensureClaimInjuryIncident().GeneralInjuryType==null &&
+!claim.IncidentReport/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  claim.rejectSubField(claim.ensureClaimInjuryIncident(), "GeneralInjuryType", "newloss", displaykey.Rules.Validation.Claim.WorkersComp.NatureOfInjury, null, null )
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,44 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABBS1000BondsActivityBatchRules_dir
+
+@gw.rules.RuleName("ABBS1100 - Collection Note Required")
+internal class ABBS1100CollectionNoteRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 5/12/2014 - kniese
+// Bonds activity that is generated 60 days after the feature financial status
+// is closed and there is payment on the exposure and no collection note has been
+// created. 
+
+(!exists( note in
+claim.Notes where note.Topic == NoteTopicType.TC_COLLECTION )) and
+(!exists(act in claim.Activities where 
+    act.ActivityPattern.Code == "coll_note_required")) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {  
+  var today = gw.api.util.DateUtil.currentDate()
+  var ap = util.custom_Ext.finders.findActivityPattern( "coll_note_required" )
+
+  for(exposure in claim.Exposures){
+    if(exposure.getFeatureFinancialStatus() == "Closed") {
+      for(pay in exposure.getPaymentsIterator(false) ){
+        if((pay as Payment).Check.Status == "issued"){
+          var issuedDate = (pay as Payment).Check.IssueDate 
+           if(gw.api.util.DateUtil.daysBetween(today, issuedDate) >=
+                 ScriptParameters.Activity_BondsCollectionNoteRequired){
+             var act = claim.createActivityFromPattern( exposure, ap)
+    
+             //act.setCreateTime(today.addDays(1))
+             act.AssignedUser = claim.AssignedUser
+             act.AssignedByUser = claim.AssignedUser
+           }
+        }
+      }
+    }
+  }
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

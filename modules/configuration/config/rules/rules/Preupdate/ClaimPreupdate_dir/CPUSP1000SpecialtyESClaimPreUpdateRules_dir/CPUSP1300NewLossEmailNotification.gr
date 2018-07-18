@@ -1,0 +1,54 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUSP1000SpecialtyESClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUSP1300 - New Loss Email Notification")
+internal class CPUSP1300NewLossEmailNotification {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LoadCommandID == null and !claim.New and 
+!exists(ref in claim.Notes where ref.Subject == displaykey.Notes.NoteSubject.NewLoss) and
+claim.State != ClaimState.TC_DRAFT and
+claim.State != ClaimState.TC_CLOSED and
+claim.AssignmentStatus == AssignmentStatus.TC_ASSIGNED and
+claim.IncidentReport == false 
+ 
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+try {
+
+    var noteBody:String
+    var note:Note
+    var body : String = templates.email.specialtyes.NewLoss_SPES.renderToString(claim)
+    var envInfo : String = util.custom_Ext.finders.getEnvironment()
+    var recipient = claim.AssignedUser.DisplayName;
+    var agent : String = claim.Policy.ex_Agency.DisplayName
+    var emailHelper = new EmailHelper()
+    
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+        emailHelper.sendEmailWithBodyEcf(claim, 
+          "E&SSupport@gaig.com", ScriptParameters.GARSPaymentNotificationTo,
+          "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+          displaykey.Email.Subject.NewLoss, body)
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    } else {
+        emailHelper.sendEmailWithBodyEcf(claim, 
+           ScriptParameters.ClaimCenterDevEmail, recipient, 
+          "ClaimCenterSupport@gaig.com", envInfo, 
+          displaykey.Email.Subject.NewLoss, body)
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    }
+    
+    noteBody = displaykey.Notes.NoteBody.NewLoss
+    note = claim.addNote(NoteTopicType.TC_GENERAL, noteBody)
+    note.Subject = displaykey.Notes.NoteSubject.NewLoss
+  
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+
+
+/*end00rule*/
+  }
+}

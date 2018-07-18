@@ -1,0 +1,25 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXXZZZ5 - Flag DOL Outside of Policy Claims")
+internal class CPUXXZZZ5FlagDOLOutsideofPolicyClaims {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 6/9/15 - kniese - defect 7448 : Allow Date of Loss outside of policy period.
+claim.DOLOutsideIndExt and
+claim.State != ClaimState.TC_DRAFT and
+claim.isConvertedExt() == false/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  claim.Flagged = FlaggedType.TC_ISFLAGGED
+  //claim.FlagClaimIndicator.IsOn = true
+  claim.FlaggedReason = "Date of Loss outside policy period."
+  claim.FlaggedDate = java.util.Date.CurrentDate
+
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+
+}/*end00rule*/
+  }
+}

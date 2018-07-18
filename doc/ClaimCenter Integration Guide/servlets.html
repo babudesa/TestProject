@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Servlets</title>
+    <link rel="StyleSheet" href="css/servlets.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;">Servlets</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="CT_-_Chapter_Title"><a name="2380296">Servlets</a></div>
+      <div class="B_-_Body"><a name="2380317">You can define simple web servlets for your ClaimCenter application using the </a><span class="cv_-_computer_voice">@Servlet</span> annotation.</div>
+      <div class="H1NB_-_Heading_1_No_Break"><a name="2380921">Using Servlets</a></div>
+      <div class="B_-_Body"><a name="2380956">You can define simple web servlets inside your ClaimCenter application. You can define extremely simple HTTP </a>entry points to custom code using this approach. These are separate from web services that use the SOAP protocol. These are separate from the Guidewire PCF entrypoints feature. You can define arbitrary code triggered from any URL as long as you can define a Gosu block that can determine from the URL whether it owns the request. There is no complex object serialization or deserialization such as is done in the SOAP protocol. The implementation uses the standard Java classes in the package <span class="cv_-_computer_voice">javax.servlet.http</span> to define the servlet request and response.</div>
+      <div class="B_-_Body"><span class="s_-_strong"><a name="2381630">It is absolutely critical for you to understand the large security implications of using servlets. </a></span>Extending <span class="cv_-_computer_voice">HttpServlet</span> provides absolutely no security for the servlet. For example, no authentication is necessary to execute it. If you want to implement your own authentication system, you can. For example, you can extend  <span class="cv_-_computer_voice">AbstractGWAuthServlet</span> to translate the security headers in the request and authenticate with the Guidewire server. Alternatively, you can base your servlet on the class <span class="cv_-_computer_voice">AbstractBasicAuthenticationServlet</span>, which authenticates using HTTP BASIC authentication. This type of authentication might not be what you choose to implement, but it might be useful to see how the code is structured. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2381696">If you use servlets, there are very large security considerations. You must implement your </a>own authentication system to protect information and data integrity. If you have questions about how to do this safely, contact Guidewire customer support. Be extremely careful with coding your servlets and consider all possible security implications.</div>
+      <div class="HS_-_Head_Sub"><a name="2381460">To make a simple servlet entrypoint</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2381461">Write a Gosu class that extends the class </a><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">javax.servlet.http.HttpServlet</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2380344">Add the </a><span class="cv_-_computer_voice">@Servlet</span> annotation on the line before your class definition.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2381490">As a parameter in parentheses for the annotation, pass a Gosu block that takes a URL </a><span class="cv_-_computer_voice">String</span>. Write the block such that the block returns <span class="cv_-_computer_voice">true</span> if and only if the user URL matches what your servlet handles. Optionally your block can use a regular expression to define which URLs you support. To do this, call the <span class="cv_-_computer_voice">matches</span> method on the <span class="cvt_-_computer_voice_table">String</span> type and pass the regular expression. For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381528">@Servlet( \ path : String -&gt;path.matches( "/test(/.*)?" ) )</a></PRE>
+      <div class="LP_-_List_Para"><a name="2381561">This example servlet responds to URLs that start with the text </a><span class="cv_-_computer_voice">"/test/"</span> in the servlet query path. The servlet query path is every character after the computer name, the port, the web application name, and the word <span class="cv_-_computer_voice">"/</span><span class="cv_-_computer_voice">servlet/"</span>. In other words, your servlet gets the servlet URL substring identified as <span class="pc_-_parameter_in_code">YOUR_SERVLET_STRING</span> in the following URL syntax:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2381819">http://localhost:8080/cc/service/</a><span class="pc_-_parameter_in_code">YOUR_SERVLET_STRING</span></div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2381897">Override the </a><span class="cv_-_computer_voice">doGet</span> method to do your actual work. Your <span class="cv_-_computer_voice">doGet</span> method takes a servlet request object and a servlet response object, which are instances of <span class="cv_-_computer_voice">HttpServletRequest</span> and <span class="cv_-_computer_voice">HttpServletResponse</span>, respectively.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2380347">Do your desired work using the request object.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2380349">Important properties on the object include:</a></div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2380504">RequestURI</a></span> - Returns the part of this request’s URL from the protocol name up to the query string in the first line of the HTTP request.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2380577">RequestURL</a></span> - Reconstructs the URL the client used to make the request.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2380578">QueryString</a></span> - Returns the query string that is contained in the request URL after the path.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2380780">PathInfo</a></span> - Returns any extra path information associated with the URL the client sent when it made this request.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2380812">Headers</a></span> - Returns all the values of the specified request header as an <span class="cv_-_computer_voice">Enumeration</span> of <span class="cv_-_computer_voice">String</span> objects.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2380599">For full documentation on this class, refer to this Sun Javadoc page:</a></div>
+      <div class="CS_-_Code_Single_Line"><a href="://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html" target="external_window" name="2380750">http://java.sun.com/webservices/docs/1.6/api/javax/servlet/http/HttpServletRequest.html</a></div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2380751">Write an HTTP response using the servlet response object. For example, the following simple response sets </a>the content MIME type, the status of the response (<span class="cv_-_computer_voice">OK</span>), and </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2380767">&nbsp;</a>&nbsp;resp.ContentType = "text/plain"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2380856">&nbsp;</a>&nbsp;resp.setStatus(HttpServletResponse.SC_OK)</PRE>
+      <div class="LP_-_List_Para"><a name="2380857">If you want to write output text or other byte stream, use the </a><span class="cv_-_computer_voice">Writer</span> property that hangs off of the response object. For example</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2380864">&nbsp;</a>&nbsp;resp.Writer.append("hello world output")</PRE>
+      <div class="B_-_Body"><a name="2380907">The following example responds to servlet URL substrings that start with the string </a><span class="cv_-_computer_voice">/test/</span>. If an incoming URL matches that pattern, the servlet simply echos back the <span class="cv_-_computer_voice">PathInfo</span> property of the response object, which contains the path. This example uses the <span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">AbstractBasicAuthenticationServlet</span>, which ensures there is at basic HTTP authentication.</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381760">package mycompany.test</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381761"> </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381762">uses gw.servlet.Servlet</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381763">uses javax.servlet.http.HttpServletRequest</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381764">uses javax.servlet.http.HttpServletResponse</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381765">uses javax.servlet.http.HttpServlet</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381766">uses gw.api.util.Logger</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381767"> </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381768">@Servlet( \ path : String -&gt;path.matches( "/test(/.*)?" ) )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381769">class TestingServlet extends gw.servlet.AbstractBasicAuthenticationServlet {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381770">  override function doGet(req: HttpServletRequest, resp : HttpServletResponse)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381771">  { </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381772">  print("Servlet test URL " + HttpServletRequest.RequestURI)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381773">  print("Servlet test Query String " + HttpServletRequest.QueryString)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381774"> </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381775">  resp.ContentType = "text/plain"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381776">  resp.setStatus(HttpServletResponse.SC_OK)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381777">  resp.Writer.append("I am the page " + req.PathInfo)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381778">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381779"> </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381780">  override function isAuthenticationRequired( req: HttpServletRequest ) : boolean</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381781">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381782">    // -- TODO -------------</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381783">    // Read the headers and return true/false if user authentication is required</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381784">    // ---------------------</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381785">    return true;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381786">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2381787">}</a></PRE>
+      <div class="B_-_Body"><a name="2380369">To test this, launch your application and go to this URL in your browser:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2381019">http://localhost:8080/cc/service/test/is/this/working</a></div>
+      <div class="B_-_Body"><a name="2381037">Note that the text </a><span class="cv_-_computer_voice">"/test/"</span> in the URL is the important part that matches the servlet string. Change the port number and the server name to match your application.</div>
+      <div class="B_-_Body"><a name="2381059">Your web page displays the following:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2381464">I am the page /test/is/this/working</a></div>
+      <div class="B_-_Body"><a name="2381465">Use this basic design pattern to intercept:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2381466">a single page URL </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2381467">an entire virtual file hierarchy, as shown in the previous example</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2381468">multiple page URLs that are not described in traditional file hierarchies as a single root directory with subdi</a>rectories. For example, you could intercept URLs with the regular expression:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="2381469">"(/.*)?/my_magic_subfolder_one_level_down"</a></div>
+      <div class="LP_-_List_Para"><a name="2381470">That would match all of the following URLs:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2381471">http://localhost:8080/cc/servlet/test1/my_magic_subfolder_one_level_down</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2381472">http://localhost:8080/cc/servlet/test2/my_magic_subfolder_one_level_down</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2381473">http://localhost:8080/cc/servlet/test3/my_magic_subfolder_one_level_down</a></div>
+      <div class="B_-_Body"><a name="2381109">&nbsp;</a></div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

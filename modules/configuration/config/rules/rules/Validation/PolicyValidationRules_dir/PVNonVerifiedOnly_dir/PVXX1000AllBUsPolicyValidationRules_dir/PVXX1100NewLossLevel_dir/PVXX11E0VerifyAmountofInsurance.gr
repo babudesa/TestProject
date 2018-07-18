@@ -1,0 +1,22 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11E0 - Verify Amount of Insurance")
+internal class PVXX11E0VerifyAmountofInsurance {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/exists(prop in policy.Properties where 
+  !util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(prop.Property.ex_AmountofInsurance))==true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(prop in policy.Properties){
+    if(!util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount( prop.Property.ex_AmountofInsurance )){
+      policy.reject( "newloss", displaykey.Rules.Validation.Policy.Enterprise.Number.NotAnInteger(prop.Property.DisplayName), null, null )
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

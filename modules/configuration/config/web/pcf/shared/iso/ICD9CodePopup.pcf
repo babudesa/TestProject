@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    canEdit="true"
+    id="ICD9CodePopup"
+    returnType="ICDCode"
+    title="searchType == &quot;CauseOfInjury&quot; ? &quot;Cause Codes&quot; : &quot;ICD Codes&quot;">
+    <LocationEntryPoint
+      signature="ICD9CodePopup(pageProc: pcf_gs.Medicare_PageProc,searchType: String,injury:InjuryIncident)"/>
+    <Variable
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Variable
+      name="searchType"
+      type="String"/>
+    <Variable
+      initialValue="pageProc.getICDVersion()"
+      name="icdVersion"
+      type="ICDVersionExt"/>
+    <Variable
+      initialValue="pageProc.searchICDCode"
+      name="findCode"
+      type="String"/>
+    <Variable
+      initialValue="null"
+      name="findBodySystem"
+      type="ICDBodySystem"/>
+    <Variable
+      initialValue="pageProc.searchICDCode != null ? libraries.ICDCodeUtil.ICDSearch( pageProc.searchICDCode, findBodySystem, findKeyword, false, searchType, icdVersion, false) : null"
+      name="codeSearchResults"
+      type="ICDCodeQuery"/>
+    <Variable
+      initialValue="null"
+      name="addCode"
+      type="String"/>
+    <Variable
+      initialValue="null"
+      name="bodySystem"
+      type="ICDBodySystemExt"/>
+    <Variable
+      initialValue="null"
+      name="findKeyword"
+      type="String"/>
+    <Variable
+      name="injury"
+      type="InjuryIncident"/>
+    <Screen>
+      <TitleBar
+        title="searchType == &quot;CauseOfInjury&quot; ? &quot;Cause of Injury Codes&quot; : &quot;ICD Codes&quot; //displaykey.Web.Admin.ICD.ICDCodes"/>
+      <Toolbar>
+        <ToolbarInput
+          boldLabel="true"
+          editable="true"
+          id="Find_Code"
+          label="displaykey.Web.Admin.ICD.FindCode"
+          numCols="6"
+          value="findCode"/>
+        <ToolbarRangeInput
+          boldLabel="true"
+          editable="true"
+          id="Find_Body_System"
+          label="displaykey.Web.Admin.ICD.BodySystem"
+          onChange="getFindBodySystem()"
+          postOnChange="true"
+          value="bodySystem"
+          valueRange="libraries.ICDCodeUtil.getBodySystemList(searchType, icdVersion)"
+          valueWidth="275"/>
+        <ToolbarInput
+          boldLabel="true"
+          editable="true"
+          id="FindKeyword"
+          label="&quot;Keyword&quot;"
+          numCols="10"
+          value="findKeyword"/>
+        <ToolbarButton
+          action="codeSearchResults = libraries.ICDCodeUtil.ICDSearch( findCode, findBodySystem, findKeyword, false, searchType, icdVersion, false) "
+          id="Search_Button"
+          label="displaykey.Web.Admin.ICD.Search"/>
+        <!-- <ToolbarDivider/> -->
+        <!-- <ToolbarInput
+          id="Add_Code"
+          label="&quot;Code&quot;"
+          value="addCode"/> -->
+        <!-- <ToolbarButton
+          action="NewICDPopup.push()"
+          id="Add_ICD_Code_Button"
+          label="displaykey.Web.Admin.ICD.NewCode"
+          visible="true"/> -->
+        <ToolbarDivider/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="pageProc.addCodes(CheckedValues, searchType, null); CurrentLocation.commit();"
+          flags="one canSelectICDCode"
+          id="ICDCode_UpdateButton"
+          iterator="ICDLV"
+          label="displaykey.Web.Admin.ICD.Select"
+          visible="searchType == &quot;CauseOfInjury&quot;"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="if(searchType==&quot;Diagnostic&quot;){pageProc.addCodes(CheckedValues, searchType, null)}; if(searchType==&quot;DiagnosticWC&quot;){pageProc.addCodes(CheckedValues, searchType, injury)}CurrentLocation.commit();"
+          flags="all canSelectICDCode"
+          id="ICDCode_UpdateButton2"
+          iterator="ICDLV"
+          label="displaykey.Web.Admin.ICD.Select"
+          visible="searchType == &quot;Diagnostic&quot; || searchType==&quot;DiagnosticWC&quot;"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="ICDCodeScreen_CancelButton"
+          label="displaykey.Button.Activity.Cancel"/>
+      </Toolbar>
+      <PanelRef
+        def="ICDLV(codeSearchResults, searchType)"
+        editable="false"
+        id="ICDPanel">
+        <TitleBar
+          appendListViewPaging="true"
+          id="Search_Results"
+          title="displaykey.Web.Search.Results"/>
+      </PanelRef>
+      <!-- <PanelRef
+        visible="searchType == &quot;Diagnostic&quot; ? true : false">
+        <Toolbar>
+          <IteratorButtons/>
+          <AddButton
+            id="Add_Code"
+            label="&quot;Input Codes&quot;"
+            toCreateAndAdd="pageProc.addICDHelper()"
+            visible="InEditMode ? false : true"/>
+        </Toolbar>
+        <ListViewPanel>
+          <RowIterator
+            editable="true"
+            elementName="ICDHelper"
+            hasCheckBoxes="true"
+            hideCheckBoxesIfReadOnly="true"
+            id="ICDHelper"
+            numEntriesRequired="0"
+            pageSize="19"
+            toCreateAndAdd="pageProc.addICDHelper()"
+            toRemove="pageProc.removeICDHelper(ICDHelper)"
+            value="pageProc.DiagnosticCodes">
+            <Row>
+              <Cell
+                editable="ICDHelper.ICDCode == null? true : false "
+                id="ICDCode"
+                label="displaykey.Web.Medicare.ICDCode"
+                onChange="pageProc.checkICDCode(ICDHelper.ContactICD, ICDHelper.ICDCode);"
+                postOnChange="true"
+                required="true"
+                validationExpression="pageProc.DiagnosticCodes.last().ContactICD.ICDCode == null ? &quot;You must enter a code or remove the blank row.&quot; : null"
+                value="ICDHelper.ICDCode"/>
+              <Cell
+                id="descriptionCell"
+                label="displaykey.Web.Medicare.Description"
+                required="false"
+                value="ICDHelper.ContactICD.ICDCode.CodeDesc"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </PanelRef> -->
+    </Screen>
+    <Code><![CDATA[function getBodySystemList(search :  String) : List<ICDBodySystemExt>{
+  var fullList = new java.util.ArrayList<ICDBodySystemExt>()
+  if(search == "CauseOfInjury"){
+    if (icdVersion == null || icdVersion == ICDVersionExt.TC_9) {
+        fullList.add(ICDBodySystemExt.get("18"))
+    }
+    if (icdVersion == null || icdVersion == ICDVersionExt.TC_10) {
+        fullList.add(ICDBodySystemExt.get("A20"))        
+    }
+  } else {    
+    fullList.addAll(ICDBodySystemExt.getTypeKeys(false))
+    fullList.remove(ICDBodySystemExt.get("18"))
+    fullList.remove(ICDBodySystemExt.get("19"))
+    fullList.remove(ICDBodySystemExt.get("A20"))
+    if (icdVersion == ICDVersionExt.TC_9) {
+      fullList.removeWhere(\ i -> i.Code.startsWith("A"))
+    }
+    if (icdVersion == ICDVersionExt.TC_10) {
+      fullList.removeWhere(\ i -> !i.Code.startsWith("A"))
+    }
+  }
+  return fullList
+}
+
+function getFindBodySystem() : ICDBodySystem {
+    findBodySystem = ICDBodySystem.get(bodySystem.Code)
+  return findBodySystem
+}]]></Code>
+  </Popup>
+</PCF>

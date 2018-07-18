@@ -1,0 +1,20 @@
+package rules.Postsetup.ClaimPostsetup_dir.CPOXX1000AllBUsClaimPostSetup_dir
+
+@gw.rules.RuleName("CPOXX1100 - CreateTime Conversion")
+internal class CPOXX1100CreateTimeConversion {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///All claims even when converted will come in as new - to prevent the Creation Date
+//of the converted claim to be the new creation date, this condition checks for new claims
+//that have a Load Command ID that is not null. This is populated from loaded data.
+//Copys the creation date in the system over to the extension for new claims.
+//Author: Stephanie Przygocki
+//Sprint: AgriBusiness Sprint 16
+//Date: 10/7/08
+
+!claim.ClaimNumber.startsWith( "T" ) and claim.isConvertedExt() == false //.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.RptCreateDateExt = claim.CreateTime/*end00rule*/
+  }
+}

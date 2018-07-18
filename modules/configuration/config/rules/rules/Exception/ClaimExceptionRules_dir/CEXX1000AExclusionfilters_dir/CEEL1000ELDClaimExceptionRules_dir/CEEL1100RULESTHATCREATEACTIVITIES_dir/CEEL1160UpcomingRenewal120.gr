@@ -1,0 +1,49 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEL1160 - Upcoming Renewal 120")
+internal class CEEL1160UpcomingRenewal120 {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "upcoming_renewal")) &&
+(claim.Policy.PolicyType.Code == "APL" ||
+claim.Policy.PolicyType.Code == "APX" ||
+claim.Policy.PolicyType.Code == "AUN" ||
+claim.Policy.PolicyType.Code == "CDO" ||
+claim.Policy.PolicyType.Code == "CDX" ||
+claim.Policy.PolicyType.Code == "EPP" ||
+claim.Policy.PolicyType.Code == "NPL" ||
+claim.Policy.PolicyType.Code == "NPX")
+
+// policy symbols for non-profit policies gathered from ELD requirements doc
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/ /*
+Defect 6713 - jjesudhasan - 5/15/14 -Modified not to generate this activity 
+if a Note with the topic of "Underwriter Claim Notes" was created 15 calendar 
+days prior to the 120 day policy expiration day window.
+*/
+ try {
+      var noteDate:DateTime
+      for(n in claim.Notes){
+    if(n.Topic=="underwriteclaimnote"){
+      noteDate=n.CreateTime
+          }
+   if ((gw.api.util.DateUtil.daysBetween(gw.api.util.DateUtil.currentDate(),
+   claim.Policy.ExpirationDate) == 120
+    && (gw.api.util.DateUtil.daysBetween(claim.Policy.ExpirationDate,
+   noteDate)) >= 135)) {
+
+    var ap = util.custom_Ext.finders.findActivityPattern("upcoming_renewal")
+    claim.createActivityFromPattern(null, ap)
+  }
+      }}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+} 
+
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,21 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOAG1000AgriBusinessTransactionPostSetupRules_dir.TPOAG1100RulesthatCreateActivities_dir
+
+@gw.rules.RuleName("TPOAG1120 - Flash Notice")
+internal class TPOAG1120FlashNotice {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype==typekey.TransactionSet.TC_RESERVESET and
+!transactionSet.Claim.Activities.where(\ a -> a.ActivityPattern.code == "ab_flash_notice").HasElements and
+transactionSet.Claim.ClaimRpt.OpenReserves + transactionSet.Amount>=50000)and
+transactionSet.Claim.LossType != LossType.TC_AGRIXSUMBAUTO and
+transactionSet.Claim.LossType != LossType.TC_AGRIXSUMBLIAB and
+transactionSet.Claim.LossType != LossType.TC_ALTMARKETSAUTO and
+transactionSet.Claim.LossType != LossType.TC_SHSAUTO and
+transactionSet.Claim.LossType != LossType.TC_TRUCKINGAUTO
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_flash_notice" )
+transactionSet.Claim.createActivityFromPattern( null, ap)/*end00rule*/
+  }
+}

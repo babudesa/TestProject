@@ -1,0 +1,23 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABELD1000ELDActivityBatchRules_dir
+
+@gw.rules.RuleName("ABELD1100 - Claim Review ")
+internal class ABELD1100ClaimReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="claim_review"))
+ && !exists( res in claim.ReserveLines where res.reserves != null)
+ && gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.CreateTime,ScriptParameters.ELDClaimReview)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 -Modified to generate the activity 10 calendar days 
+(rather than 5 calender days) and prevents this activity from generating if a
+ Reserve exists.
+*/
+try{
+  claim.createActivityFromPattern(null, util.custom_Ext.finders.findActivityPattern("claim_review"))
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewTemplateDocumentDV">
+    <Require
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <Require
+      name="Document"
+      type="Document"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Variable
+      initialValue="&quot;Claim&quot;"
+      name="RelatedToTypeName"
+      type="String"/>
+    <Variable
+      initialValue="Document.Language"
+      name="language"
+      type="LanguageType"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.DocumentCreation.DocumentContents.Header"/>
+      <Label
+        label="displaykey.Java.Document.Creation.Template.Step1"/>
+      <DocumentTemplateInput
+        clearEnabled="false"
+        editable="true"
+        freeInputEnabled="false"
+        id="TemplatePicker"
+        onPick="resetTemplateBasedInfo();"
+        pickLocation="DocumentTemplateSearchPopup.push(Claim)"
+        required="true"
+        value="DocumentCreationInfo.DocumentTemplateDescriptor"/>
+      <Input
+        editable="true"
+        id="Language"
+        label="displaykey.NVV.Claim.DocTemplateSearch.Language"
+        onChange="changeLanguage()"
+        postOnChange="true"
+        value="language"
+        visible="LanguageType.getTypeKeys( false ).Count &gt; 1 and Activity.DocumentTemplate != null"/>
+      <InputSet
+        visible="DocumentCreationInfo.DocumentTemplateDescriptor != null">
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step2"/>
+        <RangeInput
+          editable="true"
+          id="RelatedTo"
+          label="displaykey.NVV.Claim.ClaimDocumentsFilter.RelatedTo"
+          optionLabel="VALUE typeis Claim ? displaykey.Java.NoteView.EntireClaim : VALUE.DisplayName"
+          showNoneSelected="false"
+          sortValueRange="false"
+          value="Document.RelatedTo"
+          valueRange="Claim.getRelatedToCandidates()"/>
+        <InputSetRef
+          def="DocumentTemplateContextObjectInputSet(DocumentCreationInfo,Document,Claim)"
+          mode="DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId"/>
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step3"/>
+        <!-- NOTE: If the AllowActiveX configuration setting is set to "false", then the following ButtonInput
+              widget should have download="true", since document creation will happen on the client machine -->
+        <ButtonInput
+          action="DocumentCreationInfo.createAndRender()"
+          id="CreateDocument"
+          value="displaykey.Java.Document.Creation.CreateDocument"/>
+        <!-- Replace the above ButtonInput definition with the one below to have the document created asynchronously,
+              without user interaction once the context object values have been selected <ButtonInput id="CreateDocument" value="displaykey.Java.Document.Creation.CreateDocument"action="DocumentCreationInfo.Document.Name = DocumentCreationInfo.DocumentTemplateDescriptor.Name; DocumentProduction.createDocumentAsynchronously(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, document.DocumentsUtil.getDocumentCreationParameters(DocumentCreationInfo), DocumentCreationInfo.Document); CurrentLocation.cancel();"/> -->
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step4"/>
+        <DocumentFilePathInput
+          editable="true"
+          id="DocumentFilePath"
+          value="DocumentCreationInfo.DocumentFilePath"/>
+        <!-- If the file path of the document to be uploaded should not be modifiable,
+             change the following node from "DocumentScript" to "ReadOnlyDocumentScript" -->
+        <DocumentScript
+          available="(!gw.document.DocumentsUtil.isDocumentAssistantEnabled()) or (DocumentCreationInfo.File != null) or (DocumentCreationInfo.DocumentCreationScript != null)"
+          editable="true"
+          id="DocumentFile"
+          required="true"
+          value="DocumentCreationInfo.File"/>
+      </InputSet>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="DocumentDetailsInputSet(Document, true)"
+        editable="true"/>
+    </InputColumn>
+    <Code><![CDATA[function changeLanguage() {
+  var templatePlugin = gw.plugin.Plugins.get(gw.plugin.document.IDocumentTemplateSource)
+  var template = templatePlugin.getDocumentTemplate(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, gw.api.util.LocaleUtil.toLocale(language))
+  if (template == null) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Activity.DocumentTemplate.NotFound(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, language))
+  }
+  else {
+    DocumentCreationInfo.DocumentTemplateDescriptor = template 
+    resetTemplateBasedInfo()
+  }
+}
+
+function resetTemplateBasedInfo() {
+  DocumentCreationInfo.setDocumentFilePath(null);
+  Document.MimeType = DocumentCreationInfo.DocumentTemplateDescriptor.MimeType
+  Document.Description = DocumentCreationInfo.DocumentTemplateDescriptor.Description
+  
+  try {
+    Document.Type = DocumentCreationInfo.DocumentTemplateDescriptor.TemplateType
+  } catch (e) {
+    // oh well they didn't map template types to document types
+  }
+  Document.SecurityType = DocumentCreationInfo.DocumentTemplateDescriptor.DefaultSecurityType
+  Document.Name = DocumentCreationInfo.DocumentTemplateDescriptor.Name
+  if (Document.Status == null) {
+    Document.Status = "draft"
+  }
+  
+  for ( dynamicWidgetInfo in DocumentCreationInfo.getDynamicWidgetInformation()) {
+    DocumentCreationInfo.setDefaultContextObjectValue(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.DefaultValueExpression));
+    DocumentCreationInfo.setPossibleContextObjectValues(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.PossibleValuesExpression) as Object[]);
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

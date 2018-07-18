@@ -1,0 +1,44 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX2100AutoAckRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX2110 - Create AutoAck when IncidentRpt is false")
+internal class CEXX2110CreateAutoAckwhenIncidentRptisfalse {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.IncidentReport and 
+claim.Policy.Verified
+and (util.document.AutoACKLetter.autoAckController(claim.LOBCode as java.lang.String, "claim-level")
+      and (claim.Exposures.length == 0
+           or !util.document.AutoACKLetter.autoAckController(claim.LOBCode as String, "feature-level")))
+/*
+Update 8/12/13 erawe:  moved from CPUXX to CEXX because we had issues where
+multiple emails and documents where being created if validation corrections
+had to be corrected when finishing the claim.  It would run the CPU rule twice.
+
+  conditions that must be true
+  ----------------------------
+  1)claim is not incident only
+  2)script parameter is configured for claim-level and:
+    a.there are no exposures on the claim
+      -OR-
+    b.script parameter is not also configured for feature-level
+      (feature-level ack docs take precedence)
+*/
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///There are two types of AutoAck document an IncidentReport Ack document
+//and an ordinary AutoAckLetter
+//if you set the variable generateIncidentRptAckLetterDoc to false then the 
+//"AutoAcknowledgementLetter.rtf" gets created 
+//if you set the generateIncidentRptAckLetterDoc to true then the
+//"AutoAcknowledgementLetter_IncidentRpt.rtf" gets generated
+
+var generateIncidentRptAckLetterDoc : boolean = false
+
+util.document.AutoACKLetter.saveACKLetter(claim, null, generateIncidentRptAckLetterDoc, claim.Insured, true)
+util.document.AutoACKLetter.saveACKLetter(claim, null, generateIncidentRptAckLetterDoc, claim.Policy.ex_Agency, false)
+
+/*end00rule*/
+  }
+}

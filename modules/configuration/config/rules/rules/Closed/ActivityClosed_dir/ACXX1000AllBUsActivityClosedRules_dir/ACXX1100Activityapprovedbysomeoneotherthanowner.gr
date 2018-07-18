@@ -1,0 +1,73 @@
+package rules.Closed.ActivityClosed_dir.ACXX1000AllBUsActivityClosedRules_dir
+
+@gw.rules.RuleName("ACXX1100 - Activity approved by someone other than owner")
+internal class ACXX1100Activityapprovedbysomeoneotherthanowner {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*Defect 4746, 11/10/11 erawe - The note generation should only happen when the
+Logged in User is NOT the Activity Assigned To user.
+*/
+(activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_reserve_change") 
+  or activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_payment")
+  or activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_bulkinvoice")) 
+  and activity.AssignedUser!=activity.CloseUser
+  and activity.Approved==true
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*///var template = Libraries.Utilities.getTemplate( "/templates/notifications", "actapproval.gs" ); 
+//var body : String;
+//Defect 1316 erawe, 12/3/08
+var body1 : String;
+var body2 : String;
+var body3 : String;
+var note : Note
+
+//template.addSymbol( "Activity", Activity.itype, Activity )
+//body = template.execute().toString();
+
+uses java.text.SimpleDateFormat
+uses java.text.DecimalFormat 
+var status = activity.getApprovalString()
+var user = activity.AssignedUser
+var closeuser=activity.CloseUser
+var check=activity.getApprovalCheckNumber ()
+var bulkInvoiceNumber=activity.BulkInvoice.BulkInvoiceIDExt
+var binChecknumber=activity.BulkInvoice.CheckNumber
+var amount=(new DecimalFormat("$###,####,##0.00;($-###,####,##0.00)")).format(activity.getApprovalCheckAmount())
+var date=(new SimpleDateFormat("M-d-yyyy")).format(gw.api.util.DateUtil.currentDate())
+
+body1 = "The approval activity assigned to " + User + " has been " + status +
+" by " + closeuser + " for "+activity.getCostType()+" Payment in the amount of " + amount + " on " + date +" for Feature "+activity.getFeatureNames()
+
+body2 = "The approval activity assigned to " + User + " has been " + status +
+" by " + closeuser + " for "+ activity.getCostType()+" Reserves in the amount of " + amount + " on " + date +" for Feature "+activity.getFeatureNames()
+
+
+body3 = "The approval activity assigned to " + User + " has been " + status +
+" by " + closeuser + " for " + bulkInvoiceNumber+" check "+binChecknumber + " in the amount of " + amount + " on " + date
+
+//for(trans in Activity.TransactionSet.AllTransactions){
+  //note for payment approval
+  if(activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_payment")) {
+    //note = Activity.Claim.addNote( Activity.Exposure, "check", body1 )
+    note = activity.Claim.addNote( "check", body1 )
+      note.Subject = "Payment " + status + " Activity Notification"
+  }//end if
+  
+  //note for reserve approval
+  if(activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_reserve_change")) {
+    //note = Activity.Claim.addNote( Activity.Exposure, "reserves", body2 )
+    note = activity.Claim.addNote( "reserves", body2 )
+      note.Subject = "Reserve " + status + " Activity Notification"
+  }//end if
+  
+   //note for bulkinvice approval
+  if(activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_bulkinvoice")) {
+    //note = Activity.Claim.addNote( Activity.Exposure, "check", body1 )
+    note = activity.Claim.addNote( "check", body3 )
+      note.Subject = "BulkInvoice " + status + " Activity Notification"
+  }//end if
+//}//end for/*end00rule*/
+  }
+}

@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCommit="CalcOSRecovResComment=Claim.AutoSetOpenRecoveryReserve(true)"
+    canEdit="perm.Claim.edit(Claim) and perm.System.viewsubrodetails"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewsubrodetails"
+    id="SubrogationFinancials"
+    title="displaykey.Web.Claim.Subro.Financials"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="SubrogationFinancials(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.AutoSetOpenRecoveryReserve(true)"
+      name="CalcOSRecovResComment"
+      type="String"/>
+    <Screen
+      id="ClaimSubroFinancialsScreen">
+      <Toolbar>
+        <EditButtons/>
+        <ToolbarButton
+          action="CreateRecoveryReserve(Claim)"
+          available="perm.Claim.createrecoveryreserve(Claim) AND CalcOSRecovResComment == Null"
+          hideIfEditable="true"
+          id="CreateRecoveryReserve"
+          label="displaykey.NVV.Claim.Subrogation.Main.CalculateOSRecReserve"
+          tooltip="CalcOSRecovResComment"
+          visible="ScriptParameters.GlobalUtilizeRecoveryReserves"/>
+      </Toolbar>
+      <AlertBar
+        id="SubroFinancialsAlert"
+        label="displaykey.Subrogation.FinancialsPage.Alert"
+        visible="true"/>
+      <PanelRef
+        def="SubrogationFinancialsDV(Claim)"
+        mode="Claim.LossType"/>
+      <DetailViewPanel>
+        <InputColumn>
+          <InputSetRef
+            def="DeductibleInputSet(Claim, true)"/>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+    <Code><![CDATA[
+function CreateRecoveryReserve(myclaim : Claim) {
+        CurrentLocation.startEditing();
+
+        var success =  false;
+        try {
+          myclaim.AutoSetOpenRecoveryReserve(false);
+          CurrentLocation.commit();
+          success = true;
+        } finally {
+          if (!success) {
+            CurrentLocation.cancel();
+          }
+        }
+      }
+    ]]></Code>
+  </Page>
+</PCF>

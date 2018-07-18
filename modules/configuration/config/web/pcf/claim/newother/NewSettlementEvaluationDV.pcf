@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_claim.xml -->
+  <DetailViewPanel
+    id="NewSettlementEvaluationDV">
+    <Require
+      name="Evaluation"
+      type="Evaluation"/>
+    <Variable
+      initialValue="util.Math.Nz(Evaluation.HospitalER) + util.Math.Nz(Evaluation.TreatingPhysician) + util.Math.Nz(Evaluation.PhysicalTherapy) + util.Math.Nz(Evaluation.Diagnostic) + util.Math.Nz(Evaluation.MedicalEquipment) + util.Math.Nz(Evaluation.FutureMedical) + util.Math.Nz(Evaluation.ClmtOutOfPocket) + util.Math.Nz(Evaluation.Other)"
+      name="Total"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="SettlementCostEstimate_Name"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.Name"
+        required="true"
+        value="evaluation.Name"/>
+      <Input
+        id="CreatedBy"
+        label="displaykey.NVV.Matter.SubView.Matter.CreatedBy"
+        value="Evaluation.CreateUser"/>
+      <RangeInput
+        editable="true"
+        id="Note_RelatedTo"
+        label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+        onChange="setClaimant()"
+        optionLabel="VALUE typeis Claim ? displaykey.Java.NoteView.EntireClaim : VALUE.DisplayName"
+        postOnChange="true"
+        required="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="Evaluation.RelatedTo"
+        valueRange="Evaluation.filterRelatedTo()"/>
+      <!-- <RangeInput
+        editable="true"
+        id="Evaluation_RelatedTo"
+        label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+        required="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="Evaluation.Exposure"
+        valueRange="Evaluation.filterRelatedTo()"/> -->
+      <Input
+        id="ClaimNo"
+        label="displaykey.NVV.Matter.Settlement.ClaimNumber"
+        value="Evaluation.Claim.ClaimNumber"/>
+      <Input
+        id="InsuredName"
+        label="displaykey.NVV.Matter.Settlement.InsuredName"
+        value="Evaluation.Claim.Insured"/>
+      <Input
+        id="ClaimantName"
+        label="displaykey.NVV.Matter.SubView.Matter.Claimant"
+        value="Evaluation.ClaimantNameExt"/>
+      <TextAreaInput
+        editable="true"
+        id="DmgOverview"
+        label="displaykey.NVV.Matter.Settlement.GeneralOverview"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.DamageOverviewExt"/>
+      <TextAreaInput
+        editable="true"
+        id="LiabilityOverview"
+        label="displaykey.NVV.Matter.SubView.Matter.Settlement.LiabilityOverview"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.LiabilityOverviewExt"/>
+      <!-- The following two fields were changed from currency fields to text inputs per Karen. 4/3/08 jlmiller -->
+      <TextAreaInput
+        editable="true"
+        id="DefenseStrengths"
+        label="displaykey.NVV.Matter.Settlement.DefenseStrengths"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.DefenseStrengthsExt"/>
+      <TextAreaInput
+        editable="true"
+        id="PlaintiffStrengths"
+        label="displaykey.NVV.Matter.Settlement.PlaintiffStrengths"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.PlaintiffStrengthsExt"/>
+      <TextAreaInput
+        editable="true"
+        id="AdditionalComments"
+        label="displaykey.NVV.Matter.SubView.Matter.Property.AdditionalComments"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.CommentsExt"/>
+      <!-- <Label
+        id="LiabilityDistribution_InsuredLiability"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.LiabilityDistribution.Settlement.InsuredLiability"/> -->
+      <!-- The label was removed per Karen. 4/3/08. jlmiller -->
+      <Input
+        editable="true"
+        id="SettlementRangeLow"
+        label="displaykey.NVV.Matter.Settlement.SettlementRangeLow"
+        value="Evaluation.LowSettlementRangeExt"/>
+      <Input
+        editable="true"
+        id="SettlementRangeHigh"
+        label="displaykey.NVV.Matter.Settlement.SettlementRangeHigh"
+        value="Evaluation.HighSettlementRangeExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="SettlementAmt"
+        label="displaykey.NVV.Matter.Settlement.SettlementTargetAmt"
+        value="Evaluation.SettlementTargetAmtExt"/>
+      <Label
+        id="SettlementPlan"
+        label="displaykey.NVV.Matter.Settlement.SettlementPlan"/>
+      <Input
+        editable="true"
+        id="StructPot"
+        label="displaykey.NVV.Matter.Settlement.StructurePotential"
+        value="Evaluation.StructPotentialExt"/>
+      <Input
+        editable="true"
+        id="ADRPot"
+        label="displaykey.NVV.Matter.Settlement.ADRPotential"
+        value="Evaluation.ADRPotentialExt"/>
+      <!-- <Input
+        editable="true"
+        id="SaveToECF"
+        label="displaykey.NVV.Matter.Settlement.SaveToECF"
+        value="Evaluation.SaveToECFExt"/> -->
+      <InputDivider/>
+    </InputColumn>
+    <Code><![CDATA[
+function setClaimant(){
+     if(Evaluation.RelatedTo!=null and Evaluation.RelatedTo typeis Exposure){
+     	Evaluation.Claimant = (Evaluation.getRelatedToValue() as Exposure).Claimant
+     	Evaluation.ClaimantNameExt = Evaluation.Claimant.DisplayName
+     } else {
+     	Evaluation.Claimant = null
+     	Evaluation.ClaimantNameExt = null
+     }
+    }
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

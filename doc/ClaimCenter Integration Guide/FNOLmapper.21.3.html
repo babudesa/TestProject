@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>FNOL Mapper Detailed Flow</title>
+    <link rel="StyleSheet" href="css/FNOLmapper.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="FNOLmapper.21.1.html#2001905">FNOL Mapper</a> : FNOL Mapper Detailed Flow</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="2001905">FNOL Mapper Detailed Flow</a></div>
+      <div class="B_-_Body"><a name="2001906">Of all the server files for the FNOL mapper, the most important top-level component is the interface </a><span class="cv_-_computer_voice">FNOLMapper</span> in the <span class="cv_-_computer_voice">gw.api.fnolmapper</span> package. The <span class="cv_-_computer_voice">FNOLMapper</span> interface defines the contract between ClaimCenter and a class that can map XML to a <span class="cv_-_computer_voice">Claim</span> entity and its subobjects. This only has a single method on it.</div>
+      <div class="B_-_Body"><a name="1995822">For ACORD XML data, external systems call the </a><span class="cv_-_computer_voice">IClaimAPI</span> web service interface method <span class="cv_-_computer_voice">importAcordClaimFromXML</span>. For a custom mapper class for non-ACORD XML data, external systems calls the method <span class="cv_-_computer_voice">importClaimFromXML</span>. The <span class="cv_-_computer_voice">importClaimFromXML</span> method takes an extra parameter for the name of the mapper class you want to use. The code to invoke the mapper for ACORD data from Java web services client code is fairly straightforward:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2000943">String myClaimPublicID = claimAPI.importAcordClaimFromXML(myXMLData);</a></div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2000915">For more information about ClaimCenter web services, see </a><a href="javascript:WWHClickedPopup('integration', 'webservices.04.01.html#3412469', '');" title="Web Services (SOAP)">"Web Services (SOAP)"</a>.</div>
+      <div class="B_-_Body"><a name="2001920">For both these methods, the web service implementation itself is relatively simple because most of the work is </a>done by the mapper classes.</div>
+      <div class="B_-_Body"><a name="2001010">The general flow of the FNOL mapper web service is as follows:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1996040">Find the appropriate implementation class for the mapper and instantiate it. This class </a><span class="s_-_strong">must</span> implement the <span class="cv_-_computer_voice">FNOLMapper</span> interface. For the <span class="cv_-_computer_voice">importAcordClaimFromXML</span> method, ClaimCenter always uses the built-in mapper implementation class. For the <span class="cv_-_computer_voice">importClaimFromXML</span> method, the second argument is the name of your custom mapper implementation class.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1996057">Create a new </a><span class="cv_-_computer_voice">Claim</span> entity.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1996070">Create a new </a><span class="cv_-_computer_voice">Policy</span> entity and attach it to the new claim.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1996049">Call the mapper class’s </a><span class="cv_-_computer_voice">populateClaim</span> method with the new <span class="cv_-_computer_voice">Claim</span> entity. Its method signature is:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1996042">function populateClaim(Claim claim, String xml) : void </a></div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1995945">The mapper must throw </a><span class="cv_-_computer_voice">FNOLMapperException</span> if it cannot map the claim.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1995938">The mapper class reads the XML data and sets fields on the </a><span class="cv_-_computer_voice">Claim</span> entity and adds subobjects as appropriate.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1996109">After the </a><span class="cv_-_computer_voice">populateClaim</span> method completes, the web service persists the new claim and its subobjects.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1995993">The web service returns the public ID (a </a><span class="cv_-_computer_voice">String</span> value) for the imported and persisted claim. If errors occur, the web service API throws an exception to the web service client.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

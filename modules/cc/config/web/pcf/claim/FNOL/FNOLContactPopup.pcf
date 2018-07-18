@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterEnter="initializeVariables()"
+    beforeCommit="beforeExit()"
+    canEdit="true"
+    id="FNOLContactPopup"
+    returnType="ClaimContact"
+    startInEditMode="true"
+    title="if (role == ContactRole.TC_DRIVER) { return displaykey.Web.FNOLContactPopup.Title.Driver } else if (role == ContactRole.TC_PASSENGER) {return displaykey.Web.FNOLContactPopup.Title.Passenger } else { return displaykey.Web.FNOLContactPopup.Title.Pedestrian}">
+    <LocationEntryPoint
+      signature="FNOLContactPopup(Claim: Claim, claimContact : ClaimContact, role : ContactRole, vehicleIncident : VehicleIncident, Wizard : claim.NewClaimWizardInfo)"/>
+    <Variable
+      name="claimContact"
+      type="ClaimContact"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="contactPerson"
+      type="Contact"/>
+    <Variable
+      name="injuryIncident"
+      type="InjuryIncident"/>
+    <Variable
+      name="VehicleIncident"
+      type="VehicleIncident"/>
+    <Variable
+      name="relatedContacts"
+      type="Contact[]"/>
+    <Variable
+      name="oldClaimContact"
+      type="ClaimContact"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      name="role"
+      type="ContactRole"/>
+    <Variable
+      name="newlyCreatedContact"
+      type="Contact"/>
+    <Screen
+      id="FNOLContactScreen">
+      <Toolbar>
+        <EditButtons
+          pickValue="claimContact"/>
+      </Toolbar>
+      <DetailViewPanel
+        id="ContactDV">
+        <InputColumn>
+          <Input
+            id="VehicleLossParty"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Vehicle.Label"
+            value="VehicleIncident.VehicleLossParty"
+            visible="role != ContactRole.TC_PEDESTRIAN"/>
+          <Input
+            id="VehicleName"
+            value="VehicleIncident.Vehicle.DisplayName"
+            visible="role != ContactRole.TC_PEDESTRIAN"/>
+          <InputDivider
+            visible="role != ContactRole.TC_PEDESTRIAN"/>
+          <RangeInput
+            editable="true"
+            filter="isPersonAllowed(VALUE)"
+            id="ClaimContactPerson"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Person.Label"
+            onChange="assignContact()"
+            optionLabel="VALUE.DisplayName == &quot;&quot; ? displaykey.Web.FNOLContactPopup.ContactDV.NewPerson.Value : VALUE.DisplayName"
+            postOnChange="true"
+            showNoneSelected="false"
+            value="contactPerson"
+            valueRange="getContactPersonValueRange()"/>
+          <InputSetRef
+            def="FNOLContactInputSet( contactPerson, role, VehicleIncident )"/>
+        </InputColumn>
+        <InputColumn>
+          <Label
+            id="Injury"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.InjuryLabel"/>
+          <BooleanRadioInput
+            editable="true"
+            id="InjuredBoolean"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Injured.Label"
+            postOnChange="true"
+            value="injured"/>
+          <InputSetRef
+            def="InjuryIncidentInputSet(injuryIncident)"
+            visible="injured"/>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+    <Code><![CDATA[function createInjuryIncident() : InjuryIncident {
+  var incident = new InjuryIncident()
+  Claim.addToIncidents( incident )
+  incident.injured = (contactPerson typeis Person ? contactPerson : null)
+  return incident
+}
+
+function getContactPersonValueRange() : List<Contact> {
+   var result = Claim.getRelatedContacts( Claim.getContactType(role) ) as List<Contact>
+   if ((newlyCreatedContact != null) &&
+       (not result.contains(newlyCreatedContact))) {
+     result.add(newlyCreatedContact)        
+   }
+   return result
+}
+
+function initializeVariables() {
+  //create new claim contact from the role type
+  if (claimContact == null) {
+    var person = new Person();
+    if (role == ContactRole.TC_DRIVER) {
+      VehicleIncident.driver = person
+      claimContact = Claim.getClaimContact(person)
+    }
+    else if (role == ContactRole.TC_PASSENGER) {
+      claimContact = (VehicleIncident.addRole(role, person)).ClaimContact
+    }
+    else if (role == ContactRole.TC_PEDESTRIAN) {
+      claimContact = (Claim.addRole( role, person)).ClaimContact
+    }
+    newlyCreatedContact = person
+  }
+
+  //intialize injury incident
+  injuryIncident = Wizard.getInjuryIncident(claimContact)
+
+  if (claimContact.Contact != null) {
+    contactPerson = claimContact.Contact;
+  }
+  Wizard.pushBundle();
+  relatedContacts = Wizard.getRelatedContacts(Claim, contactPerson)
+  oldClaimContact = claimContact;
+}
+
+
+property set injured(newValue : boolean) {
+  var incidentExists = injuryIncident != null
+  if (newValue != (incidentExists)) {
+    if (newValue) {
+      injuryIncident = createInjuryIncident()
+    }
+    else {
+      removeInjuryIncident(injuryIncident)
+      injuryIncident = null
+    }
+  }
+}
+
+property get injured() : boolean {
+  return injuryIncident != null
+}
+
+function removeInjuryIncident(incident : InjuryIncident) {
+  if (incident != null) {
+    incident.injured = null
+    Claim.removeFromIncidents(incident)
+  }
+}
+
+function assignContact() {
+  var oldInjuredContact = injuryIncident != null ? injuryIncident.injured : null
+  Wizard.rollbackBundle()
+  Wizard.pushBundle()
+
+  if (oldInjuredContact != null) {
+    // remove the old injury incident -- there shouldn't be anywhere else in the
+    // FNOL that an injury incident can be created, so we can assume it was created
+    // here and therefore should be removed here. only remove if the original
+    // contact still has an incident after the rollback to avoid accessing an incident
+    // that was evicted from the bundle during rollback
+    removeInjuryIncident(Wizard.getInjuryIncident(Claim.getClaimContact(oldInjuredContact)))
+  }
+
+  claimContact = Claim.getClaimContact(contactPerson)
+
+  var claimContactRoles = claimContact.Roles
+  injuryIncident = Wizard.getInjuryIncident(claimContact)
+  if (role == ContactRole.TC_DRIVER) {
+    if (contactPerson == Claim.Insured OR contactPerson == VehicleIncident.incidentowner) {
+      VehicleIncident.DriverRelation = "Self"
+    } else {
+      VehicleIncident.DriverRelation = null
+    }
+  }
+}
+
+//isPersonAllowed is used to limit the drop down choices for the contact
+function isPersonAllowed(contact : Contact) : boolean {
+  //If we haven't changed the person, the contact is always valid.
+  if (contact == oldClaimContact.Contact) {
+    return true
+  }
+  var roles = Claim.getClaimContact(contact).Roles;
+  //the allowed person cannot have any of the driver/passenger/pedestrian roles
+  //(for updates, the value of the field will always be added later, so filtering it out is okay)
+  for (currentrole in roles) {
+    if (currentrole.Role == ContactRole.TC_DRIVER or currentrole.Role == ContactRole.TC_PEDESTRIAN or currentrole.Role == ContactRole.TC_PASSENGER) {
+      return false
+    }
+  }
+
+  return true;
+}
+
+function beforeExit() {
+  if (role == ContactRole.TC_DRIVER) {
+    VehicleIncident.driver = (contactPerson typeis Person ? contactPerson : null)
+  }
+  else if (role == ContactRole.TC_PASSENGER) {
+    if (oldClaimContact.Contact != null) {
+      VehicleIncident.removeRole(role, oldClaimContact.Contact)
+    }
+    if (contactPerson != null) {
+      VehicleIncident.addRole(role, contactPerson)
+    }
+  }
+  else if (role == ContactRole.TC_PEDESTRIAN) {
+    if (oldClaimContact.Contact != null) {
+      Claim.removeRole(role, oldClaimContact.Contact)
+    }
+    if (contactPerson != null) {
+      Claim.addRole(role, contactPerson)
+    }
+  }
+}]]></Code>
+  </Popup>
+</PCF>

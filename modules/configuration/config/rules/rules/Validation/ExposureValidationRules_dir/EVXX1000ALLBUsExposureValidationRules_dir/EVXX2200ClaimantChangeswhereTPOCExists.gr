@@ -1,0 +1,25 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir
+
+@gw.rules.RuleName("EVXX2200 - Claimant Changes where TPOC Exists")
+internal class EVXX2200ClaimantChangeswhereTPOCExists {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.MedicareExposureExt or exposure.IsMedicareExposureExt
+and !exposure.claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// This function checks to see if a claimant has tpoc information for a feature they are no longer the claimant on
+
+    for(cont in Exposure.Claim.Contacts){
+      if(cont.Contact.ContactISOMedicareExt != null and cont.Contact.ContactISOMedicareExt.TPOCExt.Count != 0){
+       if(cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt == Exposure ).Count != 0){
+         if(cont.Contact != Exposure.Claimant){
+          exposure.reject(null, null, "loadsave", "Review and remove the TPOC data for this Claimant/Feature combination. After the Claimant change is saved, ClaimCenter will remove the TPOC associated with this Feature.")
+          //exposure.rejectWithFlowStep(null, null, "loadsave", "You are wrong", "Here is why")
+         }
+       }
+      }
+    }
+/*end00rule*/
+  }
+}

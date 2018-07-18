@@ -1,0 +1,40 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXXZZZ3 - Claim Change from Incident Only")
+internal class CPUXXZZZ3ClaimChangefromIncidentOnly {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isFieldChanged( "IncidentReport" )
+and claim.State != "draft"
+/*Update 8/12/13 renamed and move to last 2 of rule set because it has to
+have the actions.exit(), so it also has to be at the end.
+*/
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///c.mcdonald- defect 6171: moved code from FidCrime CPUFC1110 and deleted from Equine CPUEQ1760 
+// AgriBusiness CPUAG1270.  Rule to apply to all BU per review with Santosh and Eric R.
+
+if (claim.State == "closed") {
+ claim.reopen( "other", "Changed from Incident Only to non Incident Only" )
+}
+
+//* Close the Incident Only notification activity if still open
+for( act in claim.Activities) {
+  if (act.Status == "open" and act.ActivityPattern != null) {
+      act.complete()
+     if (act.Description == null) {
+         act.Description = "Closed by system when claim changed to non Incident file ." }
+     else { 
+         act.Description = act.Description + " Closed by system when claim changed to non Incident file." 
+     }
+  }
+}
+
+//* Follow the regular Claim process, which is automated assignment
+claim.autoAssign()
+
+//* Come out to avoid creating activities, while in pending assignment due to above auto assign
+actions.exit()/*end00rule*/
+  }
+}

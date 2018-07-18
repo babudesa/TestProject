@@ -1,0 +1,30 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir.CEAG1190ManagerChecks_dir
+
+@gw.rules.RuleName("CEAG1193 - Manger Flash Notice")
+internal class CEAG1193MangerFlashNotice {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*1/20/10 I believe this should fire in the claim exception rules and not here
+Moving this from TPOAG1400.
+*/
+//(Claim.Subtype=="ReserveSet" &&
+exists(act in claim.Activities where act.ActivityPattern.Code=="ab_flash_notice") &&
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_flash_manager") 
+//claim.ClaimRpt.OpenReserves + transactionset.Amount>=200000 )
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+for(act in claim.Activities){
+    //1/20 - need to check for 'not complete' after 2 days from assignment date
+    if(act.ActivityPattern.Code=="ab_flash_notice" && act.Status!="complete" &&
+      gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays( act.AssignmentDate, 2),gw.api.util.DateUtil.currentDate()) <0){
+    var ap = util.custom_Ext.finders.findActivityPattern( "ab_flash_manager" )
+    claim.createActivityFromPattern( null, ap )
+    }
+}
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

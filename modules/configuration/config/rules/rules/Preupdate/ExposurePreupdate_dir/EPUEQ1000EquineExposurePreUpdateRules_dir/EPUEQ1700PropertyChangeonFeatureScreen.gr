@@ -1,0 +1,81 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEQ1000EquineExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUEQ1700 - Property Change on Feature Screen")
+internal class EPUEQ1700PropertyChangeonFeatureScreen {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Updated: sprzygocki - 5/19/11 - added code to grab the coverages on the property 
+//  as there is no direct link now.
+(((exposure.OriginalVersion as Exposure).FixedPropertyIncident.Property != exposure.FixedPropertyIncident.Property ) or 
+  (exposure.OriginalVersion as Exposure).FixedPropertyIncident != exposure.FixedPropertyIncident) and 
+exposure.Claim.Exposures.length > 1 and 
+exposure.Claim.State != "draft" and !exposure.New/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*///variable to keep track of whether or not a coverage was found that matches
+var covFound : boolean = false;
+//Search exposures to compare FixedPropertyIncidents
+for(exp in exposure.Claim.Exposures){
+  //reset covFound variable at the beginning of each exposure
+  covFound = false
+  //make sure coverage being compared isn't the one being updated
+  if(exp != exposure){
+    var coverages : Coverage[];
+    for(riskUnit in exp.Claim.Policy.RiskUnits){
+      if(riskUnit typeis LocationBasedRU
+      && riskUnit.Property==exposure.FixedPropertyIncident.Property) {
+        coverages = riskUnit.Coverages
+      }
+    }
+    //search coverages on the current exposures property
+    if(exp.Coverage.Subtype != "PolicyCoverage"){
+      for(cov in coverages){
+        //if a coverage was found that matches the comparing exposure's coverage set the covFound variable to true and exit loop
+        if(exp.Coverage.Type == cov.Type and exp.Coverage.Subtype == cov.Subtype){
+          exp.setNewCoverage( cov, false )
+          exp.setEquineIncident( exposure.returnProperty() )
+          covFound = true
+          break
+        }
+      }
+    }else{
+      for(cov in exposure.Claim.Policy.Coverages){
+        if(exp.Coverage.Type == cov.Type and exp.Coverage.Subtype == cov.Subtype){
+          exp.setNewCoverage( cov, false )
+          exp.setEquineIncident( exposure.returnProperty() )
+          covFound = true
+          break;
+        }
+      }
+    }
+    //if no coverage was found that matches set the ReconnectFailExt to true to suspsend the claim
+    if(!covFound){
+      exp.ReconnectFailExt = true;
+      exp.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.ReconnectFail(exp,(exp.OriginalVersion as Exposure).FixedPropertyIncident.PreviousPropertyExt.LocationNumber) )
+      exp.setEquineIncident(exposure.returnProperty());
+      exp.Coverage = null;
+      
+    }
+    else{
+      /*
+      if((exp.OriginalVersion as Exposure).PrimaryCoverage != exp.PrimaryCoverage){
+        exp.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.CoverageChange(exp,(exp.OriginalVersion as Exposure).PrimaryCoverage, exp.PrimaryCoverage) )    
+      }
+      */
+      if((exp.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber != exp.FixedPropertyIncident.Property.LocationNumber and !exp.New){
+        if((exp.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber != null){
+        exp.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exp,(exp.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber, exp.FixedPropertyIncident.Property.LocationNumber) )    
+      }
+        else{
+          if((exp.OriginalVersion as Exposure).PreviousCoverageExt.Subtype ==  "PropertyCoverage"){
+            exp.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exp,(((exp.OriginalVersion as Exposure).PreviousCoverageExt as PropertyCoverage).RiskUnit as LocationBasedRU).Property.LocationNumber, exp.FixedPropertyIncident.Property.LocationNumber) )    
+          }else{
+            exp.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exp, (exp.OriginalVersion as Exposure).FixedPropertyIncident.PreviousPropertyExt.LocationNumber, exp.FixedPropertyIncident.Property.LocationNumber) )
+          }
+        }
+      }
+    }
+  }
+  }/*end00rule*/
+  }
+}

@@ -1,0 +1,28 @@
+package rules.Exception.ActivityEscalationRules_dir
+
+@gw.rules.RuleName("AEXX1000A - Exclusion filters")
+internal class AEXX1000AExclusionfilters {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*
+* We don't want exception rules to run if the claim has disconnected features
+* because if they do run it will just error out.  This makes sure the claim is
+* not in that state
+*/
+true/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(activity.Claim.checkDisconnectedFeatures()){  //if disconnected bypass exception rules
+    gw.api.util.Logger.logInfo( displaykey.Rules.ClaimException.AEX1000A.ClaimBypassed(activity.DisplayName, activity.Claim) )
+    actions.exit();
+  }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity.Claim, actions.getRule().getDisplayName(), e, "" )  
+}/*end00rule*/
+  }
+}

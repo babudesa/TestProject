@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="UnmodifiableTransactionSetDocumentsLV">
+    <Require
+      name="DocumentList"
+      type="Document[]"/>
+    <RowIterator
+      editable="false"
+      elementName="Document"
+      value="DocumentList.where(\ d -&gt; perm.Document.view(d))">
+      <ToolbarFlag
+        name="Document"/>
+      <ToolbarFlag
+        condition="perm.Document.view(Document)"
+        name="EditableDocument"/>
+      <!-- <ToolbarFlag
+        condition="Document.Obsolete"
+        name="Hidden"/> -->
+      <!-- Enhancement Sprint 14 6/4/08 ER:  Added to Equine (ecfdocfilter()) to filter documents based on ECF security requirements -->
+      <Row
+        visible="perm.Document.view(Document) and Document.ecfdocfilter()">
+        <DocumentIconCell
+          id="Icon"
+          printWidth="0.0"
+          value="true"/>
+        <!-- <Cell
+          action="DocumentDetailsPopup.push(Document)"
+          id="docuid"
+          label="displaykey.LV.Claim.Documents.Document.ID"
+          printWidth="4"
+          value="Document.DocUID"/> -->
+        <Cell
+          id="docuid"
+          label="displaykey.LV.Claim.Documents.Document.ID"
+          printWidth="3"
+          value="Document.ECFIDExt"/>
+        <ContentCell
+          id="Actions"
+          label="displaykey.LV.Claim.Documents.Document.ViewAndEdit"
+          printWidth="0.0"
+          wrap="false">
+          <DocumentLink
+            document="Document"
+            documentAction="viewRepositoryVersion"
+            id="DocumentsLV_ViewLink"
+            label="displaykey.LV.Claim.Documents.Document.ViewAndEdit.View"
+            styleClass="miniButton"
+            visible="Document.DMS and perm.Document.view(Document) and !Document.checkForID()"/>
+          <DocumentLink
+            document="Document"
+            documentAction="editRepositoryVersion"
+            id="DocumentsLV_EditLink"
+            label="displaykey.LV.Claim.Documents.Document.ViewAndEdit.Edit"
+            styleClass="miniButton"
+            visible="( gw.api.document.DocumentsUtil.showEditButtons() and Document.DMS) and perm.Document.edit(Document)"/>
+          <DocumentLink
+            document="Document"
+            documentAction="editLocalVersion"
+            id="DocumentsLV_EditLocalLink"
+            label="displaykey.LV.Claim.Documents.Document.ViewAndEdit.EditLocal"
+            styleClass="miniButton"
+            visible="( gw.api.document.DocumentsUtil.showEditButtons() and Document.DMS) and perm.Document.edit(Document)"/>
+          <DocumentLink
+            document="Document"
+            documentAction="uploadLocalVersion"
+            id="DocumentsLV_UpdateLink"
+            label="displaykey.LV.Claim.Documents.Document.ViewAndEdit.Update"
+            styleClass="miniButton"
+            visible="( gw.api.document.DocumentsUtil.showEditButtons() and Document.DMS) and perm.Document.edit(Document)"/>
+          <DocumentLink
+            document="Document"
+            documentAction="discardLocalVersion"
+            id="DocumentsLV_DiscardLink"
+            label="displaykey.LV.Claim.Documents.Document.ViewAndEdit.Discard"
+            styleClass="miniButton"
+            visible="( gw.api.document.DocumentsUtil.showEditButtons() and Document.DMS) and perm.Document.edit(Document)"/>
+        </ContentCell>
+        <DateCell
+          dateFormat="short"
+          id="CreateTime"
+          label="displaykey.LV.Claim.Documents.Document.CreateTime"
+          printWidth="2"
+          sortDirection="descending"
+          sortOrder="1"
+          timeFormat="short"
+          value="Document.DocumentDateExt"
+          wrap="false"/>
+        <Cell
+          id="Type"
+          label="displaykey.LV.Claim.Documents.Document.Type"
+          printWidth="3"
+          value="Document.ex_Type"/>
+        <Cell
+          id="SubType"
+          label="displaykey.LV.Claim.Documents.Document.SubType"
+          printWidth="4"
+          value="Document.ex_SubType"
+          wrap="false"/>
+        <!-- <Cell
+          id="ECFFeatureType"
+          label="displaykey.LV.Claim.Documents.Document.ECFFeatureType"
+          printWidth="2"
+          value="Document.Ex_ECFFeatureType"/> -->
+        <!-- <Cell
+          id="Status"
+          label="displaykey.LV.Claim.Documents.Document.Status"
+          value="Document.Status"/> -->
+        <!-- <Cell
+          id="Author"
+          label="displaykey.LV.Claim.Documents.Document.Author"
+          printWidth="2"
+          value="Document.Author"
+          wrap="false"/> -->
+        <Cell
+          id="ClaimContact"
+          label="displaykey.LV.Claim.Documents.Document.ClaimContact"
+          printWidth="2"
+          value="Document.ex_ClaimantName"
+          wrap="false"/>
+        <Cell
+          id="Exposure"
+          label="displaykey.LV.Claim.Documents.Document.Exposure"
+          printWidth="2"
+          value="Document.Ex_ECFFeatureType"
+          wrap="false"/>
+        <!-- Djohnson defect 127:  shorten display to 20 characrs  Enhancement Sprint 14 6/4/08 ER:  Added valueVisible for ECF security requirements -->
+        <Cell
+          enableSort="false"
+          id="Comments"
+          label="displaykey.LV.Claim.Documents.Document.Comments"
+          printWidth="2"
+          value="Document.Description != null and Document.Description.length() &gt; 20 ? Document.Description.substring(0,20): Document.Description"
+          valueVisible="Document.ecfcommentfilter()"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

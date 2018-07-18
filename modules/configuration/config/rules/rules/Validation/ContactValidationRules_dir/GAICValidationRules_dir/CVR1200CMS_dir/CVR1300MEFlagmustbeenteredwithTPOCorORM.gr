@@ -1,0 +1,20 @@
+package rules.Validation.ContactValidationRules_dir.GAICValidationRules_dir.CVR1200CMS_dir
+
+@gw.rules.RuleName("CVR1300 - ME Flag must be entered with TPOC or ORM")
+internal class CVR1300MEFlagmustbeenteredwithTPOCorORM {
+  static function doCondition(contact : entity.Contact) : boolean {
+    return /*start00rule*/contact typeis Person
+and !contact.MedicareEligibleExt
+and !(contact typeis InjuredWorkerExt)
+/*end00rule*/
+  }
+
+  static function doAction(contact : entity.Contact, actions : gw.rules.Action) {
+/*start00rule*/if(contact.ContactISOMedicareExt != null){
+ if(contact.ContactISOMedicareExt.TPOCExt.Count != 0 or contact.ContactISOMedicareExt.ORMIndExt){
+  contact.reject(null, null, "loadsave", "Medicare Eligible is set to No or blank, please review.") 
+     
+ }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,37 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUSP1000SpecialtyESTransactionPreUpdateRules_dir.TPUSP1200RULESTHATCREATEACTIVTIES_dir
+
+@gw.rules.RuleName("TPUSP1220 - ICA Received")
+internal class TPUSP1220ICAReceived {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.isNativeORUpdatedExt() and 
+typeof transactionSet == ReserveSet &&
+exists(reserve in (transactionSet as ReserveSet).AllTransactions where
+  reserve.New && reserve.Amount == 999 && reserve.Exposure.ex_InSuit == true)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+    
+    var exposure = (transactionSet as ReserveSet).Reserves.where(\ r -> r.New &&
+        r.Amount == 999 && r.Exposure.ex_InSuit == true).first().Exposure
+        
+    if((!exists(act in transactionSet.Claim.Activities where 
+         act.ActivityPattern.Code == "ica_received_spec" && act.Exposure == exposure))){   
+        
+        var today = gw.api.util.DateUtil.currentDate()
+        var pattern = util.custom_Ext.finders.findActivityPattern("ica_received_spec")
+    
+    
+        var newAct = transactionSet.Claim
+            .createActivity(exposure, pattern, pattern.Subject, pattern.Description,
+             pattern.Priority, pattern.Mandatory, today.addBusinessDays(pattern.TargetDays), null)
+      
+        //assign the activity to feature owner
+        newAct.AssignedUser = exposure.AssignedUser
+    }
+ 
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(transactionSet, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

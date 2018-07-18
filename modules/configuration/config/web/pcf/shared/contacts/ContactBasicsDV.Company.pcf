@@ -1,0 +1,261 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ContactBasicsDV"
+    mode="Company|CompanyVendor|MedicalCareOrg|LawFirm|Ex_ForeignCoVendor|Ex_ForeignCoVenMedOrg|Ex_ForeignCoVenLawFrm|Ex_GAIVendor|LegacyVendorCompanyExt|AutoRepairShop|FrgnAutoRepairShopExt">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact.
+
+    Note also that claimContact may be null, so fields which depend on reference it should only be available for setting if it is not. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="showRoles"
+      type="boolean"/>
+    <Require
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Company.setLoggedInUserId()"
+      name="loggedInUserId"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Company.setLoggedInUserBUName()"
+      name="loggedInUserBUName"/>
+    <Variable
+      initialValue="Company.setLoggedInUserCompAcct()"
+      name="loggedInUserCompAcct"/>
+    <Variable
+      initialValue="false"
+      name="showFullCoName"
+      type="boolean"/>
+    <Variable
+      initialValue="resetShowFullName()"
+      name="resetShowFullCoName"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Company.updateCloseIndicator()"
+      name="UpdateCloseIndicator"
+      type="void"/>
+    <InputHeaderSection>
+      <InputSetRef
+        def="ContactBasicsHeaderInputSet(contactHandle, claimContact, showRoles, linkStatus)"/>
+    </InputHeaderSection>
+    <InputColumn>
+      <Label
+        label="getLabel()"/>
+      <TextInput
+        editable="!Company.VerifiedPolicyContactExt and !Company.FormerVerifiedContactExt and (!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+        id="OrganizationName"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName"
+        maxChars="60"
+        outputConversion="showFullCoName or Company.CloseIndicatorExt != null ? Company.Name : Company as java.lang.String"
+        postOnChange="true"
+        required="true"
+        value="Company.Name"/>
+      <Input
+        editable="!Company.VerifiedPolicyContactExt and !Company.FormerVerifiedContactExt and (!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+        id="OrganizationName2"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName2"
+        required="false"
+        value="Company.Name2Ext"
+        visible="Company.getSubtype() != &quot;Company&quot;"/>
+      <BooleanRadioInput
+        editable="true"
+        id="FullName"
+        label="displaykey.Web.ContactDetail.Name.ShowFullName"
+        postOnChange="true"
+        required="false"
+        value="showFullCoName"
+        visible="Company.Name != null and Company.Name.length &gt; 60"/>
+      <Input
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable() and !Company.VerifiedPolicyContactExt"
+        id="DoingBusinessAsExt"
+        label="displaykey.Web.ContactDetail.Name.DoingBusinessAs"
+        required="false"
+        value="Company.DoingBusinessAsExt"
+        visible="Company.getSubtype() != &quot;Company&quot;"/>
+      <Input
+        available="claimContact != null"
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable() and !Company.VerifiedPolicyContactExt"
+        id="AppointmentDate"
+        label="displaykey.Web.ContactDetail.AppointmentDate"
+        value="(Company as CompanyVendor).ex_AppointmentDate"
+        visible="Company.getSubtype() != &quot;Company&quot;"/>
+      <Input
+        available="claimContact != null"
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable() and !Company.VerifiedPolicyContactExt"
+        id="CompanyCloseDateExt"
+        label="displaykey.Web.ContactDetail.CloseDate"
+        onChange="Company.updateCloseIndicator(); "
+        postOnChange="true"
+        value="Company.CloseDateExt"
+        visible="Company.getSubtype() != &quot;Company&quot;"/>
+      <Input
+        available="claimContact != null"
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable() and !Company.VerifiedPolicyContactExt"
+        id="VendorCloseReasonExt"
+        label="displaykey.Web.ContactDetail.VendorCloseReason"
+        onChange="Company.updateCloseIndicator(); "
+        postOnChange="true"
+        value="Company.VendorCloseReasonExt"
+        visible="Company.getSubtype() != &quot;Company&quot; &amp;&amp; Company.CloseDateExt != null"/>
+      <InputSetRef
+        def="BusinessContactInfoInputSet(contactHandle, claimContact, claim)"/>
+      <InputSetRef
+        def="ClaimSpecificContactInfoInputSet(contactHandle, claimContact, claim)"
+        editable="true"
+        mode="Company typeis CompanyVendor ? &quot;CompanyVendor&quot; : null"
+        visible="Company typeis CompanyVendor"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="CompanyVendorAdditionalInfoInputSet(contactHandle)"
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred() or User.util.getCurrentUser().isBillingAdressAdmin()) and isEditable() and !(Company typeis LegacyVendorCompanyExt)"
+        mode="Company typeis CompanyVendor ? &quot;CompanyVendor&quot; : null"
+        visible="(Company typeis CompanyVendor)"/>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contactHandle.AddressOwner)"
+        editable="(!Company.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+        mode="contactHandle.AddressOwner.InputSetMode"/>
+      <!-- following input set for all tax info -->
+      <InputSet>
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <!-- following input for Companies that are not foreign or GAI vendors -->
+        <Input
+          editable="Company.canEditTaxInfo() and Company.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="V_EIN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+          postOnChange="true"
+          required="Company.checkContactTaxStatus()"
+          validationExpression="Company.validateTaxID()"
+          value="TAXINFO"
+          visible="!(Company.isForeign() or Company typeis Ex_GAIVendor)"/>
+        <!-- following input is for foreign vendors only -->
+        <Input
+          editable="Company.canEditTaxInfo() and Company.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="W8"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8"
+          postOnChange="true"
+          required="Company.checkContactTaxStatus()"
+          validationExpression="validateForeignSSN()"
+          value="TAXINFO"
+          visible="Company.isForeign()"/>
+        <!-- following input for GAI Vendors only -->
+        <Input
+          editable="!Company.VerifiedPolicyContactExt and Company.canEditTaxInfo() and !Company.FormerVerifiedContactExt"
+          id="ComplAcctgNumber"
+          label="displaykey.Web.ContactDetail.Name.ComplAcctgNumber"
+          postOnChange="true"
+          required="Company.checkContactTaxStatus()"
+          validationExpression="Company.TaxID == null ? (Company.checkContactTaxStatus() ? displaykey.Web.ContactDetail.Name.TaxID.EIN.Required : null) : !Company.TaxID.matches(&quot;[a-zA-Z0-9]{9}&quot;) or Company.TaxID.matches(&quot;[9]{9}&quot;) or Company.TaxID.matches(&quot;[0]{9}&quot;) ? &quot;Compliance Accounting Number must be filled in, cannot contain all 9's or zeros, may contain characters&quot; : null"
+          value="TAXINFO"
+          visible="Company typeis Ex_GAIVendor"/>
+        <Input
+          editable="Company.canEditTaxInfo()"
+          id="TaxStatusCode"
+          label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+          postOnChange="true"
+          required="Company.checkContactTaxID()"
+          validationExpression="Company.ex_TaxStatusCode != null ? Company.checkContactTaxStatusUpdate(): Company.ex_TaxStatusCode"
+          value="Company.ex_TaxStatusCode"/>
+        <Input
+          editable="Company.canEditTaxInfo()"
+          id="TaxReportingName"
+          label="displaykey.Web.ContactDetail.TaxReportingName"
+          validationExpression="(Company.Preferred and Company.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+          value="Company.Ex_TaxReportingName"/>
+        <Input
+          editable="Company.canEditTaxInfo() and Company.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="W8Boolean"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Recevied"
+          value="Company.W8ReceivedExt"
+          visible="Company.isForeign()"/>
+        <Input
+          editable="Company.canEditTaxInfo() and Company.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="W8receivedDate"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Date"
+          value="Company.W8ReceivedDateExt"
+          visible="Company.isForeign()"/>
+        <!-- TODO: get approval to remove W9 info from non-Vendors and add available attribute below -->
+        <InputSetRef
+          def="VendorW9InfoInputSet(contactHandle)"
+          visible="!(Company.isForeign() or company typeis EX_GAIVendor) and company typeis CompanyVendor"/>
+      </InputSet>
+    </InputColumn>
+    <!-- <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contactHandle.Contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection> -->
+    <Code><![CDATA[property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Company.TaxID, Company.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+      property set TAXINFO(taxID : String) { Company.TaxID = taxID } 
+      property get Company() : Company { return contactHandle.Contact as Company; }
+      property get ClaimContact() : ClaimContact { return contactHandle typeis ClaimContact ? contactHandle : null; }
+    
+      function isEditable(): boolean {
+        if((contactHandle.Contact typeis Ex_GAIVendor) and !(User.util.getCurrentUser().hasUserRole("Compliance Accounting")))
+        	return false
+       	else
+       		return true
+      }
+   
+  // C.McDonald 9-17-13 : d6461 EM55 : Adding letters back to acceptable entry but not special characters
+  function validateForeignSSN(): String{
+    var str : String = null
+    if(Company.TaxID == null) {
+       if(Company.checkContactTaxStatus()){
+         str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Required }
+         else str= null 
+         }
+         else if(!Company.TaxID.matches("[a-zA-Z0-9]{9}") or (Company.TaxID.matches("[0]{9}") or Company.TaxID.matches("[1]{9}") or Company.TaxID.matches("[2]{9}")
+      or Company.TaxID.matches("[3]{9}") or Company.TaxID.matches("[4]{9}") or Company.TaxID.matches("[5]{9}") or Company.TaxID.matches("[6]{9}")
+       or Company.TaxID.matches("[7]{9}") or Company.TaxID.matches("[8]{9}") or Company.TaxID.matches("[9]{9}")))
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.W8Invalid
+         else str = null
+    return str
+  }
+  
+  function resetShowFullName(){
+    if(showFullCoName and !CurrentLocation.InEditMode){
+      showFullCoName = false
+    }
+  }
+  
+
+//temp workaround for MedicalCareOrg display. Due to a bug with Load Integrity Checks, the displayName on MedicalCareOrg had to be changed
+function getLabel() : String{
+  var displayName = Company.getSubtype().DisplayName 
+  
+  if(displayName == "MedicalCareOrg"){
+    return displaykey.Web.NewContactMenu.ClaimMedicalCareOrg
+  }else{
+    return displayName 
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

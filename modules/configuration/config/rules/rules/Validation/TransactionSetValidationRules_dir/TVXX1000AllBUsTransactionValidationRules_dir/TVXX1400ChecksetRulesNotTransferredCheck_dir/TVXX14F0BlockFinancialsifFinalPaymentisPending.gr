@@ -1,0 +1,20 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14F0 - Block Financials if Final Payment is Pending")
+internal class TVXX14F0BlockFinancialsifFinalPaymentisPending {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet typeis CheckSet) == true &&
+(transactionSet as CheckSet).PrimaryCheck != null &&
+(transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt != CheckCategoryExt.TC_LIT_ADVISOR/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(trans in transactionSet.Transactions){
+  
+  if(trans.blockFinancials() and transactionSet.New){
+    transactionSet.reject("payment", "Error: A " + trans.Subtype + " cannot be created because a final payment is pending approval.", null, null);
+  }
+  
+}/*end00rule*/
+  }
+}

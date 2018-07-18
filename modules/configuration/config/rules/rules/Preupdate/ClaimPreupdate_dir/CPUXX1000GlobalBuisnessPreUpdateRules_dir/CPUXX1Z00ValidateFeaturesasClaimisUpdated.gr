@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1Z00 - Validate Features as Claim is Updated")
+internal class CPUXX1Z00ValidateFeaturesasClaimisUpdated {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Validate the features on a claim after it is at ATP and it has been changed in 
+//an effort to get the claim and features to go to ATP at the same time if both are ready.
+//sprzygocki - 1-23-10 - defect 2690
+//Updated sprzygocki - 3-30-10 - defect 3250 - certain situations would prevent the 
+//        feature from escalating automatically, we found that this was because the rule
+//        was not seeing the claim at ATP yet, and therefore not running. We need to force
+//        the claim to validate when it is not at ATP (using the true parameter) and false
+//        when it is already there.
+claim.Exposures.length > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exp in claim.Exposures){  
+  if(exp.ValidationLevel!="payment"){ 
+    if(claim.ValidationLevel!="payment"){
+      exp.safeValidate( true )
+    } else {
+      exp.safeValidate( false )
+    }
+  }
+}/*end00rule*/
+  }
+}

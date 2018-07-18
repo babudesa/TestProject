@@ -1,0 +1,33 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TVXX2400 - Update Activity With Check Number ")
+internal class TVXX2400UpdateActivityWithCheckNumber {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis CheckSet/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(chk in (transactionSet as CheckSet).Checks){
+    if(chk.isFieldChanged("Status") and chk.Status == "cleared"){
+      var addedAct = transactionSet.Claim.getAddedArrayElements("Activities")
+      for(act in addedAct){
+        var activity = act as Activity
+        if(activity.ActivityPattern.Code == "unable_to_void_check" and activity.New){
+          activity.TransactionSet = transactionSet
+          activity.Description = "The system was unable to void the check for check number "+chk.CheckNumber +" because the check cleared"
+          activity.CurrentAssignment.assignToClaimOwner()
+        }else if(activity.ActivityPattern.Code == "unable_to_stop_check" and activity.New){
+          activity.TransactionSet = transactionSet
+          activity.Description = "The system was unable to issue a stop payment for check number "+chk.CheckNumber+"because the check cleared"
+          activity.CurrentAssignment.assignToClaimOwner()
+        }
+      }
+    }
+  }
+}catch(e){
+   util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

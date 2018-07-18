@@ -1,0 +1,250 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Screen
+    id="ContactDetailScreen">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="gw.api.contact.ContactHandle"/>
+    <Require
+      name="canAccessLinkButtons"
+      type="boolean"/>
+    <Require
+      name="showRoles"
+      type="boolean"/>
+    <Require
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="canPick"
+      type="boolean"/>
+    <Require
+      name="showRelatedObjects"
+      type="boolean"/>
+    <Variable
+      initialValue="User.util.getCurrentUser()==Claim.AssignedUser || User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;))"
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <Variable
+      initialValue="linkStatus.Known and linkStatus.Linked"
+      name="showRelatedObjects"
+      type="boolean"/>
+    <Variable
+      initialValue="new gw.api.contact.ContactDetailHelper(contactHandle.Contact.IsHighlyLinked)"
+      name="helper"
+      type="gw.api.contact.ContactDetailHelper"/>
+    <Variable
+      initialValue="new pcf_gs.Medicare_PageProc()"
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <Toolbar/>
+    <AlertBar
+      id="ContactDetailScreen_MoreNamedInsuredDBAAlertBar"
+      label="displaykey.JSP.ContactDetailScreen.MoreNamedInsured.RelatedMNIDoingBusinessAs"
+      visible="claim!=null and Claim.hasRelatedMNIDBAContact(Contact)"/>
+    <CardViewPanel>
+      <Variable
+        initialValue="User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)) ? true : (((Contact typeis PersonVendor) || (Contact typeis CompanyVendor)) ? false : currentUserIsAdjuster)"
+        name="currentUserHasPerm"
+        recalculateOnRefresh="true"
+        type="boolean"/>
+      <Card
+        id="ContactBasicsCard"
+        onSelect="helper.CurrentCard = BASICS"
+        title="displaykey.Web.ContactDetail.PageLinks.Basics">
+        <PanelRef
+          def="ContactBasicsDV(contactHandle, showRoles, linkStatus, claim)"
+          mode="Contact.Subtype">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, canPick)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ContactAddressesCard"
+        onSelect="helper.CurrentCard = ADDRESSES"
+        title="displaykey.Web.ContactDetail.PageLinks.Addresses"
+        visible="!(Contact typeis Place)">
+        <PanelRef
+          def="AddressesPanelSet(contactHandle)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, canPick)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ContactRelatedContactsCard"
+        onSelect="helper.CurrentCard = RELATED_CONTACTS"
+        title="displaykey.Web.ContactDetail.PageLinks.RelatedContacts">
+        <PanelRef
+          def="ContactRelatedContactsDV(contactHandle, claim)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              available="libraries.ClaimsUI.LossDetailsUIHelper.claimContactDisconnectCheck(claim)"
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, canPick)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ContactMedicareCard"
+        onSelect="helper.CurrentCard = MEDICARE"
+        title="&quot;Medicare&quot;"
+        visible="claim.ClaimNumber != null and !claim.ClaimNumber.startsWith(&quot;T&quot;) and Contact typeis Person and !(Contact typeis Attorney) and !(Contact typeis Ex_ForeignPerVndrAttny) and !(Contact typeis Doctor) and !(Contact typeis Ex_ForeignPerVndrDoc)  and !(Contact typeis PersonVendor) and !(Contact typeis Ex_ForeignPersonVndr) and !(Contact typeis NonVendorPayeePersonExt)">
+        <PanelRef
+          def="ContactMedicareDataDV(claim, initContactISOMedicare(contactHandle.Contact), pageProc, null)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, canPick)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <!-- <Card
+        id="ContactEFTCard"
+        title="displaykey.Web.ClaimContacts.ContactDetails.EFTInfo"
+        visible="(!(Contact typeis Ex_ForeignCoVenLawFrm) AND !(Contact typeis Ex_ForeignCoVenMedOrg) AND                     !(Contact typeis Ex_ForeignCoVendor) AND !(Contact typeis Ex_ForeignPerVndrAttny) AND                     !(Contact typeis Ex_ForeignPerVndrDoc) AND !(Contact typeis Ex_ForeignPersonVndr))">
+        <PanelRef
+          def="EFTAccountPanelSet(contactHandle, currentUserHasPerm)"
+          editable="((Contact typeis PersonVendor) || (Contact typeis CompanyVendor)) ? false : true">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card> -->
+      <!-- 7/24/09 Disabling EFT for the implemenation of Agri 0/1 sprzygocki -->
+      <Card
+        id="AddressBookContactActivitiesCard"
+        onSelect="helper.CurrentCard = ACTIVITIES"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Activities"
+        visible=" showRelatedObjects and perm.Claim.genericviewactivity">
+        <DetailViewPanel
+          editable="true"
+          visible="helper.isWarningVisible(ACTIVITIES)">
+          <InputColumn>
+            <ButtonInput
+              action="helper.revealContent(ACTIVITIES)"
+              hideIfDisabled="false"
+              id="ShowActivitiesButton"
+              label="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactActivityWarning"
+              value="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactActivityButton"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRef
+          def="AddressBookContactActivitiesLV(Contact)"
+          visible="helper.isContentVisible(ACTIVITIES)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactClaimsCard"
+        onSelect="helper.CurrentCard = CLAIMS"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Claims"
+        visible=" showRelatedObjects and perm.Claim.genericviewclaim">
+        <DetailViewPanel
+          editable="true"
+          visible="helper.isWarningVisible(CLAIMS)">
+          <InputColumn>
+            <ButtonInput
+              action="helper.revealContent(CLAIMS)"
+              hideIfDisabled="false"
+              id="ShowClaimsButton"
+              label="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactClaimWarning"
+              value="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactClaimButton"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRef
+          def="AddressBookContactClaimsLV(Contact)"
+          visible="helper.isContentVisible(CLAIMS)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactExposuresCard"
+        onSelect="helper.CurrentCard = EXPOSURES"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Exposures"
+        visible=" showRelatedObjects and perm.Claim.genericviewexposure">
+        <DetailViewPanel
+          editable="true"
+          visible="helper.isWarningVisible(EXPOSURES)">
+          <InputColumn>
+            <ButtonInput
+              action="helper.revealContent(EXPOSURES)"
+              hideIfDisabled="false"
+              id="ShowExposuresButton"
+              label="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactExposureWarning"
+              value="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactExposureButton"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRef
+          def="AddressBookContactExposuresLV(Contact)"
+          visible="helper.isContentVisible(EXPOSURES)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactMattersCard"
+        onSelect="helper.CurrentCard = MATTERS"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.LegalActions"
+        visible=" showRelatedObjects and perm.Claim.genericviewmatter">
+        <DetailViewPanel
+          editable="true"
+          visible="helper.isWarningVisible(MATTERS)">
+          <InputColumn>
+            <ButtonInput
+              action="helper.revealContent(MATTERS)"
+              hideIfDisabled="false"
+              id="ShowMattersButton"
+              label="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactMatterWarning"
+              value="displaykey.Web.AddressBook.ContactDetail.HighlyLinkedContactMatterButton"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRef
+          def="AddressBookContactMattersLV(Contact)"
+          visible="helper.isContentVisible(MATTERS)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <!-- <Card
+        id="AddressBookContactReviewCard"
+        onSelect="helper.CurrentCard = REVIEWS"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Reviews"
+        visible="util.ReviewPageHelper.shouldDisplayReviewTab(contact) and perm.Review.list">
+        <PanelRef
+          def="ReviewsPanelSet(claim, Contact, true, false)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, canPick)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card> -->
+    </CardViewPanel>
+    <Code><![CDATA[property get Contact() : Contact { return contactHandle.Contact; }
+
+function initContactISOMedicare(selectedContact : Contact) : ContactISOMedicareExt {
+  if(selectedContact.ContactISOMedicareExt == null && (typeof selectedContact == Person || typeof selectedContact == InjuredWorkerExt)){
+    selectedContact.ContactISOMedicareExt = new ContactISOMedicareExt()
+  }
+    
+  return selectedContact.ContactISOMedicareExt
+}]]></Code>
+  </Screen>
+</PCF>

@@ -1,0 +1,16 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11E0 - Validate loss cause for SpecialtyES and Excess")
+internal class CVXX11E0ValidatelosscauseforSpecialtyESandExcess {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType == LossType.TC_SPECIALTYES or 
+claim.LossType == LossType.TC_EXCESSLIABILITY) and 
+!claim.filterSpecialtyESandExcessLiabLoss(claim.LossCause.DisplayName) and
+!claim.isFieldChanged("AssignedUser")
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.rejectSubField(null, "Claim.LossCause", "newloss", "${claim.LossCause.DisplayName} is an invalid Loss Cause. Please select a new Loss Cause.", null, null)/*end00rule*/
+  }
+}

@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="CMSWorkCompInfoInputSet"
+    visible="true">
+    <!-- Defect 7744 - 10/1/15 - cmullin - This Input Set was added to display Person and Tax Info
+    above the CMSMedicareInfoInputSet on the Medicare tab of the Contact screen for Workers'
+    Comp claimants. This Input Set works the same as CMSMedicareInfoInputSet and uses the same
+    required variables. -->
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="exposure"
+      type="Exposure"/>
+    <Label
+      label="&quot;Person Info&quot; //displaykey.NVV.Claim.SubView.NewClaimLossDetailsWorkersComp.Claim.InjuredWorker"/>
+    <Input
+      editable="true"
+      id="DateOfBirth"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.DateOfBirth"
+      required="(Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true) or (util.WCHelper.isWCorELLossType(claim) &amp;&amp; Person typeis InjuredWorkerExt &amp;&amp; Person.MinorWorkerExt == true)"
+      validationExpression="Person.DateOfBirth == null and Person.TaxID !=null and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() &amp;&amp; (checkClaimantRole())? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+      value="Person.DateOfBirth"/>
+    <Input
+      editable="true"
+      id="Gender"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+      required="Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+      validationExpression="Person.Gender== null and Person.TaxID !=null  and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() and checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+      value="Person.Gender"/>
+    <Input
+      editable="true"
+      id="DateOfDeath"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateOfDeath"
+      postOnChange="true"
+      required="Person.ClaimantFatalityExt == true"
+      value="Person.DateOfDeathExt"/>
+    <Input
+      editable="true"
+      id="MaritalStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MaritalStatus"
+      value="Person.MaritalStatus"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.TaxInfo"/>
+    <Input
+      editable="claim.claimant != null and claim.claimant.canEditTaxInfo() and claim.claimant.ssnISEditable(claim, CurrentLocation.InEditMode)"
+      id="V_EIN"
+      label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+      onChange="Person.setMedicare(); claim.setISOEnabled(Person)"
+      postOnChange="true"
+      required="Person.checkContactTaxStatus() || (Person.Subtype==&quot;Person&quot; and (Person.MedicareEligibleExt==true and Person.HICNExt==null)) and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+      validationExpression="Person.isValidInjuredWorkerSSN(claim)"
+      value="TAXINFO"
+      visible="!Person.isForeign()"/>
+    <Input
+      editable="Person != null and Person.canEditTaxInfo()"
+      id="TaxStatusCode"
+      label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+      postOnChange="true"
+      required="Person.checkContactTaxStatus()"
+      validationExpression="Person.Ex_TaxStatusCode != null ? Person.checkContactTaxStatusUpdate(): Person.Ex_TaxStatusCode"
+      value="Person.Ex_TaxStatusCode"/>
+    <Input
+      editable="Person != null and Person.canEditTaxInfo()"
+      id="TaxReportingName"
+      label="displaykey.Web.ContactDetail.TaxReportingName"
+      validationExpression="(Person.Preferred and Person.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+      value="Person.Ex_TaxReportingName"/>
+    <BooleanRadioInput
+      id="UndocumentedWorker"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.UndocumentedWorker"
+      value="claim.InjuredWorker.UndocumentedWorkerExt"
+      visible="Person == claim.claimant"/>
+    <InputDivider/>
+    <Code><![CDATA[property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Person.TaxID, Person.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+property set TAXINFO(taxID : String) { claim.claimant.TaxID = taxID } 
+property get Person() : Person { return pageProc.ContactISOMedicare.Contact as Person; }
+
+function checkClaimantRole(): boolean{
+  
+  var claimContact = claim.getClaimContact(Person)
+   if(claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String) ){
+  return true 
+   }
+return false
+}]]></Code>
+  </InputSet>
+</PCF>

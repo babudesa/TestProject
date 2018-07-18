@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1C00UserRoleCreateUpdateDatesforConversion_dir
+
+@gw.rules.RuleName("CPUXX1C20 - UpdateTime Conversion")
+internal class CPUXX1C20UpdateTimeConversion {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Author: Stephanie Przygocki
+//Update: Scott Roberts
+//Sprint: Foundation Sprint 2
+//Date: 12/8/08
+//Update Date: 6/16/14
+
+exists(role in claim.RoleAssignments where (role.RptUpdateDateExt==null || role.Changed)) or
+claim.isNativeORUpdatedExt()/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(role in claim.RoleAssignments){
+  if(role.RptUpdateDateExt==null || 
+    (role.Changed and role.RptUpdateDateExt!=null 
+      and claim.isNativeORUpdatedExt()) ){
+      if(!role.ChangedFields.Empty) {
+        role.RptUpdateDateExt = gw.api.util.DateUtil.currentDate()
+      }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="ImportWizard_ConflictScreen">
+    <Require
+      name="ImportDataInfo"
+      type="admin.ImportDataInfo"/>
+    <Require
+      name="ImportDataConflict"
+      type="admin.ImportDataConflict"/>
+    <Toolbar
+      reflectOnBottom="true">
+      <WizardButtons/>
+    </Toolbar>
+    <AlertBar
+      id="ConflictAlert"
+      label="getConflictAlert(ImportDataConflict)"
+      visible="getConflictAlert(ImportDataConflict) != null"/>
+    <DetailViewPanel
+      id="ImportWizard_ConflictDV">
+      <InputColumn>
+        <Input
+          boldLabel="true"
+          editable="canDiscardConflict(ImportDataConflict)"
+          id="Overwrite"
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.Overwrite"
+          value="ImportDataConflict.Overwrite"/>
+        <Input
+          id="Resolution"
+          label="displaykey.Web.Admin.ImportWizard.UploadDV.ResolutionStrategy"
+          value="ImportDataInfo.ResolutionStrategy"/>
+        <Input
+          id="Message"
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.Conflict"
+          value="displaykey.Web.Admin.ImportWizard.ConflictDV.ConflictNumber( ImportDataConflict.Number ,  ImportDataInfo.NumConflicts)"/>
+        <Input
+          id="Type"
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.Type"
+          value="ImportDataConflict.EntityType"/>
+        <Input
+          id="PublicID"
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.PublicID"
+          value="ImportDataConflict.PublicID"/>
+        <Input
+          id="DisplayName"
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.DisplayName"
+          value="ImportDataConflict.DisplayName"/>
+        <Label
+          label="displaykey.Web.Admin.ImportWizard.ConflictDV.FieldConflicts"/>
+        <ListViewInput
+          editable="false"
+          labelAbove="true">
+          <Toolbar/>
+          <ListViewPanel
+            id="ImportConflictsLV">
+            <RowIterator
+              editable="false"
+              elementName="FieldConflict"
+              value="ImportDataConflict.FieldConflicts">
+              <Row>
+                <Cell
+                  id="FieldName"
+                  label="displaykey.Web.Admin.ImportWizard.ConflictDV.FieldName"
+                  sortOrder="1"
+                  value="FieldConflict.FieldName"/>
+                <Cell
+                  action="ImportWizard_ArrayDiffPopup.push(FieldConflict.ArrayDifferences)"
+                  available="FieldConflict.isArrayConflict()"
+                  id="ExistingValue"
+                  label="displaykey.Web.Admin.ImportWizard.ConflictDV.ExistingValue"
+                  value="FieldConflict.ExistingValue"/>
+                <Cell
+                  action="ImportWizard_ArrayDiffPopup.push(FieldConflict.ArrayDifferences)"
+                  available="FieldConflict.isArrayConflict()"
+                  id="ImportValue"
+                  label="displaykey.Web.Admin.ImportWizard.ConflictDV.ImportValue"
+                  value="FieldConflict.ImportValue"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+      </InputColumn>
+    </DetailViewPanel>
+    <Code><![CDATA[function getConflictAlert(conflict : gw.api.admin.ImportDataConflict) : String {
+  switch (getRootType(conflict)) {
+    case entity.ClaimMetricLimit:
+    case entity.ExposureMetricLimit:
+      return displaykey.Web.Admin.ImportWizard.ConflictScreen.MetricLimitConflictAlert
+    case entity.PolicyTypeMetricLimits:
+      return displaykey.Web.Admin.ImportWizard.ConflictScreen.PolicyTypeMetricLimitsConflictAlert
+    default:
+      return null
+  }
+}
+
+function canDiscardConflict(conflict : gw.api.admin.ImportDataConflict) : boolean {
+  return getRootType(conflict) != entity.PolicyTypeMetricLimits
+}
+
+function getRootType(conflict : gw.api.admin.ImportDataConflict) : gw.entity.IEntityType {
+  var type = gw.lang.reflect.TypeSystem.getByFullNameIfValid("entity." + conflict.EntityType)
+  return type typeis gw.entity.IEntityType ? type.RootType : null
+}]]></Code>
+  </Screen>
+</PCF>

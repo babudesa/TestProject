@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableTripIncidentsLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="Boolean"/>
+    <RowIterator
+      checkBoxVisible="Wizard == false"
+      editable="true"
+      elementName="TripIncident"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="5"
+      pickLocation="TripIncidentPopup.push(Claim)"
+      toRemove="removeTripIncident(TripIncident)"
+      value="Claim.TripIncidentsOnly">
+      <ToolbarFlag
+        name="Removeable"/>
+      <Row>
+        <Cell
+          action="TripIncidentPopup.push( TripIncident, CurrentLocation.InEditMode )"
+          id="TripRU"
+          label="displaykey.Web.EditableTripIncidentsLV.AffectedTrip"
+          sortOrder="1"
+          value="TripIncident.TripRU.DisplayName.length &gt; 60 ? TripIncident.TripRU.DisplayName.substring( 0, 57 ) + &quot;...&quot; : TripIncident.TripRU.DisplayName"/>
+        <Cell
+          editable="Wizard"
+          id="Description"
+          label="displaykey.Web.EditableTripIncidentsLV.Description"
+          required="true"
+          value="TripIncident.Description"/>
+        <Cell
+          formatType="currency"
+          id="CostIncurred"
+          label="displaykey.Web.EditableTripIncidentsLV.CostIncurred"
+          value="TripIncident.getTotalFinancialImpact( AssessmentAction.TC_APPROVE )"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function removeTripIncident(tripIncidentParam : TripIncident) {
+  if (tripIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteBaggageIncidentExposureLabel)    
+  }  
+  Claim.removeFromIncidents( tripIncidentParam )
+  
+}
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

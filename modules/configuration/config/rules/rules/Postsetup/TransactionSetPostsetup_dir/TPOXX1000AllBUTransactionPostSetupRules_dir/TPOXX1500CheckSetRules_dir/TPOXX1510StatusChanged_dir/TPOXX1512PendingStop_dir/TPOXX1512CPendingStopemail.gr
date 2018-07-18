@@ -1,0 +1,44 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1512PendingStop_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPOXX1512C - Pending Stop email")
+internal class TPOXX1512CPendingStopemail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet.New and transactionSet.LoadCommandID != null) and
+!(transactionSet as CheckSet).PrimaryCheck.ManualCheck and
+(User.util.CurrentUser.hasPermission("paystop"))
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+var emailHelper=new EmailHelper()
+
+var body : String = templates.email.PendingStopVoid.renderToString(transactionSet, User.util.CurrentUser.getUserBusinessUnitAndGroup())
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+
+if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+  //should send e-mail to the underwriter of this policy
+  emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+        ScriptParameters.Divisional_Accounting_Email+","+ScriptParameters.Divisional_Accounting_Contact_Email+",kbirdseye@gaig.com",
+        ScriptParameters.Divisional_Accounting_Name + "; " + ScriptParameters.Divisional_Account_Contact + "; Birdseye, Karen",
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Claim Center Stop Pay Notification", body)
+ /* gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.Divisional_Accounting_Contact_Email, ScriptParameters.Divisional_Account_Contact, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Claim Center Stop Pay Notification", body)
+  gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        "kbirdseye@gaig.com", "Birdseye, Karen", 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Claim Center Stop Pay Notification", body)*/
+}
+else {
+ emailHelper.sendEmailWithBodyEcf(transactionSet.Claim,
+       ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing", 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Claim Center Stop Pay Notification", body)
+}
+/*end00rule*/
+  }
+}

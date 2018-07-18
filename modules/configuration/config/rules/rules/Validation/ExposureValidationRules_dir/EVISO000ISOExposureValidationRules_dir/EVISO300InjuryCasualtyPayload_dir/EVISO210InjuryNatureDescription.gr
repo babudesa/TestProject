@@ -1,0 +1,25 @@
+package rules.Validation.ExposureValidationRules_dir.EVISO000ISOExposureValidationRules_dir.EVISO300InjuryCasualtyPayload_dir
+
+@gw.rules.RuleName("EVISO210 - Injury Nature Description")
+internal class EVISO210InjuryNatureDescription {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///A description of the alleged injury or damage to property not owned by the insured.
+//Page 30/70 of ISO Manual v.5
+exposure.InjuryNatureDescExt==null
+&& 
+(exposure.Claim.LossType != LossType.TC_EXECLIABDIV and 
+ exposure.Claim.LossType != LossType.TC_PROFLIABDIV and
+ exposure.Claim.LossType != LossType.TC_MERGACQU) and
+ exposure.Claim.LossType != LossType.TC_SPECIALHUMSERV
+&&
+ (exposure.ExposureType != ExposureType.TC_SP_SPECIAL_FORM &&
+  exposure.ExposureType != ExposureType.TC_SP_CONTRACTUAL &&
+  exposure.ExposureType != ExposureType.TC_SP_IDENTITY_THEFT)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason = "A Description of the alleged injuries or damage to the property is required for ISO Validation"
+
+exposure.reject( "iso", reason, null, null )/*end00rule*/
+  }
+}

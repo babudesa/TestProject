@@ -1,0 +1,22 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1500ClearClaimFlagReason_dir
+
+@gw.rules.RuleName("CPUAG1520 - Clear LossDate ClaimFlagReason ")
+internal class CPUAG1520ClearLossDateClaimFlagReason {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(gw.api.util.DateUtil.daysBetween(claim.LossDate, claim.Policy.EffectiveDate)>60)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/  var effFlaggedReason = "Note: This is a new policy and a claim has been made within 60 days of policy inception date."
+  var noteFlag :Boolean =false
+
+try{
+
+     claim.removeFlagReason(effFlaggedReason)
+     
+     
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterEnter="codeSearchResults = libraries.ICDCodeUtil.ICDSearch( codeParam, null, false )"
+    alwaysInEditMode="false"
+    canEdit="false"
+    canVisit="true"
+    id="ICDCodePopup"
+    returnType="ICDCode"
+    title="displaykey.Web.Admin.ICD.SearchForCodes">
+    <LocationEntryPoint
+      signature="ICDCodePopup(codeParam : String)"/>
+    <Variable
+      name="codeParam"
+      type="String"/>
+    <Variable
+      name="codeSearchResults"
+      type="ICDCodeQuery"/>
+    <Variable
+      initialValue="codeParam"
+      name="findCode"
+      type="String"/>
+    <Variable
+      name="findBodySystem"
+      type="ICDBodySystem"/>
+    <Screen
+      editable="true">
+      <Toolbar>
+        <ToolbarInput
+          boldLabel="true"
+          editable="true"
+          id="FindCode"
+          label="displaykey.Web.Admin.ICD.FindCode"
+          numCols="6"
+          postOnChange="true"
+          validationExpression="(findCode == null or findCode.length() &lt; 1) ? displaykey.Web.Admin.ICD.FindCode.Validation : null"
+          value="findCode"/>
+        <ToolbarRangeInput
+          boldLabel="true"
+          editable="true"
+          id="Find_Body_System"
+          label="displaykey.Web.Admin.ICD.BodySystem"
+          value="findBodySystem"
+          valueRange="ICDBodySystem.getTypeKeys( false )"
+          valueWidth="300"/>
+        <ToolbarButton
+          action="codeParam = findCode; codeSearchResults = libraries.ICDCodeUtil.ICDSearch( findCode, findBodySystem, false ) "
+          id="SearchButton"
+          label="displaykey.Web.Admin.ICD.Search"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="CancelButton"
+          label="displaykey.Web.Admin.ICD.Cancel"/>
+      </Toolbar>
+      <PanelRef>
+        <TitleBar
+          appendListViewPaging="true"
+          id="Search_Results"
+          title="displaykey.Web.Search.Results"/>
+        <ListViewPanel
+          editable="false">
+          <RowIterator
+            editable="false"
+            elementName="anICDResult"
+            id="ICDResultsIterator"
+            pageSize="40"
+            pickValue="anICDResult"
+            value="codeSearchResults">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="ICDCode"
+                label="displaykey.Web.Admin.ICD.ICDCodes"
+                value="anICDResult.Code"/>
+              <Cell
+                enableSort="false"
+                id="CodeDesc"
+                label="displaykey.Web.Admin.ICD.CodeDescription"
+                value="anICDResult.CodeDesc"/>
+              <Cell
+                enableSort="false"
+                id="Chronic"
+                label="displaykey.Web.Admin.ICD.Chronic"
+                value="anICDResult.Chronic"/>
+              <!-- <Cell
+                enableSort="false"
+                id="AvailabilityDate"
+                label="displaykey.Web.Admin.ICD.AvailableFrom"
+                value="anICDResult.AvailabilityDate"/> -->
+              <Cell
+                enableSort="false"
+                id="ExpiryDate"
+                label="displaykey.Web.Admin.ICD.ExpiresOn"
+                value="anICDResult.ExpiryDate"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </PanelRef>
+    </Screen>
+  </Popup>
+</PCF>

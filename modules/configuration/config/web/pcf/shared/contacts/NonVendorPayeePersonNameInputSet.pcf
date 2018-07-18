@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="NonVendorPayeePersonNameInputSet">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="firstNameRequired"
+      type="boolean"/>
+    <Label
+      label="Person.getSubtype().DisplayName"/>
+    <Input
+      editable="!person.VerifiedPolicyContactExt and !person.FormerVerifiedContactExt"
+      id="Prefix"
+      label="displaykey.Web.ContactDetail.Name.Prefix"
+      value="Person.Prefix"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="FirstName"
+      label="displaykey.Web.ContactDetail.Name.FirstName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;first&quot;)};"
+      postOnChange="true"
+      required="firstNameRequired"
+      value="Person.FirstName"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="MiddleName"
+      label="displaykey.Web.ContactDetail.Name.MiddleName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;middle&quot;)}"
+      postOnChange="true"
+      value="Person.MiddleName"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="LastName"
+      label="displaykey.Web.ContactDetail.Name.LastName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;last&quot;)}"
+      postOnChange="true"
+      required="true"
+      value="Person.LastName"/>
+    <Input
+      editable="!person.VerifiedPolicyContactExt and !person.FormerVerifiedContactExt"
+      id="Suffix"
+      label="displaykey.Web.ContactDetail.Name.Suffix"
+      value="Person.Suffix"/>
+    <TextInput
+      editable="!person.VerifiedPolicyContactExt"
+      id="DoingBusinessAsExt"
+      label="displaykey.Web.ContactDetail.Name.DoingBusinessAs"
+      numCols="17"
+      required="false"
+      value="Person.DoingBusinessAsExt"/>
+    <TextInput
+      editable="!person.VerifiedPolicyContactExt"
+      id="FormerName"
+      label="displaykey.Web.ContactDetail.Name.FormerName"
+      numCols="17"
+      value="Person.FormerName"
+      visible="Person.Subtype == &quot;Person&quot;"/>
+    <Input
+      available="claimContact != null"
+      editable="User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;) and !person.VerifiedPolicyContactExt"
+      id="PersonCloseDateExt"
+      label="displaykey.Web.ContactDetail.CloseDate"
+      value="Person.CloseDateExt"
+      visible="Person.getSubtype() != &quot;Person&quot;"/>
+    <Code><![CDATA[
+property get Person() : Person { return contactHandle.Contact as Person; }
+    ]]></Code>
+  </InputSet>
+</PCF>

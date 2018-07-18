@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewClaimABMedPayDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="&quot;MedPay&quot;"
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, ExpType)"/>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- LOSS DESCRIPTION SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.LossDescription"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- INJURY SECTION -->
+      <InputSetRef
+        def="InjuryDetailsInputSet(Exposure, ExpType)"/>
+      <InputDivider/>
+      <!-- RECOVERY SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.Recovery"/>
+      <Input
+        editable="true"
+        id="ContributionPotential"
+        label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.ContPotential"
+        required="Exposure.Claim.LossType == LossType.TC_AGRIAUTO"
+        value="Exposure.ContribPotentialExt"/>
+      <Input
+        editable="true"
+        id="SubroPotential"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SubroPotential"
+        value="Exposure.SubrogPotentialExt"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <InputDivider/>
+      <!-- Recovery Section -->
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Details"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <Input
+        editable="true"
+        id="Lien"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Lien"
+        onChange="if((Exposure.IsLienExt==false)AND(Exposure.Liens!=null))for(lien in Exposure.Liens){lien.remove();Exposure.UIHelper.addFormerRole(lien)}"
+        postOnChange="true"
+        required="true"
+        value="Exposure.IsLienExt"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <ListViewInput
+        def="EditableLienDetailsLV(Exposure)"
+        editable="Exposure.IsLienExt==true"
+        id="LienDetails"
+        labelAbove="true"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false ">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- Vehicle - Risk level -->
+      <Input
+        editable="true"
+        id="MedPayLimit"
+        label="displaykey.NVV.Exposure.MedPay.MedPayLimit"
+        value="Exposure.FeatureLimitExt"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <InputDivider
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

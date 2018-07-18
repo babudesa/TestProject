@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="AddressBookContactDetailScreen"
+    mode="default">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="gw.api.contact.ExternalContactSource"/>
+    <Variable
+      initialValue="false"
+      name="hasLoadedRelatedContacts"
+      type="boolean"/>
+    <Toolbar/>
+    <CardViewPanel>
+      <Card
+        id="AddressBookContactBasicsCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Basics">
+        <PanelRef
+          def="AddressBookContactBasicsDV(contact, externalContactSource)"
+          mode="contact.subtype">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="AddressBookContactDetailToolbarButtonSet(contact, externalContactSource, hasLoadedRelatedContacts)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactAddressesCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Addresses"
+        visible="!(contact typeis Place)">
+        <PanelRef
+          def="AddressesPanelSet(contact)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="AddressBookContactDetailToolbarButtonSet(contact, externalContactSource, hasLoadedRelatedContacts)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactRelatedContactsCard"
+        onSelect="if (!hasLoadedRelatedContacts) { hasLoadedRelatedContacts = true; externalContactSource.populateRelatedContacts( contact ) }"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.RelatedContacts">
+        <PanelRef
+          def="AddressBookContactRelatedContactsDV(contact, externalContactSource)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="AddressBookContactDetailToolbarButtonSet(contact, externalContactSource, hasLoadedRelatedContacts)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+    </CardViewPanel>
+  </Screen>
+</PCF>

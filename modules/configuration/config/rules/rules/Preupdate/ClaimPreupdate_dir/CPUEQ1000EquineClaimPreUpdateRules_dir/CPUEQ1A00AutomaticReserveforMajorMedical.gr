@@ -1,0 +1,59 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1A00 - Automatic Reserve for Major Medical")
+internal class CPUEQ1A00AutomaticReserveforMajorMedical {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!claim.checkDisconnectedFeatures())&&
+(claim.LossCause =="colicgastric" and claim.ex_DetailLossCause == "surgicalcolic") and
+exists (exp in claim.Exposures where exp.ExposureType =="eq_majmed" and 
+( exp.Coverage.Type=="eq_majmedFM" or exp.Coverage.Type=="eq_majmedFM10" or exp.Coverage.Type=="eq_majmedFM15")) and
+claim.LoadCommandID==null
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*update 2/22/10 erawe - defect 2974 - moved var policyRes before var results
+because we validate Policy, then Claim, then Feature now.  We were not getting the
+policy to validate properly when results came before policyRes.
+Updated 3/3/10 erawe - defect 2974, removed duplicate if statements to create the 6000 reserve 
+Updated 9/22/11 erawe - defect 4313/4475 - added _data to check in TAXX1100
+updated 17/5/12 dsari - defect 4527 -added coverage Type and increase reserve to 10k 
+*/
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var origClaim = (claim.OriginalVersion as Claim)
+var newReserveAdded : boolean = false
+
+if( claim.LoadCommandID == null or ( origClaim.LossCause != claim.LossCause or claim.ex_DetailLossCause != origClaim.ex_DetailLossCause or exists (exp in claim.Exposures where exp.ExposureType =="eq_majmed" and exp.New))){
+  var policyRes = claim.Policy.safeValidate(); //this validation must come before claim validation if validating both
+  var results = claim.safeValidate( false )
+  var errors = results.getErrors(ValidationLevel.TC_PAYMENT)
+  //print("errors.........."+errors)
+  
+  if ((policyRes.ValidationLevelPassed ==  "payment" and errors.length == 1)  or results.ValidationLevelPassed == "payment"){  
+    for (exp in claim.Exposures) {
+      var expresults = exp.safeValidate( false )
+      if(expresults.ValidationLevelPassed == "payment" and !exp.typeOfLossIsIncomplete()){
+        var reservesQueryResults = gw.api.database.Query.make(Reserve).compare("Claim", Equals, claim).select()
+        if (exp.ExposureType =="eq_majmed" and 
+              (exp.Coverage.Type=="eq_majmedFM" or exp.Coverage.Type=="eq_majmedFM10" or exp.Coverage.Type=="eq_majmedFM15")
+             and exp.State=="open" and !exists(res in reservesQueryResults where res.CostType=="claimcost" and res.Exposure==exp)){
+             try{
+               var _data : java.util.Map = gw.api.web.Scopes.getRequest()
+               _data["AutoRes"] = true
+             }catch(e){
+               util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+             }
+            //changed to logging in Debug - SR
+			Logger.logDebug("entered into exp results..........")
+            exp.setAvailableReserves("claimcost", "unspecified", 10000, gw.plugin.util.CurrentUserUtil.getCurrentUser().User)
+            newReserveAdded = true
+        }
+      }
+    }
+    if(newReserveAdded == true){
+      claim.createCustomHistoryEvent( "DataChange", "Initial Reserve for Major Medical" )
+    }
+  }
+}/*end00rule*/
+  }
+}

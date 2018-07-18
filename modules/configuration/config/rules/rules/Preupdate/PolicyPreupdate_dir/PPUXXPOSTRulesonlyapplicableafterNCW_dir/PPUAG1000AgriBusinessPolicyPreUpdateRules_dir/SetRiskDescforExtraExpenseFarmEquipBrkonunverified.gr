@@ -1,0 +1,35 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUAG1000AgriBusinessPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("Set Risk Desc for Extra Expense/Farm Equip Brk on unverified")
+internal class SetRiskDescforExtraExpenseFarmEquipBrkonunverified {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified and
+exists(cov in policy.AllCoverages where cov.Type=="ab_FPG_ext_exp" || cov.Type=="ab_FEB_comp")/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  for(prop in policy.Properties){
+    var coverages : Coverage[];
+    for(riskUnit in policy.RiskUnits){
+      if(riskUnit.Subtype=="LocationBasedRU" || riskUnit.Subtype=="PropertyRU" 
+        and (riskUnit as LocationBasedRU).Property==prop.Property){
+        coverages = riskUnit.Coverages
+      }
+    }
+    if(prop.Property.LocationNumber == null){
+      if(exists(cvg in coverages where cvg.Type == "ab_FPG_ext_exp")){
+        prop.Property.LocationNumber = "#Extra Expense";
+      }
+      if(exists(cvg in coverages where cvg.Type == "ab_FEB_comp")){
+        prop.Property.LocationNumber = "#Farm Equipment Breakdown";
+      }
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule().getDisplayName(), e, "" ) 
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,48 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEXX1550 - Statute of Limitations")
+internal class CEXX1550StatuteofLimitations {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Updated sprzygocki 3-30-10 - this rule was erroring when it encountered the wrong feature type
+//   added a check for Statue of Limitations not being null
+exists(exp in claim.Exposures where exp.StatuteOfLimitationsExt!=null)==true
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+   var noteBody:String
+   var note:Note
+  for(exp in claim.Exposures){
+    if(exp.StatuteOfLimitationsExt!=null){
+      if(exp.JurisdictionState=="CA") {
+        if((gw.api.util.DateUtil.daysBetween( gw.api.util.DateUtil.currentDate(), exp.StatuteOfLimitationsExt ) <=75) and 
+            !exists(act in claim.Activities where act.ActivityPattern.Code=="ab_statute" and act.Exposure==exp)){
+          var ap = util.custom_Ext.finders.findActivityPattern( "ab_statute" )
+          claim.createActivity( exp, ap, "Send Statute of Limitations notification to California claimant", "Send notification to unrepresented claimants 60 days prior to Statute of Limitations", "normal",
+                                false,  gw.api.util.DateUtil.currentDate(),gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 7))
+                                
+          noteBody = "Activity has been sent to adjuster for Statute of Limitations notification to "+exp.JurisdictionState.DisplayName+" claimant.";
+          note = claim.addNote("general", noteBody);
+          note.Subject = "Statute of Limitations Notification"
+        }
+      }
+      else if(exp.JurisdictionState=="KY") {
+             if((gw.api.util.DateUtil.daysBetween( gw.api.util.DateUtil.currentDate(), exp.StatuteOfLimitationsExt ) <=105) and
+                 !exists(act in claim.Activities where act.ActivityPattern.Code=="ab_statute" and act.Exposure==exp)) {
+               var ap = util.custom_Ext.finders.findActivityPattern( "ab_statute" )
+               claim.createActivity( exp, ap, "Send Statute of Limitations notification to Kentucky claimant", "Send notification to unrepresented claimants 90 days prior to Statute of Limitations", "normal",
+                                     false,  gw.api.util.DateUtil.currentDate(),gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 7))
+                                    
+          noteBody = "Activity has been sent to adjuster for Statute of Limitations notification to "+exp.JurisdictionState.DisplayName+" claimant.";
+          note = claim.addNote("general", noteBody);
+          note.Subject = "Statute of Limitations Notification"
+             }
+      } 
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

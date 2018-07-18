@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="BulkInvoicesLV">
+    <Require
+      name="bulkInvoices"
+      type="List&lt;BulkInvoice&gt;"/>
+    <RowIterator
+      editable="true"
+      elementName="bulkInvoice"
+      hasCheckBoxes="true"
+      id="BulkInvoiceRowIterator"
+      pageSize="30"
+      toRemove="bulkInvoice.delete()"
+      value="bulkInvoices">
+      <ToolbarFlag
+        condition="bulkInvoice.Deleteable"
+        name="Deleteable"/>
+      <ToolbarFlag
+        condition="bulkInvoice.Validateable"
+        name="Validateable"/>
+      <ToolbarFlag
+        condition="bulkInvoice.Submittable"
+        name="Submittable"/>
+      <ToolbarFlag
+        condition="bulkInvoice.Stoppable"
+        name="Stoppable"/>
+      <ToolbarFlag
+        condition="bulkInvoice.Voidable"
+        name="Voidable"/>
+      <IteratorSort
+        sortBy="bulkInvoice.BulkInvoiceIDExt"
+        sortOrder="1"/>
+      <Row
+        highlighted="bulkInvoice.hasInvalidInvoiceItems()">
+        <Cell
+          action="ViewBulkInvoiceDetail.drilldown(bulkInvoice)"
+          id="BulkInvoiceNumber"
+          label="displaykey.Java.Financials.BulkInvoiceNumShort"
+          value="bulkInvoice.BulkInvoiceIDExt"/>
+        <Cell
+          id="BulkInvoiceType"
+          label="displaykey.Web.Financials.BulkPay.BulkInvoiceType"
+          value="bulkInvoice.BulkInvoiceTypeExt"/>
+        <Cell
+          action="ViewBulkInvoiceDetail.drilldown(bulkInvoice)"
+          id="InvoiceNumber"
+          label="displaykey.Web.Financials.BulkPay.Invoice.InvoiceNumber"
+          value="bulkInvoice.InvoiceNumber"/>
+        <Cell
+          action="bulkInvoiceCheckPopup.push(bulkInvoice)"
+          id="CheckNumber"
+          label="displaykey.LV.Financials.CheckSearchResults.Payments.CheckNumberExt"
+          value="bulkInvoice.CheckNumber"/>
+        <Cell
+          action="ViewBulkInvoiceDetail.drilldown(bulkInvoice)"
+          id="Status"
+          label="displaykey.Web.Financials.BulkPay.Invoice.Status"
+          value="bulkInvoice.Status"/>
+        <Cell
+          id="ReceivedDate"
+          label="displaykey.Web.Financials.BulkPay.Invoice.DateReceived"
+          value="bulkInvoice.ReceivedDate"/>
+        <Cell
+          id="ApprovalDate"
+          label="displaykey.Web.Financials.BulkPay.Invoice.DateApproved"
+          value="bulkInvoice.ApprovalDate"/>
+        <Cell
+          action="ViewBulkInvoiceDetail.drilldown(bulkInvoice)"
+          formatType="currency"
+          id="TotalAmount"
+          label="displaykey.Web.Financials.BulkPay.Invoice.TotalAmount"
+          value="bulkInvoice.BulkInvoiceTotal"/>
+        <Cell
+          id="CreatedByGroup"
+          label="displaykey.Web.Financials.BulkPay.Invoice.Check.CreatedByGroup"
+          value="getUserGroup(bulkInvoice)"/>
+        <Cell
+          id="EscheatmentStatus"
+          label="displaykey.NVV.Financials.Check.EscheatStatus"
+          value="bulkInvoice.escheatStatusExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getUserGroup(bi : BulkInvoice):String{
+      var result:String
+      if(bi.CreateUser.AllGroups.first()==null){
+        result = "GAIC Claims"
+      } else {
+        result = bi.CreateUser.AllGroups.first().toString()
+      }
+      return result
+    }]]></Code>
+  </ListViewPanel>
+</PCF>

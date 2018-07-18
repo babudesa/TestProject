@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewteam"
+    id="TeamGroupOtherClaims"
+    title="displaykey.Web.Team.OtherClaimsTitle">
+    <LocationEntryPoint
+      signature="TeamGroupOtherClaims(Group : Group)"/>
+    <Variable
+      name="Group"
+      type="Group"/>
+    <Variable
+      initialValue="new team.TeamOtherClaimFilterSet(Group)"
+      name="FilterSet"
+      type="team.TeamClaimFilterSet"/>
+    <Variable
+      initialValue="ClaimTeamView.finder.findStaleOrFailedAssignmentsByGroup(Group)"
+      name="ClaimTeamViewList"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="&quot;TeamClaimsLV&quot;"
+      name="PrintTargetLV"/>
+    <Screen
+      id="TeamGroupOtherClaimsScreen">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.Team.OtherClaimsTitle"/>
+      <Toolbar
+        reflectOnBottom="true">
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignClaimsPopup.push(new claim.ClaimAssignmentPopup(CheckedValues))"
+          flags="any ClaimTeamView"
+          id="TeamGroupOtherClaims_Assign"
+          iterator="TeamClaimsLV"
+          label="displaykey.Web.Team.Toolbar.Assign"
+          shortcut="G"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="TeamClaimRemoveFlagPopup.push(gw.api.team.TeamUtil.convertViewArrayToSingleClaim(CheckedValues))"
+          flags="one CanRemoveFlag, one ClaimTeamView"
+          id="TeamGroupOtherClaims_RemoveFlag"
+          iterator="TeamClaimsLV"
+          label="displaykey.Web.Team.Toolbar.RemoveFlag"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV)"
+          available="perm.User.printlistviews"
+          id="TeamGroupOtherClaims_Print"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="TeamClaimsLV(ClaimTeamViewList, FilterSet)"/>
+    </Screen>
+  </Page>
+</PCF>

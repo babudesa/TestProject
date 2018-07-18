@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="EditableWatercraftTrailerCoveragesLV">
+    <Require
+      name="Trailer"
+      type="TrailerExt"/>
+    <Require
+      name="Vehicle"
+      type="Vehicle"/>
+    <Require
+      name="PolicyVehicle"
+      type="VehicleRU"/>
+    <RowIterator
+      editable="true"
+      elementName="RUCoverage"
+      hideCheckBoxesIfReadOnly="true"
+      pickLocation="WatercraftTrailerCoverageCreateDetailPopup.push(PolicyVehicle, Trailer)"
+      toRemove="PolicyVehicle.removeFromCoverages(RUCoverage)"
+      type="VehicleCoverage"
+      value="PolicyVehicle.Coverages">
+      <Row
+        editable="!exists(exp in PolicyVehicle.Policy.Claim.Exposures where exp.Coverage==RUCoverage)"
+        visible="isWatercraftTrlrCvg(RUCoverage)">
+        <RangeCell
+          action="WatercraftCoverageDetailPopup.push(RUCoverage)"
+          id="CoverageType"
+          label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+          optionLabel="RUCoverage.covTypeDisplayName()"
+          required="true"
+          sortOrder="1"
+          value="RUCoverage.Type"
+          valueRange="RUCoverage.getCoverages()"/>
+        <Cell
+          id="Reins"
+          label="displaykey.LV.Policy.PolicyCoverages.Reinsurance"
+          value="RUCoverage.showReinsuranceStatus()"/>
+        <Cell
+          id="RiskState"
+          label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+          required="false"
+          sortOrder="2"
+          value="RUCoverage.State"/>
+        <TextCell
+          id="ClassCode"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+          numCols="8"
+          sortOrder="3"
+          value="RUCoverage.ClassCodeExt"/>
+        <Cell
+          id="ClassDesc"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+          value="RUCoverage.ClassCodeDescExt"/>
+        <Cell
+          helpText="displaykey.Policy.Helptext.Policy.EffectiveDate"
+          id="EffDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+          sortDirection="descending"
+          sortOrder="4"
+          value="RUCoverage.EffectiveDate"/>
+        <Cell
+          helpText="displaykey.Policy.Helptext.Policy.ExpDate"
+          id="ExpDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+          value="RUCoverage.ExpirationDate"/>
+        <TextCell
+          formatType="exactNumber"
+          id="IncidentLimit"
+          label="displaykey.LV.Policy.PolicyCoverages.IncidentLimit"
+          numCols="8"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          value="RUCoverage.IncidentLimit"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function isWatercraftTrlrCvg(RUCoverage: RUCoverage) : boolean{
+ return ((RUCoverage as VehicleCoverage).TrailerExt != null);
+}]]></Code>
+  </ListViewPanel>
+</PCF>

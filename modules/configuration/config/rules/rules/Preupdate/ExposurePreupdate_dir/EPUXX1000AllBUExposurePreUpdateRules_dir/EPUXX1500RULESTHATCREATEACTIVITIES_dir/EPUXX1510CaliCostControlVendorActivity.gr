@@ -1,0 +1,58 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUXX1510 - Cali Cost Control Vendor Activity")
+internal class EPUXX1510CaliCostControlVendorActivity {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*
+Defect 1686 - Cost Control Vendor Payments...if the user changes the policy
+so that a California/non-California Medical Payment becomes invalid, an activity
+to fix is immediately popped up to the adjuster (PPUXX2200), and then subsequently every 3
+or 7 days after the activity was completed but not fixed (CEXX2300)
+Author: Stephanie Przygocki
+Date: 9/21/09 Agri 0
+Date: 3/26/12 - Defect 5256: Turned off per Karen meeting with Danny on 3/23/12
+*/
+
+
+((exposure.OriginalVersion as Exposure).Coverage.State!=exposure.Coverage.State) ||
+((exposure.OriginalVersion as Exposure).ReconnectFailExt==true and exposure.ReconnectFailExt==false
+  and exposure.PreviousCoverageExt.State!=exposure.Coverage.State)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var actPattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "cost_control_payment" )
+var exp = exposure
+var orgExp = (exp.OriginalVersion as Exposure)
+  if(orgExp.Coverage!=exp.Coverage and exp.Coverage!=null){
+    var claimTransQuery = gw.api.database.Query.make(Transaction);
+    claimTransQuery.compare("Claim", Equals, exposure.Claim);
+    var claimTransQueryResults = claimTransQuery.select()
+    for(pay in claimTransQueryResults){
+      if(pay.Subtype=="Payment" and pay.Exposure==exp and pay.Status=="submitted" and pay.Amount>0){
+        if(((orgExp.Coverage.State=="CA" and exp.Coverage.State!="CA")  ||
+            (orgExp.PreviousCoverageExt.State=="CA" and exp.Coverage.State!="CA")) and
+             exp.IsMedicalPaymentExt and pay.CostType=="claimcost" and
+             exists(lossCode in pay.LineItems where lossCode.LineCategory=="cost_control_vendors")){     
+          if(!exists(act in exp.Claim.Activities where act.Exposure==exp and act.ActivityPattern==actPattern and act.Status=="open")){
+            //changed to logging in Debug - SR
+			Logger.logDebug("EV: Coverage state changed from Cali to non-cali, loss, is medical, cost control." + exp)
+            exp.Claim.createActivityFromPattern( exp, actPattern )
+          }
+        } else if(((orgExp.Coverage.State!="CA" and exp.Coverage.State=="CA")  ||
+                   (orgExp.PreviousCoverageExt.State!="CA" and exp.Coverage.State=="CA")) and
+                    exp.IsMedicalPaymentExt and pay.CostType=="expense" and
+                    exists(lossCode in pay.LineItems where lossCode.LineCategory=="cost_control_vendors")){
+          if(!exists(act in exp.Claim.Activities where act.Exposure==exp and act.ActivityPattern==actPattern and act.Status=="open")){
+            //changed to logging in Debug - SR
+			Logger.logDebug("EV: Coverage state changed from other to Cali, expense, is medical, cost control." + exp)
+            exp.Claim.createActivityFromPattern( exp, actPattern )
+          }
+        }
+      }
+    }
+  }/*end00rule*/
+  }
+}

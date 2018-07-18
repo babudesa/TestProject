@@ -1,0 +1,850 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewClaimLossDetailsDV"
+    mode="WORKCOMP|PIMINMARINEWC|PIMINMARINEEL|SPECIALTYESWC|SPECIALTYESEL|ALTMARKETSWC|ALTMARKETSEL|STRATEGICCOMPWC|STRATEGICCOMPEL|TRUCKINGWC|TRUCKINGEL|AGRIWC|AGRIEL|OMWC|OMEL|ECUWC|ECUEL">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="util.admin.SecurityUtil.setInitialSecurityTypeValue(Claim)"
+      name="myinit"/>
+    <Variable
+      name="Policy"
+      type="Policy"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Wizard.PolicySummary"
+      name="selectedPolicySummary"
+      type="PolicySummary"/>
+    <Variable
+      initialValue="setEmploymentData(Claim)"
+      name="employmentData"
+      type="EmploymentData"/>
+    <Variable
+      initialValue="util.WCHelper.isELLossType(Claim)"
+      name="isELClaim"
+      type="Boolean"/>
+    <Variable
+      initialValue="false"
+      name="isNewCLEE"
+      type="Boolean"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <Variable
+      initialValue="Claim.ExternalHandlingExt == null ? &quot;GAI&quot; : Claim.ExternalHandlingExt.NameExt"
+      name="AdminSetting"
+      type="String"/>
+    <Variable
+      initialValue="Claim.setDOLIndicator()"
+      name="indicator"/>
+    <Variable
+      initialValue="setSpecialClaimHandling()"
+      name="specialClaimHandlingDefault"/>
+    <Variable
+      initialValue="new pcf_gs.HospitalHelper(Claim)"
+      name="HospitalHelper"
+      type="pcf_gs.HospitalHelper"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim"/>
+      <Input
+        id="Claim_LOBCode"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LOBCode"
+        required="true"
+        value="displayString(Claim.LOBCode.Description)"/>
+      <Input
+        id="Claim_LossType"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossType"
+        required="false"
+        value="Claim.LossType.Description"/>
+      <RangeInput
+        editable="true"
+        id="Claim_PermissionRequired"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.PermissionRequired"
+        required="true"
+        showNoneSelected="false"
+        value="Claim.PermissionRequired"
+        valueRange="util.admin.SecurityUtil.getValueRange(Claim)"/>
+      <RangeInput
+        editable="true"
+        id="ExternalUser"
+        label="displaykey.Java.Claim.ExternalUserGroup"
+        showNoneSelected="false"
+        sortValueRange="false"
+        validationExpression="util.admin.ExternalUserAdminUtil.setValue(AdminSetting, Claim)"
+        value="AdminSetting"
+        valueRange="util.admin.ExternalUserAdminUtil.getValueRange()"
+        valueWidth="200"/>
+      <ButtonInput
+        action="CoverageSelectPopup.push(Claim)"
+        align="left"
+        available="CurrentLocation.InEditMode"
+        hideIfDisabled="false"
+        id="SelectedCovNumExt"
+        labelAbove="true"
+        value="&quot;Select Coverage&quot;"/>
+      <TextAreaInput
+        id="SelectedCoverage"
+        numCols="35"
+        numRows="4"
+        value="Claim.formatWCCoverageString(Claim.CoverageSelectedExt)"
+        visible="Claim.CoverageSelectedExt!=null"/>
+      <InputDivider/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="Description"
+        label="displaykey.NVV.Claim.NewClaimLossDetailsProperty.Claim.Description"
+        numCols="35"
+        numRows="3"
+        value="Claim.Description"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossDetails"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Claim_InjuryIllnessDate"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.InjuryIllnessDate"
+        labelStyleClass="label_wrap"
+        required="true"
+        validationExpression="Claim.LossDate == null || Claim.LossDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Claim.LossDate"/>
+      <DateInput
+        editable="true"
+        id="Claim_lossTime"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.InjuryIllnessTime"
+        labelStyleClass="label_wrap"
+        required="!Claim.IncidentReport"
+        timeFormat="short"
+        validationExpression="Claim.LossDate != null || Claim.LossDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Claim.LossDate"/>
+      <Input
+        id="DOLOutsidePolicyPeriodIndicator"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.DOLOutsideInd"
+        value="Claim.DOLOutsideIndExt"/>
+      <Input
+        editable="Claim.IncidentReport == false"
+        id="ReservedFileExt_NewLoss"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.ReservedFile"
+        required="Claim.IncidentReport == false"
+        value="Claim.ReservedFileExt"/>
+      <Input
+        editable="Claim.IncidentReport == false"
+        id="AttRep_NewLoss"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.AttorneyRep"
+        required="Claim.IncidentReport == false"
+        value="Claim.AttorneyRepExt"/>
+      <RangeInput
+        editable="true//Claim.AttorneyRepExt==true &amp;&amp; Claim.IncidentReport == false"
+        id="AttorneyPicker_NewLoss1"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.Attorney"
+        required="false"
+        value="Claim.AttorneyExt"
+        valueRange="Claim.getAttorneys()"
+        visible="true//Claim.AttorneyRepExt==true">
+        <Reflect
+          custom="javascript:window.VALUE == &quot;false&quot; ? window.REFLECTOR.parentNode.parentNode.style.display=&quot;none&quot; : window.REFLECTOR.parentNode.parentNode.style.display=&quot;&quot;;"
+          triggerIds="AttRep_NewLoss">
+          <ReflectCondition
+            condition="VALUE != true"
+            value="null"/>
+        </Reflect>
+      </RangeInput>
+      <RangeInput
+        editable="true"
+        id="Catastrophe_CatastropheNumber"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Catastrophe.CatastropheNumber"
+        onChange="Claim.getCatastropheWarning();Claim.clearWindHurricaneDedTriExt()"
+        optionLabel="VALUE.Name"
+        postOnChange="true"
+        required="false"
+        validationExpression="Claim.LossDate == null ? null : Claim.validateCat()"
+        value="Claim.Catastrophe"
+        valueRange="Claim.findValidCatastrophes()"/>
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="EstimatedDamage_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.EstimatedDamage_Ext"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        required="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot;"
+        validationExpression="Claim.validateAmount(Claim.EstimatedDamage_Ext) ? null : displaykey.Validation.Claim.EstimatedDamageExt"
+        value="Claim.EstimatedDamage_Ext"
+        visible="Claim.Catastrophe != null"/>
+      <Input
+        editable="true"
+        id="WCCatastrophe"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.WCCatastrophe"
+        numCols="2"
+        required="false"
+        validationExpression="if (Claim.WCCatastropheExt != null &amp;&amp; !Claim.WCCatastropheExt.matches(&quot;[0-9]{2,2}&quot;)) {return &quot;WC Catastrophe Code must be a 2 digit number&quot;;}"
+        value="Claim.WCCatastropheExt"/>
+      <BooleanRadioInput
+        editable="true"
+        id="WindHurricaneDeductibleTriggered_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.WindHurricaneDeductibleTriggered_Ext"
+        onChange="setDeductible()"
+        postOnChange="true"
+        required="Claim.Catastrophe.Type == &quot;iso&quot;"
+        value="Claim.WindHurricaneDedTriExt"
+        visible="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot;"/>
+      <!-- 07/11/2008 MMANALILI  Commenting out line below. Auto claims do not need a "Estimated Damage" field -->
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="WindHurricaneCatDeductibleAmt_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.WindHurricaneCatDeductibleAmt_Ext"
+        required="Claim.WindHurricaneDedTriExt == true"
+        validationExpression="Claim.validateAmount(Claim.WindHurricaneDedAmtExt) ? null : displaykey.Validation.Claim.WindHurricaneDedExtInvalid "
+        value="Claim.WindHurricaneDedAmtExt"
+        visible="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot; and Claim.WindHurricaneDedTriExt == true"/>
+      <InputDivider/>
+      <InputSet
+        id="InjWorkerInputSet">
+        <Label
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsWorkersComp.Claim.InjuredWorker"/>
+        <ClaimContactInput
+          claim="Claim"
+          editable="true"
+          id="Claimant_Picker"
+          label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.Claimant.Picker"
+          required="true"
+          showSearchInMenu="false"
+          value="Claim.InjuredWorker"
+          valueRange="Claim.injuredWorkers"/>
+        <Input
+          editable="true"
+          id="Claimant_ContactProhibited"
+          label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.Claimant.ContactProhibited"
+          value="Claim.getClaimContact(Claim.claimant).ContactProhibited"/>
+        <Input
+          editable="true"
+          id="MinorChild"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.MinorChild"
+          required="!Claim.IncidentReport"
+          value="Claim.InjuredWorker.MinorWorkerExt"/>
+        <Input
+          editable="true"
+          id="DateOfBirth"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.DateOfBirth"
+          required="Claim.InjuredWorker.MinorWorkerExt == true"
+          value="Claim.claimant.DateOfBirth">
+          <Reflect
+            custom="javascript:window.REFLECTOR.parentNode.parentNode.className= VALUE==&quot;true&quot; ? 'required' : '';"
+            triggerIds="MinorChild"/>
+        </Input>
+        <Input
+          editable="true"
+          id="DeathIndicator"
+          label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ClaimantDeceased"
+          required="!Claim.IncidentReport"
+          value="Claim.claimant.ClaimantFatalityExt"/>
+        <Input
+          editable="true"
+          id="IllnessDeathIndicator"
+          label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.InjurySeverity.DeathReport"
+          value="Claim.DeathReport"/>
+        <Input
+          editable="true"
+          id="DateOfDeath"
+          label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateOfDeath"
+          required="Claim.claimant.ClaimantFatalityExt == true"
+          value="Claim.claimant.DateOfDeathExt"
+          visible="true//Claim.claimant.ClaimantFatalityExt == true || Claim.DeathReport == true">
+          <Reflect
+            custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (window.VALUE1 == &quot;true&quot; || window.VALUE2 == &quot;true&quot; ) ? &quot;&quot; : &quot;none&quot;; window.REFLECTOR.parentNode.parentNode.className= VALUE1==&quot;true&quot; ? &quot;required&quot; : &quot;&quot;;"
+            triggerIds="DeathIndicator,IllnessDeathIndicator,DateOfDeath"
+            value="VALUE1 != true and VALUE2 != true ? null : VALUE3"/>
+        </Input>
+      </InputSet>
+      <InputDivider/>
+      <Label
+        label="&quot;Injury Details&quot;"/>
+      <BooleanRadioInput
+        editable="true"
+        id="Claim_EmploymentInjury"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.EmploymentInjury"
+        value="Claim.EmploymentInjury"/>
+      <BooleanRadioInput
+        editable="true"
+        id="UnableToWorkFullDay"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.UnableToWorkFullDay"
+        labelStyleClass="label_wrap"
+        value="Claim.EmploymentData.NoWorkFullDayAfterExt"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Claim_DateReportedtoEmployer"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateReportedtoEmployer"
+        requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+        value="Claim.DateRptdToEmployer"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="ClaimFormGiven"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.ClaimFormGiven"
+        labelStyleClass="label_wrap"
+        value="Claim.DateFormGivenToEmp"/>
+      <TextInput
+        editable="true"
+        id="Claim_EquipmentUsed"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.EquipmentUsed"
+        maxChars="40"
+        value="Claim.EquipmentUsed"/>
+      <TextInput
+        editable="true"
+        id="Claim_ActivityPerformed"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.ActivityPerformed"
+        maxChars="40"
+        value="Claim.ActivityPerformed"/>
+      <BooleanDropdownInput
+        editable="true"
+        id="DrugTest"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DrugTest"
+        value="Claim.DrugTestExt"/>
+      <TypeKeyInput
+        editable="true"
+        id="Claim_LossCause"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.InjuryIllnessCause"
+        required="!Claim.IncidentReport"
+        value="Claim.LossCause"
+        valueWidth="200"/>
+      <TypeKeyInput
+        editable="true"
+        filter="Claim.UIHelper.LossDetailsHelper.filterWCDetailCauseOfInjuryList(VALUE as java.lang.String)"
+        id="Claim_AccidentType"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.AccidentType"
+        required="!Claim.IncidentReport"
+        value="Claim.ex_DetailLossCause"
+        valueWidth="200"/>
+      <TypeKeyInput
+        editable="true"
+        id="Claim_PrimaryInjury"
+        label="&quot;Nature of Injury&quot;//displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.PrimaryInjury"
+        required="!Claim.IncidentReport"
+        value="Claim.ensureClaimInjuryIncident().GeneralInjuryType"
+        valueWidth="200"/>
+      <TypeKeyInput
+        editable="true"
+        id="Claim_DetailedInjury"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.DetailedInjury"
+        required="!Claim.IncidentReport"
+        value="Claim.ensureClaimInjuryIncident().DetailedInjuryType"
+        valueWidth="200"/>
+      <RangeInput
+        editable="true"
+        id="TypeOfLoss"
+        label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.TypeOfLoss"
+        required="false"
+        sortValueRange="false"
+        value="Claim.TypeOfLossMostExt"
+        valueRange="util.WCHelper.getTOLValues(Claim)"
+        valueWidth="250"/>
+      <RangeInput
+        editable="true"
+        id="LossCauseDetail2"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.LossCauseDetail2"
+        required="false"
+        value="Claim.DetailLossCause2Ext"
+        valueRange="LossCauseDetails.TF_WORKCOMPFILTER.TypeKeys"/>
+      <TypeKeyInput
+        editable="true"
+        id="ClaimType"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Details.claimType"
+        required="false"
+        value="Claim.ClaimTypeExt"/>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Notification_ReportedDate"
+        label="&quot;Date Reported To Insurer&quot; //displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.ReportedDate"
+        required="true"
+        timeFormat="short"
+        validationExpression="Claim.ReportedDate == null ? null : gw.api.util.DateUtil.compareIgnoreTime(Claim.ReportedDate, util.DateUtil.currentDate())&gt; 0 ? displaykey.Java.Validation.Date.ForbidFuture : (Claim.reportedDateLessThanDOL())"
+        value="Claim.ReportedDate"/>
+      <BooleanRadioInput
+        editable="true"
+        id="Notification_FirstNoticeSuit"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.FirstNoticeSuit"
+        value="Claim.FirstNoticeSuit"/>
+      <Input
+        editable="true"
+        id="Notification_HowReported"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.HowReported"
+        value="Claim.HowReported"/>
+      <BooleanRadioInput
+        editable="true"
+        id="Status_IncidentReport"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Status.IncidentReport"
+        onChange="util.WCHelper.resetNewClaimLossDetailsFields(Claim);clearBodyParts();"
+        postOnChange="true"
+        required="true"
+        value="Claim.IncidentReport"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Notification_DateReportedToAgent"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.Notification.DateReportedToAgent"
+        requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+        timeFormat="short"
+        value="Claim.DateRptdToAgent"/>
+      <!-- <InputDivider/> -->
+      <!-- 10/10/06 Equine Sprint 2 sdalal -->
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossLocation"/>
+      <InputSetRef
+        def="AddressInputSet(Claim.AddressOwner)"
+        mode="Claim.AddressOwner.InputSetMode"/>
+      <InputDivider/>
+      <TypeKeyInput
+        editable="true"
+        id="EmployerType"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmployerType"
+        value="Claim.EmployerTypeExt"/>
+      <Input
+        editable="true"
+        id="EmployerTypeDetail"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmployerDetail"
+        required="Claim.EmployerTypeExt == EmployerType.TC_OTHERGOVT"
+        value="Claim.EmployerDetailExt"
+        visible="true//Claim.EmployerTypeExt == EmployerType.TC_OTHERGOVT">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (VALUE == &quot;othergovt&quot;) ? &quot;&quot; : &quot;none&quot;;"
+          triggerIds="EmployerType">
+          <ReflectCondition
+            condition="VALUE != EmployerType.TC_OTHERGOVT"
+            value="null"/>
+        </Reflect>
+      </Input>
+      <Input
+        editable="true"
+        id="EmployersPremises"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.InsuredPremises"
+        value="Claim.InsuredPremises"/>
+      <RangeInput
+        editable="true"
+        id="JurisdictionState"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.JurisdictionState"
+        onChange="//if(Claim.JurisdictionState==&quot;MI&quot;){Claim.ManagedCareOrgTypeExt=null}else{}"
+        postOnChange="true"
+        required="!Claim.IncidentReport"
+        value="Claim.JurisdictionState"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(&quot;US&quot;).where(\t -&gt; t.Code != &quot;GU&quot;) "/>
+      <TextInput
+        editable="true"
+        id="LegacyClaimNumber"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.LegacyClaim"
+        numCols="25"
+        value="Claim.LegacyClaimNumExt"/>
+      <RangeInput
+        editable="true"
+        id="ManagedCareOrgType"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.MCOType"
+        required="false"
+        value="Claim.ManagedCareOrgTypeExt"
+        valueRange="util.WCHelper.getManagedCareOrgTypeExtList(Claim.JurisdictionState)"
+        valueWidth="220"/>
+      <InputDivider/>
+      <InputSetRef
+        def="CLEEInputSet(Claim)"/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData"/>
+      <Input
+        editable="true"
+        id="EmploymentData_Occupation"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.EmploymentData.Occupation"
+        value="Claim.claimant.Occupation"/>
+      <Input
+        id="EmploymentData_ClassCode"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.ClassCode"
+        value="Claim.getClassCodeWithSuffix(Claim.CoverageSelectedExt)"/>
+      <TextAreaInput
+        editable="true"
+        id="EmploymentData_DepartmentCode"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DepartmentCode"
+        maxChars="40"
+        numCols="20"
+        numRows="2"
+        validationExpression="validateDepartmentLength(Claim.EmploymentData.DepartmentCode)"
+        value="Claim.EmploymentData.DepartmentCode"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="EmploymentData_HireDate"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.HireDate"
+        validationExpression="Claim.EmploymentData.HireDate == null || Claim.EmploymentData.HireDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Claim.EmploymentData.HireDate"/>
+      <Input
+        editable="true"
+        id="EmploymentData_HireState"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.HireState"
+        value="Claim.EmploymentData.HireState"/>
+      <RangeInput
+        editable="true"
+        id="EmploymentData_EmploymentStatus"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.EmploymentStatus"
+        numCols="50"
+        value="Claim.EmploymentData.EmploymentStatus"
+        valueRange="typekey.EmploymentStatusType.getTypeKeys(false).where(\ e -&gt; e.hasCategory(Claim.LossType))"
+        valueWidth="200"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="EmploymentStatusEffective"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.StatusEffectiveDate"
+        labelStyleClass="label_wrap"
+        validationExpression="Claim.EmploymentData.EmployStatusDateExt == null || Claim.EmploymentData.EmployStatusDateExt &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Claim.EmploymentData.EmployStatusDateExt"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="true"
+        id="EmploymentData_SupervisorPicker"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+        newContactMenu="ClaimPersonPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Claim.supervisor"
+        valueRange="Claim.RelatedPersonArray"
+        visible="Claim.Policy.Verified and !util.WCHelper.isWCorELLossType(Claim)"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="true"
+        id="EmploymentData_SupervisorPicker_unverified"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+        newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Claim.supervisor"
+        valueRange="Claim.RelatedPersonArray"
+        visible="!Claim.Policy.Verified and !util.WCHelper.isWCorELLossType(Claim)"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="true"
+        id="EmploymentData_InjWorkerSupervisorPicker"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+        newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Claim.injworkersuper"
+        valueRange="Claim.RelatedPersonArray"
+        visible="!Claim.Policy.Verified and util.WCHelper.isWCorELLossType(Claim)"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="true"
+        id="EmploymentData_InjWorkerSupervisorPicker"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+        newContactMenu="ClaimPersonPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Claim.injworkersuper"
+        valueRange="Claim.RelatedPersonArray"
+        visible="Claim.Policy.Verified and util.WCHelper.isWCorELLossType(Claim)"/>
+      <BooleanRadioInput
+        editable="true"
+        id="ChildSupportOrder"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ChildSupportOrder"
+        value="Claim.claimant.ChildSupportOrderExt"/>
+      <BooleanRadioInput
+        editable="true"
+        id="DisciplinaryAction"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DisciplinaryAction"
+        labelStyleClass="label_wrap"
+        value="Claim.InjuredWorker.DisciplinaryActionExt"/>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableBodyPartDetailsLV(Claim.ensureClaimInjuryIncident(), false)"
+        editable="true"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.BodyPartDetails"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+          <!-- <CheckedValuesToolbarButton
+            checkedRowAction="Claim.ensureClaimInjuryIncident().FirstBodyPart = BodyPartDetails"
+            flags="one NotFirstBP"
+            hideIfReadOnly="true"
+            id="MakeFirstButton"
+            iterator="EditableBodyPartDetailsLV"
+            label="displaykey.LV.Incident.Injury.BodyPartDetails.MakeFirstButton"
+            showConfirmMessage="false"
+            tooltip="displaykey.LV.Incident.Injury.BodyPartDetails.MakeFirstButton.Tooltip"/> -->
+        </Toolbar>
+      </ListViewInput>
+      <Label
+        label="&quot;Treatment&quot;"/>
+      <InputDivider/>
+      <BooleanRadioInput
+        editable="Claim.IncidentReport == false"
+        id="InjurySeverity_MedicalReport"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.InjurySeverity.MedicalReport"
+        onChange="util.WCHelper.resetNewClaimLossDetailsFields(Claim)"
+        required="true"
+        value="Claim.MedicalReport"
+        visible="!isELClaim"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_FirstIntakeDoctor"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.FirstIntakeDoctor"
+        newContactMenu="ClaimNewDoctorForeignVendorDoctorPickerMenuItemSet"
+        value="Claim.FirstIntakeDoctor"
+        valueRange="Claim.getDoctorContacts()"
+        visible="Claim.Policy.Verified// Claim.MedicalReport==true &amp;&amp; Claim.Policy.Verified">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </ClaimContactInput>
+      <ClaimContactInput
+        claim="Claim"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_FirstIntakeDoctor_Unverified"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.FirstIntakeDoctor"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        value="Claim.FirstIntakeDoctor"
+        valueRange="Claim.getDoctorContacts()"
+        visible="!Claim.Policy.Verified//Claim.MedicalReport==true &amp;&amp; !Claim.Policy.Verified">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </ClaimContactInput>
+      <DateInput
+        dateFormat="short"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_ExaminationDate"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.ExaminationDate"
+        value="Claim.ExaminationDate"
+        visible="true//Claim.MedicalReport==true">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </DateInput>
+      <RangeInput
+        editable="Claim.IncidentReport == false"
+        id="MedCase_MedicalTreatment"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.MedicalTreatment"
+        value="Claim.TreatmentTypeExt"
+        valueRange="typekey.TreatmentTypeExt.getTypeKeys(false)"
+        visible="true//Claim.MedicalReport==true">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </RangeInput>
+      <BooleanRadioInput
+        editable="Claim.IncidentReport == false"
+        id="PhysicalRestrictions"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.PhysicalRestrictions"
+        value="Claim.EmploymentData.PhysRestrictionsExt"/>
+      <BooleanRadioInput
+        editable="Claim.IncidentReport == false"
+        id="EmergencyRoomTreatment"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.EmergencyRoom"
+        labelStyleClass="label_wrap"
+        value="Claim.EmergencyRoomTxExt"/>
+      <BooleanRadioInput
+        editable="Claim.IncidentReport == false"
+        id="HospitalizedOvernight"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.HospitalizedOvernight"
+        required="false"
+        value="Claim.HospitalOvernightExt"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_Hospital"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.Hospital"
+        newContactMenu="ClaimNewVendorForeignVendorPickerMenuItemSet"
+        value="Claim.firstintakehospital"
+        valueRange="Claim.getHospitalContacts()"
+        visible="Claim.Policy.Verified//Claim.MedicalReport==true &amp;&amp; Claim.Policy.Verified">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </ClaimContactInput>
+      <ClaimContactInput
+        claim="Claim"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_Hospital_Unverified"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.Hospital"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        value="Claim.firstintakehospital"
+        valueRange="Claim.getHospitalContacts()"
+        visible="!Claim.Policy.Verified//Claim.MedicalReport==true &amp;&amp; !Claim.Policy.Verified">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </ClaimContactInput>
+      <DateInput
+        dateFormat="short"
+        editable="Claim.IncidentReport == false"
+        id="MedCase_HospitalDate"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.HospitalDate"
+        value="Claim.HospitalDate"
+        visible="true//Claim.MedicalReport==true">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </DateInput>
+      <Input
+        editable="Claim.IncidentReport == false"
+        id="MedCase_HospitalDays"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.HospitalDays"
+        value="Claim.HospitalDays"
+        visible="true//Claim.MedicalReport==true">
+        <Reflect
+          custom="javascript: window.REFLECTOR.parentNode.parentNode.style.display= (window.VALUE == &quot;false&quot;) ? &quot;none&quot; : &quot;&quot;"
+          triggerIds="InjurySeverity_MedicalReport">
+          <ReflectCondition
+            condition="VALUE == false or VALUE == null"
+            value="null"/>
+        </Reflect>
+      </Input>
+      <InputDivider/>
+      <Label
+        label="&quot;Lost Time&quot;"/>
+      <BooleanRadioInput
+        editable="Claim.IncidentReport == false"
+        id="InjurySeverity_TimeLossReport"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.InjurySeverity.TimeLossReport"
+        onChange="util.WCHelper.resetNewClaimLossDetailsFields(Claim)"
+        onPick="NewWorkStatusPopup.push(Claim.EmploymentData, true)"
+        postOnChange="true"
+        required="true"
+        value="Claim.TimeLossReport"
+        visible="!isELClaim"/>
+      <ListViewInput
+        def="EditableWorkStatusChangesLV(Claim.EmploymentData, false)"
+        label="displaykey.Web.Claim.LostWagesSummaryDV.WorkStatus"
+        labelAbove="true"
+        visible="Claim.TimeLossReport == true &amp;&amp; Claim.IncidentReport != true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+uses gw.api.util.DateUtil
+
+// 3/3/14 - kniese - added for defect 6413
+function setDeductible(){
+ if(!claim.WindHurricaneDedTriExt)
+   claim.WindHurricaneDedAmtExt = null 
+}
+
+// WC Config: This function returns an empty EmploymentData object in order to allow Work Status changes 
+// in the Lost Time section. The EditableWorkStatusChangesLV requires a non-null EmploymentData object
+// in order to add/create Work Status changes.
+
+function setEmploymentData(clm : Claim) : EmploymentData {
+  if(clm.EmploymentData == null){
+    clm.EmploymentData = new EmploymentData()
+  }
+  return clm.EmploymentData
+}
+
+property get ContactProhibited() : boolean {
+  return Claim.getClaimContact(Claim.InjuredWorker).ContactProhibited
+}
+property set ContactProhibited(prohibited : boolean) {
+  var claimContact = Claim.getClaimContact(Claim.InjuredWorker)
+  if (claimContact != null) claimContact.ContactProhibited = prohibited
+}
+
+function validateDepartmentLength(str : String){
+  if(str.length > 40){
+    throw new UserDisplayableException("Department Code must be less than 40 characters.")
+  }
+}
+
+/*8.10.15 - cmullin - per updated requirements, Line of Business field on LossDetailsDV.WC and NewClaimLossDetailsDV.WC
+should no longer display the "WC" or "Employer's Liability" part of the LOBCode.Description.
+*/
+function displayString(str : String) : String{
+  var result : String = ""
+  var len = str.length()
+    if(isELClaim){
+      result = str.substring(0,len-21)
+    }else{
+      result = str.substring(0,len-3)
+    }
+    return result
+}
+
+function setSpecialClaimHandling(){
+  if(Claim.SpecClaimHandlingExt==null){
+    Claim.SpecClaimHandlingExt = Claim.Policy.SpecialClmHandlingExt
+  }
+}
+
+function formatNew(val : String) : String{
+  if(val.equals("New...")){
+    return null
+  }else{
+    return Claim.CLEEExt.CodeExt
+  }
+}
+
+function clearBodyParts(){
+  // Clear all Body Parts when switch to incident only
+  if (Claim.IncidentReport){
+    for (bodyPart in Claim.ensureClaimInjuryIncident().BodyParts){
+      Claim.ensureClaimInjuryIncident().removeFromBodyParts(bodyPart)
+    }
+  }
+  // Ensure at least one Body Part 
+  if (!Claim.IncidentReport and Claim.ensureClaimInjuryIncident().BodyParts.IsEmpty){
+    Claim.ensureClaimInjuryIncident().newBodyPart()
+  }
+}]]></Code>
+    <!-- <ListViewInput
+      boldLabel="true"
+      def="MetroReportsLV(Claim)"
+      editable="true"
+      id="MetroReports"
+      label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.MatroReports"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons
+          addLabel="displaykey.Button.Metro.New"
+          removeFlags="any RemovableMetroReport, no NotRemovableMetroReport"/>
+      </Toolbar>
+    </ListViewInput> -->
+  </DetailViewPanel>
+</PCF>

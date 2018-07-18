@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="Claim.ExposureListChangeable and perm.Claim.view(Claim) and perm.System.viewexposures"
+    id="ClaimExposures"
+    title="displaykey.Web.Claim.ClaimExposures">
+    <LocationEntryPoint
+      signature="ClaimExposures(Claim : Claim)"/>
+    <Variable
+      initialValue="new exposure.ClaimExposuresHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="&quot;ExposuresLV&quot;"
+      name="PrintTargetLV"/>
+    <Variable
+      initialValue="createPrintSettings()"
+      name="PrintSettings"
+      type="print.PrintSettings"/>
+    <Variable
+      initialValue="displaykey.Web.PrintOut.ClaimNumber(Claim.ClaimNumber)"
+      name="PrintClaimNumber"
+      type="String"/>
+    <Screen
+      id="ClaimExposuresScreen">
+      <Toolbar>
+        <ToolbarDivider/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignExposuresPopup.push(new exposure.ExposureAssignmentPopup(CheckedValues))"
+          flags="all CanAssignExposure"
+          id="ClaimExposures_Assign"
+          iterator="ExposuresLV"
+          label="displaykey.Web.ClaimExposuresLV.Assign"
+          shortcut="G"
+          visible="perm.Exposure.genericassign"/>
+        <ToolbarButton
+          action="null"
+          id="ClaimExposures_Refresh"
+          label="displaykey.Web.ClaimExposuresLV.Refresh"
+          shortcut="F"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="CloseExposurePopup.push(CheckedValues[0])"
+          flags="one CanCloseExposure"
+          id="ClaimExposures_CloseExposure"
+          iterator="ExposuresLV"
+          label="displaykey.Web.ClaimExposuresLV.CloseExposure"
+          shortcut="P"
+          visible="perm.Claim.closeexposure(Claim)"/>
+        <!-- <CheckedValuesToolbarButton
+          allCheckedRowsAction="NewReserveSet.go(Claim, CheckedValues[0], true)"
+          flags="one CanCreateReserve"
+          id="ClaimExposures_CreateReserve"
+          iterator="ExposuresLV"
+          label="displaykey.Web.ClaimExposuresLV.CreateReserve"
+          shortcut="S"
+          visible="perm.Claim.createreserve(Claim)"/> -->
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV, PrintSettings)"
+          available="perm.User.printlistviews and perm.Claim.print(Claim)"
+          id="ClaimExposures_Print"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="ExposuresLV(Claim, PageHelper, Claim.Exposures)"/>
+    </Screen>
+    <Code><![CDATA[
+function createPrintSettings() : print.PrintSettings {
+      var newPrintSettings = new print.PrintSettings();
+      var claimNumberLabel = displaykey.Web.PrintOut.ClaimNumber(Claim.ClaimNumber);
+      newPrintSettings.setHeaderLabel(claimNumberLabel);
+      return newPrintSettings;
+      }
+    ]]></Code>
+  </Page>
+</PCF>

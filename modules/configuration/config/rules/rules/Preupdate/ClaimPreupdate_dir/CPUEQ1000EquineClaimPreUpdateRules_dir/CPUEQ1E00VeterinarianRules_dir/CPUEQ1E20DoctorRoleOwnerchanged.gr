@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1E00VeterinarianRules_dir
+
+@gw.rules.RuleName("CPUEQ1E20 - Doctor Role Owner changed")
+internal class CPUEQ1E20DoctorRoleOwnerchanged {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(doc in claim.getRelatedContacts( Doctor ) where 
+(doc.Doctor.DoctorSpecialty == "veterinarian" or doc.Doctor.getOriginalValue( "DoctorSpecialty" ) == "veterinarian") and
+exists(role in claim.getClaimContact( doc ).Roles where role.Changed and
+(role.ChangedFields.contains("Incident")))) or
+exists(mco in claim.getRelatedContacts( MedicalCareOrg ) where 
+(mco.MedicalCareOrg.MedicalOrgSpecialty == "veterinarian" or mco.MedicalCareOrg.getOriginalValue( "MedicalOrgSpecialty" ) == "veterinarian") and
+exists(role in claim.getClaimContact( mco ).Roles where role.Changed and
+(role.ChangedFields.contains("Incident"))))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.doctorRoleOwnerChanged()
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}
+/*end00rule*/
+  }
+}

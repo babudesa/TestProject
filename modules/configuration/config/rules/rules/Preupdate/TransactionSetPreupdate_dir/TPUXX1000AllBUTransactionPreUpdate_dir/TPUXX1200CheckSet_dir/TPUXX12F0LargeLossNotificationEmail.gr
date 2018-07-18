@@ -1,0 +1,21 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX12F0 - Large Loss Notification Email")
+internal class TPUXX12F0LargeLossNotificationEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet" and
+((transactionSet as CheckSet).PrimaryCheck).ex_ManualPaymentMethod != ManualPaymentMethod.TC_ADIS and
+!(transactionSet.New and transactionSet.LoadCommandID != null)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transSet = transactionSet as CheckSet
+var checks = transSet.Checks
+
+checks = checks.where(\ c -> c.ex_ManualPaymentMethod != ManualPaymentMethod.TC_ADIS and
+                             !c.Bundle.ReadOnly and transSet.New)  
+for(ch in checks){
+  ch.sendLargeLossNotfication()
+}/*end00rule*/
+  }
+}

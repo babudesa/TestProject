@@ -1,0 +1,34 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir.MPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MPUXX1120 - MatterAssignmentExt Added")
+internal class MPUXX1120MatterAssignmentExtAdded {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("MatterAssignmentsExt")/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var mapper = new libraries.Matter_Entity.AttorneyTypeMapper()
+var originalMatter = matter.OriginalVersion as Matter
+
+//Get the assignments that have been added
+var matterAssignmentsAdded = matter.MatterAssignmentsExt
+                            .subtract(originalMatter.MatterAssignmentsExt)
+
+
+if(matterAssignmentsAdded != null){
+  
+  //for each of the added assignments invoke the role rules
+  foreach(ma in matterAssignmentsAdded){   
+   
+    rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir
+        .MAPUXX1100ManageRoles_dir.MAPUXX1110CounselLawFirmChanged
+        .doAction(ma, actions)
+      
+    rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir
+        .MAPUXX1100ManageRoles_dir.MAPUXX1120LeadCounselChanged
+        .doAction(ma, actions)
+  }
+}
+/*end00rule*/
+  }
+}

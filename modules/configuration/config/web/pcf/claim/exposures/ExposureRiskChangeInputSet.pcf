@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="ExposureRiskChangeInputSet">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="ExposureType"
+      type="String"/>
+    <Variable
+      initialValue="Exposure.Claim.LossType"
+      name="LossType"/>
+    <Variable
+      initialValue="Exposure.Coverage.Subtype"
+      name="CvgSubtype"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;PropertyCoverage&quot; ? !Exposure.ReconnectFailExt ? ((Exposure.Coverage as PropertyCoverage).RiskUnit as LocationBasedRU).Property : ((Exposure.PreviousCoverageExt as PropertyCoverage).RiskUnit as LocationBasedRU).Property : null"
+      name="ExistingProperty"
+      type="PolicyLocation"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;VehicleCoverage&quot; ? !Exposure.ReconnectFailExt ? ((Exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle : ((Exposure.PreviousCoverageExt as VehicleCoverage).RiskUnit as VehicleRU).Vehicle : null"
+      name="ExistingVehicle"
+      type="Vehicle"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;VehicleCoverage&quot; ? !Exposure.ReconnectFailExt ? (Exposure.Coverage as VehicleCoverage).EngineExt : (Exposure.PreviousCoverageExt as VehicleCoverage).EngineExt : null"
+      name="ExistingEngine"
+      type="EngineExt"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;VehicleCoverage&quot; ? !Exposure.ReconnectFailExt ? (Exposure.Coverage as VehicleCoverage).TrailerExt : (Exposure.PreviousCoverageExt as VehicleCoverage).TrailerExt : null"
+      name="ExistingTrailer"
+      type="TrailerExt"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;VehicleCoverage&quot; ? !Exposure.ReconnectFailExt ? (Exposure.Coverage as VehicleCoverage).EngineExt!=null : (Exposure.PreviousCoverageExt as VehicleCoverage).EngineExt!=null : null"
+      name="isEngine"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="CvgSubtype==&quot;VehicleCoverage&quot; ? !Exposure.ReconnectFailExt ? (Exposure.Coverage as VehicleCoverage).TrailerExt!=null : (Exposure.PreviousCoverageExt as VehicleCoverage).TrailerExt!=null : null"
+      name="isTrailer"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      name="featureNum"
+      type="String"/>
+    <Variable
+      initialValue="Exposure.getAssignableCoverages()"
+      name="assignablePolicyCoverages"/>
+    <Variable
+      initialValue="!Exposure.ReconnectFailExt ? Exposure.Coverage.Type.hasCategory(RiskType.TC_POLICY) : Exposure.PrimaryCoverage.hasCategory(RiskType.TC_POLICY)"
+      name="PolicyLevel"
+      type="Boolean"/>
+    <BooleanRadioInput
+      editable="true"
+      falseLabel="&quot;Vehicle-Level&quot;"
+      id="RiskLevelRadioButton"
+      onChange="Exposure.Coverage = null; ExistingVehicle = null"
+      postOnChange="true"
+      trueLabel="&quot;Policy-Level&quot;"
+      value="PolicyLevel"
+      visible="util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) and Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"/>
+    <TextInput
+      editable="Exposure.New"
+      id="ClaimOrder"
+      inputMask="&quot;##-#&quot;"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FeatureNumber"
+      maxChars="4"
+      numCols="4"
+      required="true"
+      value="Exposure.FeatureNumberExt"
+      visible="Exposure.Claim.LossType == typekey.LossType.TC_PERSONALAUTO and Exposure.New and Exposure.Claim.ConvertedClaimIndExt"/>
+    <!-- *********************************************************************
+		All the functions on this page can be found in Exposure extensions in Studio under SwitchRiskFunctions.xml
+		**********************************************************************  PREVIOUS COVERAGE -->
+    <RangeInput
+      id="PrimaryCoverage"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PreviousCoverage"
+      optionLabel="(Exposure.Coverage.Type!= null and Exposure.Coverage.Policy.Verified) ? Exposure.Coverage.covTypeDisplayName() : VALUE.toString()"
+      value="Exposure.PrimaryCoverage"
+      valueRange="Exposure.Coverage != null ? Exposure.Coverage.getCoverages() : new java.util.ArrayList()"
+      valueWidth="250"
+      visible="Exposure.ReconnectFailExt and !Exposure.Changed"/>
+    <!-- POLICY COVERAGES -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      filter="Exposure.filterPolicyCoverages(VALUE)"
+      id="CoverageChoice"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="setRisk(); Exposure.synchVehicleIncidentInUI()"
+      optionLabel="Exposure.getPolicyCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      validationExpression="throwCovError()"
+      value="Exposure.Coverage"
+      valueRange="assignablePolicyCoverages"
+      valueWidth="250"
+      visible="util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) ? PolicyLevel : Exposure.PrimaryCoverage.hasCategory( RiskType.TC_POLICY ) and (!isEngine and !isTrailer)"/>
+    <!-- VEHICLE COVERAGES  Watercrafts/Vehicles -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New and ((Exposure.PrimaryCoverage.hasCategory( RiskType.TC_VEHICLE )) or util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) and !PolicyLevel)"
+      id="WatercraftVeh"
+      label="Exposure.Claim.LossType==&quot;AGRIAUTO&quot; OR Exposure.Claim.LossType==TC_ALTMARKETSAUTO OR Exposure.Claim.LossType==TC_SHSAUTO OR Exposure.Claim.LossType==TC_TRUCKINGAUTO ? displaykey.NVV.Exposure.SubView.Exposure.Reconnect.Vehicle : displaykey.JSP.NewClaimPolicyDetails.Policy.Boats"
+      onChange="Exposure.Coverage=null"
+      postOnChange="true"
+      required="true"
+      value="ExistingVehicle"
+      valueRange="Exposure.getAssignableVehicles()"
+      valueWidth="250"
+      visible="util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) ? !PolicyLevel : (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_VEHICLE )) and !isEngine and !isTrailer"/>
+    <RangeInput
+      available="true"
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      id="VehCvgChoice"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="Exposure.setNewCoverage(Exposure.Coverage, true); Exposure.synchVehicleIncidentInUI();"
+      optionLabel="Exposure.getVehicleCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Coverage"
+      valueRange="Exposure.getAssignableVehicleCoverages(ExistingVehicle)"
+      valueWidth="250"
+      visible="util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) ? !PolicyLevel : (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_VEHICLE )) and !isEngine and !isTrailer"/>
+    <!-- Engines -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New and (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_ENGINE ))"
+      id="ExpEngine"
+      label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Engine.Model"
+      onChange="Exposure.Coverage=null"
+      optionLabel="Exposure.getEngineOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="ExistingEngine"
+      valueRange="Exposure.getAssignableEngines()"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_ENGINE )) || isEngine"/>
+    <RangeInput
+      available="true"
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      id="EngCvgChoice"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="Exposure.setNewCoverage(Exposure.Coverage, true)"
+      optionLabel="Exposure.getEngineCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Coverage"
+      valueRange="Exposure.getAssignableEngineCoverages(ExistingEngine)"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_ENGINE )) || isEngine"/>
+    <!-- Trailers -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New and (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_TRAILER ))"
+      id="ExpTrailer"
+      label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Trailer.Model"
+      onChange="Exposure.Coverage=null"
+      optionLabel="Exposure.getTrailerOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="ExistingTrailer"
+      valueRange="Exposure.getAssignableTrailers()"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_TRAILER )) || isTrailer"/>
+    <RangeInput
+      available="true"
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      id="TrCvgChoice"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="Exposure.setNewCoverage(Exposure.Coverage, true)"
+      optionLabel="Exposure.getTrailerCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Coverage"
+      valueRange="Exposure.getAssignableTrailerCoverages(ExistingTrailer)"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_TRAILER )) || isTrailer"/>
+    <!-- PROPERTY COVERAGES -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New and (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_PROPERTY ))"
+      id="Properties"
+      label="displaykey.NVV.Exposure.SubView.Exposure.Reconnect.Property"
+      onChange="Exposure.Coverage=null"
+      optionLabel="Exposure.getPropOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="ExistingProperty"
+      valueRange="Exposure.getAssignableProperties()"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_PROPERTY ))"/>
+    <RangeInput
+      available="true"
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      id="PropCvgChoice"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="Exposure.setNewCoverage(Exposure.Coverage, true)"
+      optionLabel="Exposure.getPropertyCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Coverage"
+      valueRange="Exposure.getAssignablePropertyCoverages(ExistingProperty)"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_PROPERTY ))"/>
+    <!-- VEHICLE COVERAGES  Equipment -->
+    <RangeInput
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New and (Exposure.PrimaryCoverage.hasCategory( RiskType.TC_EQUIPMENT ))"
+      id="ItemRangeInput"
+      label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Item.Model"
+      onChange="Exposure.Coverage=null"
+      postOnChange="true"
+      required="true"
+      value="ExistingVehicle"
+      valueRange="Exposure.getAssignableVehicles()"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_EQUIPMENT )) and !isEngine and !isTrailer"/>
+    <RangeInput
+      available="true"
+      editable="Exposure.Claim.State!=&quot;draft&quot; and !Exposure.New"
+      id="ItemCvgRangeInput"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+      onChange="Exposure.setNewCoverage(Exposure.Coverage, true); Exposure.synchVehicleIncidentInUI();"
+      optionLabel="Exposure.getVehicleCvgOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Coverage"
+      valueRange="Exposure.getAssignableVehicleCoverages(ExistingVehicle)"
+      valueWidth="250"
+      visible="(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_EQUIPMENT )) and !isEngine and !isTrailer"/>
+    <Code><![CDATA[function setRisk(){
+  Exposure.setNewCoverage(Exposure.Coverage, true);
+  if(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_VEHICLE )){
+    ExistingVehicle = Vehicle(Exposure.getRiskPublicID(Exposure.PrimaryCoverage))
+  } else if(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_ENGINE )){
+    ExistingEngine = EngineExt(Exposure.getRiskPublicID(Exposure.PrimaryCoverage))
+  } else if(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_TRAILER )){
+    ExistingTrailer = TrailerExt(Exposure.getRiskPublicID(Exposure.PrimaryCoverage))
+  } else if(Exposure.PrimaryCoverage.hasCategory( RiskType.TC_PROPERTY )){
+    ExistingProperty = PolicyLocation(Exposure.getRiskPublicID(Exposure.PrimaryCoverage))
+  }
+}
+
+function throwCovError() :String {
+  var error : String
+  var exposures = Exposure.Claim.Exposures
+  
+      if(exists(exp in exposures where exp.Coverage.ClaimsMadeIndicatorExt != Exposure.Coverage.ClaimsMadeIndicatorExt and !exp.ReconnectFailExt)){
+      error = displaykey.new.exposure.NewExpCvgDetailsPanelSet.exposuretype.select.CovError
+      }
+      else{error = null
+      }
+      return error
+}]]></Code>
+  </InputSet>
+</PCF>

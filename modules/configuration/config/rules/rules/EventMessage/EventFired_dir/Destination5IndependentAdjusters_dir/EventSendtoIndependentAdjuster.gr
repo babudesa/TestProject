@@ -1,0 +1,44 @@
+package rules.EventMessage.EventFired_dir.Destination5IndependentAdjusters_dir
+
+@gw.rules.RuleName("Event Send to Independent Adjuster")
+internal class EventSendtoIndependentAdjuster {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*///Sends information to the independent adjuster and creates a note on the claim.
+//Updated: 2/18/10 sprzygocki - updated the note condition
+//EDIT THE MESSAGES WITH CAUTION, NOTE GENERATION DEPENDS ON THEM BEING THE SAME
+messageContext.EventName == "send_to_ia" &&
+(messageContext.Root typeis Claim && 
+ !gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.LoadCommandID))/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses com.gaic.integration.cc.gscript.independentadjusters.IndependentAdjusterFactory;
+uses com.gaic.integration.cc.gscript.independentadjusters.IndependentAdjuster;
+
+if (messageContext.Root typeis Claim) {
+  var msgClaim = messageContext.Root;
+  
+  var iaArray : IndepAdjusterExt[] = msgClaim.IndepAdjustersExt;
+  
+  if (iaArray == null || iaArray[0] == null) {
+    throw "Missing independent adjuster information";
+  }
+  for(iaArrayElement in iaArray){
+    if(iaArrayElement.ReadyToSend and !iaArrayElement.SentToECF){
+      iaArrayElement.SentToECF = true;
+      
+      var iaName : String = iaArrayElement.AdjusterName.Code.toUpperCase();
+      
+      var ia : IndependentAdjuster = IndependentAdjusterFactory.createIndependentAdjuster( iaName );
+      ia.transform(msgClaim);
+      
+      var message = messageContext.createMessage(ia.getXMLString());
+      message.putEntityByName("theClaim", msgClaim);
+      
+//    iaArrayElement.addIAClaimNote();
+    }
+  }
+} 
+/*end00rule*/
+  }
+}

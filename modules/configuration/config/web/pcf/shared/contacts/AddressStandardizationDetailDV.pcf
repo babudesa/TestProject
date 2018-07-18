@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="true"
+    id="AddressStandardizationDetailDV">
+    <Require
+      name="inputtedAddress"
+      type="Address"/>
+    <Variable
+      initialValue="inputtedAddress.AddressLine1 != null ? inputtedAddress.standardizeAnAddress(inputtedAddress) : null"
+      name="standardizeAddress"
+      type="util.custom_Ext.StandardizeAddress"/>
+    <Variable
+      initialValue="standardizeAddress.StandardizedAddresses.length == 1 ? standardizeAddress.StandardizedAddresses[0] : null"
+      name="stdAddress"
+      type="Address"/>
+    <InputColumn>
+      <!-- Inputted address -->
+      <Label
+        label="displaykey.Web.StandardizationDetail.EnteredAddress"/>
+      <Input
+        id="AddressLine1"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine1"
+        value="inputtedAddress.AddressLine1"/>
+      <Input
+        id="AddressLine2"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine2"
+        value="inputtedAddress.AddressLine2"/>
+      <Input
+        id="City"
+        label="displaykey.Web.ContactDetail.AddressDetail.City"
+        value="inputtedAddress.City"/>
+      <TypeKeyInput
+        id="State"
+        label="displaykey.Web.ContactDetail.AddressDetail.State"
+        value="inputtedAddress.State"/>
+      <TextInput
+        id="PostalCode"
+        inputMask="util.custom_Ext.finders.getPostCodeMask(inputtedAddress.Country.toString())"
+        label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+        value="inputtedAddress.PostalCode"/>
+      <Input
+        id="County"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        value="inputtedAddress.County"/>
+      <!-- 7/28/10 erawe Task to add Longitude and Latitude to Loss Details screen
+        and require if loss cause is sinkholecollapse and at ability to pay validation level
+        8/31/10 but I will make the editable false on this screen -->
+      <Input
+        id="StandardLatitude"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Latitude"
+        required="false"
+        value="inputtedAddress.Latitude"/>
+      <Input
+        id="StandardLongitude"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Longitude"
+        required="false"
+        value="inputtedAddress.Longitude"/>
+      <ButtonInput
+        action="CurrentLocation.commit()"
+        id="UseOriginalAddressButton"
+        value="displaykey.Web.ContactDetail.AddressStandardization.UseOriginalButtonText"
+        visible="true"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- Validation result address -->
+      <Label
+        label="displaykey.Web.StandardizationDetail.StandardizedAddress"/>
+      <!-- Sprint 11 slp 2/7/08 - Depending on how many addresses are returned, a different range input is shown
+      		Addys_Zero shown if no addresses are returned - displays "No Addresses Found" in drop down
+      		Addys_One shown if one address is returned - displays the address in the drop down and defaults standard address to this
+      		Addys_More shown if two or more addresses are returned - displays "No Address Selected" in drop down first -->
+      <RangeInput
+        editable="true"
+        id="Addys_Zero"
+        noneSelectedLabel="displaykey.Web.ContactDetail.AddressDetail.NoAddressesNote"
+        postOnChange="true"
+        value="stdAddress"
+        valueRange="standardizeAddress.StandardizedAddresses"
+        visible="standardizeAddress.StandardizedAddresses.length == 0"/>
+      <RangeInput
+        editable="true"
+        id="Addys_One"
+        postOnChange="true"
+        showNoneSelected="false"
+        value="stdAddress"
+        valueRange="standardizeAddress.StandardizedAddresses"
+        visible="standardizeAddress.StandardizedAddresses.length == 1"/>
+      <RangeInput
+        editable="true"
+        id="Addys_More"
+        noneSelectedLabel="displaykey.Web.ContactDetail.AddressDetail.NoAddressSelected"
+        postOnChange="true"
+        value="stdAddress"
+        valueRange="standardizeAddress.StandardizedAddresses"
+        visible="standardizeAddress.StandardizedAddresses.length &gt; 1"/>
+      <!-- Sprint 11 slp 2/7/08 - Reflects removed from each input as they would not work with using more than one range input above -->
+      <Input
+        id="AddressLine1S"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine1"
+        value="stdAddress.AddressLine1"/>
+      <Input
+        id="AddressLine2S"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine2"
+        value="stdAddress.AddressLine2"/>
+      <Input
+        id="CityS"
+        label="displaykey.Web.ContactDetail.AddressDetail.City"
+        value="stdAddress.City"/>
+      <TypeKeyInput
+        id="StateS"
+        label="displaykey.Web.ContactDetail.AddressDetail.State"
+        value="stdAddress.State"/>
+      <Input
+        id="PostalCodeS"
+        label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+        value="stdAddress.PostalCode"/>
+      <Input
+        id="CountyS"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        value="stdAddress.County"/>
+      <!-- 7/28/10 erawe Task to add Longitude and Latitude to Loss Details screen
+        and require if loss cause is sinkholecollapse and at ability to pay validation level 
+        8/31/10 but I will make the editable false on this screen -->
+      <Input
+        id="StandardizeLatitude"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Latitude"
+        required="false"
+        value="stdAddress.Latitude"/>
+      <Input
+        id="StandardizeLongitude"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Longitude"
+        required="false"
+        value="stdAddress.Longitude"/>
+      <ButtonInput
+        action="keepStandardized()"
+        available="standardizeAddress.StandardizedAddresses.length &gt; 0 and stdAddress != null"
+        id="UseStandardizedAddressButton"
+        value="displaykey.Web.ContactDetail.AddressStandardization.UseStandardizedButtonText"
+        visible="true"/>
+    </InputColumn>
+    <InputFooterSection>
+      <Label
+        id="StandardizationErrorMessage"
+        label="standardizeAddress.StandardizeAddressReturnCode"/>
+    </InputFooterSection>
+    <Code><![CDATA[function keepStandardized()
+{
+  inputtedAddress.AddressLine1 = stdAddress.AddressLine1;
+  inputtedAddress.AddressLine2 = stdAddress.AddressLine2;
+  inputtedAddress.City = stdAddress.City;
+  inputtedAddress.State = stdAddress.State; 
+  inputtedAddress.PostalCode = stdAddress.PostalCode;
+  inputtedAddress.County  = stdAddress.County;
+  inputtedAddress.Latitude = stdAddress.Latitude;
+  inputtedAddress.Longitude = stdAddress.Longitude;
+  inputtedAddress.StandardizedExt = true;
+  CurrentLocation.commit();
+}
+function sortAddy(Addresses2 : Address[]) : List{
+  var l = new java.util.ArrayList();
+  for(addy1 in Addresses2){
+    if(addy1.DisplayName != "(Newly Created)"){
+      l.add(addy1)
+    }
+  }
+  return l;
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

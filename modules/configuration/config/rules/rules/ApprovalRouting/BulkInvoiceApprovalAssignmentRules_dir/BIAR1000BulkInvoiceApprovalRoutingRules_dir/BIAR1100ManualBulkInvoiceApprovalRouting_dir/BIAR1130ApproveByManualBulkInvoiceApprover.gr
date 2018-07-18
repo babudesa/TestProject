@@ -1,0 +1,74 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1100ManualBulkInvoiceApprovalRouting_dir
+
+@gw.rules.RuleName("BIAR1130 - Approve By Manual Bulk Invoice Approver")
+internal class BIAR1130ApproveByManualBulkInvoiceApprover {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/util.user.GroupsHelper.isClaimManager(bulkInvoice.LastApprovingUser) &&
+(bulkInvoice.LastApprovingUser != util.user.SCOHelper.ManualBulkInvoiceApproverUser &&
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser)
+/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.util.Logger
+
+try{
+    var user: User = util.user.SCOHelper.ManualBulkInvoiceApproverUser
+    var authorityLimits = bulkInvoice.LastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+    var approvalHistory : List<Activity> = null
+    var currentApprovalAssignedToUser : User = null
+    
+    if(util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice).Count > 0) {      
+      approvalHistory = util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice)      
+      currentApprovalAssignedToUser = util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory)
+    }
+    
+    if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+        
+      if(currentApprovalAssignedToUser == util.user.SCOHelper.ManualBulkInvoiceApproverUser ||
+         currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsOneUser ||
+         currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsTwoUser) {
+         
+         var nextApprovingUser = currentApprovalAssignedToUser
+         var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+         bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+      }else{
+        var group : Group = util.user.GroupsHelper.getUsersGroup(user)
+        bulkInvoice.setApprovingUser(user, group)
+      }
+        var body = templates.email.BulkInvoiceApproval.renderToString(bulkInvoice)    
+        var environmentInformation : String = util.custom_Ext.finders.getEnvironment()
+        //print(user.Contact.EmailAddress1)
+        //print(ScriptParameters.ClaimCenterProdEmail)
+        if(java.lang.System.getProperty( "gw.cc.env" ) == "prod") {
+
+      	    Logger.logDebug("Sending Bulk Invoice Approval Email - Production")
+            gw.api.email.EmailUtil.sendEmailWithBody(null, 
+              user.Contact.EmailAddress1, user.Contact.DisplayName, 
+              ScriptParameters.ClaimCenterProdEmail, "ClaimCenter Notification", 
+              "Bulk Invoice Activity Approval Notification", body)
+         } else {
+
+      	    Logger.logDebug("Sending Bulk Invoice Approval Email - Local, Development")
+            gw.api.email.EmailUtil.sendEmailWithBody(null, 
+              ScriptParameters.ClaimCenterDevEmail, user.Contact.DisplayName, 
+              ScriptParameters.ClaimCenterDevEmail, environmentInformation, 
+              "Bulk Invoice Activity Approval Notification", body)
+         }
+      
+    } else {
+        bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+    }
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+    throw aex 
+}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

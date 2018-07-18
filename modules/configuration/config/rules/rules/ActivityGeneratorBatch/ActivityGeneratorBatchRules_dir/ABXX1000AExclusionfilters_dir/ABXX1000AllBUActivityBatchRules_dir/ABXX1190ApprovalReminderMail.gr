@@ -1,0 +1,78 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX1190 - Approval Reminder Mail")
+internal class ABXX1190ApprovalReminderMail {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/  /* Create and send an email to the activity approver when a check and/or reserve (any financial) 
+      approval activity is not approved or rejected in 2 business days.
+  *  Defect # 6750
+  *  05/19/2015
+  *  Ashwini Padiyar
+  */
+!claim.Activities.IsEmpty
+&& exists (activity in claim.Activities where
+        (activity.ActivityPattern.Code == "approve_reserve_change" 
+        || activity.ActivityPattern.Code == "approve_payment") && activity.Status!="complete"
+          && gw.api.util.DateUtil.daysBetween(activity.CreateTime.trimToMidnight(),
+         gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 2)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var activity = new java.util.ArrayList<Activity>()
+var payment=new java.util.ArrayList<Activity>()
+activity = claim.Activities.where(\ a ->a.ActivityPattern.Code=="approve_reserve_change"
+         && a.Status!="complete" && gw.api.util.DateUtil.daysBetween(a.CreateTime.trimToMidnight(),
+         gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 2) as java.util.ArrayList<Activity>
+
+payment = claim.Activities.where(\ a ->a.ActivityPattern.Code=="approve_payment"
+         && a.Status!="complete" && gw.api.util.DateUtil.daysBetween(a.CreateTime.trimToMidnight(),
+         gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 2) as java.util.ArrayList<Activity>
+  
+for (act in activity){
+    var environmentInformation = util.custom_Ext.finders.getEnvironment()
+    var emailBody = templates.email.ApprovalActivity.renderToString(act)
+  
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName )
+      
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {     
+   //Send approval email to approver
+     gw.api.email.EmailUtil.sendEmailWithBody(null,
+     act.AssignedUser.Contact.EmailAddress1, act.AssignedUser as java.lang.String, "ClaimCenterSupport@gaig.com",
+      "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null,
+       ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+        ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+         "Approval Activity Notification", emailBody)   
+    }
+}
+
+for (pay in payment){
+    var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+    var emailBody = templates.email.ApprovalActivity.renderToString(pay)
+
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+      
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {     
+
+   //Send approval email to approver
+     gw.api.email.EmailUtil.sendEmailWithBody(null,
+     pay.AssignedUser.Contact.EmailAddress1, pay.AssignedUser as java.lang.String, "ClaimCenterSupport@gaig.com",
+      "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null,
+      ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+        ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+         "Approval Activity Notification", emailBody)   
+    }
+ }   
+ 
+ 
+
+/*end00rule*/
+  }
+}

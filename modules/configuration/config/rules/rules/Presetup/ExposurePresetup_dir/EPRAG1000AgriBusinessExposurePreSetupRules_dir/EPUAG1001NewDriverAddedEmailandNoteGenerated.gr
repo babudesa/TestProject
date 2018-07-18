@@ -1,0 +1,52 @@
+package rules.Presetup.ExposurePresetup_dir.EPRAG1000AgriBusinessExposurePreSetupRules_dir
+
+@gw.rules.RuleName("EPUAG1001 - New Driver Added - Email and Note Generated")
+internal class EPUAG1001NewDriverAddedEmailandNoteGenerated {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.State=="draft"
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+try{
+  var note : Note;
+  var environmentInfo : String = gw.api.system.server.ServerUtil.getEnv();
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+  var emailHelper = new EmailHelper()
+  
+  if(!exposure.contactHasDriverRole()and exposure.DriverExt!=null){
+    var body : String = templates.email.UnlistedDriver.renderToString(exposure)
+    var noteBody : String = "Email notification for Unlisted Driver has been sent to the Underwriter for claim number "+exposure.Claim.ClaimNumber+ "." ;
+    var emailSent : Boolean = false;
+    
+    //body = "An unlisted driver has been added to claim number " + exposure.Claim.ClaimNumber + " with policy number " +exposure.Claim.Policy.PolicyNumber 
+    exposure.addRole( "driver", exposure.DriverExt )//add the role of driver when adding a person on the feature screen.
+    if(environmentInfo == "prod"){
+      
+      emailHelper.sendEmailWithBodyEcf(exposure.Claim, 
+        ScriptParameters.AgribusinessClaims_Email, ScriptParameters.AgribusinessClaims_Name, 
+        "ClaimCenterSupport@GAIG.com", "ClaimCenter Notification",
+        "Risk Impression - Unlisted Driver", body)
+      emailSent = true;
+    }
+    else{
+      var recipient = exposure.Claim.AssignedUser.DisplayName
+      emailHelper.sendEmailWithBodyEcf(exposure.Claim, 
+        ScriptParameters.ClaimCenterDevEmail, recipient, 
+        "ClaimCenterSupport@GAIG.com", environmentInformation,
+        "Risk Impression - Unlisted Driver", body)
+      emailSent = true;
+    }
+  
+    if(emailSent){
+      note = exposure.Claim.addNote( "general", noteBody );
+      note.Subject = "Unlisted Driver Notification";
+    }
+  }
+}catch(e){
+ util.ErrorHandling.GAICErrorHandling.logError( exposure.Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

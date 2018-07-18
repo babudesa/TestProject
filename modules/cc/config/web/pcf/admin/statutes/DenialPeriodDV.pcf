@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="DenialPeriodDV">
+    <Require
+      name="WCDenialPeriod"
+      type="WCDenialPeriod"/>
+    <InputColumn>
+      <Label
+        label="displaykey.DV.Admin.DenialPeriodDV"/>
+      <Input
+        editable="true"
+        id="JurisdictionState"
+        label="displaykey.DV.Admin.DenialPeriods.JurisdictionState"
+        required="true"
+        value="WCDenialPeriod.JurisdictionState"/>
+      <Input
+        editable="true"
+        id="EffectiveDate"
+        label="displaykey.DV.Admin.DenialPeriods.EffectiveDate"
+        required="true"
+        validationExpression="validateDate()"
+        value="WCDenialPeriod.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpiryDate"
+        label="displaykey.DV.Admin.DenialPeriods.ExpiryDate"
+        required="true"
+        validationExpression="validateDate()"
+        value="WCDenialPeriod.ExpiryDate"/>
+      <Input
+        editable="true"
+        id="DueDateFormula"
+        label="displaykey.DV.Admin.DenialPeriods.DueDateFormula"
+        postOnChange="true"
+        required="true"
+        value="WCDenialPeriod.DueDateFormula"/>
+      <Input
+        editable="true"
+        id="TargetDaysFromLoss"
+        label="displaykey.DV.Admin.DenialPeriods.TargetDaysFromLoss"
+        required="WCDenialPeriod.DueDateFormula == &quot;AfterLossDate&quot; or  WCDenialPeriod.DueDateFormula == &quot;AfterLossAndNotice&quot; "
+        validationExpression="(WCDenialPeriod.TargetDaysFromNotice &lt; 0 ? displaykey.Rules.Validation.Admin.Denial.NoNegativeValue : null)"
+        value="WCDenialPeriod.TargetDaysFromLoss"/>
+      <Input
+        editable="true"
+        id="TargetDaysFromNotice"
+        label="displaykey.DV.Admin.DenialPeriods.TargetDaysFromNotice"
+        required="WCDenialPeriod.DueDateFormula == &quot;AfterNoticeDate&quot; or  WCDenialPeriod.DueDateFormula == &quot;AfterLossAndNotice&quot;"
+        validationExpression="(WCDenialPeriod.TargetDaysFromNotice &lt; 0 ? displaykey.Rules.Validation.Admin.Denial.NoNegativeValue : null)"
+        value="WCDenialPeriod.TargetDaysFromNotice"/>
+      <Input
+        editable="true"
+        id="TargetIncludeDays"
+        label="displaykey.DV.Admin.DenialPeriods.TargetIncludeDays"
+        required="true"
+        value="WCDenialPeriod.TargetIncludeDays"/>
+      <DocumentTemplateInput
+        conversionExpression="PickedValue.TemplateId"
+        editable="true"
+        freeInputEnabled="false"
+        id="AcceptDocumentTemplate"
+        label="displaykey.DV.Admin.DenialPeriods.AcceptDocumentTemplate"
+        pickLocation="DocumentTemplateSearchPopup.push()"
+        value="WCDenialPeriod.AcceptDocumentTemplate"/>
+      <DocumentTemplateInput
+        conversionExpression="PickedValue.TemplateId"
+        editable="true"
+        freeInputEnabled="false"
+        id="RejectDocumentTemplate"
+        label="displaykey.DV.Admin.DenialPeriods.RejectDocumentTemplate"
+        pickLocation="DocumentTemplateSearchPopup.push()"
+        value="WCDenialPeriod.RejectDocumentTemplate"/>
+    </InputColumn>
+    <Code><![CDATA[
+function validateDate() : String {
+  if (WCDenialPeriod.EffectiveDate > WCDenialPeriod.ExpiryDate ) {
+    return displaykey.Rules.Validation.Admin.EffDateGTExpiryDate
+  } else {
+    return null
+  }
+}
+      
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

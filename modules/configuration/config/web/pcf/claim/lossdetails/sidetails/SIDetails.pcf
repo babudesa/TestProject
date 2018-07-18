@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="SIDetails.go(Claim)"
+    afterCommit="SIDetails.go(Claim)"
+    beforeCommit="//Claim.createUpdateSIUActivity(Investigation); "
+    canEdit="false"
+    canVisit="(perm.System.viewSIUReferral || perm.System.viewSIUInvestigation || perm.System.viewSIUDataResearch) and perm.Claim.view(Claim) and perm.System.viewclaimbasics and Claim.SIUInvestigationsExt.length&gt;0"
+    id="SIDetails"
+    showUpLink="true"
+    title="displaykey.Web.Claim.SIDetails">
+    <LocationEntryPoint
+      signature="SIDetails(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.SIUInvestigationsExt[0]"
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Screen
+      id="SIDetailsScreen">
+      <Toolbar/>
+      <PanelSet
+        id="InvestPanelSet">
+        <ListDetailPanel
+          id="InvestListDetailPanel"
+          selectionName="selectedInvest"
+          selectionType="SIUInvestigationExt">
+          <PanelRef
+            def="SIUSelectionLV(Claim)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="InvestPropertiesCard_2"
+              title="displaykey.Web.Claim.SpecialInvestDetails"
+              visible="selectedInvest.SIUReferralType!=&quot;data&quot;">
+              <PanelRef
+                def="SIDetailsDV(Claim, selectedInvest)"
+                editable="false"/>
+            </Card>
+            <Card
+              id="InvestNotesCard_2"
+              title="displaykey.Web.Claim.SIUNotes"
+              visible="selectedInvest.SIUReferralType!=&quot;data&quot; and selectedInvest.Notes.length&gt;0">
+              <PanelRef
+                def="SIUNotesDV(Claim, selectedInvest)"
+                editable="false"/>
+            </Card>
+            <Card
+              id="DataPropertiesCard_2"
+              title="displaykey.Web.Claim.DataResearch"
+              visible="selectedInvest.SIUReferralType==&quot;data&quot;">
+              <PanelRef
+                def="DataResearchDetailsDV(Claim, selectedInvest)"
+                editable="false"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </PanelSet>
+    </Screen>
+  </Page>
+</PCF>

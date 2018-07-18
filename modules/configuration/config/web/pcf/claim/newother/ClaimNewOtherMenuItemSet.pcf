@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <MenuItemSet
+    id="ClaimNewOtherMenuItemSet">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="util.WCHelper.isWCLossType(Claim)"
+      name="isWCLossType"
+      type="Boolean"/>
+    <MenuItem
+      id="ClaimMenuActions_NewOther"
+      label="displaykey.Web.ClaimMenuActions.NewOther"
+      visible="Claim != null">
+      <MenuItem
+        action="NewNoteWorksheet.goInWorkspace(Claim)"
+        id="ClaimMenuActions_NewNote"
+        label="displaykey.Web.ClaimMenuActions.NewNote"
+        shortcut="O"
+        visible="perm.Claim.createNote(Claim)"/>
+      <MenuItem
+        action="NewMatter.go(Claim)"
+        id="ClaimMenuActions_NewMatter"
+        label="displaykey.Web.ClaimMenuActions.NewLegalAction"
+        visible="canCreateLegalAction() == true"/>
+      <MenuItem
+        action="EmailWorksheet.goInWorkspace(Claim)"
+        id="ClaimMenuActions_Email"
+        label="displaykey.Web.Email.NewEmail"/>
+    </MenuItem>
+    <!-- Email Dated June 12 to Santosh, Joe, Dan subject UDW.Claims - Defect #1872
+    	 New Other will now be called simply Evaluations -->
+    <MenuItem
+      id="ClaimMenuActions_NewEvaluation"
+      label="displaykey.Web.ClaimMenuActions.Evaluations"
+      visible="Claim != null">
+      <!-- <MenuItem
+        action="NewMatter.go(Claim)"
+        available="!Claim.Closed"
+        id="ClaimMenuActions_NewMatter"
+        label="displaykey.Web.ClaimMenuActions.NewMatter"
+        visible="perm.Claim.creatematter(Claim)"/> -->
+      <!-- Defect 2731: Removed New Matter until business is ready. ;Grant Welch -->
+      <MenuItemSetRef
+        def="EvaluationTypesMenuItemSet(Claim)"/>
+    </MenuItem>
+    <!-- Defect 2731: Moved New Negotiation to its own menu item; Grant Welch 12/15/2009 -->
+    <MenuItem
+      available="!Claim.checkDisconnectedFeatures()"
+      id="ClaimMenuActions_Negotiation"
+      label="displaykey.Web.ClaimMenuActions.Negotiations"
+      visible="Claim != null">
+      <MenuItem
+        action="NewNegotiation.go(Claim)"
+        id="ClaimMenuActions_NewNegotiation"
+        label="displaykey.Web.ClaimPlanOfAction.Negotiations.NewNegotiation"
+        visible="perm.Claim.createnegotiation(Claim)"/>
+    </MenuItem>
+    <Code><![CDATA[/**
+ * Gets the indicator as to whether or not a legal action can
+ * be created.
+ */
+function canCreateLegalAction() : boolean {
+  
+    if((exists(exp in Claim.Exposures where exp.LegalExpenseExt && !exp.Closed) && 
+        (new util.custom_Ext.MatterActivator().DisableForMatters(Claim.LossType) == false) &&
+        Claim.AssignmentStatus == AssignmentStatus.TC_ASSIGNED) or (isWCLossType&&!Claim.IncidentReport&&!claim.Closed&& (exists(exp in Claim.Exposures where !exp.closed))) ){
+        
+            return true
+        
+   
+        }else{
+          return false
+        }
+}]]></Code>
+  </MenuItemSet>
+</PCF>

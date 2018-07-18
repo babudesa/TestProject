@@ -1,0 +1,31 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX2100MedicareRelated_dir
+
+@gw.rules.RuleName("EVXX2111 - ORM Term Date")
+internal class EVXX2111ORMTermDate {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!exposure.Claim.Policy.isPolicyInRefresh(1)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.CMS.validation.*
+
+var contactISO = (exposure.Claimant as Person).ContactISOMedicareExt
+var person = contactISO.Contact as Person
+var claim = exposure.Claim
+
+  if(contactISO.ORMIndExt && 
+   person.MedicareEligibleExt &&
+   contactISO.ORMEndDateExt != null &&
+   (exposure != null || (exposure.IsORMExposure ||
+   claim.Exposures.where(\ e -> e.IsORMExposure)*.Claimant.contains(person)))){ 
+     
+      var cmsVal = new ORMTermDateValidation(contactISO)      
+      CMSValidationUtil.validate(cmsVal)
+      if(cmsVal.ValidationMessage != ""){
+        exposure.reject("newloss", cmsVal.ValidationMessage, null, null) 
+      }
+   }
+   
+/*end00rule*/
+  }
+}

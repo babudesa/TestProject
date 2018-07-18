@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="AutoAckLV">
+    <Require
+      name="AutoAckAdminList"
+      type="AutoAckExtQuery"/>
+    <RowIterator
+      checkBoxVisible="CurrentLocation.InEditMode"
+      editable="true"
+      elementName="AutoAckAdminExt"
+      toCreateAndAdd="new AutoAckExt()"
+      toRemove="AutoAckAdminExt.remove()"
+      value="AutoAckAdminList">
+      <Row>
+        <RangeCell
+          editable="true"
+          id="LOBCode"
+          label="&quot;Loss Type&quot;"
+          optionLabel="VALUE.Description"
+          required="true"
+          unique="true"
+          value="AutoAckAdminExt.LossTypeExt"
+          valueRange="LossType.getTypeKeys(false)"/>
+        <Cell
+          align="center"
+          editable="true"
+          id="AutoAckEnabled"
+          label="&quot;Enabled&quot;"
+          onChange="Enabled_Init(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="vEnabled(AutoAckAdminExt)"
+          value="AutoAckAdminExt.EnabledExt"/>
+        <CheckBoxCell
+          align="center"
+          editable="AutoAckAdminExt.EnabledExt"
+          id="ClaimLevel"
+          label="&quot;Claim Level&quot;"
+          onChange="setDate(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="vLevel(AutoAckAdminExt)"
+          value="AutoAckAdminExt.ClaimExt"/>
+        <CheckBoxCell
+          align="center"
+          editable="AutoAckAdminExt.EnabledExt"
+          id="FeatureLevel"
+          label="&quot;Feature Level&quot;"
+          onChange="setDate(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="vLevel(AutoAckAdminExt)"
+          value="AutoAckAdminExt.FeatureExt"/>
+        <CheckBoxCell
+          align="center"
+          editable="AutoAckAdminExt.EnabledExt"
+          id="IncidentOnly"
+          label="&quot;Incident Only&quot;"
+          onChange="setDate(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="vLevel(AutoAckAdminExt)"
+          value="AutoAckAdminExt.IncidentOnlyExt"/>
+        <DateCell
+          align="center"
+          editable="AutoAckAdminExt.EnabledExt"
+          id="DateEffective"
+          label="&quot;Effective Date&quot;"
+          onChange="checkPastDate(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="vDate(AutoAckAdminExt)"
+          value="AutoAckAdminExt.EffectiveDateExt"/>
+        <Cell
+          editable="AutoAckAdminExt.EnabledExt"
+          id="DeliveryType"
+          label="displaykey.NVV.Admin.Ack.DeliveryType"
+          onChange="resetEmail(AutoAckAdminExt)"
+          postOnChange="true"
+          validationExpression="AutoAckAdminExt.DeliveryTypeExt == null and AutoAckAdminExt.EnabledExt ? displaykey.NVV.Admin.Ack.DeliveryTypeWarning : null"
+          value="AutoAckAdminExt.DeliveryTypeExt"/>
+        <TextCell
+          editable="AutoAckAdminExt.DeliveryTypeExt == typekey.MailTypeExt.TC_EMAIL"
+          id="EmailAddress"
+          label="displaykey.NVV.Admin.Ack.Email"
+          validationExpression="AutoAckAdminExt.EmailAddressExt == null and AutoAckAdminExt.DeliveryTypeExt == typekey.MailTypeExt.TC_EMAIL ? displaykey.NVV.Admin.Ack.EmailWarning : null"
+          value="AutoAckAdminExt.EmailAddressExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function vDate(AutoAckItem : AutoAckExt) : String {
+  if(AutoAckItem.EnabledExt == true && AutoAckItem.EffectiveDateExt == null)
+     return("An Effective Date must be entered for " + AutoAckItem.LossTypeExt.DisplayName)
+  if(AutoAckItem.EnabledExt == true && AutoAckItem.EffectiveDateExt > gw.api.util.DateUtil.currentDate()){
+      var message = "If you set a future date for " + AutoAckItem.LossTypeExt.DisplayName + " no AutoAck Letters will be generated until " + AutoAckItem.EffectiveDateExt
+      pcf.GeneralErrorWorksheet.goInWorkspace(message)}
+  return(null)}
+function checkPastDate(AutoAckItem : AutoAckExt) {
+  if(AutoAckItem.EnabledExt == true && AutoAckItem.EffectiveDateExt != null && !AutoAckItem.EffectiveDateExt.verifyDateOnOrAfterToday()){
+     setDate(AutoAckItem)
+     var message = "The Effective Date must be either today or in the future for " + AutoAckItem.LossTypeExt.DisplayName + ".  Setting the Effective Date to today."
+     pcf.GeneralErrorWorksheet.goInWorkspace(message)}}
+function vLevel(AutoAckItem : AutoAckExt) : String {
+  if(AutoAckItem.EnabledExt == true && !(AutoAckItem.ClaimExt == true || AutoAckItem.FeatureExt == true || AutoAckItem.IncidentOnlyExt == true))
+     return("You must select either Claim Level, Feature Level or Incident Only for " + AutoAckItem.LossTypeExt.DisplayName)
+  if(AutoAckItem.EnabledExt == true and (AutoAckItem.ClaimExt == true and AutoAckItem.FeatureExt == true)){
+     return(displaykey.NVV.Admin.Ack.ClaimFeatureWarning)
+  }
+  return(null)}
+function vEnabled(AutoAckItem : AutoAckExt) : String {
+  if(AutoAckItem.EnabledExt == null)
+     return("You must select whether or not to enable " + AutoAckItem.LossTypeExt.DisplayName)
+  return(null)}
+function setDate(AutoAckItem : AutoAckExt) {
+  if(AutoAckItem.EnabledExt == true && AutoAckItem.EffectiveDateExt != gw.api.util.DateUtil.currentDate())
+    AutoAckItem.EffectiveDateExt = gw.api.util.DateUtil.currentDate()}
+function Enabled_Init(AutoAckItem : AutoAckExt) {
+  if(AutoAckItem.EnabledExt == false){
+    AutoAckItem.ClaimExt=null
+    AutoAckItem.FeatureExt=null
+    AutoAckItem.IncidentOnlyExt=null
+    AutoAckItem.EffectiveDateExt=null
+    AutoAckItem.DeliveryTypeExt=null
+    AutoAckItem.EmailAddressExt=null}
+  if(AutoAckItem.EnabledExt == true){
+    setDate(AutoAckItem)
+    AutoAckItem.DeliveryTypeExt = typekey.MailTypeExt.TC_MAIL}}
+ function resetEmail(AutoAckItem: AutoAckExt){
+   if (AutoAckItem.DeliveryTypeExt == typekey.MailTypeExt.TC_MAIL){
+     AutoAckItem.EmailAddressExt = null
+   }
+ }]]></Code>
+  </ListViewPanel>
+</PCF>

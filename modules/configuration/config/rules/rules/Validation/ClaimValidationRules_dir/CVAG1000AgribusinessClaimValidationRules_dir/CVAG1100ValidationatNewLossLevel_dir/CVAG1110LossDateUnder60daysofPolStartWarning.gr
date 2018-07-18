@@ -1,0 +1,43 @@
+package rules.Validation.ClaimValidationRules_dir.CVAG1000AgribusinessClaimValidationRules_dir.CVAG1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVAG1110 - Loss Date Under 60 days of Pol Start Warning")
+internal class CVAG1110LossDateUnder60daysofPolStartWarning {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///sprzygocki 12/29/11 - setting this rule back to Eric's changes from Sept 19, 2011
+//  while we try to figure out what is wrong with this rule.
+//To display the flag, I have commented the claim.State!=draft -Suba
+claim.State!="draft" &&
+claim.State != "closed" &&
+claim.Policy.PolicySuffix == "00" && 
+gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) < 61 &&
+//claim.History.where(\ h -> h.CustomType=="newPolicy").length<=1
+!(exists(history in claim.History where history.CustomType=="newPolicy"))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+ var calledByValidate session : List 
+ if (calledByValidate == null or !calledByValidate.contains(claim.ClaimNumber)){
+   var msg = "Note: This is a new policy and a claim has been made within 60 days of policy inception date. A flag will be set for this claim." 
+   var flag ="Note: This is a new policy and a claim has been made within 60 days of policy inception date"
+    
+    claim.rejectField("LossDate", null, null, "newloss", msg )
+    
+   
+    if(claim.FlaggedReason!=null && !(claim.FlaggedReason.contains(flag))){
+      claim.setFlag("Note: This is a new policy and a claim has been made within 60 days of policy inception date." )    
+    }else if(claim.FlaggedReason ==null){
+      claim.setFlag("Note: This is a new policy and a claim has been made within 60 days of policy inception date." )                     
+    }
+    
+    if(claim.State!="draft"&& claim.FlaggedReason!=null && (claim.FlaggedReason.contains(flag))){
+      claim.createCustomHistoryEvent( "newPolicy", "Added Policy mod 00/60 day flag." )
+    }
+  }
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

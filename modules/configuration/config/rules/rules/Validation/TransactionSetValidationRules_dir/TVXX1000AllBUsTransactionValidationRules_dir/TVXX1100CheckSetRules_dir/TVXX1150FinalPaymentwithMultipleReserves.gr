@@ -1,0 +1,32 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1150 - Final Payment with Multiple Reserves")
+internal class TVXX1150FinalPaymentwithMultipleReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Defect 1374 create a warning message that checks for open reserves (multiple reserves)
+// when making a final payment.
+transactionSet.New or (exists (trans in transactionSet.Transactions where trans.Changed))/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(trans in transactionSet.Transactions){
+    if(trans.Subtype == "Payment"){
+      var payment = trans as Payment;
+      var check = payment.Check;
+      if(payment.Status != "pendingvoid" and payment.Status != "pendingstop" and payment.VoidOffset == false and
+      payment.StopOffset == false and payment.ReserveLine != null and payment.Exposure != null and 
+      payment.PaymentType=="final" and payment.Exposure.openReserves() > 0 and 
+      ((payment.ReserveLine.CostType=="expense" and payment.Exposure.getAvailableReserves( "claimcost", payment.ReserveLine.CostCategory)>0) or
+      (payment.ReserveLine.CostType=="claimcost" and payment.Exposure.getAvailableReserves( "expense", payment.ReserveLine.CostCategory)>0))){
+        transactionSet.reject( null, null, "payment", displaykey.Rules.Validation.Transaction.Enterprise.CheckSet.Finalpay) 
+        break
+      }//end if(payment.Status
+    }//end if(trans.Subtype
+  } //end for
+} //end try
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

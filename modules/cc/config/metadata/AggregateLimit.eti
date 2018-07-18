@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="An annual or lifetime aggregate limit on a policy or coverage."
+  entity="AggregateLimit"
+  exportable="true"
+  javaClass="com.guidewire.cc.domain.aggregatelimit.AggregateLimit"
+  platform="false"
+  table="aggregatelimit"
+  type="retireable">
+  <fulldescription><![CDATA[
+    Defines an annual or lifetime limit on an insurer's liability. This entity's LimitAmount value defines
+    the maximum amount that an insurer is required to pay for a specific period. Each CoverageLine, which represents either a
+    CoverageType or a specific Coverage, has an associated AggregateLimit and they are linked together through the CoverageLineLimit
+    entity. The AggregateLimit.CoverageLines array contains the lines that reference a particular AggregateLimit. Each AggregateLimit
+    is associated with a single policy period and zero or more coverage lines. If associated with multiple coverage lines, all the 
+    lines must be unique.
+  ]]></fulldescription>
+  <column
+    desc="The amount of the aggregate limit, in the Claim Currency of Claims in the PolicyPeriod."
+    name="LimitAmount"
+    nullok="false"
+    type="positivecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="ClaimCurrency"/>
+  </column>
+  <column
+    desc="Comments about the aggregate limit."
+    exportable="true"
+    name="Comments"
+    nullok="true"
+    type="shorttext"/>
+  <typekey
+    desc="Aggregate limit type: by loss date or by reported date."
+    name="LimitType"
+    nullok="false"
+    typelist="AggregateLimitType"/>
+  <typekey
+    default="limit"
+    desc="Aggregate type: limit or deductible."
+    name="ValueType"
+    nullok="false"
+    typelist="AggregateType"/>
+  <foreignkey
+    columnName="PolicyPeriodID"
+    desc="PolicyPeriod with which the aggregate limit is associated."
+    fkentity="PolicyPeriod"
+    name="PolicyPeriod"
+    nullok="false"/>
+  <array
+    arrayentity="CoverageLineLimit"
+    desc="Coverage lines that reference this aggregate limit."
+    name="CoverageLines"
+    owner="true"/>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.aggregatelimit.dbchecks.AggregateLimitDBCheckBuilder"/>
+</entity>

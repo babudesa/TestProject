@@ -1,0 +1,46 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MAPUXX1120 - Lead Counsel Changed")
+internal class MAPUXX1120LeadCounselChanged {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("LeadCounselExt")
+
+/* When the lead counsel is changed on a matterAssignment this rule replaces the current roles of
+*  the current lead counsel on the matterAssignment and replaces the roles with "former" roles
+*  on the matter.
+*//*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/var mapper = new libraries.Matter_Entity.AttorneyTypeMapper()
+var originalMatterAssignment = matterAssignmentExt.OriginalVersion as MatterAssignmentExt
+var roleHelper = new libraries.Matter_Entity.MatterRoleHelper(matterAssignmentExt.Matter)
+
+try{   
+   
+   // If the lead counsel firm is not null 
+   // then set the firms role to former 
+   if(originalMatterAssignment.LeadCounselExt != null){
+     
+     roleHelper.setLeadCounselFormer(originalMatterAssignment)     
+   }  
+   
+     //if the currently selected firm is not null then
+   //add the correct new roles and remove corresponding former roles 
+   if(matterAssignmentExt.LeadCounselExt != null){
+     
+      var roleToAdd = mapper.AttorneyTypeRoleMap.get(matterAssignmentExt.AttorneyTypeExt)
+
+      matterAssignmentExt.Matter.addRole(roleToAdd, matterAssignmentExt.LeadCounselExt)
+      roleHelper.removeFormerRole(roleToAdd, matterAssignmentExt.LeadCounselExt)   
+   
+   }
+
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}
+
+  
+  /*end00rule*/
+  }
+}

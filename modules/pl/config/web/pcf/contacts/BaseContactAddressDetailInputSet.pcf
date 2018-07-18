@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="BaseContactAddressDetailInputSet">
+    <Require
+      name="Contact"
+      type="Contact"/>
+    <Require
+      name="postalCodeRequired"
+      type="boolean"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;city&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="cityhandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;county&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="countyhandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;postalcode&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="pchandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Input
+      editable="true"
+      id="AddressLine1"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressLine1"
+      value="Contact.PrimaryAddress.AddressLine1"/>
+    <TextInput
+      editable="true"
+      id="AddressLine2"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressLine2"
+      value="Contact.PrimaryAddress.AddressLine2"/>
+    <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(Contact.PrimaryAddress, &quot;City&quot;)"
+      autoComplete="cityhandler"
+      autoCompleteArgIds="Country,City,County,State,PostalCode"
+      editable="true"
+      id="City"
+      label="displaykey.Web.AddressDetail.City"
+      tooltip="address.AddressDisplay.getCityTooltip( Contact.PrimaryAddress)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(Contact.PrimaryAddress, &quot;City&quot;)"
+      value="Contact.PrimaryAddress.City">
+      <Reflect
+        triggerIds="City,PostalCode"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(Contact.PrimaryAddress.Country,&quot;city&quot;,new String[]{&quot;City&quot;,&quot;PostalCode&quot;},new Object[] {VALUE1,VALUE2})"/>
+    </AddressAutoFillInput>
+    <TextInput
+      autoComplete="countyhandler"
+      autoCompleteArgIds="Country,City,County,State,PostalCode"
+      editable="true"
+      id="County"
+      label="displaykey.Web.AddressDetail.County"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(Contact.PrimaryAddress, &quot;County&quot;)"
+      value="Contact.PrimaryAddress.County"
+      visible="address.AddressDisplay.isCountyVisible( Contact.PrimaryAddress )">
+      <Reflect
+        triggerIds="County,PostalCode,City,State"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(Contact.PrimaryAddress.Country,&quot;county&quot;,new String[]{&quot;County&quot;,&quot;PostalCode&quot;,&quot;City&quot;,&quot;State&quot;},new Object[] {VALUE1,VALUE2,VALUE3,VALUE4})"/>
+    </TextInput>
+    <TypeKeyInput
+      editable="true"
+      id="State"
+      label="address.AddressDisplay.getStateLabel( Contact.PrimaryAddress)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(Contact.PrimaryAddress, &quot;State&quot;)"
+      value="Contact.PrimaryAddress.State"
+      valueWidth="225">
+      <Reflect
+        triggerIds="State,PostalCode"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(Contact.PrimaryAddress.Country,&quot;state&quot;,new String[]{&quot;State&quot;,&quot;PostalCode&quot;},new Object[] {VALUE1,VALUE2})"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(Contact.PrimaryAddress.Country)"/>
+    </TypeKeyInput>
+    <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(Contact.PrimaryAddress, &quot;PostalCode&quot;)"
+      autoComplete="pchandler"
+      autoCompleteArgIds="Country,City,County,State,PostalCode"
+      editable="true"
+      id="PostalCode"
+      inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(Contact.PrimaryAddress, &quot;PostalCode&quot;)"
+      label="address.AddressDisplay.getPostalCodeLabel( Contact.PrimaryAddress)"
+      required="postalCodeRequired"
+      tooltip="address.AddressDisplay.getPostalCodeTooltip( Contact.PrimaryAddress)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(Contact.PrimaryAddress, &quot;PostalCode&quot;)"
+      value="Contact.PrimaryAddress.PostalCode">
+      <Reflect
+        inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(Contact.PrimaryAddress.Country, &quot;PostalCode&quot;)"
+        triggerIds="PostalCode,City,State"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(Contact.PrimaryAddress.Country,&quot;PostalCode&quot;,new String[]{&quot;PostalCode&quot;,&quot;PostalCode&quot;,&quot;State&quot;},new Object[] {VALUE1,VALUE2,VALUE3})"/>
+    </AddressAutoFillInput>
+    <TypeKeyInput
+      editable="true"
+      id="Country"
+      label="displaykey.Web.AddressDetail.Country"
+      postOnChange="true"
+      value="Contact.PrimaryAddress.Country"
+      valueWidth="225"/>
+    <Input
+      editable="true"
+      id="AddressType"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressType"
+      value="Contact.PrimaryAddress.AddressType"/>
+    <Input
+      editable="true"
+      id="Description"
+      label="displaykey.Web.ContactDetail.AddressDetail.Description"
+      value="Contact.PrimaryAddress.Description"/>
+    <Input
+      editable="true"
+      id="ValidUntil"
+      label="displaykey.Web.ContactDetail.AddressDetail.ValidUntil"
+      value="Contact.PrimaryAddress.ValidUntil"/>
+  </InputSet>
+</PCF>

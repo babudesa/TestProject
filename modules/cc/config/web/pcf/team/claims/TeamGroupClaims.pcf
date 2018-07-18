@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewteam and GroupInfo.Group != null"
+    id="TeamGroupClaims"
+    title="displaykey.Web.Team.GroupClaimsTitle(GroupInfo.DisplayName)">
+    <LocationEntryPoint
+      signature="TeamGroupClaims(GroupInfo : admin.TreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="admin.TreeGroupInfo"/>
+    <Variable
+      initialValue="new team.TeamGroupClaimFilterSet(GroupInfo.Group)"
+      name="FilterSet"
+      recalculateOnRefresh="true"
+      type="team.TeamClaimFilterSet"/>
+    <Variable
+      initialValue="ClaimTeamView.finder.findAll()"
+      name="ClaimTeamViewList"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="&quot;TeamClaimsLV&quot;"
+      name="PrintTargetLV"/>
+    <Screen
+      id="TeamGroupClaimsScreen">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.Team.GroupClaimsTitle(GroupInfo.DisplayName)"/>
+      <Toolbar
+        reflectOnBottom="true">
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignClaimsPopup.push(new claim.ClaimAssignmentPopup(CheckedValues))"
+          flags="any ClaimTeamView"
+          id="TeamGroupClaims_Assign"
+          iterator="TeamClaimsLV"
+          label="displaykey.Web.Team.Toolbar.Assign"
+          shortcut="G"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="TeamClaimRemoveFlagPopup.push(gw.api.team.TeamUtil.convertViewArrayToSingleClaim(CheckedValues))"
+          flags="one CanRemoveFlag, one ClaimTeamView"
+          id="TeamGroupClaims_RemoveFlag"
+          iterator="TeamClaimsLV"
+          label="displaykey.Web.Team.Toolbar.RemoveFlag"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV)"
+          available="perm.User.printlistviews"
+          id="TeamGroupClaims_Print"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="TeamClaimsLV(ClaimTeamViewList, FilterSet)"/>
+    </Screen>
+  </Page>
+</PCF>

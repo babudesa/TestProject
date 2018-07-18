@@ -1,0 +1,49 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAV1000AviationClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUAV1100 - Add/Remove Primary Pilot Role")
+internal class CPUAV1100AddRemovePrimaryPilotRole {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.PrimaryPilotExt.New || 
+(claim.PrimaryPilotExt != (claim.OriginalVersion as Claim).PrimaryPilotExt)
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var newPilot = claim.PrimaryPilotExt
+  var oldPilot = (claim.OriginalVersion as Claim).PrimaryPilotExt
+if (newPilot !=null){
+      //Add role of Primary Pilot
+      var claimContactRole = new ClaimContactRole()
+      claimContactRole.Role ="primarypilot"        
+      for(con in claim.Contacts){
+        if (con.Contact == (newPilot as Contact) && (!con.hasRole("primarypilot"))){
+          con.addToRoles(claimContactRole)
+        }
+      }
+    }
+    // Remove Primary Pilot Role and add Former
+    if (oldPilot != null){
+      for(con in claim.Contacts){
+        if (con.Contact == (oldPilot as Contact)){
+          for (r in con.Roles){
+            if (r.Role == "primarypilot"){
+              oldPilot.createFormerRole(claim, r)
+              claim.removeRole(r)
+            }
+          }
+        }
+      }
+      // remove pilot fields from old pilot
+      oldPilot.PilotTypeExt = null
+      oldPilot.PilotsTotalHoursExt = null
+      oldPilot.PilotsHoursInMakeExt = null
+      oldPilot.Pilot65Ext = null
+      oldPilot.PilotTransitionExt = null
+    }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

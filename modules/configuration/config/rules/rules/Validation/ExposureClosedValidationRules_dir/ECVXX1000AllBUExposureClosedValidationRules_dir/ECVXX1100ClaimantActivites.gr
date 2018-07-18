@@ -1,0 +1,23 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1100 - Claimant Activites")
+internal class ECVXX1100ClaimantActivites {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* Checks for exposures that are open and are related to the claimant
+*  rpampush 12/4/06
+09/05/08 djohnson The error message was appearing as activitesfor Added a space
+*/
+exists(act in exposure.Claim.Activities where act.Claimant == exposure.Claimant and 
+  act.Status =="open" and act.ActivityPattern.ClosedClaimAvlble == false)==true
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/for(act in exposure.Claim.Activities){
+  if(act.Claimant == exposure.Claimant and act.Status == "open"){
+    exposure.reject( "newloss", "Cannot close Feature with open activities"+ 
+      " for the claimant, please skip or complete these activities before closing the Feature.", null, null ) 
+  }
+}/*end00rule*/
+  }
+}

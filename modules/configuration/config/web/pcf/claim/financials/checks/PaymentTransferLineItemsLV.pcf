@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="PaymentTransferLineItemsLV">
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <Variable
+      initialValue="new pcf_gs.PaymentTransferLineItemsLV_PageProc(Transaction)"
+      name="pageProcess"
+      recalculateOnRefresh="true"
+      type="pcf_gs.PaymentTransferLineItemsLV_PageProc"/>
+    <RowIterator
+      editable="true"
+      elementName="TransactionLineItem"
+      value="Transaction.LineItems">
+      <Row>
+        <TypeKeyCell
+          editable="true"
+          filter="TransactionLineItem.ValidLineCategories"
+          id="LineCategory"
+          label="Transaction.CostType == &quot;claimcost&quot; ? displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ClaimcostCategory : displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseCategory"
+          required="Transaction.costTypeCodeRequired()"
+          validationExpression="Transaction.Exposure!=null ?Transaction.Exposure.getMedPayError(TransactionLineItem.LineCategory, Transaction.CostType):null"
+          value="TransactionLineItem.LineCategory"
+          visible="Transaction.CostType == null ? false : true"/>
+        <Cell
+          formatType="currency"
+          id="AvailableReserves"
+          label="displaykey.LV.Financials.PaymentTransferLineItems.LineItem.AvailableReserves"
+          value="TransactionLineItem.Transaction.CostType == null ? null : gw.api.financials.FinancialsCalculationUtil.getAvailableReservesForCostCategory(TransactionLineItem.Transaction)"/>
+        <Cell
+          footerSumValue="TransactionLineItem.Amount"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.PaymentTransferLineItems.LineItem.Amount"
+          value="TransactionLineItem.Amount"/>
+        <TypeKeyCell
+          editable="true"
+          id="TransactionQualifier"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseType"
+          required="true"
+          value="TransactionLineItem.TransactionQualifierExt"
+          visible="/*Is this Transaction an expense payment? */ Transaction typeis Payment ? Transaction.CostType == CostType.TC_EXPENSE || Transaction.CostType == CostType.TC_GAIASTPAEXPENSE: false"/>
+        <!-- <Cell
+          formatType="currency"
+          id="TotalIncurredNet"
+          label="displaykey.LV.Financials.PaymentTransferLineItems.LineItem.TotalIncurredNet"
+          value="gw.api.financials.FinancialsUtil.getTotalIncurredExcludingCurrentTransaction(TransactionLineItem.Transaction, TransactionLineItem.Transaction.CostCategory)"/> -->
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

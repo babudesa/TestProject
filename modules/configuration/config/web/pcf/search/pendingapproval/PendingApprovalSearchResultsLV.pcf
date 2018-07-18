@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_activity.xml -->
+  <ListViewPanel
+    id="PendingApprovalSearchResultsLV">
+    <Require
+      name="ActivitySearchViewList"
+      type="ActivitySearchViewQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="ActivitySearchView"
+      hasCheckBoxes="true"
+      value="filterPendingActivityVisibleSearchResults(ActivitySearchViewList)">
+      <Row>
+        <Cell
+          enableSort="false"
+          icon="&quot;escalated.gif&quot;"
+          iconLabel="displaykey.LV.Activity.Escalated.Tip"
+          id="Escalated"
+          printWidth="0.02"
+          tooltip="displaykey.LV.Activity.Escalated.Tip"
+          value="ActivitySearchView.Escalated"/>
+        <Cell
+          action="ClaimWorkplan.go(ActivitySearchView.Claim); ActivityDetailForward.goInWorkspace(ActivitySearchView.Claim, ActivitySearchView.Activity)"
+          id="Subject"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.Subject"
+          printWidth="0.2"
+          value="ActivitySearchView.Subject"/>
+        <Cell
+          action="pcf.Claim.go(ActivitySearchView.Claim)"
+          id="CaseID"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.CaseID"
+          printWidth="0.13"
+          value="ActivitySearchView.ClaimNumber"
+          wrap="false"/>
+        <Cell
+          id="Insured"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.Insured"
+          printWidth="0.15"
+          value="ActivitySearchView.ClaimInsuredName"/>
+        <Cell
+          fontColor="ActivitySearchView.Overdue and ActivitySearchView.Status == &quot;open&quot; ? &quot;Red&quot; : &quot;&quot;"
+          id="DueDate"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.DueDate"
+          printWidth="0.1"
+          value="ActivitySearchView.TargetDate"/>
+        <Cell
+          id="Closed"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.Closed"
+          printWidth="0"
+          value="ActivitySearchView.closedate"/>
+        <Cell
+          id="Priority"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.Priority"
+          printWidth="0.1"
+          value="ActivitySearchView.priority"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.Status"
+          printWidth="0.1"
+          value="ActivitySearchView.Status"/>
+        <Cell
+          id="ExternallyOwned"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.ExternallyOwned"
+          printWidth="0.1"
+          value="ActivitySearchView.ExternallyOwned"/>
+        <Cell
+          id="ExternalOwner"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.ExternalOwner"
+          printWidth="0"
+          value="ActivitySearchView.ExternalOwnerCCName"/>
+        <Cell
+          id="AssignedUser"
+          label="displaykey.LV.Activity.ActivitySearchResults.Activities.AssignedUser"
+          printWidth="0.1"
+          sortBy="ActivitySearchView.AssignmentStatus,ActivitySearchView.AssignedUserName,ActivitySearchView.AssignedQueueName"
+          value="ActivitySearchView.AssigneeDisplayString"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses java.util.ArrayList
+
+/* 
+  12/4/2014 - kniese - Defect 7348: Pending Approval Search Result Inconsistencies
+  This function looks at all the results and filters them so that the search only returns the number of activities
+  that are either approve payment or approve reserve. Adding a filter to the search fixes the issue that was caused by
+  adding a function to the visible field on the row, which would filter the results but return the wrong number of search
+  results. 
+*/
+function filterPendingActivityVisibleSearchResults(results : ActivitySearchViewQuery) : ActivitySearchView[] {
+
+    var filteredResults = new ArrayList<ActivitySearchView>()
+    
+    for(actSearchView in results){
+      if(actSearchView.Activity.ActivityPattern ==  util.custom_Ext.finders.findActivityPattern("approve_payment") or
+      actSearchView.Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")){
+        filteredResults.add(actSearchView)
+      }
+    }
+    
+    return filteredResults as ActivitySearchView[]
+    
+  }]]></Code>
+  </ListViewPanel>
+</PCF>

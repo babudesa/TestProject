@@ -1,0 +1,30 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAXX100AllBUsGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAXX170 - Supervisor Assignments")
+internal class GAAXX170SupervisorAssignments {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/activity.ActivityPattern.Code == "create_matter_7day"/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/try{
+var unitManager:User = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType);
+var unitManagerGroup:Group = unitManager.AllGroups.first() as Group;
+
+if(activity.Claim.AssignedUser != activity.Claim.AssignedGroup.Supervisor){
+  activity.CurrentAssignment.assign(activity.Claim.AssignedGroup, activity.Claim.AssignedGroup.Supervisor);
+  actions.exit()
+  }else if (activity.Claim.AssignedUser == activity.Claim.AssignedGroup.Supervisor) {
+    activity.CurrentAssignment.assign(activity.Claim.AssignedGroup,activity.Claim.AssignedGroup.Parent.Supervisor)
+  }else{
+    activity.CurrentAssignment.assign( unitManagerGroup, unitManager );
+    actions.exit()
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule().getDisplayName(), e, "" ) 
+}
+/*end00rule*/
+  }
+}

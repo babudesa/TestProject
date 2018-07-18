@@ -1,0 +1,59 @@
+package rules.Assignment.GlobalClaimAssignmentRules_dir.GCA00010Claims_dir
+
+@gw.rules.RuleName("GCAWC0010 - WC")
+internal class GCAWC0010WC {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.LossType == "WC"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/
+uses gw.api.util.StringUtil
+
+var losstype = Claim.LossType
+var segment = Claim.Segment
+var result = libraries.Claimassignment.getGroupTypeBasedOnClaimSegment(losstype, segment)
+var primarygrouptype = result[0]
+var secondarygrouptype = result[1]
+
+if (Claim.LossLocation <> null)
+{
+  if (Claim.CurrentAssignment.assignGroupByLocation( primarygrouptype, Claim.LossLocation, false, Claim.CurrentAssignment.AssignedGroup ))
+  {
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Claim(StringUtil.substring(actions.getRule().DisplayName, 0, 8)))
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Claim.AssignedGroup))
+    actions.exit()
+  }
+  if (Claim.CurrentAssignment.assignGroupByLocation( secondarygrouptype, Claim.LossLocation, false, Claim.CurrentAssignment.AssignedGroup ))
+  {
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Claim(StringUtil.substring(actions.getRule().DisplayName, 0, 8)))
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Claim.AssignedGroup))
+    actions.exit()
+  }
+}
+if (Claim.Insured.PrimaryAddress <> null) 
+{
+  if (Claim.CurrentAssignment.assignGroupByLocation( primarygrouptype, Claim.Insured.PrimaryAddress, false, Claim.CurrentAssignment.AssignedGroup ))
+  {
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Claim(StringUtil.substring(actions.getRule().DisplayName, 0, 8)))
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Claim.AssignedGroup))
+    actions.exit()
+  }
+  if (Claim.CurrentAssignment.assignGroupByLocation( secondarygrouptype, Claim.Insured.PrimaryAddress, false, Claim.CurrentAssignment.AssignedGroup ))
+  {
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Claim(StringUtil.substring(actions.getRule().DisplayName, 0, 8)))
+    gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Claim.AssignedGroup))
+    actions.exit()
+  }
+}
+
+//If both Loss Location and Insured's Primary Address are null (which is possible only for WC claims),
+//assign the claim to the group to which the claim creator belongs to.
+//Since the claim creator can belong to multiple groups, assign the claim to the first group.
+var allGroups = Claim.CreateUser.AllGroups
+Claim.CurrentAssignment.assignGroup( allGroups == null ? null : allGroups.first() as Group )
+gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Claim(gw.api.util.StringUtil.substring(actions.getRule().DisplayName, 0, 8)))
+gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Claim.AssignedGroup))
+actions.exit()/*end00rule*/
+  }
+}

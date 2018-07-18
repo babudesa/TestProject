@@ -1,0 +1,17 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B4 - Recurrence Payment Type")
+internal class TVXX11B4RecurrencePaymentType {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.Payments.HasElements && 
+(transactionSet as CheckSet).PrimaryCheck.Payments.first().PaymentType != PaymentType.TC_PARTIAL/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  transactionSet.reject("loadsave", displaykey.Validation.NewCheckWizard.RecurringPaymentType, null, null)
+}catch(e){
+ util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,32 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEWC1000WorkersCompClaimExceptionRules_dir.CEWC1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEWC1110 - Invalid Converted SSN")
+internal class CEWC1110InvalidConvertedSSN {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isConvertedExt() &&
+claim.InjuredWorker!=null && 
+claim.InjuredWorker.TaxID!=null && 
+claim.InjuredWorker.TaxID=="333333333"
+//Defect 7778 - If no valid SSN is available upon WC Claim Conversion, the SSN 
+//will be set to a default value of '333-33-3333'. If so, this rule will trigger 
+//an activity requesting the adjuster change the SSN to a valid value. /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "injured_worker_ssn" )  
+  if(!exists(act in claim.Activities where act.ActivityPattern.Code=="injured_worker_ssn")){
+    claim.createActivity(null, ap, null,"Injured Worker SSN is invalid. Enter a valid SSN for " + claim.InjuredWorker.DisplayName + ".",null, null, null,null)
+  }else{
+    if(claim.State=="open"){
+      var lastActivity = claim.Activities.sortBy(\ a -> a.CreateTime).lastWhere(\ a -> a.ActivityPattern.Code=="injured_worker_ssn")
+      if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( lastActivity.CreateTime, ScriptParameters.Activity_WCInvalid_SSN )){
+        claim.createActivity(null, ap, null,"Injured Worker SSN is invalid. Enter a valid SSN for " + claim.InjuredWorker.DisplayName + ".",null, null, null,null)
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,45 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1A10 - Automatic Reserve for Other")
+internal class CPUEQ1A10AutomaticReserveforOther {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!claim.checkDisconnectedFeatures())&&
+(claim.LossCause =="colicgastric" and claim.ex_DetailLossCause == "surgicalcolic") and
+exists (exp in claim.Exposures where exp.ExposureType =="eq_surgical" and exp.Coverage.Type=="eq_colicFM" and exp.ExposureDetailsExt=="302") and
+claim.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/// Naga - Defect -4527 Added new rule for Other coverage and create reserve 10k
+var origClaim = (claim.OriginalVersion as Claim)
+var newReserveAdded : boolean = false
+
+if( claim.LoadCommandID == null or ( origClaim.LossCause != claim.LossCause or claim.ex_DetailLossCause != origClaim.ex_DetailLossCause or exists (exp in claim.Exposures where exp.ExposureType =="eq_surgical"  and exp.New))){
+  var policyRes = claim.Policy.safeValidate(); //this validation must come before claim validation if validating both
+  var results = claim.safeValidate( false )
+  var errors = results.getErrors(ValidationLevel.TC_PAYMENT)
+  
+  if ((policyRes.ValidationLevelPassed ==  "payment" and errors.length == 1)  or results.ValidationLevelPassed == "payment"){  
+    for (exp in claim.Exposures) {
+      var expresults = exp.safeValidate( false )
+      if(expresults.ValidationLevelPassed == "payment" and !exp.typeOfLossIsIncomplete()){
+        var reservesQueryResults = gw.api.database.Query.make(Reserve).compare("Claim", Equals, claim).select()
+        if (exp.ExposureType =="eq_surgical" and exp.Coverage.Type=="eq_colicFM" and exp.ExposureDetailsExt=="302" and exp.State=="open" and !exists(res in reservesQueryResults where res.CostType=="claimcost" and res.Exposure==exp)){
+             try{
+               var _data : java.util.Map = gw.api.web.Scopes.getRequest()
+               _data["AutoRes"] = true
+             }catch(e){
+               util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+             }
+            exp.setAvailableReserves("claimcost", "unspecified", 10000, gw.plugin.util.CurrentUserUtil.getCurrentUser().User)
+            newReserveAdded = true
+        }
+      }
+    }
+    if(newReserveAdded == true){
+      claim.createCustomHistoryEvent( "DataChange", "Initial Reserve for Other" )
+    }
+  }
+}/*end00rule*/
+  }
+}

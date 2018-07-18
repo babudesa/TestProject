@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<internalExtension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="Note"
+  javaClass="com.guidewire.cc.domain.note.Note">
+  <description><![CDATA[
+            Information entered by a user into a text field in the ClaimCenter interface.
+            ClaimCenter associates a note with a specific claim, and may additionally associate
+            it with one of the following also: an exposure, a matter, or a claimant.
+    ]]></description>
+  <foreignkey
+    columnName="ClaimID"
+    desc="Associated claim."
+    exportable="false"
+    fkentity="Claim"
+    name="Claim"
+    nullok="false"/>
+  <!-- Exposure, claimant, matter are mutually exclusive -->
+  <foreignkey
+    columnName="ExposureID"
+    desc="Associated exposure."
+    exportable="false"
+    fkentity="Exposure"
+    name="Exposure"/>
+  <foreignkey
+    columnName="MatterID"
+    desc="Associated matter."
+    exportable="false"
+    fkentity="Matter"
+    name="Matter"/>
+  <foreignkey
+    columnName="ClaimContactID"
+    desc="Associated Claim Contact (either a person or a company)."
+    exportable="false"
+    fkentity="ClaimContact"
+    name="ClaimContact"/>
+  <events/>
+  <index
+    desc="note/author query - otherwise, Oracle choosing wrong index"
+    name="note4"
+    trackUsage="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="AuthorID"/>
+  </index>
+  <index
+    desc="Force index on (MatterID) when running against Oracle to work around optimizer issue.  (Optimizer chooses          wrong access method on (MatterID, Retired).  Most values of MatterID will be null, but costing does not see          that.)"
+    name="note5"
+    trackUsage="true">
+    <forceindex
+      oracle="true"/>
+    <indexcol
+      keyposition="1"
+      name="MatterID"/>
+  </index>
+  <index
+    desc="chunking query for 1st N notes on a claim"
+    name="note6"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="SecurityType"/>
+    <indexcol
+      keyposition="4"
+      name="AuthoringDate"/>
+    <indexcol
+      keyposition="5"
+      name="CreateTime"/>
+    <indexcol
+      keyposition="6"
+      name="ID"/>
+  </index>
+  <checkconstraint
+    desc="A note can be associated with a claimant or an exposure, but not both."
+    predicate="ClaimContactID IS NULL OR ExposureID IS NULL"/>
+</internalExtension>

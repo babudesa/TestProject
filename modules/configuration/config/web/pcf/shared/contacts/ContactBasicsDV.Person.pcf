@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ContactBasicsDV"
+    mode="Person|PersonVendor|Adjudicator|UserContact|Doctor|Attorney|Ex_ForeignPersonVndr|Ex_ForeignPerVndrAttny|Ex_ForeignPerVndrDoc">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact.
+
+    Note also that claimContact may be null, so fields which depend on reference it should only be available for setting if it is not. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="showRoles"
+      type="boolean"/>
+    <Require
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="setInitialValues()"
+      name="initialValues"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Person.updateCloseIndicator()"
+      name="UpdateCloseIndicator"
+      type="void"/>
+    <InputHeaderSection>
+      <InputSetRef
+        def="ContactBasicsHeaderInputSet(contactHandle, ClaimContact, showRoles, linkStatus)"/>
+    </InputHeaderSection>
+    <InputColumn>
+      <!-- <HiddenInput
+        editable="true"
+        id="Ex_LoggedInUserId"
+        value="Person.setLoggedInUserId()"/> -->
+      <!-- <HiddenInput
+        editable="true"
+        id="LoggedInUserBUNameEXT"
+        value="Person.setLoggedInUserBUName()"/> -->
+      <!-- <HiddenInput
+        editable="true"
+        id="LoggedInUserCompAcctExt"
+        value="Person.setLoggedInUserCompAcct()"/> -->
+      <!-- Moved functionality to initialValues variable. -->
+      <InputSetRef
+        def="PersonNameInputSet(contactHandle, (Person typeis UserContact or Person typeis PersonVendor or Person typeis Ex_ForeignPersonVndr),claim)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"/>
+      <InputSetRef
+        def="PersonContactInfoInputSet(contactHandle, ClaimContact)"/>
+      <!-- following input set only for normal Person Contacts -->
+      <InputSetRef
+        def="PersonAdditionalInfoInputSet(contactHandle, claim)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="Person.Subtype==&quot;Person&quot;"/>
+      <!-- following input set only for normal Person Contacts -->
+      <InputSetRef
+        def="DriversLicenseInfoInputSet(contactHandle)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="Person.Subtype==&quot;Person&quot;"/>
+      <!-- following input set only for Person Vendor Contacts -->
+      <InputSetRef
+        def="ClaimSpecificContactInfoInputSet(contactHandle, ClaimContact, claim)"
+        editable="true"
+        mode="Person typeis PersonVendor ? &quot;PersonVendor&quot; : null"
+        visible="Person typeis PersonVendor"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- following input set for PersonVendors only -->
+      <InputSetRef
+        def="PersonVendorAdditionalInfoInputSet(contactHandle, ClaimContact, claim)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred() or User.util.getCurrentUser().isBillingAdressAdmin()"
+        mode="Person typeis PersonVendor or Person typeis Ex_ForeignPersonVndr or Person typeis Ex_ForeignPerVndrAttny or Person typeis Ex_ForeignPerVndrDoc ? &quot;PersonVendor&quot; : null"
+        visible="Person.Subtype!=&quot;Person&quot;"/>
+      <!-- following input set for User Contact only -->
+      <InputSetRef
+        def="UserContactAdditionalInfoInputSet(contactHandle)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="Person typeis UserContact ? &quot;UserContact&quot; : null"/>
+      <!-- following input for Adjudicators only (I believe this is never used) -->
+      <InputSetRef
+        def="AdjudicatorAdditionalInfoInputSet(contactHandle, ClaimContact, claim)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="Person typeis Adjudicator ? &quot;Adjudicator&quot; : null"/>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contactHandle.AddressOwner)"
+        editable="!Person.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contactHandle.AddressOwner.InputSetMode"/>
+      <!-- following input set for all tax info -->
+      <InputSet
+        visible="Person.subtype!=&quot;UserContact&quot;">
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <!-- following input for all Person contacts that are not foreign -->
+        <Input
+          editable="Person.canEditTaxInfo() and Person.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="V_EIN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+          onChange="Person.setMedicare()"
+          postOnChange="true"
+          required="Person.checkContactTaxStatus() || (Person.Subtype==&quot;Person&quot; and (Person.MedicareEligibleExt==true and Person.HICNExt==null)) and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true"
+          validationExpression="Person.validateTaxID() == null ? (Person.hasClaimantRole(claim) ? (Person.validatePersonTaxID() == null ? (Person.validateTaxStatus() == null ? null : Person.validateTaxStatus()) : Person.validatePersonTaxID()) : null) : Person.validateTaxID()"
+          value="TAXINFO"
+          visible="!Person.isForeign()"/>
+        <!-- following input for all Foreign Vendors -->
+        <Input
+          editable="Person.canEditTaxInfo() and Person.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="W8"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8"
+          postOnChange="true"
+          required="Person.checkContactTaxStatus()"
+          validationExpression="validateForeignSSN()"
+          value="TAXINFO"
+          visible="Person.isForeign()"/>
+        <Input
+          editable="Person.canEditTaxInfo()"
+          id="TaxStatusCode"
+          label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+          postOnChange="true"
+          required="Person.checkContactTaxID()"
+          validationExpression="Person.ex_TaxStatusCode != null ? Person.checkContactTaxStatusUpdate() : Person.ex_TaxStatusCode"
+          value="Person.Ex_TaxStatusCode"/>
+        <Input
+          editable="Person.canEditTaxInfo()"
+          id="TaxReportingName"
+          label="displaykey.Web.ContactDetail.TaxReportingName"
+          validationExpression="(Person.Preferred and Person.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+          value="Person.Ex_TaxReportingName"/>
+        <BooleanRadioInput
+          editable="true"
+          id="UndocumentedWorker"
+          label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.UndocumentedWorker"
+          value="claim.InjuredWorker.UndocumentedWorkerExt"
+          visible="util.WCHelper.isWCorELLossType(claim) &amp;&amp; Person == claim.claimant"/>
+        <Input
+          editable="Person.canEditTaxInfo() and Person.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="W8Recevied"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Recevied"
+          value="Person.W8ReceivedExt"
+          visible="Person.isForeign()"/>
+        <DateInput
+          editable="Person.canEditTaxInfo() and Person.ssnISEditable(claim, CurrentLocation.InEditMode)"
+          id="w8receviedDate"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Date"
+          value="Person.W8ReceivedDateExt"
+          visible="Person.isForeign()"/>
+        <InputSetRef
+          def="VendorW9InfoInputSet(contactHandle)"
+          visible="!Person.isForeign() and Person typeis PersonVendor"/>
+      </InputSet>
+      <!-- <InputSetRef
+        def="CMSMedicareInfoInputSet(contactHandle)"
+        editable="true"
+        visible="Person.Subtype==&quot;Person&quot;"/> -->
+    </InputColumn>
+    <!-- <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contactHandle.Contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection> -->
+    <Code><![CDATA[property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Person.TaxID, Person.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+property set TAXINFO(taxID : String) { Person.TaxID = taxID } 
+property get Person() : Person { return contactHandle.Contact as Person; }
+property get ClaimContact() : ClaimContact { return contactHandle typeis ClaimContact ? contactHandle : null; }
+      
+function setMedicare() {
+  if(Person.TaxID==null && Person.TaxID==""){
+     Person.MedicareEligibleExt = false
+  }
+  
+  if(Person.TaxID!=null){
+    if(Person.TaxID.toString().startsWith("9")){
+      //Person.HICNExt = ""
+      Person.MedicareEligibleExt = false
+      //Person.SendPartyToCMSExt = null
+    }
+  } else {
+    if(Person.HICNExt!=null){
+      Person.MedicareEligibleExt = true
+    }
+  }
+}
+
+function setInitialValues(){
+  Person.setLoggedInUserId();
+  Person.setLoggedInUserBUName();
+  Person.setLoggedInUserCompAcct();
+}
+
+// C.McDonald EM55 9-24-13 : defect 6461 foreign entity should have ability for id with letters
+ function validateForeignSSN(): String{
+    var str : String = null
+  if(Person.TaxID == null){
+    if(Person.checkContactTaxStatus()){
+         str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Required }
+         else str= null 
+  } else if(!Person.TaxID.matches("[a-zA-Z0-9]{9}") or (Person.TaxID.matches("[0]{9}") or Person.TaxID.matches("[1]{9}") or Person.TaxID.matches("[2]{9}")
+      or Person.TaxID.matches("[3]{9}") or Person.TaxID.matches("[4]{9}") or Person.TaxID.matches("[5]{9}") or Person.TaxID.matches("[6]{9}")
+       or Person.TaxID.matches("[7]{9}") or Person.TaxID.matches("[8]{9}") or Person.TaxID.matches("[9]{9}")))
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.W8Invalid
+         else str = null
+    return str
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

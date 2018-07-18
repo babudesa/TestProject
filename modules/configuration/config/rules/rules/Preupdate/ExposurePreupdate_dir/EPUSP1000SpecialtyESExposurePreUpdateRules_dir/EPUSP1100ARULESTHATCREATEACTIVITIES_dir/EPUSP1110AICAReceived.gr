@@ -1,0 +1,40 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUSP1000SpecialtyESExposurePreUpdateRules_dir.EPUSP1100ARULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUSP1110A - ICA Received")
+internal class EPUSP1110AICAReceived {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.isNativeORUpdatedExt() and
+exposure.ChangedFields.contains("ex_InSuit") &&
+exposure.ex_InSuit == true &&
+(!exists(act in exposure.Claim.Activities where 
+    act.ActivityPattern.Code == "ica_received_spec" && act.Exposure == exposure))   /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+   
+   var reserveIterator = exposure.Claim.getReservesIterator(false)
+   
+   while(reserveIterator.hasNext()){
+     
+       var reserve = reserveIterator.next() as Reserve       
+       
+       if(reserve.Amount == 999 && reserve.Exposure == exposure){
+   
+           var today = gw.api.util.DateUtil.currentDate()
+           var pattern = util.custom_Ext.finders.findActivityPattern("ica_received_spec")
+   
+           var newAct = exposure.Claim
+               .createActivity(exposure, pattern, pattern.Subject, pattern.Description,
+               pattern.Priority, pattern.Mandatory, today.addBusinessDays(pattern.TargetDays), null)
+      
+           //assign the activity to feature owner
+           newAct.AssignedUser = exposure.AssignedUser       
+       }
+   }   
+    
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

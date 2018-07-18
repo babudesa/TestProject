@@ -1,0 +1,68 @@
+package rules.EventMessage.EventFired_dir.Destination8Taxport1099_dir.Check_dir
+
+@gw.rules.RuleName("Check Status Changed")
+internal class CheckStatusChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/MessageContext.EventName == "CheckStatusChanged"  &&
+(MessageContext.Root as Check).Status == "issued" &&
+(MessageContext.Root as Check).Reportability == "reportable" && 
+!(((MessageContext.Root as Check).Status == "Voided")|| ((MessageContext.Root as Check).Status == "pendingvoid")||
+((MessageContext.Root as Check).Status == "stopped") || ((MessageContext.Root as Check).Status == "pendingstop")||
+((MessageContext.Root as Check).Status == "transferred") || ((MessageContext.Root as Check).Status == "pendingtransfer"))
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = MessageContext.Root as Check
+
+for (Payee in msgCheck.Payees){
+  //Added this condition for defect 3604. modified on 8/25/10 by Kamesh
+  //If the check has joint payees, we should create only one message.
+  if(Payee.PayeeType.Code == "vendor")
+  {
+   if (Payee.Payee.Ex_TaxStatusCode == "B"){
+ // if(!((MessageContext.Root as Check).Status == "transferred") || ((MessageContext.Root as Check).Status == "pendingtransfer")){
+         // 1a) and 1b),  6a) and 6b
+         if (msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == true ){
+           util.financials.Taxport.reportable1( messageContext, msgCheck );
+           actions.exitToNext();
+           }
+          else if(msgCheck.Reportability == "reportable" && Payee.Check.BackupWithholdingCheckExt == false){
+            util.financials.Taxport.reportable2( messageContext, msgCheck );
+           actions.exitToNext();
+         }  
+         if( msgCheck.Reportability == "notreportable" && (Payee.Check.BackupWithholdingCheckExt == true || Payee.Check.BackupWithholdingCheckExt == false)) {
+           // dont send any messages
+           }  
+        }
+        
+    else {
+        // if vendor have T - Tax Levy or 2 - Tax Levy Non-Exempt or 3 - SSN or 9 - Comporation Exempt then send one +ve message to Box06/07/14 
+        // 18), 31), 44), 57)
+          if (msgCheck.Reportability == "reportable"){
+            var amountToSend1 : java.math.BigDecimal;
+          //amountToSend1 = msgCheck.NetAmount;
+           for (p in msgCheck.Payments){
+              for (l in p.LineItems){
+                if (l.LineCategory != null){ // if line category is not null (not specified)									
+                  for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                    if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                      l.IRS1099BoxNumberExt=bn // set the box number                
+                      amountToSend1 = l.Amount;
+                      
+               var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend1, l.IRS1099BoxNumberExt.Code);
+               if (messageContentxx != "") {
+               var messagexx = messageContext.createMessage(messageContentxx);
+                       }
+                      }
+                    }
+                  }   
+                }
+              }
+            }          
+         }  
+  }
+ }
+//}/*end00rule*/
+  }
+}

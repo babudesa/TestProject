@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <EditCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(Claim)"
+    afterFinish="ClaimFinancialsChecks.go(Claim)"
+    beforeCommit="Wizard.Check.UpdateCheckHistoryExt = true; //pageProc.unsynchMailTo()"
+    cancelWarning="displaykey.Wizard.NewCheckWizard.CancelWarning"
+    id="EditCheckWizard"
+    parent="ClaimFinancialsChecksDetail(Claim, Check)">
+    <LocationEntryPoint
+      signature="EditCheckWizard(Claim : Claim, Check : Check)"/>
+    <LocationEntryPoint
+      signature="EditCheckWizard(Claim : Claim, Payment : Payment, Check : Check)"/>
+    <Variable
+      initialValue="new financials.EditCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.EditCheckWizardInfo"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Payment"
+      type="Payment"/>
+    <Variable
+      name="Check"
+      type="Check"/>
+    <Variable
+      initialValue="new util.custom_Ext.AutomatedCheckInfo()"
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <Variable
+      initialValue="new pcf_gs.EditCheckWizard_PageProc(Wizard)"
+      name="pageProc"
+      type="pcf_gs.EditCheckWizard_PageProc"/>
+    <WizardStep
+      allowFinish="false"
+      allowNext="automatedCheckInfo.ValidPayToAddress"
+      id="NewCheckPayees"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Label"
+      onExit="Wizard.validateAllCheckPayees(); Wizard.createNewCheckPortionsIfNecessary(); Wizard.CheckGroupProxy.setMailTo(); automatedCheckInfo.InsuredWarningDisplayed = false"
+      screen="CheckWizard_CheckPayeesScreen(Claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckPayments"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Label"
+      onExit="Wizard.validatePayments(); Wizard.Check.validateNoFormerDeductibleLineItems(); Wizard.CheckGroupProxy.setClaimantDuringEdit(); Wizard.Check.validateNetAmounts();"
+      screen="CheckWizard_CheckPaymentsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="Wizard.showPaymentsStep()"/>
+    <WizardStep
+      id="NewCheckInstructions"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Label"
+      onExit="validateNegativeIncurred()"
+      screen="CheckWizard_CheckInstructionsScreen(Claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <Code><![CDATA[/* kniese - Defect 2149
+* Function to check if the total incurred would be 
+* negative after editting the check.  
+*/
+function validateNegativeIncurred(){
+  // Get total incurred 
+  var totalIncurred = Claim.getTotalIncurred()
+
+  // Add the new check amount to the total incurred
+  totalIncurred = totalIncurred + Check.GrossAmount.Amount
+  
+  if(totalIncurred < 0.0 and Claim.LossType != typekey.LossType.TC_PERSONALAUTO){
+    throw new gw.api.util.DisplayableException(displaykey.Error.TotalIncurred.NegativeIncurred)
+  }
+}]]></Code>
+  </EditCheckWizard>
+</PCF>

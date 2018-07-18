@@ -1,0 +1,47 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUXX1700 - Create AutoACKLetter for New Claimant")
+internal class EPUXX1700CreateAutoACKLetterforNewClaimant {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.AssignmentStatus == AssignmentStatus.TC_ASSIGNED and
+!exposure.Claim.IncidentReport and
+!(exposure.Claim.ClaimNumber.startsWith("T")) and
+exposure.Claim.Policy.Verified
+and !exposure.ReconnectFailExt
+and util.document.AutoACKLetter.autoAckController(exposure.Claim.LOBCode as java.lang.String, "feature-level")
+and exposure.shouldCreateAutoAcknowledgementLetter()
+and util.document.AutoACKLetter.wasClaimCreatedAfterScriptParam(exposure.Claim)
+and !exposure.Claim.Policy.isPolicyInRefresh(1)
+and exposure.isConvertedExt() == false
+and !(exposure.Claim.ValidationLevel == "newloss" || exposure.Claim.ValidationLevel == "loadsave")
+/*
+  conditions that must be true
+  ----------------------------
+  1)exposure is assigned
+  2)exposure's claim is not incident only
+  3)exposure's claim is not a temporary claim
+  4)exposure's claim is against a verified policy
+  5)exposure's claim does not have any disconnected features
+  6)script parameter for the exposure's line of business is configured for feature-level
+  7)an ack letter has not already been created for this exposure
+ *8)another exposure on the current exposure's claim does not exist where
+    the other exposure: 
+      a. has a claimant that is the same contact as the current exposure's claimant
+      b. has a lower claim order
+  9)exposure's claim was created after the script parameter was last updated
+  10) exposure's claim's policy is not in refresh
+  11) Must not be a converted Claim
+      
+  *in this case, the ack letter should be created on the other exposure
+*//*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/print(exposure.Claim.ValidationLevel)
+//send an auto acknowledgement letter to the insured
+util.document.AutoACKLetter.saveACKLetter(exposure.Claim, exposure, false, exposure.Claim.Insured, true)
+//send an auto acknowledgement letter to the agent
+util.document.AutoACKLetter.saveACKLetter(exposure.Claim, exposure, false, exposure.Claim.Policy.ex_Agency, false)/*end00rule*/
+  }
+}

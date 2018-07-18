@@ -1,0 +1,32 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1180 - Disposition Date cannot be in the future")
+internal class MVXX1180DispositionDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (exp in matter.MatterAssignmentsExt*.AssignmentExposuresExt where
+        exp.ChangedFields.contains("DispositionDateExt") and
+        exp.DispositionDateExt != null 
+     and gw.api.util.DateUtil.compareIgnoreTime(exp.DispositionDateExt,
+         gw.api.util.DateUtil.currentDate() ) > 0) == true/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+    
+  var matterExpList = matter.MatterAssignmentsExt*.AssignmentExposuresExt
+      .where(\ m -> m.DispositionDateExt != null && gw.api.util.DateUtil.compareIgnoreTime(m.DispositionDateExt,
+      gw.api.util.DateUtil.currentDate()) > 0)
+  
+    for(me in matterExpList){         
+    
+      msg="Please provide a Disposition Date that is not a future date."
+      matter.rejectSubField(me ,"DispositionDateExt", "newloss", msg, Null, Null)
+  
+    }
+  } catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

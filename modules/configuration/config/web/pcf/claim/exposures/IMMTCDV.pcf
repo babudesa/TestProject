@@ -1,0 +1,234 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="IMMTCDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Exposure.DriverExt // Used to hold the driver"
+      name="currentDriver"/>
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, &quot;IMProperty&quot;)"/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, &quot;IMProperty&quot;)"/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossDescBox"
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/> -->
+      <!-- <TextAreaInput
+        id="dataCompromise"
+        numRows="3"
+        value="Exposure.Claim.Description"
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/> -->
+      <InputDivider
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <!-- DAMAGED PROPERTY VALUE SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.DamagPropDesc"/>
+      <Input
+        formatType="exactNumber"
+        id="InsurLimit"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InsuranceLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        value="Exposure.Coverage.IncidentLimit"/>
+      <InputDivider
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <InputSet>
+        <!-- DAMAGED PROPERTY DETAILS SECTION -->
+        <Label
+          label="displaykey.NVV.Exposure.MotorTruckCargo.IncidentOverview"
+          visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+        <!-- The driver and former driver role for this field are handled by exposure preupdate rule "EPUIM11210 - MTC Driver and Former Driver Role" -->
+        <ClaimContactInput
+          claim="Exposure.Claim"
+          editable="true"
+          id="Driver"
+          label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.Driver"
+          newContactMenu="NewDriverPickerMenuItemSet"
+          onChange="Exposure.clearDriverType(); Exposure.displayDriverWarning(); Exposure.DrivingExperienceExt = null;"
+          onPick="Exposure.clearDriverType(); Exposure.displayDriverWarning(); Exposure.DrivingExperienceExt = null;"
+          postOnChange="true"
+          showSearchInMenu="false"
+          value="Exposure.DriverExt"
+          valueRange="Exposure.getContactsByRoles({ContactRole.TC_DRIVER,ContactRole.TC_FORMERDRIVER}).union(Exposure.Claim.getContactsByRoles({ContactRole.TC_DRIVER,ContactRole.TC_FORMERDRIVER})).toList()"/>
+        <!-- <TypeKeyInput
+          editable="true"
+          id="DriverType"
+          label="displaykey.NVV.Exposure.MotorTruckCargo.Driver"
+          required="true"
+          value="Exposure.DriverTypeExt"
+          visible="Exposure.DriverExt!=null"/> -->
+        <TextInput
+          editable="true"
+          id="Experience"
+          label="displaykey.NVV.Exposure.MotorTruckCargo.Experience"
+          maxChars="3"
+          numCols="6"
+          postOnChange="true"
+          value="Exposure.DrivingExperienceExt"
+          visible="Exposure.DriverExt != null"/>
+        <Label
+          label="displaykey.NVV.Exposure.MotorTruckCargo.Truck"/>
+        <TextInput
+          editable="true"
+          id="TruckYear"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Year"
+          maxChars="4"
+          postOnChange="true"
+          value="Exposure.VehicleIncident.Vehicle.Year"/>
+        <Input
+          editable="true"
+          id="TruckMake"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Make"
+          postOnChange="true"
+          value="Exposure.VehicleIncident.Vehicle.Make"/>
+        <Input
+          editable="true"
+          id="VIN"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.VIN"
+          postOnChange="true"
+          required="false"
+          validationExpression="Exposure.validateVin()"
+          value="Exposure.VehicleIncident.Vehicle.Vin"/>
+        <Label
+          label="displaykey.NVV.Exposure.MotorTruckCargo.Trailer"/>
+        <TextInput
+          editable="true"
+          id="TrailerYear"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Year"
+          maxChars="4"
+          postOnChange="true"
+          value="Exposure.VehicleIncident.Vehicle.TrailerYearExt"/>
+        <Input
+          editable="true"
+          id="TrailerMake"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Make"
+          postOnChange="true"
+          value="Exposure.VehicleIncident.Vehicle.TrailerMakeExt"/>
+        <BooleanRadioInput
+          available="true"
+          editable="true"
+          id="Refrigeration"
+          label="displaykey.NVV.Exposure.MotorTruckCargo.Refrigerate"
+          onChange="setValues()"
+          postOnChange="true"
+          value="Exposure.VehicleIncident.Vehicle.RefrigerationExt"
+          visible="true"/>
+        <InputSet
+          visible="Exposure.VehicleIncident.Vehicle.RefrigerationExt == TRUE">
+          <TextInput
+            editable="true"
+            id="RefrigModelYear"
+            label="displaykey.NVV.Exposure.MotorTruckCargo.ModelYear"
+            maxChars="4"
+            numCols="6"
+            postOnChange="true"
+            value="Exposure.VehicleIncident.Vehicle.ModelYearExt"/>
+          <TextInput
+            editable="true"
+            id="RefrigHours"
+            label="displaykey.NVV.Exposure.MotorTruckCargo.Hours"
+            maxChars="6"
+            numCols="6"
+            postOnChange="true"
+            value="Exposure.VehicleIncident.Vehicle.HoursExt"/>
+        </InputSet>
+        <InputSet>
+          <!-- When a cargo is entered without vehicle data, exposure preupdate rule "EPUIM11220 - Empty Vehicle For EDW Push" will create an empty vehicle. -->
+          <ListViewInput
+            editable="true"
+            id="CargoDetails"
+            label="displaykey.NVV.Exposure.MotorTruckCargo.Cargo">
+            <Toolbar>
+              <IteratorButtons/>
+            </Toolbar>
+            <ListViewPanel
+              id="IMMotorTruckCargoLV">
+              <RowIterator
+                editable="true"
+                elementName="Cargo"
+                hasCheckBoxes="true"
+                toAdd="Exposure.addToCargoExt(Cargo); ensureVehcileNotNull();"
+                toRemove="Exposure.removeFromCargoExt(Cargo)"
+                value="Exposure.CargoExt">
+                <Row>
+                  <TypeKeyCell
+                    editable="true"
+                    id="CargoType"
+                    label="displaykey.LV.Claim.Cargo.CargoType"
+                    numCols="100"
+                    required="true"
+                    value="Cargo.CargoType"
+                    valueWidth="200"/>
+                  <TextCell
+                    editable="true"
+                    id="CargoDetails"
+                    label="displaykey.LV.Claim.Cargo.CargoDetails"
+                    maxChars="40"
+                    required="false"
+                    value="Cargo.Details"
+                    width="200"/>
+                </Row>
+              </RowIterator>
+            </ListViewPanel>
+          </ListViewInput>
+        </InputSet>
+      </InputSet>
+      <!-- <InputSetRef
+        def="PIMDamagedPropertyDetailsInputSet(Exposure)"
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;)"/> -->
+      <InputDivider/>
+      <!-- OTHER CARRIER INVOLVEMENT SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[//Defect:8070 
+function setValues()
+{
+  if(Exposure.VehicleIncident.Vehicle.RefrigerationExt == false) {
+    Exposure.VehicleIncident.Vehicle.ModelYearExt = null 
+    Exposure.VehicleIncident.Vehicle.HoursExt = null     
+  }
+}
+
+/* 6/02/16 - Defect 8622 - Due to the way EDW modeled cargo data, cargo requires
+    a vehicle for the push. As no vehicle related fileds are required, it is 
+    possible for the vehicle to be null. This rule ensures that even if no
+    vehicle data exists, the feature will get a vehicle for the cargo to be
+    associated with.
+*/
+function ensureVehcileNotNull(){
+  if (Exposure.VehicleIncident.Vehicle == null){
+    Exposure.VehicleIncident.Vehicle = new Vehicle()
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,17 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Exposure_dir
+
+@gw.rules.RuleName("ExposureChanged")
+internal class ExposureChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ExposureChanged"
+&& !((messageContext.Root as Exposure).Claim.Changed 
+      && (messageContext.Root as Exposure).Claim.Policy.Changed)/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var feature = messageContext.Root as Exposure;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==feature.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendExposureChanges( messageContext, feature );/*end00rule*/
+  }
+}

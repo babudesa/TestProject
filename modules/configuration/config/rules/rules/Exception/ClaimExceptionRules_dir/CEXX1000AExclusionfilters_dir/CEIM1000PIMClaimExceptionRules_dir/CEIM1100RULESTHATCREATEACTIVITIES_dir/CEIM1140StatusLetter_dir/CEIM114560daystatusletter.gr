@@ -1,0 +1,27 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir.CEIM1140StatusLetter_dir
+
+@gw.rules.RuleName("CEIM1145 - 60 day status letter")
+internal class CEIM114560daystatusletter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Author: erawe
+Date:7/23/10
+Update: 9/6/12 - Defect 5609 Josh wanted to check Loss State instead of Insured State
+*/
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="mandatory_status_letter") &&
+(claim.AddressOwner.Address.State=="CO" or
+claim.AddressOwner.Address.State=="IL" or
+claim.AddressOwner.Address.State=="GA"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "mandatory_status_letter" )
+  if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 55 )){
+     claim.createActivity( null, ap, null, "Send the mandatory status letter for " + claim.AddressOwner.Address.State, null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ), null )
+  } 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+//actions.exit()/*end00rule*/
+  }
+}

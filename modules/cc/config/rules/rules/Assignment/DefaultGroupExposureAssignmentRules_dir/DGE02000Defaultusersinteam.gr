@@ -1,0 +1,18 @@
+package rules.Assignment.DefaultGroupExposureAssignmentRules_dir
+
+@gw.rules.RuleName("DGE02000 - Default - users in team")
+internal class DGE02000Defaultusersinteam {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists (aUser in exposure.CurrentAssignment.AssignedGroup.Users where true)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/
+if (exposure.CurrentAssignment.assignUserByRoundRobin(false, exposure.CurrentAssignment.AssignedGroup ))
+	{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Exposure(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(exposure.AssignedUser))
+	actions.exit()
+	}/*end00rule*/
+  }
+}

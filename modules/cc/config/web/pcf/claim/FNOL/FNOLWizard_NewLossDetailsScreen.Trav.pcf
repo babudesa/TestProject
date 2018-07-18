@@ -1,0 +1,482 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="FNOLWizard_NewLossDetailsScreen"
+    mode="Trav">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Claim.Officials.length &gt; 0"
+      name="Officials"
+      type="boolean"/>
+    <Variable
+      initialValue="Claim.MetroReports.length &gt; 0"
+      name="PoliceReport"
+      type="boolean"/>
+    <Toolbar>
+      <WizardButtons/>
+    </Toolbar>
+    <DetailViewPanel
+      id="LossDetailsAddressDV">
+      <InputColumn>
+        <TextAreaInput
+          editable="true"
+          id="Description"
+          label="displaykey.Web.NewLossDetailsScreen.LossDetailsAddressDV.WhatHappened.Label"
+          numCols="35"
+          numRows="3"
+          value="Claim.Description"/>
+        <DateInput
+          dateFormat="short"
+          id="Claim_LossDate"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.LossDate"
+          timeFormat="short"
+          validationExpression="Claim.LossDate != null || Claim.LossDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+          value="Claim.LossDate"/>
+        <Input
+          editable="true"
+          id="Claim_LossCause"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.LossCause"
+          required="true"
+          value="Claim.LossCause"/>
+        <CheckBoxInput
+          editable="true"
+          id="IncidentOnly"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.Status.IncidentReport"
+          value="Claim.IncidentReport"
+          valueLabel="displaykey.Web.NewLossDetailsScreen.LossDetailsAddressDV.IncidentOnly.LabelValue"/>
+      </InputColumn>
+      <InputColumn>
+        <InputSetRef
+          def="AddressInputSet(Claim.AddressOwner)"
+          id="AddressDetailInputSetRef"
+          mode="Claim.AddressOwner.InputSetMode"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <DetailViewPanel>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.NewLossDetailsScreen.TripBaggageLabel"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelRef
+      id="IncidentPanelRef">
+      <Toolbar>
+        <ToolbarButton
+          action="TripIncidentPopup.push(Claim)"
+          icon="gw.api.claim.IncidentIconSet.TRIP.ButtonIcon"
+          id="AddTripButton"
+          label="displaykey.Web.NewLossDetailsScreen.IncidentPanelRef.AddTripButton.Label"
+          shortcut="T"/>
+        <ToolbarButton
+          action="BaggageIncidentPopup.push(Claim)"
+          icon="gw.api.claim.IncidentIconSet.BAGGAGE.ButtonIcon"
+          id="AddBaggageDamageButton"
+          label="displaykey.Web.NewLossDetailsScreen.IncidentPanelRef.AddBaggageDamageButton.Label"
+          shortcut="B"/>
+        <ToolbarButton
+          action="NewInjuryIncidentPopup.push(Claim)"
+          icon="gw.api.claim.IncidentIconSet.INJURY.ButtonIcon"
+          id="AddInjuriesButton"
+          label="displaykey.Web.NewLossDetailsScreen.IncidentPanelRef.AddInjuryButton.Label"
+          shortcut="I"/>
+        <ToolbarButton
+          action="FNOLVehicleIncidentPopup.push(Claim, Wizard)"
+          icon="gw.api.claim.IncidentIconSet.VEHICLE.ButtonIcon"
+          id="AddVehicleButton"
+          label="displaykey.Web.NewLossDetailsScreen.IncidentPanelRef.AddVehicleButton.Label"
+          shortcut="V"/>
+        <ToolbarButton
+          action="NewFixedPropertyIncidentPopup.push(claim)"
+          icon="gw.api.claim.IncidentIconSet.PROPERTY_LIABILITY.ButtonIcon"
+          id="AddPropertyDamageButton"
+          label="displaykey.Web.NewLossDetailsScreen.IncidentPanelRef.AddPropertyDamageButton.Label"/>
+      </Toolbar>
+      <PanelSet>
+        <PanelIterator
+          elementName="TripIncident"
+          id="TripIncidentIterator"
+          value="Claim.TripIncidentsOnly">
+          <IteratorSort
+            sortBy="TripIncident.TripRU"
+            sortOrder="1"/>
+          <DetailViewPanel
+            id="TripIncidentDV"
+            inline="true">
+            <InputColumn>
+              <BooleanRadioInput
+                icon="TripIncident.PanelIcon"
+                id="tripIcon"
+                labelAbove="true"
+                value="true"/>
+            </InputColumn>
+            <InputColumn>
+              <Input
+                action="TripIncidentPopup.push(TripIncident, CurrentLocation.InEditMode)"
+                boldValue="true"
+                hideChildrenIfReadOnly="false"
+                id="TripName"
+                value="TripIncident.DisplayName.elide(50)">
+                <MenuItem
+                  action="TripIncidentPopup.push( TripIncident, true )"
+                  id="EditTripMenu"
+                  label="displaykey.Web.NewLossDetailsScreen.TripIncidentIterator.EditTripMenuItem.Label"/>
+                <MenuItem
+                  action="removeTripIncident( TripIncident)"
+                  confirmMessage="displaykey.Web.NewLossDetailsScreen.TripIncidentIterator.RemoveTripMenuItem.ConfirmMessage"
+                  id="RemoveTripMenu"
+                  label="displaykey.Web.NewLossDetailsScreen.TripIncidentIterator.RemoveTripMenuItem.Label"/>
+                <MenuItem
+                  id="MenuItem0"/>
+              </Input>
+              <TextAreaInput
+                id="TripIncidentDescription"
+                labelAbove="true"
+                numRows="2"
+                value="TripIncident.TripRU"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelIterator>
+        <PanelIterator
+          elementName="BaggageIncident"
+          id="BaggageIncidentIterator"
+          value="Claim.BaggageIncidentsOnly">
+          <DetailViewPanel
+            id="BaggageIncidentDV"
+            inline="true">
+            <InputColumn>
+              <BooleanRadioInput
+                icon="BaggageIncident.PanelIcon"
+                id="BaggageIcon"
+                labelAbove="true"
+                value="true"/>
+            </InputColumn>
+            <InputColumn>
+              <Input
+                action="BaggageIncidentPopup.push( BaggageIncident, true )"
+                boldValue="true"
+                hideChildrenIfReadOnly="false"
+                id="Baggage"
+                labelAbove="true"
+                value="BaggageIncident.BaggageType">
+                <MenuItem
+                  action="BaggageIncidentPopup.push( BaggageIncident, true )"
+                  id="EditBaggage"
+                  label="displaykey.Web.NewLossDetailsScreen.BaggageIncidentIterator.EditBaggageMenuItem.Label"/>
+                <MenuItem
+                  action="removeBaggageIncident( BaggageIncident )"
+                  confirmMessage="displaykey.Web.NewLossDetailsScreen.BaggageIncidentIterator.RemoveBaggageMenuItem.ConfirmMessage"
+                  id="RemoveBaggage"
+                  label="displaykey.Web.NewLossDetailsScreen.BaggageIncidentIterator.RemoveBaggageMenuItem.Label"/>
+              </Input>
+              <TextAreaInput
+                id="BaggageIncidentDescription"
+                labelAbove="true"
+                numRows="2"
+                value="BaggageIncident.Description"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelIterator>
+        <PanelIterator
+          elementName="InjuryIncident"
+          id="InjuryIncidentIterator"
+          value="Claim.InjuryIncidentsOnly">
+          <DetailViewPanel
+            id="InjuryIncidentDV"
+            inline="true">
+            <InputColumn>
+              <BooleanRadioInput
+                icon="InjuryIncident.PanelIcon"
+                id="PropertyIcon"
+                labelAbove="true"
+                value="true"/>
+            </InputColumn>
+            <InputColumn>
+              <Input
+                action="EditInjuryIncidentPopup.push(InjuryIncident, CurrentLocation.InEditMode)"
+                boldValue="true"
+                hideChildrenIfReadOnly="false"
+                id="PropertyName"
+                labelAbove="true"
+                value="InjuryIncident.injured">
+                <MenuItem
+                  action="EditInjuryIncidentPopup.push(InjuryIncident, true)"
+                  id="EditInjury"
+                  label="displaykey.Web.NewLossDetailsScreen.InjuryIncidentIterator.EditInjuryMenuItem.Label"/>
+                <MenuItem
+                  action="removeInjuryIncident( InjuryIncident )"
+                  confirmMessage="displaykey.Web.NewLossDetailsScreen.InjuryIncidentIterator.RemoveInjuryMenuItem.ConfirmMessage"
+                  id="RemoveProperty"
+                  label="displaykey.Web.NewLossDetailsScreen.InjuryIncidentIterator.RemoveInjuryMenuItem.Label"/>
+              </Input>
+              <TextAreaInput
+                id="InjuryIncidentDescription"
+                labelAbove="true"
+                numRows="2"
+                value="InjuryIncident.Description"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelIterator>
+        <PanelIterator
+          elementName="VehicleIncident"
+          id="VehicleIncidentIterator"
+          value="Claim.VehicleIncidentsOnly">
+          <IteratorSort
+            sortBy="VehicleIncident.VehicleLossParty"
+            sortOrder="1"/>
+          <DetailViewPanel
+            id="VehicleIncidentDV"
+            inline="true">
+            <InputColumn>
+              <BooleanRadioInput
+                icon="VehicleIncident.PanelIcon"
+                id="vehicleIcon"
+                labelAbove="true"
+                value="true"/>
+            </InputColumn>
+            <InputColumn>
+              <Input
+                action="FNOLVehicleIncidentPopup.push(VehicleIncident, Wizard);"
+                boldValue="true"
+                hideChildrenIfReadOnly="false"
+                id="VehicleName"
+                labelAbove="true"
+                value="isNewlyCreatedVehicleIncident( VehicleIncident ) ? displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.UnknownVehicle.Value : VehicleIncident.Vehicle.ShortDisplayName">
+                <MenuItem
+                  action="FNOLVehicleIncidentPopup.push(VehicleIncident, Wizard)"
+                  id="EditVehicleMenu"
+                  label="displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.EditVehicleMenuItem.Label"/>
+                <MenuItem
+                  action="removeVehicleIncident(VehicleIncident)"
+                  confirmMessage="displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.RemoveVehicleMenu.ConfirmMessage"
+                  id="RemoveVehicleMenu"
+                  label="displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.RemoveVehilcleMenuItem.Label"/>
+                <MenuItem
+                  id="MenuItem0"/>
+              </Input>
+              <Input
+                id="VehicleState"
+                labelAbove="true"
+                value="VehicleIncident.Vehicle.State"
+                visible="VehicleIncident.Vehicle.State != null and gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+              <Input
+                id="VehiclePlateNumber"
+                labelAbove="true"
+                value="VehicleIncident.Vehicle.LicensePlate"
+                visible="VehicleIncident.Vehicle.LicensePlate.length &gt; 0"/>
+              <Input
+                id="VehicleVIN"
+                labelAbove="true"
+                value="VehicleIncident.Vehicle.Vin"
+                visible="VehicleIncident.Vehicle.LicensePlate.length == 0 and VehicleIncident.Vehicle.Vin.length &gt; 0"/>
+              <TextAreaInput
+                id="VehicleIncidentDescription"
+                labelAbove="true"
+                numRows="2"
+                value="VehicleIncident.Description"/>
+            </InputColumn>
+            <InputFooterSection>
+              <ListViewInput>
+                <Toolbar/>
+                <ListViewPanel
+                  compress="true"
+                  id="PassengerLV">
+                  <Row>
+                    <Cell
+                      icon="Wizard.getInjurySeverity(Claim.getClaimContact(VehicleIncident.driver)) == SeverityType.TC_FATAL ? &quot;icon_fatality.gif&quot; : &quot;icon_injury.gif&quot;"
+                      iconLabel="Wizard.getInjurySeverity(Claim.getClaimContact(VehicleIncident.driver)) == SeverityType.TC_FATAL ? displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Fatal.IconLabel : displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Injured.IconLabel"
+                      id="driverInjuredIcon"
+                      showHeaderIcon="false"
+                      value="Wizard.isInjured(Claim.getClaimContact(VehicleIncident.driver))"
+                      visible="VehicleIncident.driver != null"/>
+                    <Cell
+                      icon="&quot;icon_driver.gif&quot;"
+                      iconLabel="displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Driver.IconLabel"
+                      id="DriverIcon"
+                      value="true"
+                      visible="VehicleIncident.driver != null"/>
+                    <TextCell
+                      action="FNOLContactPopup.push(claim, Claim.getClaimContact( vehicleIncident.driver), &quot;driver&quot;, VehicleIncident, Wizard)"
+                      id="driver"
+                      value="VehicleIncident.driver.DisplayName"
+                      visible="VehicleIncident.driver != null"/>
+                  </Row>
+                  <RowIterator
+                    editable="false"
+                    elementName="passenger"
+                    value="VehicleIncident.passenger">
+                    <Row>
+                      <Cell
+                        icon="Wizard.getInjurySeverity(Claim.getClaimContact(Passenger)) == SeverityType.TC_FATAL ? &quot;icon_fatality.gif&quot; : &quot;icon_injury.gif&quot;"
+                        iconLabel="Wizard.getInjurySeverity(Claim.getClaimContact(Passenger)) == SeverityType.TC_FATAL ? displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Fatal.IconLabel : displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Injured.IconLabel"
+                        id="passengerInjuredIcon"
+                        showHeaderIcon="false"
+                        value="Wizard.isInjured(Claim.getClaimContact(passenger))"/>
+                      <Cell
+                        icon="&quot;icon_passenger.gif&quot;"
+                        iconLabel="displaykey.Web.NewLossDetailsScreen.VehicleIncidentIterator.Passenger.IconLabel"
+                        id="passengerIcon"
+                        showHeaderIcon="false"
+                        value="true"/>
+                      <TextCell
+                        action="FNOLContactPopup.push(claim, Claim.getClaimContact( passenger ), &quot;passenger&quot;, VehicleIncident, Wizard)"
+                        id="passenger"
+                        value="passenger.DisplayName"/>
+                    </Row>
+                  </RowIterator>
+                </ListViewPanel>
+              </ListViewInput>
+            </InputFooterSection>
+          </DetailViewPanel>
+        </PanelIterator>
+        <PanelIterator
+          elementName="PropertyIncident"
+          id="PropertyIncidentIterator"
+          value="Claim.FixedPropertyIncidentsOnly">
+          <DetailViewPanel
+            id="PropertyIncidentDV"
+            inline="true">
+            <InputColumn>
+              <BooleanRadioInput
+                icon="PropertyIncident.PanelIcon"
+                id="PropertyIcon"
+                labelAbove="true"
+                value="true"/>
+            </InputColumn>
+            <InputColumn>
+              <Input
+                action="EditFixedPropertyIncidentPopup.push(PropertyIncident, true)"
+                boldValue="true"
+                hideChildrenIfReadOnly="false"
+                id="PropertyName"
+                labelAbove="true"
+                value="PropertyIncident.DisplayName == &quot;&quot; ? displaykey.Web.NewLossDetailsScreen.PropertyIncidentIterator.Property.Value : PropertyIncident.DisplayName">
+                <MenuItem
+                  action="EditFixedPropertyIncidentPopup.push(PropertyIncident, true)"
+                  id="EditProperty"
+                  label="displaykey.Web.NewLossDetailsScreen.PropertyIncidentIterator.Property.PropertyDamage.Edit"/>
+                <MenuItem
+                  action="Claim.removeFromIncidents( PropertyIncident )"
+                  confirmMessage="displaykey.Web.NewLossDetailsScreen.PropertyIncidentIterator.RemovePropertyMenu.ConfirmMessage"
+                  id="RemoveProperty"
+                  label="displaykey.Web.NewLossDetailsScreen.PropertyIncidentIterator.Property.PropertyDamage.Remove"/>
+              </Input>
+              <TextAreaInput
+                id="PropertyIncidentDescription"
+                labelAbove="true"
+                numRows="2"
+                value="PropertyIncident.Description"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelIterator>
+      </PanelSet>
+    </PanelRef>
+    <DetailViewPanel
+      id="AtTheSceneDV">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.NewLossDetailsScreen.AtTheSceneDV.AtTheSceneLabel"/>
+        <ListViewInput
+          boldLabel="true"
+          def="EditableWitnessesLV(Claim.getClaimContactRolesByRole(ContactRole.TC_WITNESS), Claim, ContactRole.TC_WITNESS)"
+          editable="true"
+          id="WitnessLV"
+          labelAbove="true">
+          <Toolbar>
+            <ToolbarInput
+              boldValue="true"
+              id="WitnessToolbarLabel"
+              value="displaykey.Web.NewLossDetailsScreen.AtTheSceneDV.AnyWitnesses.Label"/>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+        <ListViewInput
+          boldLabel="true"
+          def="EditableOfficialsLV(Claim)"
+          editable="true"
+          id="Claim_Officials"
+          labelAbove="true">
+          <Toolbar>
+            <ToolbarInput
+              boldValue="true"
+              id="OfficialToolbarLabel"
+              value="displaykey.Web.NewLossDetailsScreen.AtTheSceneDV.Officials.Label"/>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelDivider/>
+    <DetailViewPanel
+      id="CategorizationDV">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.NewLossDetailsScreen.CategorizationDV.CategorizationLabel"/>
+        <Input
+          editable="true"
+          id="Notification_Fault"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.Notification.Fault"
+          postOnChange="true"
+          value="Claim.FaultRating"/>
+        <Input
+          editable="true"
+          id="Claim_Weather"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.Weather"
+          value="Claim.Weather"/>
+        <RangeInput
+          editable="true"
+          id="Catastrophe_CatastropheNumber"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.Catastrophe.CatastropheNumber"
+          required="false"
+          value="Claim.Catastrophe"
+          valueRange="gw.api.admin.CatastropheUtil.getCatastrophes()"/>
+        <RangeInput
+          editable="true"
+          id="Claim_PermissionRequired"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsTrav.Claim.PermissionRequired"
+          required="false"
+          value="Claim.PermissionRequired"
+          valueRange="gw.api.claim.ClaimUtil.getAvailableTypes()"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <Code><![CDATA[
+function removeTripIncident(tripIncidentParam : TripIncident) {
+  if (tripIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExposureLabel)
+  }
+  tripIncidentParam.Claim.removeFromIncidents( tripIncidentParam )
+}
+
+function removeBaggageIncident(baggageIncidentParam : BaggageIncident) {
+  if (baggageIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExposureLabel)
+  }
+  baggageIncidentParam.Claim.removeFromIncidents( baggageIncidentParam )
+}
+function removeInjuryIncident(injuryIncidentParam : InjuryIncident) {
+  if (injuryIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExposureLabel)
+  }
+  injuryIncidentParam.Claim.removeFromIncidents( injuryIncidentParam )
+}
+function removeVehicleIncident(vehicleIncidentParam : VehicleIncident) {
+  if (vehicleIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExposureLabel)
+  }
+  vehicleIncidentParam.Claim.removeFromIncidents( vehicleIncidentParam )
+
+}
+
+function isNewlyCreatedVehicleIncident(vi : VehicleIncident) : boolean {
+  return vi != null and vi.Vehicle.ShortDisplayName == displaykey.Java.DisplayName.NewlyCreated
+}
+
+    ]]></Code>
+  </Screen>
+</PCF>

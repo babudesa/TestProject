@@ -1,0 +1,339 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="!bulkInvoice.PendingItemValidation"
+    id="ViewBulkInvoiceVoidStopDetailDV">
+    <Require
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Require
+      name="payeeLinkStatus"
+      type="contact.LinkStatus"/>
+    <Variable
+      initialValue="bulkInvoice.PayeeChangeable"
+      name="isPayeeChangeable"/>
+    <InputColumn>
+      <TypeKeyInput
+        editable="true"
+        id="reasonForVoidStop"
+        label="displaykey.NVV.Financials.VoidStopCheck.Check.Comments"
+        required="true"
+        value="bulkInvoice.CheckVoidStopReasonTypeExt"/>
+      <!-- INVOICE -->
+      <Label
+        id="Invoice"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Invoice"/>
+      <Input
+        id="BulkInvoiceNumber"
+        label="displaykey.Java.Financials.BulkInvoiceNumber"
+        value="bulkInvoice.BulkInvoiceIDExt"/>
+      <Input
+        id="InvoiceNumber"
+        label="displaykey.Web.Financials.BulkPay.Invoice.InvoiceNumber"
+        value="bulkInvoice.InvoiceNumber"/>
+      <TypeKeyInput
+        id="BulkInvoiceType"
+        label="displaykey.Web.Financials.BulkPay.BulkInvoiceType"
+        value="bulkInvoice.BulkInvoiceTypeExt"/>
+      <DateInput
+        id="DateReceived"
+        label="displaykey.Web.Financials.BulkPay.Invoice.DateReceived"
+        requestValidationExpression="((util.DateUtil.compareIgnoreTime(util.DateUtil.currentDate(), VALUE) &lt; 0) ? displaykey.Web.Financials.BulkPay.Error.ReceivedDateAfterCurrentDate : null)"
+        value="bulkInvoice.ReceivedDate"/>
+      <Input
+        available="true"
+        formatType="currency"
+        id="GrossAmount"
+        label="displaykey.Web.Financials.BulkPay.Invoice.TotalAmount"
+        onChange="bulkInvoice.recalculateSplitAmounts()"
+        postOnChange="true"
+        required="bulkInvoice.SplitEqually"
+        validationExpression="bulkInvoice.BulkInvoiceTotal &lt; 0 ? displaykey.Web.Financials.BulkPay.Invoice.TotalAmountNotNegative : null"
+        value="bulkInvoice.BulkInvoiceTotal"/>
+      <BooleanRadioInput
+        falseLabel="displaykey.Web.Financials.BulkPay.Invoice.EnterIndividualAmounts"
+        id="DistributeTotal"
+        label="displaykey.Web.Financials.BulkPay.Invoice.SplitEqually"
+        onChange="bulkInvoice.splitBulkInvoiceItems()"
+        postOnChange="true"
+        trueLabel="displaykey.Web.Financials.BulkPay.Invoice.DistributeEvenly"
+        value="bulkInvoice.SplitEqually"/>
+      <InputDivider/>
+      <!-- TRACKING -->
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Tracking"/>
+      <Input
+        id="CheckStatus"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.Status"
+        value="bulkInvoice.Status"/>
+      <Input
+        id="CheckIssueDate"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.IssueDate"
+        value="bulkInvoice.IssueDate"/>
+      <Input
+        id="CheckDateApproved"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.DateApproved"
+        value="bulkInvoice.ApprovalDate"/>
+      <Input
+        formatType="currency"
+        id="TotalAmountApproved"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.TotalApprovedAmount"
+        value="bulkInvoice.TotalAmountOfAllApprovedInvoiceItems"/>
+      <Input
+        id="DatePrinted"
+        label="displaykey.NVV.Financials.Check.DatePrinted"
+        value="bulkInvoice.DatePrintedExt"
+        visible="bulkInvoice.PaymentMethod!=&quot;eft&quot;"/>
+      <Input
+        id="DateEndorsed"
+        label="displaykey.NVV.Financials.Check.DateEndorsed"
+        value="bulkInvoice.DateEndorsedExt"
+        visible="bulkInvoice.PaymentMethod!=&quot;eft&quot;"/>
+      <DateInput
+        id="WhenToPay"
+        label="displaykey.Web.Financials.BulkPay.Invoice.WhenToPay"
+        required="true"
+        value="bulkInvoice.ScheduledSendDate"/>
+      <Input
+        id="CreatedBy"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.CreatedBy"
+        value="bulkInvoice.CreateUser"/>
+      <Input
+        id="CreatedByGroup"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.CreatedByGroup"
+        value="getUserGroup(bulkInvoice)"/>
+      <Input
+        id="escheatmentstatus"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.EscheatmentStatus"
+        value="bulkInvoice.EscheatStatusExt"/>
+      <Input
+        id="escheatdate"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.EscheatDate"
+        value="bulkInvoice.DateEscheatedExt"/>
+      <InputDivider/>
+      <!-- <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.InvoiceItemDefaults"/> -->
+      <!-- <TypeKeyInput
+        editable="true"
+        id="DefaultCostType"
+        label="displaykey.Web.Financials.BulkPay.Invoice.DefaultCostType"
+        postOnChange="true"
+        value="bulkInvoice.DefaultCostType"/> -->
+      <!-- <TypeKeyInput
+        editable="true"
+        id="DefaultCostCategory"
+        label="displaykey.Web.Financials.BulkPay.Invoice.DefaultCostCategory"
+        postOnChange="true"
+        value="bulkInvoice.DefaultCostCategory"/> -->
+      <!-- <TypeKeyInput
+        editable="true"
+        id="DefaultPaymentType"
+        label="displaykey.Web.Financials.BulkPay.Invoice.DefaultPaymentType"
+        postOnChange="true"
+        value="bulkInvoice.DefaultPaymentType"/> -->
+      <!-- <InputDivider/> -->
+      <!-- INVOICE ITEM DETAILS  
+      
+      
+      
+       VALIDATION -->
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Validation.IsValid"
+        visible="bulkInvoice.Valid"/>
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Validation.IsNotValid"
+        visible="!bulkInvoice.Valid"/>
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Validation.ResultsTitle(gw.api.util.StringUtil.formatDate(bulkInvoice.LastValidatedDate, &quot;medium&quot;))"
+        visible="bulkInvoice.LastValidatedDate != null and (bulkInvoice.Valid or (!bulkInvoice.Valid and bulkInvoice.ValidationAlerts.length &gt; 0))"/>
+      <TextInput
+        align="center"
+        id="ValidationSuccess"
+        labelAbove="true"
+        value="displaykey.Web.Financials.BulkPay.Invoice.Validation.ResultsSuccess"
+        visible="bulkInvoice.Valid and bulkInvoice.LastValidatedDate != null"/>
+      <ListViewInput
+        labelAbove="true"
+        visible="bulkInvoice.LastValidatedDate != null and !bulkInvoice.Valid and bulkInvoice.ValidationAlerts.length &gt; 0">
+        <Toolbar/>
+        <ListViewPanel
+          id="BulkInvoiceValidationAlertsLV">
+          <RowIterator
+            editable="false"
+            elementName="validationAlert"
+            pageSize="5"
+            value="bulkInvoice.ValidationAlerts">
+            <Row>
+              <!-- <Cell
+                id="AlertType"
+                label="displaykey.Web.Financials.BulkPay.Invoice.Validation.AlertType"
+                value="validationAlert.AlertType"/> -->
+              <Cell
+                id="AlertMsg"
+                label="displaykey.Web.Financials.BulkPay.Invoice.Validation.AlertMsg"
+                value="validationAlert.AlertMsg"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <!-- APPROVAL INFORMATION -->
+      <TextInput
+        boldLabel="true"
+        id="NoApprovalHistory"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Approval.History"
+        value="displaykey.Web.Financials.BulkPay.Invoice.Approval.NoHistory"
+        visible="!bulkInvoice.New and (bulkInvoice.ApprovalHistory as Activity[]).length == 0"/>
+      <ListViewInput
+        def="ApprovalHistoryLV(bulkInvoice.ApprovalHistory as Activity[])"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Approval.History"
+        labelAbove="true"
+        visible="!bulkInvoice.New and (bulkInvoice.ApprovalHistory as Activity[]).length != 0">
+        <Toolbar/>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn>
+      <!-- CHECK -->
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.CheckDetails"/>
+      <Label
+        label="payeeLinkStatus.LinkStatusMessage"
+        visible="!bulkInvoice.New"/>
+      <Label
+        hideIfReadOnly="true"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Alert.PayeeNotChangeable"
+        visible="!isPayeeChangeable"/>
+      <AddressBookContactInput
+        editable="isPayeeChangeable"
+        id="Payee"
+        label="displaykey.Web.Financials.BulkPay.Invoice.PrimaryPayee"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        onPick="reflectPayeeFields(bulkInvoice)"
+        required="true"
+        value="bulkInvoice.Payee"/>
+      <RangeInput
+        id="PayeeRole"
+        label="displaykey.LV.Claim.EditableClaimContactRoles.Role"
+        optionLabel="ContactRole.get(VALUE as java.lang.String).DisplayName"
+        value="bulkInvoice.PayeeAdditionalRoleExt"
+        valueRange="bulkInvoice.Payee.getValidRoles()"
+        visible="bulkInvoice.BulkInvoiceTypeExt==&quot;other&quot;"/>
+      <!-- <Input
+        editable="isPayeeChangeable"
+        id="PayTo"
+        label="displaykey.Web.Financials.BulkPay.Invoice.PayTo"
+        required="true"
+        value="bulkInvoice.PayTo"/> -->
+      <TextAreaInput
+        id="PayToAddyOnChk"
+        label="displaykey.NVV.Financials.Check.PayTo"
+        maxChars="200"
+        numCols="50"
+        numRows="5"
+        value="bulkInvoice.getPayToAppearingOnCheck()"/>
+      <Input
+        id="NetCheckAmount"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Check.NetCheckAmount"
+        value="bulkInvoice.BulkInvoiceTotal"/>
+      <Input
+        id="For"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Memo.For"
+        value="bulkInvoice.Memo"/>
+      <InputDivider/>
+      <!-- INSTRUCTIONS -->
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Instruction"/>
+      <Input
+        editable="isPayeeChangeable"
+        id="MailToContact"
+        label="displaykey.Web.Financials.BulkPay.Invoice.MailTo"
+        required="true"
+        value="bulkInvoice.ex_MailTo"/>
+      <RangeInput
+        id="MailingAddress"
+        label="displaykey.Web.Financials.BulkPay.Invoice.MailToAddress"
+        newValue="new Address()"
+        optionLabel="VALUE.showAddressName()"
+        postOnChange="true"
+        required="true"
+        sortValueRange="false"
+        value="bulkInvoice.MailToAddressExt"
+        valueRange="bulkInvoice.Payee.AllAddresses"/>
+      <TypeKeyInput
+        id="PaymentMethod"
+        label="displaykey.Web.Financials.BulkPay.Invoice.PaymentMethod"
+        value="bulkInvoice.PaymentMethod"/>
+      <Input
+        available="false"
+        id="CheckBatching"
+        label="displaykey.Web.Financials.BulkPay.Invoice.CheckBatching"
+        value="bulkInvoice.CheckBatchingExt"/>
+      <Input
+        id="CheckDelivery"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.DeliveryMethod"
+        value="bulkInvoice.DeliveryMethod"/>
+      <TypeKeyInput
+        id="CheckInstructions"
+        label="displaykey.Web.Financials.BulkPay.Invoice.CheckInstructions"
+        value="bulkInvoice.CheckInstructions"/>
+      <Input
+        id="TaxReporting"
+        label="displaykey.Web.Financials.BulkPay.Invoice.Reportability"
+        value="bulkInvoice.Reportability"/>
+      <InputDivider/>
+      <!-- DETAILS -->
+      <Label
+        label="displaykey.Web.Financials.BulkPay.Invoice.Details"/>
+      <Input
+        action="bulkInvoiceCheckPopup.push(bulkInvoice)"
+        id="CheckNumber"
+        label="bulkInvoice.PaymentMethod==&quot;eft&quot; ? displaykey.NVV.Financials.ManualPaymentInstructions.Check.EFTRefNum : displaykey.Web.Financials.BulkPay.Invoice.CheckNumber"
+        value="bulkInvoice.CheckNumber"
+        visible="!bulkInvoice.new"/>
+      <TypeKeyInput
+        available="false"
+        id="BankAccount"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.BankAccount"
+        value="bulkInvoice.BankAccountExt"/>
+      <DateInput
+        id="DateofService"
+        label="displaykey.GAIC.Financials.BulkPay.Invoice.DOSFrom"
+        value="bulkInvoice.DateOfServiceFromExt"/>
+      <DateInput
+        id="DateofServiceTo"
+        label="displaykey.GAIC.Financials.BulkPay.Invoice.DOSTo"
+        value="bulkInvoice.DateOfServiceToExt"/>
+      <Input
+        id="PayeeType"
+        label="displaykey.Web.Financials.BulkPay.Invoice.PrimaryPayee.Type"
+        value="bulkInvoice.Payee.Subtype"/>
+      <Input
+        id="PayeeTaxID"
+        label="displaykey.Web.Financials.BulkPay.Invoice.PrimaryPayee.TaxID"
+        value="bulkInvoice.Payee.TaxID"/>
+    </InputColumn>
+    <Code><![CDATA[function reflectPayeeFields(bi : BulkInvoice) {
+        var payee = bi.Payee;
+        if (null !=  payee) {
+          bi.PayTo = payee.DisplayName;
+          bi.MailTo=payee.DisplayName;
+          bi.ex_MailTo = payee;
+          bi.MailToAddress = payee.PrimaryAddressDisplayValue;
+        }
+      }
+      function getUserGroup(bi : BulkInvoice):String{
+        var result:String
+        if(bi.CreateUser.AllGroups.first()==null){
+          result = "GAIC Claims"
+        } else {
+          result = bi.CreateUser.AllGroups.first().toString()
+        }
+        return result
+      }]]></Code>
+  </DetailViewPanel>
+</PCF>

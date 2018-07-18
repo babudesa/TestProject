@@ -1,0 +1,42 @@
+package rules.EventMessage.EventFired_dir.Destination9Escheatment_dir
+
+@gw.rules.RuleName("Create Escheat Doc")
+internal class CreateEscheatDoc {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Check &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.Claim.LoadCommandID)
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/
+
+var msgCheck:Check = messageContext.Root as Check;
+var theClaim:Claim = msgCheck.Claim;
+var attemptNumber:int;
+
+if(msgCheck.PaymentMethod=="check" and msgCheck.Status== "issued" and msgCheck.IssueDate != null 
+      and msgCheck.numEscheatNoticesSent() ==0 and gw.api.util.DateUtil.daysSince( msgCheck.IssueDate ) >= 180 and msgCheck.EscheatStatusExt =="escheatable"){
+  attemptNumber = 1;
+}
+else if(msgCheck.PaymentMethod=="check" and msgCheck.Status== "issued" and msgCheck.IssueDate != null 
+      and msgCheck.numEscheatNoticesSent() ==1 and gw.api.util.DateUtil.daysSince( msgCheck.IssueDate ) >= 210 and msgCheck.EscheatStatusExt =="escheatable"){
+  attemptNumber = 2;
+}
+else{
+  //shouldn't get here, but if we do abort.  We don't want to flood with documents
+  actions.exitToNext();
+}
+
+var messageContent = templates.messaging.escheat.EscheatmentNotice.renderToString(msgCheck, attemptNumber as java.lang.String)
+var message = messageContext.createMessage((messageContent.trim())); 
+  
+//make sure we don't send the same notice more than once
+msgCheck.escheatNotificationSent();
+   
+
+
+
+/*end00rule*/
+  }
+}

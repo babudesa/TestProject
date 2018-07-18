@@ -1,0 +1,54 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1E00VeterinarianRules_dir
+
+@gw.rules.RuleName("CPUEQ1E30 - Specialty Changed")
+internal class CPUEQ1E30SpecialtyChanged {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Updated sprzygocki 5/18/11 - changed role.getOwner() to now use role.getOwnerExt()
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(doc in claim.getRelatedContacts(Doctor)){
+    if((doc.Doctor.DoctorSpecialty == "veterinarian" and (doc.Doctor.OriginalVersion as Doctor).DoctorSpecialty != "veterinarian")){
+      for(role in claim.getClaimContact(doc).Roles){
+        if(role.getOwnerExt() typeis FixedPropertyIncident){
+          if((role.Incident as FixedPropertyIncident).VeterinarianExt == null){
+            (role.Incident as FixedPropertyIncident).VeterinarianExt = doc
+          }
+        }
+      }
+    }else if(doc.Doctor.DoctorSpecialty != "veterinarian" and (doc.Doctor.OriginalVersion as Doctor).DoctorSpecialty == "veterinarian"){
+      for(incident in claim.FixedPropertyIncidentsOnly){
+        if(incident.VeterinarianExt == doc){
+          incident.VeterinarianExt = null
+        }
+      }
+    }
+  }
+  
+  for(mco in claim.getRelatedContacts(MedicalCareOrg)){
+    if((mco.MedicalCareOrg.MedicalOrgSpecialty == "veterinarian" and (mco.MedicalCareOrg.OriginalVersion as MedicalCareOrg).MedicalOrgSpecialty != "veterinarian")){
+      for(role in claim.getClaimContact(mco).Roles){
+        if(role.getOwnerExt() typeis FixedPropertyIncident){
+          if((role.Incident as FixedPropertyIncident).VeterinarianExt == null){
+            (role.Incident as FixedPropertyIncident).VeterinarianExt = mco
+          }
+        }
+      }
+    }else if(mco.MedicalCareOrg.MedicalOrgSpecialty != "veterinarian" and (mco.MedicalCareOrg.OriginalVersion as MedicalCareOrg).MedicalOrgSpecialty == "veterinarian"){
+      for(incident in claim.FixedPropertyIncidentsOnly){
+        if(incident.VeterinarianExt == mco){
+          incident.VeterinarianExt = null
+        }
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}
+
+
+/*end00rule*/
+  }
+}

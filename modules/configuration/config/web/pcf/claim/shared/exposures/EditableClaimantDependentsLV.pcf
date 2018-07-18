@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- DEVEND    EXTENSION ARRAYS THAT SHOULD BE RETAINED IN QA/CUSTOMER BUILDS  
+    Dependents list view; shows how to use claim contacts plus extension fields
+    to add another array to an exposure. See also the extension fields on
+    ClaimContact (extensions.xml) and the extension NVV fields in
+    nvv_exposure_ext.xml
+    This file automatically generated from lv_exposure.xml -->
+  <ListViewPanel
+    id="EditableClaimantDependentsLV">
+    <Require
+      name="ClaimContactRoleList"
+      type="ClaimContactRole[]"/>
+    <Require
+      name="ClaimContactRoleOwner"
+      type="contact.ClaimContactRoleOwner"/>
+    <Require
+      name="role"
+      type="ContactRole"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      hideCheckBoxesIfReadOnly="true"
+      toCreateAndAdd="ClaimContactRoleOwner.addEmptyRole(role)"
+      toRemove="if (!ClaimContactRole.New){updateToFormerRole(ClaimContactRole)};/*ClaimContactRole.Contact.createFormerRole(ClaimContactRole.Exposure.Claim, ClaimContactRole)}*/ClaimContactRoleOwner.removeRole(ClaimContactRole)"
+      value="ClaimContactRoleList">
+      <Row>
+        <!-- <ClaimContactCell
+          action="ClaimPartiesInvolvedDetail.drilldown"
+          claim="ClaimContactRoleOwner.Claim"
+          editable="true"
+          id="EditableClaimantDependents_Dependent"
+          label="displaykey.LV.EditableClaimantDependents.Dependent"
+          newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+          required="true"
+          sortValueRange="false"
+          value="ClaimContactRole.Contact"
+          valueRange="ClaimContactRoleOwner.Claim.RelatedPersonArray"
+          wrap="false"/> -->
+        <!-- Post on Change needed for the View Contact menu to work on added contacts. -->
+        <RangeCell
+          action="ClaimContactDetailPopup.push(ClaimContactRole.Contact, ClaimContactRoleOwner.Claim)"
+          editable="true"
+          id="EditableClaimantDependents_Dependent1"
+          label="displaykey.LV.EditableClaimantDependents.Dependent"
+          postOnChange="true"
+          required="true"
+          sortValueRange="false"
+          validationExpression="validateDependentAndFormerDependent(ClaimContactRole)"
+          value="ClaimContactRole.Contact"
+          valueRange="ClaimContactRoleOwner.Claim.RelatedPersonArray.where(\ person -&gt; person != ClaimContactRoleOwner.Claim.claimant)"
+          visible="!ClaimContactRoleOwner.Claim.Policy.Verified ">
+          <MenuItemSetRef
+            def="ClaimViewContactDetailsPickerMenuItemSet(ClaimContactRole.ClaimContact.Claim,ClaimContactRole.Contact)"/>
+        </RangeCell>
+        <!-- Post on Change needed for the View Contact menu to work on added contacts. -->
+        <RangeCell
+          action="ClaimContactDetailPopup.push(ClaimContactRole.Contact, ClaimContactRoleOwner.Claim)"
+          editable="true"
+          id="EditableClaimantDependents_Dependent2"
+          label="displaykey.LV.EditableClaimantDependents.Dependent"
+          postOnChange="true"
+          required="true"
+          sortValueRange="false"
+          validationExpression="validateDependentAndFormerDependent(ClaimContactRole)"
+          value="ClaimContactRole.Contact"
+          valueRange="ClaimContactRoleOwner.Claim.RelatedPersonArray.where(\ person -&gt; person != ClaimContactRoleOwner.Claim.claimant)"
+          visible="ClaimContactRoleOwner.Claim.Policy.Verified">
+          <MenuItemSetRef
+            def="ClaimPersonViewPickerMenuItemSet(Person.Type,ClaimContactRole.Contact,ClaimContactRole.ClaimContact.Claim)"/>
+        </RangeCell>
+        <Cell
+          editable="true"
+          id="EditableClaimantDependents_DependentType"
+          label="displaykey.LV.EditableClaimantDependents.DependentType"
+          required="true"
+          value="ClaimContactRole.ClaimContact.DependentType"
+          wrap="false"/>
+        <Cell
+          id="EditableClaimantDependents_DateOfBirth"
+          label="displaykey.LV.EditableClaimantDependents.DateOfBirth"
+          value="ClaimContactRole.ClaimContact.Contact != null ? ClaimContactRole.ClaimContact.Person.DateOfBirth : null"
+          wrap="false"/>
+        <Cell
+          editable="true"
+          id="EditableClaimantDependents_BenefitEndReasonType"
+          label="displaykey.LV.EditableClaimantDependents.BenefitEndReason"
+          value="ClaimContactRole.ClaimContact.BenefitEndReasonType"
+          wrap="false"/>
+        <Cell
+          editable="true"
+          id="EditableClaimantDependents_BenefitEndDate"
+          label="displaykey.LV.EditableClaimantDependents.BenefitEndDate"
+          value="ClaimContactRole.ClaimContact.BenefitEndDate"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[/**
+ * Adds the FormerClaimantDependent role to ClaimContact and clears stale data related to the ClaimantDependent role.
+ * Defect 8270 (2/8/16), Note: This works differently than the createFormerRole function in ContactFunction.gsx
+ */
+function updateToFormerRole(ccRole: ClaimContactRole){
+  // Set the old value to former dependent
+  var originalClaimContactId = ccRole.getOriginalValue("ClaimContact") as Key
+
+  // Set as former dependent, dependent role on the old ClaimContact is removed as a result of changing the value
+  if (originalClaimContactId!=null){
+    var originalClaimContact = ccRole.Bundle.loadByKey(originalClaimContactId) as ClaimContact;
+    ccRole.Exposure.addRole(ContactRole.TC_FORMERCLAIMANTDEP, originalClaimContact.Contact)
+
+    // Clear stale data from the ClaimContact
+    originalClaimContact.DependentType = null
+    originalClaimContact.BenefitEndReasonType = null
+    originalClaimContact.BenefitEndDate = null
+  }
+}
+
+/**
+ * If an added dependent already has a former dependent role on the same feature, remove that former role.
+ * Defect 8270 (2/8/16), Note: This works differently than the createFormerRole function in ContactFunction.gsx
+ */
+function removeOldFormerRoleFromNewDependent(ccRole : ClaimContactRole){
+
+  var staleFormerClaimContactRole = ccRole.ClaimContact.Roles.firstWhere(\ aClaimContactRole -> aClaimContactRole.Role.equals(ContactRole.TC_FORMERCLAIMANTDEP) 
+    and aClaimContactRole.Exposure == ccRole.Exposure)
+      
+  if (staleFormerClaimContactRole != null){
+    if (staleFormerClaimContactRole.Exposure != null){
+      staleFormerClaimContactRole.Exposure.removeRole(ContactRole.TC_FORMERCLAIMANTDEP, staleFormerClaimContactRole.Contact)
+    } else {
+      staleFormerClaimContactRole.ClaimContact.Claim.removeRole(ContactRole.TC_FORMERCLAIMANTDEP, staleFormerClaimContactRole.Contact)
+    }
+  }
+}
+
+/**
+ * Runs on ClaimContactRole.Contact's validation field instead of onChange - that way it executes only on submit.
+ *   If the ClaimContactRole is new, just remove the matching former role, if any.
+ *   Otherwise, the role has been removed, so also add FormerClaimantDependent to the original ClaimContact.
+ * Defect 8270 (2/8/16), Note: This works differently than the createFormerRole function in ContactFunction.gsx
+ */
+function validateDependentAndFormerDependent(ccRole: ClaimContactRole) : String {
+ 
+  if (ccRole.New){ // Role is newly added - Just ensure there is no leftover FormerDependent role
+    removeOldFormerRoleFromNewDependent(ccRole)
+  }
+  else if (ccRole.Contact != (ccRole.OriginalVersion as ClaimContactRole).Contact) { // Role was changed - Set the old Contact to FormerDependent, then ensure there is no leftover FormerDependent role 
+    updateToFormerRole(ccRole)
+    removeOldFormerRoleFromNewDependent(ccRole)
+  }
+  return null
+}]]></Code>
+  </ListViewPanel>
+</PCF>

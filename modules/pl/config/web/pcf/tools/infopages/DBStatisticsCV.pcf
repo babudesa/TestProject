@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <CardViewPanel
+    id="DBStatisticsCV"
+    mode="default">
+    <Require
+      name="PageHelper"
+      type="gw.api.tools.DatabaseStatisticsHelper"/>
+    <Variable
+      name="PickedSourceTable"
+      type="database.TableStatistics"/>
+    <Variable
+      name="PickedStagingTable"
+      type="database.TableStatistics"/>
+    <Variable
+      name="PickedTypelistTable"
+      type="database.TableStatistics"/>
+    <Card
+      id="UnanalyzedIndexesCard"
+      title="displaykey.Web.DBCatStatsCV.Default.UnanalyzedIndexesCard"
+      visible="PageHelper.DatabaseStatistics.UnanalyzedIndexStatistics.length &gt; 0">
+      <!-- Output the Unanalyzed Index and Histogram stats -->
+      <PanelRef
+        def="DBCatStatsUnanalyzedIndexesLV(PageHelper, PageHelper.DatabaseStatistics.UnanalyzedIndexStatistics)">
+        <Toolbar/>
+      </PanelRef>
+    </Card>
+    <Card
+      id="UnanalyzedHistogramsCard"
+      title="displaykey.Web.DBCatStatsCV.Default.UnanalyzedHistogramsCard"
+      visible="PageHelper.DatabaseStatistics.UnanalyzedHistograms.length &gt; 0">
+      <PanelRef
+        def="DBCatStatsUnanalyzedHistogramsLV(PageHelper, PageHelper.DatabaseStatistics.UnanalyzedHistograms)">
+        <Toolbar/>
+      </PanelRef>
+    </Card>
+    <!-- Output index tables -->
+    <Card
+      id="StaleIndexStatsCard"
+      title="displaykey.Web.DBCatStatsCV.Default.StaleIndexStatsCard"
+      visible="PageHelper.NumOutOfDateIndices &gt; 0">
+      <PanelRef
+        def="OutOfDateIndexStatisticsDV(PageHelper, PageHelper.OutOfDateSourceIndices,                     PageHelper.OutOfDateSourceIndicesDescription)"
+        id="SourceIndices"
+        visible="PageHelper.OutOfDateSourceIndices.length &gt; 0"/>
+      <PanelRef
+        def="OutOfDateIndexStatisticsDV(PageHelper, PageHelper.OutOfDateStagingIndices,                     displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.OutOfDateIndexesOnStagingTables)"
+        id="StagingIndices"
+        visible="PageHelper.OutOfDateStagingIndices.length &gt; 0"/>
+      <PanelRef
+        def="OutOfDateIndexStatisticsDV(PageHelper, PageHelper.OutOfDateTypelistIndices,                     displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.OutOfDateIndexesOnTypelistTables)"
+        id="TypelistIndices"
+        visible="PageHelper.OutOfDateTypelistIndices.length &gt; 0"/>
+    </Card>
+    <Card
+      id="StaleHistogramStatsCard"
+      title="displaykey.Web.DBCatStatsCV.Default.StaleHistogramStatsCard"
+      visible="PageHelper.NumOutOfDateHistograms &gt; 0">
+      <!-- Output histogram tables -->
+      <PanelRef
+        def="OutOfDateHistogramsDV(PageHelper, PageHelper.OutOfDateSourceHistograms,                     PageHelper.OutOfDateSrcHistogramsDescription)"
+        id="SourceHistograms"
+        visible="PageHelper.OutOfDateSourceHistograms.length &gt; 0"/>
+      <PanelRef
+        def="OutOfDateHistogramsDV(PageHelper, PageHelper.OutOfDateStagingHistograms,                     displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.OutOfDateHistogramsOnStagingTables)"
+        id="StagingHistograms"
+        visible="PageHelper.OutOfDateStagingIndices.length &gt; 0"/>
+      <PanelRef
+        def="OutOfDateHistogramsDV(PageHelper, PageHelper.OutOfDateTypelistHistograms,                     displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.OutOfDateHistogramsOnTypelistTables)"
+        id="TypelistHistograms"
+        visible="PageHelper.OutOfDateTypelistIndices.length &gt; 0"/>
+    </Card>
+    <!-- Output table catalog statistics -->
+    <Card
+      id="ApplicationTablesCard"
+      title="displaykey.Web.DBCatStatsCV.Default.ApplicationTablesCard">
+      <PanelRef
+        def="DBStatisticsOneTableDV(PageHelper, PickedSourceTable)"
+        id="DisplaySourceTableStats"
+        visible="true">
+        <Toolbar>
+          <ToolbarRangeInput
+            editable="true"
+            id="rangeInput"
+            label="displaykey.Web.TableCatalogStatisticsDV.RangeInput"
+            optionLabel="PageHelper.isStatisticsOnly() ? VALUE.getTable().getName() : displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.TableNameAndCount(VALUE.getTable().getName(), VALUE.getActualRowCount())"
+            postOnChange="true"
+            sortValueRange="false"
+            value="PickedSourceTable"
+            valueRange="PageHelper.SourceTableStatistics"/>
+        </Toolbar>
+      </PanelRef>
+    </Card>
+    <Card
+      id="StagingTablesCard"
+      title="displaykey.Web.DBCatStatsCV.Default.StagingTablesCard"
+      visible="PageHelper.StagingTableStatistics.length &gt; 0">
+      <PanelRef
+        def="DBStatisticsOneTableDV(PageHelper, PickedStagingTable)"
+        id="DisplayStagingTableStats">
+        <Toolbar>
+          <ToolbarRangeInput
+            editable="true"
+            id="rangeInput"
+            label="displaykey.Web.TableCatalogStatisticsDV.RangeInput"
+            optionLabel="PageHelper.isStatisticsOnly() ? VALUE.getTable().getName() : displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.TableNameAndCount(VALUE.getTable().getName(), VALUE.getActualRowCount())"
+            postOnChange="true"
+            sortValueRange="false"
+            value="PickedStagingTable"
+            valueRange="PageHelper.StagingTableStatistics"/>
+        </Toolbar>
+      </PanelRef>
+    </Card>
+    <Card
+      id="TypelistTablesCard"
+      title="displaykey.Web.DBCatStatsCV.Default.TypelistTablesCard"
+      visible="PageHelper.TypelistTableStatistics.length &gt; 0">
+      <PanelRef
+        def="DBStatisticsOneTableDV(PageHelper, PickedTypelistTable)"
+        id="DisplayTypeListTableStats">
+        <Toolbar>
+          <ToolbarRangeInput
+            editable="true"
+            id="rangeInput"
+            label="displaykey.Web.TableCatalogStatisticsDV.RangeInput"
+            optionLabel="PageHelper.isStatisticsOnly() ? VALUE.getTable().getName() : displaykey.Web.InternalTools.InfoPages.DBCatalogStatistics.TableNameAndCount(VALUE.getTable().getName(), VALUE.getActualRowCount())"
+            postOnChange="true"
+            sortValueRange="false"
+            value="PickedTypelistTable"
+            valueRange="PageHelper.TypelistTableStatistics"/>
+        </Toolbar>
+      </PanelRef>
+    </Card>
+  </CardViewPanel>
+</PCF>

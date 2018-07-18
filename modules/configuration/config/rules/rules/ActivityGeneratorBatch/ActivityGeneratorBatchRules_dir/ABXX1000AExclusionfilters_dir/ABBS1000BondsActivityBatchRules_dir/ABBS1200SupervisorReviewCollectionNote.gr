@@ -1,0 +1,46 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABBS1000BondsActivityBatchRules_dir
+
+@gw.rules.RuleName("ABBS1200 - Supervisor Review - Collection Note")
+internal class ABBS1200SupervisorReviewCollectionNote {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 5/12/2014 - kniese
+// Bonds activity that is generated 67 days after the feature financial status
+// is closed and there is payment on the exposure and no collection note has been
+// created. 
+
+(!exists( note in
+claim.Notes where note.Topic == NoteTopicType.TC_COLLECTION )) and
+(exists(act in claim.Activities where 
+    act.ActivityPattern.Code == "coll_note_required")) and
+(!exists(act in claim.Activities where 
+    act.ActivityPattern.Code == "supervisor_review")) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {  
+  var today = gw.api.util.DateUtil.currentDate()
+  var ap = util.custom_Ext.finders.findActivityPattern( "supervisor_review" )
+
+  for(exposure in claim.Exposures){
+    if(exposure.getFeatureFinancialStatus() == "Closed") {
+      for(pay in exposure.getPaymentsIterator(false) ){
+        if((pay as Payment).Check.Status == "issued"){
+          var issuedDate = (pay as Payment).Check.IssueDate 
+           if(gw.api.util.DateUtil.daysBetween(today, issuedDate) >=
+                 ScriptParameters.Activity_BondsSupervisorReviewCollectionNote){
+             var act = claim.createActivityFromPattern( exposure, ap)
+    
+             //act.setCreateTime(today.addDays(1))
+             act.AssignedUser = claim.AssignedGroup.Supervisor
+             act.AssignedByUser = claim.AssignedUser
+           }
+        }
+      }
+    }
+  }
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

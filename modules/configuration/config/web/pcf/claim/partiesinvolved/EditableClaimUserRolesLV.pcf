@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    id="EditableClaimUserRolesLV">
+    <Require
+      name="ClaimUserModel"
+      type="ClaimUserModel"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <RowIterator
+      checkBoxVisible="UserRoleAssignment.Role != typekey.UserRole.TC_SCOASSIST and UserRoleAssignment.Role != typekey.UserRole.TC_SIU and UserRoleAssignment.Role != typekey.UserRole.TC_RECOVERYASSIST "
+      editable="true"
+      elementName="UserRoleAssignment"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="ClaimUserModel.addToUserRoleAssignments(UserRoleAssignment)"
+      toRemove="ClaimUserModel.removeFromUserRoleAssignments(UserRoleAssignment)"
+      value="ClaimUserModel.UserRoleAssignments">
+      <Row
+        editable="(UserRoleAssignment.Role !=typekey.UserRole.TC_SENSITIVECLAIM and UserRoleAssignment.Role !=typekey.UserRole.TC_TEMPCLAIMEDITOR and UserRoleAssignment.Role !=typekey.UserRole.TC_TRANSFERCLAIM and UserRoleAssignment.Role !=typekey.UserRole.TC_SECUREADJUSTER) ? true : false">
+        <RangeCell
+          editable="UserRoleAssignment.Role == null"
+          id="Role"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.Role"
+          onChange="if(UserRoleAssignment.Role == typekey.UserRole.TC_SECURECLAIM) { UserRoleAssignment.Exposure = null } if (UserRoleAssignment.Role == typekey.UserRole.TC_SCOASSIST and UserRoleAssignment.Active == true) { UserRoleAssignment.RptActiveDateExt = gw.api.util.DateUtil.currentDate()} if (UserRoleAssignment.Role == typekey.UserRole.TC_SIU and UserRoleAssignment.Active == true) { UserRoleAssignment.RptActiveDateExt = gw.api.util.DateUtil.currentDate() }if (UserRoleAssignment.Role == typekey.UserRole.TC_RECOVERYASSIST and UserRoleAssignment.Active == true) { UserRoleAssignment.RptActiveDateExt = gw.api.util.DateUtil.currentDate() }    "
+          postOnChange="true"
+          required="true"
+          value="UserRoleAssignment.Role"
+          valueRange="getValueRange()"/>
+        <RangeCell
+          editable="UserRoleAssignment.Role != typekey.UserRole.TC_SECURECLAIM"
+          id="Exposure"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.Exposure"
+          sortValueRange="false"
+          value="UserRoleAssignment.Exposure"
+          valueRange="claim.Exposures"/>
+        <Cell
+          editable="UserRoleAssignment.Role != typekey.UserRole.TC_SECURECLAIM"
+          id="Active"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.Active"
+          onChange="if (UserRoleAssignment.Active == true) {UserRoleAssignment.RptInactiveDateExt = null} if  (UserRoleAssignment.Active == true) {UserRoleAssignment.RptActiveDateExt = gw.api.util.DateUtil.currentDate()} if (UserRoleAssignment.Role == typekey.UserRole.TC_SCOASSIST and UserRoleAssignment.Active == false) {UserRoleAssignment.RptInactiveDateExt = gw.api.util.DateUtil.currentDate()} if (UserRoleAssignment.Role == typekey.UserRole.TC_RECOVERYASSIST and UserRoleAssignment.Active == false) {UserRoleAssignment.RptInactiveDateExt = gw.api.util.DateUtil.currentDate()} if (UserRoleAssignment.Role == typekey.UserRole.TC_SIU and UserRoleAssignment.Active == false) {UserRoleAssignment.RptInactiveDateExt = gw.api.util.DateUtil.currentDate()}"
+          postOnChange="true"
+          requestValidationExpression="UserRoleAssignment.Active == false and UserRoleAssignment.RptActiveDateExt == null ? &quot;Active date required before role can be changed to inactive.&quot; : null"
+          value="UserRoleAssignment.Active"/>
+        <DateCell
+          dateFormat="short"
+          editable="UserRoleAssignment.Role != typekey.UserRole.TC_SECURECLAIM and UserRoleAssignment.Active == true and UserRoleAssignment.Role != typekey.UserRole.TC_SCOASSIST and UserRoleAssignment.Role != typekey.UserRole.TC_SIU and UserRoleAssignment.Role != typekey.UserRole.TC_RECOVERYASSIST"
+          id="ActiveDate"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.ActiveDate"
+          postOnChange="true"
+          requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+          required="true"
+          value="UserRoleAssignment.RptActiveDateExt"
+          visible="true"/>
+        <DateCell
+          dateFormat="short"
+          editable="UserRoleAssignment.Role != typekey.UserRole.TC_SECURECLAIM and UserRoleAssignment.Role != typekey.UserRole.TC_SCOASSIST and UserRoleAssignment.Role !=typekey.UserRole.TC_SIU and UserRoleAssignment.Role !=typekey.UserRole.TC_RECOVERYASSIST"
+          id="InactiveDate"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.InactiveDate"
+          postOnChange="true"
+          requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+          required="true"
+          validationExpression="UserRoleAssignment.RptInactiveDateExt != null and UserRoleAssignment.RptActiveDateExt !=null and gw.api.util.DateUtil.compareIgnoreTime(UserRoleAssignment.RptActiveDateExt, UserRoleAssignment.RptInactiveDateExt) &gt;= 1 ? &quot;The Inactive Date cannot be set to a date prior to the Active Date.&quot; : null"
+          value="UserRoleAssignment.RptInactiveDateExt"
+          valueVisible="UserRoleAssignment.Active == false"/>
+        <Cell
+          editable="true"
+          id="Comments"
+          label="displaykey.LV.Claim.EditableClaimUserRoles.Comments"
+          value="UserRoleAssignment.Comments"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function createUserRoleAssignment(userRoleAssign : UserRoleAssignment) {
+  
+  if (userRoleAssign.RptActiveDateExt == null && userRoleAssign.Active){
+    userRoleAssign.RptActiveDateExt = gw.api.util.DateUtil.currentDate()
+  }
+  ClaimUserModel.addToUserRoleAssignments(userRoleAssign)
+}
+
+
+function getValueRange() : List<typekey.UserRole>{
+  var returnList: List<typekey.UserRole> = null
+  if(claim.PermissionRequired =="unsecuredclaim"){
+    returnList = typekey.UserRole.getTypeKeys(false).where(\ u -> !typekey.UserRole.TF_USER_ROLE_UNSECURE.TypeKeys.contains(u))
+    }else{
+      returnList = typekey.UserRole.getTypeKeys(false).where(\ u -> !typekey.UserRole.TF_USER_ROLE_SECURE.TypeKeys.contains(u))
+    }
+  return returnList.toList()
+}]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Financial Transaction Status and Status Transitions</title>
+    <link rel="StyleSheet" href="css/financials.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="financials.11.01.html#3103665">Financials Integration</a> : Financial Transaction Status and Status Transitions</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="3103665">Financial Transaction Status and Status Transitions</a></div>
+      <div class="B_-_Body"><a name="3103722">The most important thing for you to understand about financials integration is the </a><span class="e_-_emphasis">status</span>&nbsp;<span class="e_-_emphasis">value</span> of a check or transaction. The transaction status value represents the current lifecycle state of a financial transaction or check in ClaimCenter. For example, a check status might have the value <span class="cv_-_computer_voice">issued</span> or <span class="cv_-_computer_voice">pendingvoid</span>.</div>
+      <div class="B_-_Body"><a name="3103723">The status value tracks and controls the flow of a transaction or check through the ClaimCenter check creation </a>and approval process, and the transaction’s subsequent submission to an external system. In the case of checks, the status value also affects what actions are <span class="e_-_emphasis">possible</span> after submission to an external system. For each type of financial transaction object (a check, a reserve, and so on), status codes have specific meanings explained later in this section for each kind of financial transaction.</div>
+      <div class="B_-_Body"><a name="3103803">In most cases, the status of a transaction can escalate in only one direction for two specific status values. For </a>example, reserves can transition from <span class="cv_-_computer_voice">null</span> →&nbsp;<span class="cv_-_computer_voice">pendingapproval</span>, but not from <span class="cv_-_computer_voice">pendingapproval</span>&nbsp;→&nbsp;<span class="cv_-_computer_voice">null</span>.</div>
+      <div class="B_-_Body"><a name="3103810">To detect status changes to financial transaction, create a messaging destination that listens for entity status </a>changed events such as <span class="cv_-_computer_voice">CheckStatusChanged</span>, <span class="cv_-_computer_voice">PaymentStatusChanged</span>, <span class="cv_-_computer_voice">RecoveryStatusChanged</span>, and so on. You can write business rules in the Event Fired rule set to trigger custom actions, perhaps to log each change, or to send notifications to external systems. For more information about the messaging system, see <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.01.html#3808509', '');" title="Messaging and Events">“Messaging and Events”</a>.</div>
+      <div class="B_-_Body"><a name="3103503">The </a><span class="ps_-_parameter_in_code_snippets">Entityname</span><span class="cv_-_computer_voice">StatusChanged</span> events trigger after any code creates a financial transaction entity. For example, if you create a new check in ClaimCenter, ClaimCenter triggers a <span class="cv_-_computer_voice">CheckAdded</span> and a <span class="cv_-_computer_voice">CheckStatusChanged</span> event.</div>
+      <div class="B_-_Body"><a name="3103453">Messages to external systems could represent things like the following:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3251758">sending a check to a check printing service</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3251762">voiding a check in an accounting system</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3251764">a brief user notification email</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="3251766">sending a message to a mainframe that records changes to all financial transactions.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="3103394">Some status transitions always trigger requests and notifications to an external system. If a financial transaction </a>or a transaction change is ready to send to an external system, ClaimCenter changes the financial transaction’s status to a status that indicates the pending change. As the transaction’s status changes, ClaimCenter generates an event. In the Event Fired rule set you can handle this event. You can generate new messages to external systems in your Event Fired rules. As the main changes that triggered the issue commit to the database, any new <span class="cv_-_computer_voice">Message</span> objects also commit to the database. </div>
+      <div class="B_-_Body"><a name="3280533">In a separate thread, ClaimCenter sends the message with the messaging plugins. </a></div>
+      <div class="B_-_Body"><a name="3280544">After the external system acknowledges the message, you must call special methods on the financial objects that </a>indicate completed status transition to another status. See <a href="javascript:WWHClickedPopup('integration', 'financials.11.02.html#3079348', '');" title="Financial Transaction Status and Status Transitions">“How Do Status Transitions Happen?”</a> and <a href="javascript:WWHClickedPopup('integration', 'financials.11.02.html#3079483', '');" title="Financial Transaction Status and Status Transitions">“Message Acknowledgement-based Status Transitions”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="3079348">How Do Status Transitions Happen?</a></div>
+      <div class="B_-_Body"><a name="3079349">The status of a financial transaction can change for the following reasons:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="3262466">Message acknowledgements from an external system.</a></span> Some status transitions happen as a consequence of successful acknowledgement of a special message by an external system. This does not happen automatically. You must call a special financials acknowledgement API for the transition to complete. For more information on this process, see <a href="javascript:WWHClickedPopup('integration', 'financials.11.02.html#3079483', '');" title="Financial Transaction Status and Status Transitions">“Message Acknowledgement-based Status Transitions”</a>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="3262483">User action.</a></span> User actions trigger some status transitions, such as initiating a void on a check. If you want to customize PCF files to generate different user actions or current actions in different contexts, you <span class="s_-_strong">must</span> restrict changes to valid status transitions documented in this topic. Discuss any special needs with Guidewire Customer Support for any edge cases. For the list of valid check status transitions, see <a href="javascript:WWHClickedPopup('integration', 'financials.11.04.html#3105072', '');" title="Check Integration">“Check Integration”</a>. Other status changes happen if a user edits, deletes, approves, or rejects a transaction, all of which can occur only in certain circumstances listed in this topic by transaction type. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="3262487">Financials escalation batch processes.</a></span> Some transitions occur as a consequence of batch processes that move transactions from one status to another, such as from awaiting submission to submitting. For more information about configuring these batch processes, see the <span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'cover-config.html#1151903', '');" title="ClaimCenter Configuration Guide">ClaimCenter Configuration Guide</a></span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="3252939">External systems update check or bulk invoice status with a web service API.</a></span> Some transitions happen using the <span class="cv_-_computer_voice">updateCheckStatus</span> method, which directly affects checks and indirectly affects associated payments. For example, suppose a bank informs the accounts payable system that a check clears. The accounts payable system in turn can use a web service API to update the ClaimCenter check status to the status <span class="cv_-_computer_voice">cleared</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="3262646">Avoid calling locally-hosted SOAP APIs from within a plugin or the rules engine. There </a>are various problems if you call SOAP APIs that modify entities that are currently in use. Additionally, messaging plugins must avoid calling other APIs that might change the message root entity in another bundle. For more details, refer to <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.02.html#3812734', '');" title="Messaging Overview">“Do Not Call SOAP APIs on the Same Server From Messaging Plugins”</a>. If there are SOAP APIs related to financials you want to call from plugin code and you do not know of a workaround, contact Guidewire Customer Support.</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ri_-_run_in_header"><a name="3261545">Messaging plugin code calling methods on check or bulk invoice entity.</a></span> Messaging plugin code from the same server can call domain methods on the check or bulk invoice. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="3280313">For example, your plugin code could use code like the following.</a></div>
+      <div class="LP_-_List_Para"><a name="3280358">To set the check status to </a><span class="cv_-_computer_voice">voided</span> from Gosu</div>
+      <PRE class="CF_-_Code_First_Line"><a name="3280320">(Message.MessageRoot as Check).updateCheckStatus(</a><span class="pc_-_parameter_in_code">checkNumber</span>, <span class="pc_-_parameter_in_code">issueDate</span>, TransactionStatus.VOIDED)</PRE>
+      <div class="LP_-_List_Para"><a name="3280369">To set the check status to </a><span class="cv_-_computer_voice">voided</span> from Java</div>
+      <PRE class="CF_-_Code_First_Line"><a name="3280345">((Check) Message.getMessageRoot()).updateCheckStatus(</a><span class="pc_-_parameter_in_code">checkNumber</span>, <span class="pc_-_parameter_in_code">issueDate</span>, TransactionStatus.VOIDED)</PRE>
+      <div class="LP_-_List_Para"><a name="3280392">To set the bulk invoice status to </a><span class="cv_-_computer_voice">voided</span> from Gosu:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="3280393">(Message.MessageRoot as BulkInvoice).updateBulkInvoiceStatus(</a><span class="pc_-_parameter_in_code">checkNumber</span>, <span class="pc_-_parameter_in_code">issueDate</span>,</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="3302018">&nbsp;</a>TransactionStatus.VOIDED)</PRE>
+      <div class="LP_-_List_Para"><a name="3280405">To set the bulk invoice status to </a><span class="cv_-_computer_voice">voided</span> from Java:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="3280406">((Check) Message.getMessageRoot()).updateBulkInvoiceStatus(</a><span class="pc_-_parameter_in_code">checkNumber</span>, <span class="pc_-_parameter_in_code">issueDate</span>,</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="3302030">&nbsp;</a>TransactionStatus.VOIDED)</PRE>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3261516">From plugin code, including messaging plugins, do not call SOAP APIs on the same </a>server. To change the status of an item from plugin code, use the check or bulk invoice methods discussed in the preceding paragraphs. For other types of transactions (such as <span class="cv_-_computer_voice">Recovery</span>), there is <span class="s_-_strong">no</span> supported API to change the status <span class="e_-_emphasis">directly</span>.</div>
+      <div class="LP_-_List_Para"><a name="3261550">You can only use these methods in very specific contexts:</a></div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="3261569">Only from messaging plugins. Never use these methods from rule sets or other Gosu or Java contexts.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="3261587">Only after submitting the acknowledgement for a message. If this message is associated with status transi</a>tions that occur only using the special financials acknowledgement APIs, call those APIs first before attempting other status changes. This would be either in your <span class="cv_-_computer_voice">MessageTransport</span> plugin after a synchronous send and acknowledgement or in your <span class="cv_-_computer_voice">MessageReply</span> plugin after your asynchronous acknowledgement of the message.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="3261600">Do not attempt to use </a><span class="cv_-_computer_voice">check.updateCheckStatus()</span> or <span class="cv_-_computer_voice">bulkinvoice.updateBulkInvoiceStatus()</span> from any other context than those listed above. It is dangerous to do so.</div>
+      <div class="B_-_Body"><a name="3079556">Notice that changing the </a><span class="cv_-_computer_voice">Status</span> property directly is not mentioned in the preceding list. Under no circumstances ever change the <span class="cv_-_computer_voice">Check.Status</span> property or any other <span class="ps_-_parameter_in_code_snippets">transaction</span><span class="cv_-_computer_voice">.Status</span> property directly in business rules or any other Gosu. Only use the appropriate message acknowledgements or check status update API. Even in those cases, be careful only to make transitions that this documentation identifies as valid status transitions for each transaction type.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="3103457">You must never directly update any </a><span class="ps_-_parameter_in_code_snippets">transaction</span><span class="cv_-_computer_voice">.Status</span> property directly. Doing so is unsupported and dangerous. Only use the supported APIs discussed in this section, and only for the supported status transitions documented for that type of transaction. </div>
+      <div class="H2_-_Heading_2"><a name="3079483">Message Acknowledgement-based Status Transitions</a></div>
+      <div class="B_-_Body"><a name="3079110">As mentioned in </a><a href="javascript:WWHClickedPopup('integration', 'financials.11.02.html#3079348', '');" title="Financial Transaction Status and Status Transitions">“How Do Status Transitions Happen?”</a>, <span class="s_-_strong">some</span> status transitions must happen as a consequence of handling a message to an external system. For this reason, it is critical for you to understand how events and messaging relate to check and transaction status values. </div>
+      <div class="B_-_Body"><a name="3278695">For some status transitions, the successful acknowledgement of the message completes some larger process. For </a>example, during a standard check transfer, the status must transition from changing from the status <span class="cv_-_computer_voice">pendingtransfer</span> → <span class="cv_-_computer_voice">transferred</span>. In these cases, the transitions are <span class="s_-_strong">not</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">automatic</span> as part of acknowledging the message. Instead, your messaging plugins must call a special API immediately after acknowledging the message.</div>
+      <div class="B_-_Body"><a name="3104836">The steps happen in the following order for status transitions that happen through message acknowledgements:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="3104841">An action occurs that would reflect a status change. For example, suppose a user is transferring a check to </a>another claim. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3104845">This action changes the status to a pending status. In the check transfer example, the status would be </a><span class="cv_-_computer_voice">pendingtransfer</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3104851">ClaimCenter generates a </a><span class="cv_-_computer_voice">CheckStatusChanged</span> event.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3104858">Your business rules catch this event and generate a message.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3266510">At a later time, in another thread on the batch server, the messaging destination (your messaging plugins) </a>send the message to an external system. For example, one messaging destination might represent your check printing service or your accounting system.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3266511">After the external system responds that it processed that message, the messaging plugins that represent the </a>messaging destination submit an acknowledgement (Ack) for that message using the code: <span class="cv_-_computer_voice">message.reportAck()</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3278745">Immediately after submitting the Ack, your messaging plugins must tell ClaimCenter that financial entity’s </a>status must complete the action. For example, for a check transfer the check’s status must change from <span class="cv_-_computer_voice">pendingtransfer</span> to <span class="cv_-_computer_voice">transferred</span>. Get a reference to the original financials entity instance and call the special method whose name begins with <span class="cv_-_computer_voice">"acknowledge"</span> (see the table after this numbered list). For a check transfer, the special API to call is <span class="cv_-_computer_voice">check.acknowledgeTransfer()</span>. For the other APIs for other financials action, refer to the table after this numbered list. Be careful to call the check or transaction submission methods <span class="e_-_emphasis">no more than once</span> for each message Ack. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="3279035">If you fail to call the special acknowledgement method in the financial entity instance, the financial object </a>inappropriately remains in its status without proceeding.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="3278844">Some financials status transitions happen as part of message acknowledgment. This is </a>not automatic. You must call a special API in your messaging plugins as part of message acknowledgement.</div>
+      <div class="LP_-_List_Para"><a name="3279793">If the current status is not the previous status it expects, these APIs throw an exception. For example, The </a><span class="cv_-_computer_voice">check.acknowledgeSubmission()</span> method throws an error if the check is not in <span class="cv_-_computer_voice">requesting</span> status. To avoid exceptions, message code such as asynchronous reply plugins can get the status before calling the API. For example, confirm that a check is still in <span class="cv_-_computer_voice">requesting</span> status before calling <span class="cv_-_computer_voice">check.acknowledgeSubmission()</span>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="3279781">In some cases, as a consequence of calling the financials acknowledge method, a separate but associated </a>financial transaction changes status. For example, if a check changes status, an associated payment may change status too. This status is sometimes identical to the check’s status, for example both have the status <span class="cv_-_computer_voice">voided</span>. In other cases, they are different statuses, for example the check status is <span class="cv_-_computer_voice">issued</span> and the payment status is <span class="cv_-_computer_voice">submitted</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="3266395">The following table defines which acknowledgement methods to use in your messaging plugins.</a></div>
+      <div class="T_-_Table"><a name="3299807">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="3299766">Action</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="3299768">Call this method at message acknowledge</a>ment time in your messaging plugins</div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="3299770">Description</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299772">Submit a </a>check</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299774">check.acknowledgeSubmission()</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299776">Updates the check's status to </a><span class="cvt_-_computer_voice_table">requested</span> if it was <span class="cvt_-_computer_voice_table">requesting</span>, or <span class="cvt_-_computer_voice_table">issued</span> if it was <span class="cvt_-_computer_voice_table">notifying</span>. Updates its payments to <span class="cvt_-_computer_voice_table">submitted</span>. Throws an exception if this check is not in <span class="cvt_-_computer_voice_table">requesting</span> or <span class="cvt_-_computer_voice_table">notifying</span> status</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299778">Transfer a </a>check</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299780">check.acknowledgeTransfer()</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299782"> Updates the check's status to </a><span class="cvt_-_computer_voice_table">transferred</span>. Updates its <span class="cvt_-_computer_voice_table">pendingtransfer</span> payments to <span class="cvt_-_computer_voice_table">transferred</span>. For each transferred payment, updates its onset and offset to <span class="cvt_-_computer_voice_table">submitted</span>. Throws an exception if the check is not in <span class="cvt_-_computer_voice_table">pendingtransfer</span> status.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299784">Void a recov</a>ery</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299786">recovery.acknowledgeVoid()</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299788">Acknowledges a message that this recovery was </a>voided. Updates its status to <span class="cvt_-_computer_voice_table">voided</span>. Throws an exception if the recovery is not in <span class="cvt_-_computer_voice_table">pendingvoid</span> status.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299790">Recode a </a>payment</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299792">payment.acknowledgeRecode()</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299794">Acknowledges a message that this payment was </a>recoded. Updates its status to <span class="cvt_-_computer_voice_table">recoded</span>. Updates its onset and offset to <span class="cvt_-_computer_voice_table">submitted</span>.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299796">Submit a </a>reserve, recovery, or recovery reserve</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299798">transaction.acknowledgeSubmission()</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299800">Acknowledges a message that this transaction was </a><span class="cvt_-_computer_voice_table">submitted</span>. Updates its status to <span class="cvt_-_computer_voice_table">submitted</span>. Throws an exception if this transaction is not in <span class="cvt_-_computer_voice_table">submitting</span> status.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299802">Submit a </a>bulk invoice</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="3299804">bulkInvoice.acknowledgeSubmission(message</a></span><span class="cvt_-_computer_voice_table">)</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="3299806">Acknowledges a message that this bulk invoice was </a>submitted. Updates its status to <span class="cvt_-_computer_voice_table">requested</span>. For each line item, updates its status to <span class="cvt_-_computer_voice_table">submitted</span> if it was <span class="cvt_-_computer_voice_table">submitting</span>. Throws an exception if this invoice is not in <span class="cvt_-_computer_voice_table">requesting</span> status.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="3279093">There is no requirement for there to be a one-to-one correspondence between the number of messages and the </a>number of affected financials objects. For example, one message can be a submission message for <span class="s_-_strong">more</span> than one transaction. In that case, during message acknowledgment, you must call the special acknowledgement domain method on each relevant financial transaction. </div>
+      <div class="B_-_Body"><a name="3279126">If you add reserves and checks to an exposure that has a too-low validation level, you might want to suppress </a>(omit) messages to an external system. In most cases, you must not send messages to an external system about an exposure that the mainframe does not know about yet. Later, if the exposure passes a higher validation level, the Event Fired rules must send information about <span class="s_-_strong">all</span> financial transactions on the exposure already entered. As a result, one message may be associated with multiple events or transactions. </div>
+      <div class="H2_-_Heading_2"><a name="3079478">In Event Fired Rules, Treat Status Transition as Final</a></div>
+      <div class="B_-_Body"><a name="3105066">In your Event Fired business rules that catch changes to the status of a check or transaction, treat the current </a>status as final to avoid race conditions. Specifically, assume the status transition is <span class="e_-_emphasis">final</span> as soon as the event triggers, even if your messaging code did not yet sent this information to an external system. You must consider the status fully complete and unchangeable within the Event Fired rule sets that generate financials-related messages to external systems.</div>
+      <div class="B_-_Body"><a name="3105070">On a related note, never directly change the </a><span class="cv_-_computer_voice">check.</span><span class="ps_-_parameter_in_code_snippets">status</span> or any other <span class="cv_-_computer_voice">transaction.</span><span class="ps_-_parameter_in_code_snippets">status</span> property. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="3108334">It is dangerous to directly change a check’s or transaction’s </a><span class="cv_-_computer_voice">status</span> property. For more on this subject, see <a href="javascript:WWHClickedPopup('integration', 'financials.11.02.html#3079348', '');" title="Financial Transaction Status and Status Transitions">“How Do Status Transitions Happen?”</a>.</div>
+      <div class="B_-_Body"><a name="3224485">However, strictly speaking the change of the financial entity’s status does not commit to the database until all </a>related code finishes, including all Event Fired rules and any related validations. If there is a major error in the transaction (for instance, an unhandled exception), the entire transaction rolls back. Thus, any new messages did not commit to the Send Queue, just as the change the check or financial transaction did not change nor commit to the database.</div>
+      <div class="B_-_Body"><a name="3224500">In all cases, the Event Fired rules must </a><span class="s_-_strong">consider</span> the transaction final. Any messages that you create commit <span class="s_-_strong">if </span><span class="s_-_strong">and only if</span> the change that triggered the rules commits. This is the correct behavior to ensure that ClaimCenter stays in sync with other systems.</div>
+      <div class="B_-_Body"><a name="3224537">If there were no errors and everything commits to the database, any new messages commit to the send queue. </a>The batch server delivers messages one by one to each destination (set of messaging plugins) as separate database transactions. Refer to the diagram in <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.02.html#3036497', '');" title="Messaging Overview">“Event and Messaging Flow”</a> for more information.</div>
+      <div class="H2_-_Heading_2"><a name="3107200">Types of Transactions That Track Status</a></div>
+      <div class="B_-_Body"><a name="3107207">The following sections in this topic discuss specific types of transactions with status codes:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'financials.11.04.html#3105072', '');" title="Check Integration" name="3107326">“Check Integration”</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'financials.11.06.html#3067074', '');" title="Payment Transaction Integration" name="3107341">“Payment Transaction Integration”</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'financials.11.07.html#3070702', '');" title="Recovery Reserve Transaction Integration" name="3107348">“Recovery Reserve Transaction Integration”</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'financials.11.08.html#3067929', '');" title="Recovery Transaction Integration" name="3107355">“Recovery Transaction Integration”</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'financials.11.09.html#3067969', '');" title="Reserve Transaction Integration" name="3140162">“Reserve Transaction Integration”</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="3140163">Debugging Financials Messaging</a></div>
+      <div class="B_-_Body"><a name="3263396">ClaimCenter includes a built-in console message transport example, which is an extremely simple messaging </a>transport that writes the message text payload to the ClaimCenter console window. Enable this transport in <span class="cv_-_computer_voice">config.xml</span> to debug integration code that creates and sends messages. This is particularly useful if you are working on financials to see if the events look reasonable. See <a href="javascript:WWHClickedPopup('integration', 'eventsmessaging.10.17.html#3161102', '');" title="Included Messaging Transports">“Enabling the Built-in Console Transport”</a> for details.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

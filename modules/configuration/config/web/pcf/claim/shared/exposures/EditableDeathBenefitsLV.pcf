@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableDeathBenefitsLV">
+    <Require
+      name="Evaluation"
+      type="Evaluation"/>
+    <Variable
+      initialValue="Evaluation != null ? Evaluation.Claim.getClaimantDependentList() : null"
+      name="dependentList"/>
+    <RowIterator
+      editable="true"
+      elementName="deathBenefits"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="DeathBenefits"
+      toAdd="Evaluation.IndemnityEval.addToDeathBenefits(deathBenefits)"
+      toRemove="Evaluation.IndemnityEval.removeFromDeathBenefits(deathBenefits)"
+      value="Evaluation.IndemnityEval.DeathBenefits.sortBy(\ d -&gt; gw.api.util.Math.abs(d.ID.Value) )">
+      <Row>
+        <TypeKeyCell
+          editable="true"
+          footerLabel="displaykey.Java.ListView.Sum"
+          id="DeathBenefitType"
+          label="displaykey.LV.Evaluation.Indemnity.DeathBenefits.DeathBenefitType"
+          value="deathBenefits.DeathBenefitType"
+          valueWidth="150"/>
+        <RangeCell
+          editable="true"
+          id="Dependent"
+          label="displaykey.LV.Evaluation.Indemnity.DeathBenefits.Dependent"
+          postOnChange="true"
+          value="deathBenefits.DependentExt"
+          valueRange="dependentList"/>
+        <DateCell
+          id="DateOfBirth"
+          label="displaykey.LV.Evaluation.Indemnity.DeathBenefits.DateOfBirth"
+          value="(deathBenefits.DependentExt as Person).DateOfBirth"/>
+        <TextCell
+          editable="true"
+          id="NumberOfWeeks"
+          label="displaykey.LV.Evaluation.Indemnity.DeathBenefits.PayPeriods"
+          maxChars="10"
+          numCols="10"
+          postOnChange="true"
+          value="deathBenefits.NumberOfPayPeriods"/>
+        <Cell
+          editable="true"
+          id="Rate"
+          label="displaykey.LV.Evaluation.Indemnity.DeathBenefits.Rate"
+          numCols="10"
+          postOnChange="true"
+          value="deathBenefits.Rate"/>
+        <Cell
+          editable="deathBenefits.NumberOfPayPeriods == null or deathBenefits.Rate == null"
+          footerSumValue="deathBenefits.DeathBenefitsTotal"
+          formatType="currency"
+          id="DeathBenefitTotal"
+          label="displaykey.LV.Evaluation.Indemnity.DisabilityBenefits.Total"
+          numCols="10"
+          postOnChange="true"
+          value="deathBenefits.DeathBenefitsTotal"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

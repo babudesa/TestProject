@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- Worker's Comp embedded LV for work status information -->
+  <ListViewPanel
+    id="EditableWorkStatusChangesLV">
+    <Require
+      name="EmploymentData"
+      type="EmploymentData"/>
+    <Require
+      name="includeWorkStatusFields"
+      type="Boolean"/>
+    <RowIterator
+      checkBoxVisible="true"
+      editable="true"
+      elementName="WorkStatus"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="3"
+      pickLocation="NewWorkStatusPopup.push(EmploymentData, verifyEmploymentDataExists())"
+      toAdd="EmploymentData.addToWorkStatusChanges( WorkStatus )"
+      toRemove="EmploymentData.removeFromWorkStatusChanges(WorkStatus)"
+      value="EmploymentData.WorkStatusChanges">
+      <Row>
+        <Cell
+          action="WorkStatusPopup.push(WorkStatus, CurrentLocation.InEditMode)"
+          align="left"
+          id="Date"
+          label="displaykey.LV.Claim.WorkStatus.Claim.EmploymentData.WorkStatus.Date"
+          value="WorkStatus.StatusDate"/>
+        <Cell
+          align="left"
+          id="EndDate"
+          label="displaykey.LV.Claim.WorkStatus.Claim.EmploymentData.WorkStatus.EndDate"
+          value="WorkStatus.StatusEndDate"/>
+        <Cell
+          align="left"
+          id="Type"
+          label="displaykey.LV.Claim.WorkStatus.Claim.EmploymentData.WorkStatus.Type"
+          required="true"
+          value="WorkStatus.Status"
+          wrap="false"/>
+        <Cell
+          align="left"
+          id="LastDayWorked"
+          label="displaykey.DV.Incident.WorkStatus.LastDayWorked"
+          value="WorkStatus.LastWorkedDate"
+          visible="includeWorkStatusFields"/>
+        <Cell
+          align="left"
+          id="PaidforLastDay"
+          label="displaykey.DV.Incident.WorkStatus.PaidForLastDay"
+          value="WorkStatus.PaidFullForLastWorked"
+          visible="includeWorkStatusFields"/>
+        <Cell
+          align="left"
+          id="DaysWorked"
+          label="displaykey.DV.Incident.WorkStatus.DaysWorked"
+          value="WorkStatus.NumDaysWorked"
+          visible="includeWorkStatusFields"/>
+        <Cell
+          align="left"
+          id="HoursWorked"
+          label="displaykey.DV.Incident.WorkStatus.HoursWorked"
+          value="WorkStatus.NumHoursWorked"
+          visible="includeWorkStatusFields"/>
+        <Cell
+          align="left"
+          id="WeeklyWage"
+          label="displaykey.DV.Incident.WorkStatus.WeeklyWage"
+          value="WorkStatus.WageAmountPostInjury"
+          visible="includeWorkStatusFields"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function verifyEmploymentDataExists() : boolean {
+  if (EmploymentData == null) {
+    throw new gw.api.util.DisplayableException(displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.Missing)
+  } 
+  return true
+}]]></Code>
+  </ListViewPanel>
+</PCF>

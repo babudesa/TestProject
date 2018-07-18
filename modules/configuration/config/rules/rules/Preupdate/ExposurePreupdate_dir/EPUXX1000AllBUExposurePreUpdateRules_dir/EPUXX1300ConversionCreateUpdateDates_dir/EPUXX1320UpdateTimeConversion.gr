@@ -1,0 +1,30 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1300ConversionCreateUpdateDates_dir
+
+@gw.rules.RuleName("EPUXX1320 - UpdateTime Conversion")
+internal class EPUXX1320UpdateTimeConversion {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///All exposures even when converted will come in as new - to prevent the Update Date
+//of the converted exposure to be the new update date, this condition checks for 
+//a null Update Date (ClaimCenter specific claims), or one that is not null, but is not being
+//prevented from update by the conversion load
+//Author: Stephanie Przygocki
+//Update: Scott Roberts
+//Sprint: AgriBusiness Sprint 16
+//Date: 10/7/08
+//Update Date: 6/16/14
+
+exposure.RptUpdateDateExt==null ||
+(exposure.RptUpdateDateExt != null 
+&& exposure.isNativeORUpdatedExt())
+
+//mmanalili 2010/01/14: Took out this line because the following condition
+//below is already in the rule action
+//&& (Exposure.Changed || !Exposure.ChangedFields.empty)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(exposure.Claimant != exposure.ClaimantDenorm or !exposure.ChangedFields.Empty){
+  exposure.RptUpdateDateExt = gw.api.util.DateUtil.currentDate()
+ }/*end00rule*/
+  }
+}

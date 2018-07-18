@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.Claim.view(Claim) and perm.System.viewdocs and (Claim.State != ClaimState.TC_DRAFT)"
+    countsAsWork="false"
+    id="ClaimDocuments"
+    title="displaykey.JSP.ClaimPageLinks.PageLink.Documents">
+    <LocationEntryPoint
+      signature="ClaimDocuments(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Screen
+      id="Claim_DocumentsScreen">
+      <SearchPanel
+        cachingEnabled="false"
+        criteriaName="DocumentSearchCriteria"
+        resultsName="DocumentList"
+        search="DocumentSearchCriteria.performSearch()"
+        searchCriteria="return createSearchCriteria();"
+        searchOnEnter="true"
+        searchResultsType="DocumentQuery">
+        <PanelRef
+          def="ClaimDocumentSearchDV(DocumentSearchCriteria)"/>
+        <PanelRef
+          def="DocumentsLV(DocumentList,DocumentSearchCriteria)">
+          <Toolbar>
+            <ToolbarDivider/>
+            <CheckedValuesToolbarButton
+              checkedRowAction=" Document.Obsolete = true"
+              flags="all EditableDocument,no Hidden"
+              id="ClaimDocuments_ObsolesceButton"
+              iterator="DocumentsLV"
+              label="displaykey.Web.DocumentsLV.Button.Obsolesce"
+              shortcut="O"/>
+            <CheckedValuesToolbarButton
+              checkedRowAction=" Document.Obsolete = false"
+              flags="all EditableDocument,all Hidden"
+              id="ClaimDocuments_DeobsolesceButton"
+              iterator="DocumentsLV"
+              label="displaykey.Web.DocumentsLV.Button.Deobsolesce"
+              shortcut="O"
+              visible="DocumentSearchCriteria.IncludeObsoletes"/>
+          </Toolbar>
+        </PanelRef>
+      </SearchPanel>
+    </Screen>
+    <Code><![CDATA[
+      function createSearchCriteria() : DocumentSearchCriteria {
+        var searchCriteria = new DocumentSearchCriteria();
+        searchCriteria.Claim = Claim;
+        searchCriteria.IncludeObsoletes = false;
+        return searchCriteria;
+      }
+    ]]></Code>
+  </Page>
+</PCF>

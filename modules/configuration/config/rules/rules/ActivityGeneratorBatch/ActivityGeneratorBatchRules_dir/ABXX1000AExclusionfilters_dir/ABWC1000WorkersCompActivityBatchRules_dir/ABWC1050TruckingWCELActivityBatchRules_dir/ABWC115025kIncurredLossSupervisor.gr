@@ -1,0 +1,18 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir.ABWC1050TruckingWCELActivityBatchRules_dir
+
+@gw.rules.RuleName("ABWC1150 - 25k Incurred Loss - Supervisor")
+internal class ABWC115025kIncurredLossSupervisor {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.getTotalIncurred() >= 25000 &&
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="25k_incurred_loss_super")) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "25k_incurred_loss_super" )
+try{
+  claim.createActivityFromPattern(null, ap)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

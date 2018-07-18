@@ -1,0 +1,463 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="SIDetailsDV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Variable
+      initialValue="Investigation.InvestigationStatus"
+      name="initStatus"
+      type="InvestigationStatusExt"/>
+    <Variable
+      name="ResearchType"
+      type="String"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.SIU.SIUReferral"/>
+      <RangeInput
+        editable="true"
+        id="SIUInvestigator"
+        label="displaykey.NVV.SIU.SIUInvestigator"
+        required="false"
+        sortValueRange="false"
+        value="Investigation.SIUInvestigator"
+        valueRange="Claim.getSIUInvestigators()"
+        visible="User.util.getCurrentUser().hasUserRole(&quot;siu manager&quot;)"/>
+      <Input
+        id="ReferralDate"
+        label="displaykey.NVV.SIU.ReferralDate"
+        validationExpression="Investigation.ReferralDate!=null ? gw.api.util.DateUtil.compareIgnoreTime(Investigation.ReferralDate, util.DateUtil.currentDate())&lt;=0 ? null : displaykey.NVV.SIU.ReferralDate.Warning : null"
+        value="Investigation.ReferralDate"/>
+      <TextAreaInput
+        editable="true"
+        id="ReferralReason"
+        label="displaykey.NVV.SIU.ReferralReason"
+        numCols="50"
+        numRows="3"
+        required="true"
+        value="Investigation.ReferralReason"/>
+      <TypeKeyInput
+        editable="true"
+        id="SIUClaimType"
+        label="displaykey.NVV.SIU.SIUClaimType"
+        onChange="resetOtherType(Investigation)"
+        postOnChange="true"
+        required="true"
+        value="Investigation.SIUClaimType"/>
+      <Input
+        editable="true"
+        id="OtherType"
+        label="displaykey.NVV.SIU.OtherType"
+        required="true"
+        value="Investigation.OtherType"
+        visible="Investigation.SIUClaimType==&quot;other&quot;"/>
+      <RangeInput
+        editable="true"
+        id="ReferralType"
+        label="displaykey.NVV.SIU.ReferralType"
+        required="true"
+        value="Investigation.SIUReferralType"
+        valueRange="Claim.getInvestigationReferralTypes()"/>
+      <Input
+        editable="true"
+        id="SurvRequested"
+        label="displaykey.NVV.SIU.SurvRequested"
+        required="true"
+        value="Investigation.SurvRequested"/>
+      <ContentInput
+        label="displaykey.NVV.SIU.Investigation">
+        <Link
+          action="ResearchTypeInvestPopup.push(Claim, Investigation.DataResearchParties[0], &quot;Investigation&quot;)"
+          available="CurrentLocation.InEditMode"
+          id="ResearchTypes"
+          label="Investigation.getResearchTypeslabel(Investigation.DataResearchParties)"/>
+        <LinkIterator
+          elementName="ResearchTypeIterator"
+          value="Investigation.DataResearchParties"/>
+      </ContentInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.SIU.ClaimInformation"/>
+      <ClaimContactInput
+        claim="Claim"
+        editable="true"
+        id="Claimant"
+        label="displaykey.NVV.SIU.Claimant"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        onChange="setDRPClaimant()"
+        postOnChange="true"
+        required="true"
+        showSearchInMenu="false"
+        validationExpression="Investigation.isDisassociatedClaimant() ? displaykey.NVV.SIU.SIUClaimant.Error : null"
+        value="Investigation.SIUClaimant"
+        valueRange="Claim.getClaimantsExt()"/>
+      <Input
+        id="LossCity"
+        label="displaykey.NVV.SIU.LossCity"
+        value="Claim.LossLocation.City"/>
+      <Input
+        id="LossState"
+        label="displaykey.NVV.SIU.LossState"
+        value="Claim.LossLocation.State"/>
+      <Input
+        id="RiskState"
+        label="displaykey.NVV.SIU.RiskState"
+        value="Claim.Policy.Insured.PrimaryAddress.State"/>
+      <Input
+        id="CloseReason"
+        label="displaykey.NVV.SIU.CloseReason"
+        value="Claim.ClosedOutcome"/>
+      <TextAreaInput
+        id="LossDesc"
+        label="displaykey.NVV.SIU.LossDesc"
+        numCols="50"
+        numRows="3"
+        value="Claim.Description"/>
+      <Input
+        id="CorpClaimsAssist"
+        label="displaykey.NVV.SIU.CorpClaimsAssist"
+        value="Claim.getCorpClaimsAssist()"/>
+      <InputDivider/>
+      <InputSet
+        editable="perm.System.editSIUInvestigation">
+        <Label
+          label="displaykey.NVV.SIU.SIUInvestigation"/>
+        <RangeInput
+          editable="true"
+          filter="filterSIUInvestigationStatus(VALUE, initStatus)"
+          id="InvestStatus"
+          label="displaykey.NVV.SIU.InvestStatus"
+          onChange="nullCloseDate(Investigation)"
+          postOnChange="true"
+          showNoneSelected="false"
+          value="Investigation.InvestigationStatus"
+          valueRange="defaultInvestigationStatus(initStatus)"/>
+        <DateInput
+          editable="true"
+          id="SIUOpenDate"
+          label="displaykey.NVV.SIU.SIUOpenDate"
+          required="true"
+          validationExpression="Investigation.SIUOpenDate == null || gw.api.util.DateUtil.compareIgnoreTime(Investigation.SIUOpenDate, gw.api.util.DateUtil.currentDate() )&lt;=0 ? null : displaykey.Java.Validation.Date.ForbidFuture"
+          value="Investigation.SIUOpenDate"/>
+        <DateInput
+          editable="true"
+          id="SIUCloseDate"
+          label="displaykey.NVV.SIU.SIUCloseDate"
+          onChange="setSIUInvestigationStatus()"
+          postOnChange="true"
+          required="Investigation.InvestigationStatus==&quot;closed&quot;"
+          validationExpression="Claim.validateSIUCloseDateMain(investigation)"
+          value="Investigation.SIUCloseDate"/>
+        <!-- <TypeKeyInput
+          editable="true"
+          id="SIUOpinion"
+          label="displaykey.NVV.SIU.SIUOpinion"
+          onChange="setDOIReferral(Investigation)"
+          postOnChange="true"
+          required="Investigation.SIUCloseDate!=null and Investigation.SIUReferralType==&quot;fraud&quot;"
+          value="Investigation.SIUOpinion"/> -->
+        <Input
+          editable="true"
+          id="ClaimWithdrawn"
+          label="displaykey.NVV.SIU.ClaimWithdrawn"
+          value="Investigation.ClaimWithdrawn"/>
+        <Input
+          editable="Investigation.SIUOpinion!=&quot;fraud&quot;"
+          id="DOIReferral"
+          label="displaykey.NVV.SIU.DOIReferral"
+          postOnChange="true"
+          value="Investigation.DOIReferral"/>
+        <DateInput
+          editable="true"
+          id="DOIReferralDt"
+          label="displaykey.NVV.SIU.DOIReferralDt"
+          required="Investigation.DOIReferral==true"
+          value="Investigation.DOIReferralDate"/>
+        <TypeKeyInput
+          editable="true"
+          id="DOIDisposition"
+          label="displaykey.NVV.SIU.DOIDisposition"
+          required="Investigation.DOIReferral"
+          value="Investigation.DOIDisposition"/>
+        <TypeKeyInput
+          editable="true"
+          id="DOIAgencyLevl"
+          label="displaykey.NVV.SIU.DOIAgencyLevl"
+          required="Investigation.DOIReferral"
+          value="Investigation.DOIAgencyLevel"/>
+      </InputSet>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.SIU.Hearings"/>
+      <Input
+        editable="true"
+        id="PendingHTMA"
+        label="displaykey.NVV.SIU.PendingHTMA"
+        postOnChange="true"
+        required="true"
+        value="Investigation.PendingTrialsEtc"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="PendingWhen"
+        label="displaykey.NVV.SIU.PendingWhen"
+        required="Investigation.PendingTrialsEtc==true"
+        timeFormat="short"
+        value="Investigation.PendingTrialDate"/>
+      <TextAreaInput
+        editable="true"
+        id="PendingWhere"
+        label="displaykey.NVV.SIU.PendingWhere"
+        numCols="20"
+        numRows="2"
+        required="Investigation.PendingTrialsEtc==true"
+        value="Investigation.PendingTrialPlace"/>
+      <Input
+        editable="true"
+        id="ResrvRights"
+        label="displaykey.NVV.SIU.ResrvRights"
+        postOnChange="true"
+        required="true"
+        value="Investigation.ResrvRightsIssued"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="ResrvWhen"
+        label="displaykey.NVV.SIU.ResrvWhen"
+        required="Investigation.ResrvRightsIssued==true"
+        timeFormat="short"
+        value="Investigation.ResrvRightsDate"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.SIU.SurveillanceInfo"/>
+      <TypeKeyInput
+        editable="true"
+        id="Gender"
+        label="displaykey.NVV.SIU.Gender"
+        value="Investigation.SurveillanceInfo.Gender"/>
+      <TypeKeyInput
+        editable="true"
+        id="Ethnicity"
+        label="displaykey.NVV.SIU.Ethnicity"
+        value="Investigation.SurveillanceInfo.Ethnicity"/>
+      <Input
+        editable="true"
+        id="Height"
+        label="displaykey.NVV.SIU.Height"
+        value="Investigation.SurveillanceInfo.SurvHeight"/>
+      <TextInput
+        editable="true"
+        id="Weight"
+        inputMask="&quot;###&quot;"
+        label="displaykey.NVV.SIU.Weight"
+        value="Investigation.SurveillanceInfo.Weight"/>
+      <Input
+        editable="true"
+        id="Build"
+        label="displaykey.NVV.SIU.Build"
+        value="Investigation.SurveillanceInfo.Build"/>
+      <Input
+        editable="true"
+        id="HairColor"
+        label="displaykey.NVV.SIU.HairColor"
+        value="Investigation.SurveillanceInfo.HairColor"/>
+      <Input
+        editable="true"
+        id="EyeColor"
+        label="displaykey.NVV.SIU.EyeColor"
+        value="Investigation.SurveillanceInfo.EyeColor"/>
+      <Input
+        editable="true"
+        id="Glasses"
+        label="displaykey.NVV.SIU.Glasses"
+        value="Investigation.SurveillanceInfo.HasGlasses"/>
+      <Input
+        editable="true"
+        id="FacialHair"
+        label="displaykey.NVV.SIU.FacialHair"
+        value="Investigation.SurveillanceInfo.HasFacialHair"/>
+      <Input
+        editable="true"
+        id="DaysSurv"
+        label="displaykey.NVV.SIU.DaysSurv"
+        value="Investigation.SurveillanceInfo.DaysSurveillance"/>
+      <TextAreaInput
+        editable="true"
+        id="SpecialInst"
+        label="displaykey.NVV.SIU.SpecialInst"
+        numCols="20"
+        numRows="3"
+        value="Investigation.SurveillanceInfo.SpecialInstruct"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputSet
+        editable="perm.System.editSIUInvestigation">
+        <ListViewInput
+          boldLabel="true"
+          editable="true"
+          label="displaykey.NVV.SIU.LV.SIUTravel"
+          labelAbove="true">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+          <ListViewPanel
+            id="SIUTravelLV">
+            <RowIterator
+              editable="true"
+              elementName="Travel"
+              hideCheckBoxesIfReadOnly="true"
+              pageSize="3"
+              toAdd="Investigation.addToSIUTravelInfos(Travel); Travel.setCountry()"
+              toRemove="Investigation.removeFromSIUTravelInfos(Travel)"
+              value="Investigation.SIUTravelInfos">
+              <Row>
+                <TypeKeyCell
+                  editable="true"
+                  id="Country"
+                  label="displaykey.NVV.SIU.Country"
+                  postOnChange="true"
+                  required="false"
+                  showNoneSelected="false"
+                  value="Travel.TravelAddress.Country"/>
+                <Cell
+                  editable="true"
+                  id="City"
+                  label="displaykey.NVV.SIU.City"
+                  value="Travel.TravelAddress.City"/>
+                <Cell
+                  editable="true"
+                  id="State"
+                  label="displaykey.NVV.SIU.State"
+                  postOnChange="true"
+                  required="requireState()"
+                  value="Travel.TravelAddress.State"/>
+                <RangeCell
+                  editable="true"
+                  id="TravelInvestigator"
+                  label="displaykey.NVV.SIU.TravelingInvestigator"
+                  required="true"
+                  sortValueRange="false"
+                  value="Travel.SIUInvestigator"
+                  valueRange="Claim.getAllInvestigators()"/>
+                <TextCell
+                  editable="true"
+                  id="TravelMonthYr"
+                  label="displaykey.NVV.SIU.TravelMnYr"
+                  value="Travel.TravelDt"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+        <ListViewInput
+          boldLabel="true"
+          def="VendorsUsedLV(Claim, Investigation)"
+          editable="true"
+          label="displaykey.NVV.SIU.LV.VendorsUsed"
+          labelAbove="true">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+      </InputSet>
+      <ListViewInput
+        boldLabel="true"
+        def="InvestigationDocumentsLV(Claim, Investigation)"
+        label="displaykey.NVV.Activity.SubView.ActivityDocument.Documents"
+        labelAbove="true"
+        visible="perm.System.viewdocs and Investigation.InvestigationDocs.length&gt;0">
+        <Toolbar/>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[function nullCloseDate(invest : SIUInvestigationExt) {
+    	if( invest.InvestigationStatus=="reopen") {
+    		invest.SIUCloseDate = null;
+    		invest.SIUReopened = true;
+    	}
+    	if( invest.InvestigationStatus== null) {
+    		invest.SIUOpenDate = null
+    		invest.SIUCloseDate = null;
+    	}
+    }
+    
+
+    function setDOIReferral(invest : SIUInvestigationExt) {
+    	if(invest.SIUOpinion=="fraud"){
+    		invest.DOIReferral = true;
+    	}
+    }
+    function resetOtherType(invest : SIUInvestigationExt){
+    	if(invest.SIUClaimType!="other"){
+    		invest.OtherType = null;
+    	}
+    }
+    function setSIUInvestigationStatus() {
+    	if(Investigation.SIUCloseDate != null)
+    		Investigation.InvestigationStatus = "closed"
+    }
+    
+	function filterSIUInvestigationStatus(status : InvestigationStatusExt, initialStatus : InvestigationStatusExt) : boolean {
+  			
+            if((initialStatus == InvestigationStatusExt.TC_OPEN and status == InvestigationStatusExt.TC_REOPEN)  or   
+                  (initialStatus == InvestigationStatusExt.TC_CLOSED and status == InvestigationStatusExt.TC_OPEN) or
+                  (initialStatus == InvestigationStatusExt.TC_REOPEN and status == InvestigationStatusExt.TC_OPEN))
+                        return false 
+                        
+            return true
+	}
+
+    function defaultInvestigationStatus(initialStatus : InvestigationStatusExt) : List {
+    	//As of 04-28-2011 we are taking out none-selected from investigation status
+    	//the default for a "New SIU Investigation" screen should always be "open" and "closed"
+    	var statuses = new java.util.ArrayList();
+  		if(initialStatus == null)
+  			initialStatus = InvestigationStatusExt.TC_OPEN
+  			
+  		for(ref in  InvestigationStatusExt.getTypeKeys(false)) {
+     		if(initialStatus == InvestigationStatusExt.TC_OPEN and ref == InvestigationStatusExt.TC_REOPEN)
+     			continue;
+     		
+     		statuses.add(ref)
+  		}
+  		
+  		return statuses
+    }
+    
+    function requireState():Boolean{
+     var result:boolean = false
+     for(cntry in Investigation.SIUTravelInfos){
+      if(cntry.TravelAddress.Country == "US" or cntry.TravelAddress.Country == "CA" or cntry.TravelAddress.Country == "VI"){
+       result = true;
+       }else{
+       result = false;
+       }
+     }
+     return result
+    }
+    
+    function requireCountry():Boolean{
+     var result:boolean = false
+     for(state in Investigation.SIUTravelInfos){
+      if(state.TravelAddress.State == null){
+       result = true;
+       }else{
+       result = false;
+       }
+     }
+     return result
+    }
+    
+    function setDRPClaimant() {
+      if (Investigation.DataResearchParties.HasElements){
+        var party = Investigation.DataResearchParties[0]
+        party.Contact = Investigation.SIUClaimant
+     }
+   }]]></Code>
+  </DetailViewPanel>
+</PCF>

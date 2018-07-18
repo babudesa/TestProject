@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsTransactionsDetail.go(claim, originalRecovery)"
+    afterCommit="ClaimFinancialsTransactions.go(claim, financials.ClaimFinancialsTransactionsOption.RECOVERY)"
+    canEdit="true"
+    id="RecodeRecovery"
+    parent="ClaimFinancialsTransactionsDetail(originalRecovery.Claim, originalRecovery)"
+    startInEditMode="true"
+    title="displaykey.JSP.RecodeRecovery.Title">
+    <LocationEntryPoint
+      signature="RecodeRecovery(originalRecovery : Recovery)"/>
+    <Variable
+      name="originalRecovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="originalRecovery.createOnsetRecovery()"
+      name="onsetRecovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="new financials.NewRecoverySetHelper()"
+      name="helper"
+      type="financials.NewRecoverySetHelper"/>
+    <Variable
+      initialValue="onsetRecovery.ReserveLine"
+      name="reserveline"
+      type="ReserveLine"/>
+    <Variable
+      initialValue="originalRecovery.Claim"
+      name="claim"
+      type="Claim"/>
+    <Screen>
+      <Toolbar>
+        <ToolbarButton
+          action="doRecode()"
+          id="RecodeButton"
+          label="displaykey.Web.Claim.RecodeRecovery.RecodeButton"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          cancelVisible="true"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <DetailViewPanel>
+        <InputColumn>
+          <RangeInput
+            editable="true"
+            id="ReserveLine"
+            label="displaykey.Web.Claim.RecodeRecovery.ReserveLine"
+            onChange="onsetRecovery.setReserveLine(reserveline); financials.FinancialsUtil.ensureRecoveryHasOneLineItem(onsetRecovery)"
+            optionLabel="helper.getReserveLinePickerOptionLabel(VALUE)"
+            postOnChange="true"
+            required="true"
+            value="reserveline"
+            valueRange="helper.getPossibleReserveLines(onsetRecovery)"
+            valueWidth="199"/>
+          <RangeInput
+            editable="true"
+            id="Exposure"
+            label="displaykey.Web.Claim.RecodeRecovery.Exposure"
+            noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+            required="false"
+            value="onsetRecovery.Exposure"
+            valueRange="helper.getPossibleExposures(onsetRecovery)"
+            visible="onsetRecovery.ReserveLine != null and onsetRecovery.ReserveLine.isNew()"/>
+          <Input
+            id="CoverageType"
+            label="displaykey.Web.Claim.RecodeRecovery.Coverage"
+            value="onsetRecovery.Exposure.PrimaryCoverage">
+            <Reflect
+              triggerIds="Exposure"
+              value="VALUE.PrimaryCoverage"/>
+          </Input>
+          <RangeInput
+            editable="true"
+            id="CostType"
+            label="displaykey.Web.Claim.RecodeRecovery.CostType"
+            postOnChange="true"
+            required="true"
+            value="onsetRecovery.CostType"
+            valueRange="helper.getPossibleCostTypes(onsetRecovery)"
+            visible="onsetRecovery.ReserveLine != null and onsetRecovery.ReserveLine.isNew()"/>
+          <RangeInput
+            editable="true"
+            id="CostCategory"
+            label="displaykey.Web.Claim.RecodeRecovery.CostCategory"
+            postOnChange="true"
+            required="true"
+            value="onsetRecovery.CostCategory"
+            valueRange="helper.getPossibleCostCategories(onsetRecovery)"
+            valueWidth="150"
+            visible="onsetRecovery.ReserveLine != null and onsetRecovery.ReserveLine.isNew()"/>
+          <Input
+            editable="true"
+            id="Comments"
+            label="displaykey.Web.Claim.RecodeRecovery.Comments"
+            numCols="14"
+            value="onsetRecovery.Comments"/>
+          <ListViewInput
+            boldLabel="true"
+            def="EditableRecodeLineItemsLV(onsetRecovery)"
+            editable="onsetRecovery.ReserveLine != null"
+            label="displaykey.Web.Claim.RecodeRecovery.LineItems"
+            labelAbove="true">
+            <Toolbar>
+              <IteratorButtons
+                addLabel="displaykey.Java.Financials.TransactionLineItem.AddItem"
+                addShortcut="I"
+                addVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"
+                removeVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"/>
+            </Toolbar>
+          </ListViewInput>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+    <Code><![CDATA[
+function doRecode() {
+  gw.api.util.CCLocationUtil.runAndCommit(\ -> originalRecovery.recode(), CurrentLocation)
+}
+      
+    ]]></Code>
+  </Page>
+</PCF>

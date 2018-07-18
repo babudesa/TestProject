@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableRecoveryReservesLV">
+    <Require
+      name="WizardHelper"
+      type="financials.RecoveryReserveWizardHelper"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(WizardHelper.WorkingTransactionSet.Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <RowIterator
+      checkBoxVisible="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+      editable="true"
+      elementName="RecoveryReserveWrapper"
+      pageSize="5"
+      toCreateAndAdd="WizardHelper.addNewTransactionWrapper()"
+      toRemove="WizardHelper.removeTransaction(RecoveryReserveWrapper)"
+      type="TransactionEditWrapper"
+      value="initializeWrappers(WizardHelper.TransactionWrappers)">
+      <Variable
+        initialValue="RecoveryReserveWrapper.Transaction.Exposure.DisplayName"
+        name="valueVariable"
+        type="String"/>
+      <ToolbarFlag
+        condition="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+        name="Removeable"/>
+      <Row>
+        <!-- <TextCell
+          editable="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+          footerLabel="displaykey.Java.ListView.Sum"
+          hideIfEditable="true"
+          id="Exposure_Readonly"
+          label="displaykey.LV.Financials.RecoveryReserveSet.Exposure"
+          outputConversion="VALUE == null ? displaykey.Web.Financials.Exposure.ClaimLevel : VALUE"
+          required="false"
+          sortOrder="1"
+          value="valueVariable"
+          wrapLabel="true"/> -->
+        <!-- GW ADDED -->
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+          footerLabel="displaykey.Java.ListView.Sum"
+          id="Exposure"
+          label="displaykey.LV.Financials.RecoveryReserveSet.Exposure"
+          onChange="WizardHelper.updateWrapperOnChangePost(RecoveryReserveWrapper)"
+          optionLabel="VALUE.FullDescriptionWithLossParty"
+          postOnChange="true"
+          required="true"
+          sortOrder="1"
+          sortValueRange="false"
+          validationExpression="RecoveryReserveWrapper.Transaction.Exposure!=null ? RecoveryReserveWrapper.Transaction.Exposure.checkLossForReserves(RecoveryReserveWrapper.NewAmount) : null"
+          value="RecoveryReserveWrapper.Transaction.Exposure"
+          valueRange="WizardHelper.getValidExposures(RecoveryReserveWrapper.Transaction)"/>
+        <RangeCell
+          id="Coverage"
+          label="displaykey.LV.Financials.RecoveryReserveSet.Coverage"
+          optionLabel="RecoveryReserveWrapper.Transaction.Exposure.Coverage.covTypeDisplayName()"
+          sortOrder="2"
+          value="RecoveryReserveWrapper.Transaction.Exposure.PrimaryCoverage"
+          valueRange="getCoverages(RecoveryReserveWrapper.Transaction.Exposure.Coverage)"/>
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+          id="CostType"
+          label="displaykey.LV.Financials.RecoveryReserveSet.CostType"
+          onChange="WizardHelper.updateWrapperOnChangePost(RecoveryReserveWrapper)"
+          postOnChange="true"
+          required="true"
+          sortOrder="3"
+          value="RecoveryReserveWrapper.Transaction.CostType"
+          valueRange="util.financials.CheckFunctions.getCostTypeValues(RecoveryReserveWrapper.Transaction.Claim, null, null)"/>
+        <!-- This points to CostCategory due to an internal problem with Guidewire for defect 13
+				     Uses CostCategory instead of RecoveryCategory now to fix this.
+				     Makes user believe its still Recovery Category by filtering only
+				     the categories that are meant to be Recovery Categories out of the
+				     Cost Category type list. There are many other changes through out
+				     Claim Center that reflect this - See Defect 13 comments for more information -->
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(RecoveryReserveWrapper.Transaction)"
+          filter="RecoveryReserveWrapper.Transaction.filterRecoveryCostCategory(VALUE as java.lang.String)"
+          id="CostCategory"
+          label="displaykey.NVV.Financials.SubView.EditRecoveryReserve.Transaction.RecoveryCategory"
+          onChange="WizardHelper.updateWrapperOnChangePost(RecoveryReserveWrapper)"
+          postOnChange="true"
+          required="true"
+          sortDirection="descending"
+          sortOrder="4"
+          value="RecoveryReserveWrapper.Transaction.CostCategory"
+          valueRange="WizardHelper.getValidCostCategories(RecoveryReserveWrapper.Transaction)"/>
+        <RangeCell
+          editable="true"
+          enableSort="false"
+          id="InjuryType"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.InjuryType"
+          required="true"
+          value="RecoveryReserveWrapper.Transaction.WCInjuryTypeExt"
+          valueRange="util.WCHelper.getWCInjuryTypeExtList(RecoveryReserveWrapper.Transaction.Claim)"
+          valueWidth="130"
+          visible="isWCClaim"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="OpenRecoveryReserves"
+          label="displaykey.LV.Financials.RecoveryReserveSet.OpenRecoveryReserves"
+          value="WizardHelper.getOpenRecoveryReservesClaimAmount(RecoveryReserveWrapper.Transaction)"
+          wrapLabel="true">
+          <ColumnFooter>
+            <FinancialsSumCell
+              formatType="currency"
+              id="OpenReservesSum"
+              value="WizardHelper.OpenReservesSum"/>
+          </ColumnFooter>
+        </Cell>
+        <Cell
+          editable="true"
+          enableSort="false"
+          footerSumValue="RecoveryReserveWrapper.NewAmountInClaimCurrency"
+          formatType="currency"
+          id="NewOpenRecoveryReserves"
+          label="displaykey.LV.Financials.RecoveryReserveSet.NewOpenRecoveryReserves"
+          numCols="12"
+          required="true"
+          value="RecoveryReserveWrapper.NewAmountInClaimCurrency"
+          wrapLabel="true"/>
+        <!-- <Cell
+          action="NewRecoveryReserveMultiCurrencyPopup.push(WizardHelper, RecoveryReserveWrapper)"
+          icon="&quot;calculator.gif&quot;"
+          iconLabel="displaykey.LV.Financials.RecoveryReserveSet.RecoveryReserves.MultiCurrency.ToolTip"
+          id="MultiCurrencyPopup_link"
+          showHeaderIcon="false"
+          value="true"
+          visible="util.CurrencyUtil.isMultiCurrencyMode()"/> -->
+        <!-- GW ADDED -->
+        <Cell
+          enableSort="false"
+          footerSumValue="WizardHelper.getChangeClaimAmount(RecoveryReserveWrapper)"
+          formatType="currency"
+          id="ChangeAmount"
+          label="displaykey.LV.Financials.RecoveryReserveSet.ChangeAmount"
+          value="WizardHelper.getChangeClaimAmount(RecoveryReserveWrapper)">
+          <Reflect
+            custom="var newVal = (NumberUtil.safeConvertToNumber(VALUE2) - NumberUtil.safeConvertToNumber(VALUE1)); var delta = newVal - NumberUtil.safeConvertToNumber(DHTML.getValue(REFLECTOR));DHTML.setValue(REFLECTOR, newVal); updateChangeSum(delta)"
+            triggerIds="OpenRecoveryReserves,NewOpenRecoveryReserves"/>
+        </Cell>
+        <!-- <Cell
+          editable="true"
+          id="RecoveryCategory"
+          label="displaykey.NVV.Financials.SubView.EditRecoveryReserve.Transaction.RecoveryCategory"
+          value="RecoveryReserveWrapper.Transaction.RecoveryCategory"
+          wrapLabel="true"/> -->
+        <!-- <Cell
+          editable="true"
+          enableSort="false"
+          id="Comments"
+          label="displaykey.NVV.Financials.SubView.EditRecoveryReserve.Transaction.Comments"
+          value="RecoveryReserveWrapper.Transaction.Comments"
+          wrapLabel="true"/> -->
+        <TextAreaCell
+          editable="true"
+          enableSort="false"
+          id="Comments"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Rationale"
+          maxChars="500"
+          numCols="20"
+          numRows="5"
+          validationExpression="RecoveryReserveWrapper.Transaction.isFieldChanged(&quot;Comments&quot;) and WizardHelper.getChangeClaimAmount(RecoveryReserveWrapper).Amount == null ? &quot;New Open Recovery Estimates must also be updated.&quot; : null"
+          value="RecoveryReserveWrapper.Transaction.Comments"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getCoverages(cov:Coverage):List{
+    
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+  
+}
+
+/* Based on the code from EditableReserves created by cmullin and tnewcomb, this function initializes the Wrappers to retrieve and set the 
+WCInjuryTypeExt field for Workers' Comp.
+*/
+
+uses gw.api.util.Logger //Added for logging in Debug - SR
+uses com.guidewire.pl.system.database.impl.QueryProcessorImpl
+
+function initializeWrappers(wrappers : TransactionEditWrapper[]) : TransactionEditWrapper[]{
+  var newWrap : java.util.List = new java.util.LinkedList()
+  var retWrap : TransactionEditWrapper[];
+  var existingTransactions : QueryProcessorImpl 
+  // If the passed-in Wrapper array is not empty, then pull a TransactionsQuery on the first Wrapper's Claim and assign the Query results 
+  // to the variable existingTransactions (of type QueryProcessorImpl)
+  if(wrappers.HasElements){
+    existingTransactions = wrappers[0].Transaction.Claim.TransactionsQuery as QueryProcessorImpl 
+  }
+  // Perform the task that this function was originally created for: populate a new Wrapper array
+  // that does not include any Transaction with the following CostCategory types.
+  for(wrap in wrappers){
+    if({CostCategory.TC_OVERPAYMENT,CostCategory.TC_SALVAGE,CostCategory.TC_SUBROGATION,CostCategory.TC_DEDUCTIBLE,CostCategory.TC_SURETYCLMCRED,CostCategory.TC_SECONDINJURYFUND}.contains(wrap.Transaction.CostCategory)){
+  // Then look at each transaction in existingTransactions resultset, cast each transaction to a TransactionDefaultView, and compare it to each wrapper 
+  // that passes the above check. If we find the existingTrans that the wrapper represents, and it's a reserve transaction, we grab the existingTrans' WCInjuryTypeExt and 
+  // add it to the individual wrapper's Transaction for display when setting a new reserve. This is how the WCInjuryTypeExt "defaults" to the 
+  // most recently entered Reserve.WCInjuryTypeExt value for a given Exposure/CostType pair.
+      for(each in existingTransactions){
+        
+        var existingTrans = each as TransactionDefaultView
+        if(existingTrans.Transaction.Subtype == "recoveryreserve" && 
+          existingTrans.Exposure == wrap.Transaction.Exposure && 
+          existingTrans.CostType == wrap.Transaction.CostType){
+            wrap.Transaction.WCInjuryTypeExt = existingTrans.Transaction.WCInjuryTypeExt
+        }
+      }
+      newWrap.add(wrap)
+    }
+  }
+  retWrap = newWrap as TransactionEditWrapper[];
+  return retWrap;
+}]]></Code>
+  </ListViewPanel>
+</PCF>

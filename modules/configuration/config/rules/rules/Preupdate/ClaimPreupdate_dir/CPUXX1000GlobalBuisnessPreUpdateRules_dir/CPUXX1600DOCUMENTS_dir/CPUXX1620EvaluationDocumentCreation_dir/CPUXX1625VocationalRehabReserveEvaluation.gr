@@ -1,0 +1,61 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1625 - Vocational Rehab Reserve Evaluation")
+internal class CPUXX1625VocationalRehabReserveEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in claim.Evaluations where evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "vocational")
+and claim.BeanVersion == find(clm in Claim where clm.ClaimNumber == claim.ClaimNumber).getAtMostOneRow().BeanVersion/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger
+
+for(evaluation in claim.Evaluations){
+  if(evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "vocational"){
+    var doc = new Document(claim);
+    //build Rehabs table
+    var rehabTable : String = "";
+    /* rehabArray sortBy is so the ECF Doc(created below) and the UI (ClaimVocRehabEvaluationDetailDV value
+    in the rowIterator match and keep order as entered initially.  We had to use absolute value. */
+    var rehabArray = evaluation.Rehabs.sortBy(\ r -> gw.api.util.Math.abs(r.ID.Value) )
+    for(each in rehabArray){
+        rehabTable = rehabTable + 
+          "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.RehabType==null ? "" : each.RehabType.DisplayName %></td>" +
+          "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.NumberWeeks==null ? "" : each.NumberWeeks.toString() %></td>" +
+          "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.PayRate==null ? "" : gw.api.util.StringUtil.formatNumber(each.PayRate as java.lang.Double, "$###,###.00") %></td>" +
+          "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.RehabTotal==null ? "" : gw.api.util.StringUtil.formatNumber(each.RehabTotal as java.lang.Double, "$###,###.00") %></td></tr>"
+    }
+    //generate template
+    var formID : String = "WCEV0003"
+    var body = templates.documents.VocRehabReserveEvaluation.renderToString(claim, evaluation, rehabTable, formID)
+    var values = new HashMap();
+    values.put( "VocRehabHTML", body)  
+
+    doc.Claim = claim;
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.Name = "Vocational Rehabilitation Reserve Evaluation";
+    doc.MimeType = "text/html";
+    doc.Status = "approved";
+    doc.ex_SubType = "Reserve Recommendation";
+    doc.ex_Type = "Internal Report";
+    doc.ProcessMethod = "Sent_to_File";
+    doc.Description = "Vocational Rehabilitation Reserve Evaluation";
+    doc.Privileged = "No";
+    doc.FormIDExt = "WCEV0003";
+    
+    if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "VocRehabReserveEvaluation.html" )) {
+      util.document.DocumentProduction.createAndStoreDocumentSynchronously( "VocRehabReserveEvaluation.html", values, doc );
+      var note:String = "Vocational Rehabilitation reserve evaluation document successfully generated.";
+      var noteSubject:Note;
+      noteSubject = claim.addNote("general", note);
+      noteSubject.Subject = "Vocational Rehabilitation Reserve Evaluation Created";
+    }else {
+      //changed to logging in Debug - SR
+	  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+    }
+    values.clear();
+  }
+}/*end00rule*/
+  }
+}

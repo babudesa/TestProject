@@ -1,0 +1,19 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPU12000 - Subro Status - Close")
+internal class CPU12000SubroStatusClose {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// If user changes the Catastrophe field, update History; Mark the "Review for Catastrophe" Activity complete if still open 
+(Claim.getOriginalValue("Catastrophe") as Key != Claim.Catastrophe as Key)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if (Claim.Catastrophe != null) 
+   { Claim.createCustomHistoryEvent("catastrophe", displaykey.Rules.PreUpdate.Claim.Catastrophe(Claim.Catastrophe.DisplayName));
+     for (task in Claim.Activities) if (task.ActivityPattern == ActivityPattern.finder.getActivityPatternByCode("restore") and task.Status =="open") {task.complete()}; 
+    }
+ else 
+    { Claim.createCustomHistoryEvent("catastrophe", displaykey.Rules.PreUpdate.Claim.UnrelatedToCatastrophe); }/*end00rule*/
+  }
+}

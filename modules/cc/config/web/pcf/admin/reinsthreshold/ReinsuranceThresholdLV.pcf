@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ReinsuranceThresholdLV">
+    <Require
+      name="ReinsuranceThresholdList"
+      type="ReinsuranceThresholdQuery"/>
+    <RowIterator
+      checkBoxVisible="CurrentLocation.InEditMode ? true : false"
+      editable="true"
+      elementName="ReinsuranceThreshold"
+      hideCheckBoxesIfReadOnly="true"
+      toCreateAndAdd="new ReinsuranceThreshold()"
+      toRemove="ReinsuranceThreshold.remove()"
+      value="ReinsuranceThresholdList">
+      <Row>
+        <TypeKeyCell
+          editable="true"
+          id="TreatyType"
+          label="displaykey.LV.ReinsuranceThreshold.TreatyType"
+          onChange="if(ReinsuranceThreshold.TreatyType == &quot;wc&quot;){ ReinsuranceThreshold.PolicyType = &quot;comp&quot;; ReinsuranceThreshold.LossType = &quot;WC&quot; }"
+          postOnChange="true"
+          required="true"
+          value="ReinsuranceThreshold.TreatyType"/>
+        <TypeKeyCell
+          editable="ReinsuranceThreshold.TreatyType != null and ReinsuranceThreshold.TreatyType != &quot;wc&quot;"
+          filter="if(ReinsuranceThreshold.TreatyType == &quot;wc&quot;) { return VALUE == &quot;comp&quot; } else if (ReinsuranceThreshold.TreatyType == &quot;prop&quot;) { return VALUE != &quot;comp&quot; } else { return true }"
+          id="PolicyType"
+          label="displaykey.LV.ReinsuranceThreshold.PolicyType"
+          onChange="ReinsuranceThreshold.LossType = gw.api.policy.PolicyTypeUtil.getLossTypeForPolicyType( ReinsuranceThreshold.PolicyType )"
+          postOnChange="true"
+          required="true"
+          value="ReinsuranceThreshold.PolicyType"/>
+        <Cell
+          editable="true"
+          id="ThresholdValue"
+          label="displaykey.LV.ReinsuranceThreshold.ThresholdValue"
+          required="true"
+          value="ReinsuranceThreshold.ThresholdValue"/>
+        <Cell
+          editable="true"
+          id="ReportingThreshold"
+          label="displaykey.LV.ReinsuranceThreshold.ReportingThreshold"
+          required="true"
+          value="ReinsuranceThreshold.ReportingThreshold"/>
+        <DateCell
+          editable="true"
+          id="StartDate"
+          label="displaykey.LV.ReinsuranceThreshold.StartDate"
+          required="false"
+          value="ReinsuranceThreshold.StartDate"/>
+        <DateCell
+          editable="true"
+          id="EndDate"
+          label="displaykey.LV.ReinsuranceThreshold.EndDate"
+          required="false"
+          validationExpression="ReinsuranceThreshold.EndDate == null or ReinsuranceThreshold.StartDate == null or (ReinsuranceThreshold.StartDate.compareTo( ReinsuranceThreshold.EndDate ) &lt;= 0) ? null : displaykey.LV.ReinsuranceThreshold.EndDate.ValidationError"
+          value="ReinsuranceThreshold.EndDate"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

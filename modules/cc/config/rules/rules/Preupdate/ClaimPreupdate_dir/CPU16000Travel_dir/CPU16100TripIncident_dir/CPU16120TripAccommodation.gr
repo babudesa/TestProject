@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPU16000Travel_dir.CPU16100TripIncident_dir
+
+@gw.rules.RuleName("CPU16120 - Trip Accommodation")
+internal class CPU16120TripAccommodation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.TripIncidentsOnly.hasMatch(\ t -> t.TripAccommodations.length > 0)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var today = java.util.Date.CurrentDate
+for (eachTripIncident in claim.TripIncidentsOnly) {
+  for (eachTripAccommodation in eachTripIncident.TripAccommodations) {
+    eachTripAccommodation.onPreUpdate(claim, today, displaykey.Rules.PreUpdate.Claim.TripExpenseAccommodation)
+    for (eachAddnlTripAccommodation in eachTripAccommodation.AddnlTripAccommodations) {
+      eachAddnlTripAccommodation.onPreUpdate(claim, today, displaykey.Rules.PreUpdate.Claim.TripExpenseAccommodation)
+    }
+  }
+}
+/*end00rule*/
+  }
+}

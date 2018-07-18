@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Creating Extensions to Preserve Data</title>
+    <link rel="StyleSheet" href="css/procedure-db-b-c.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_3.html#1937997">Upgrading from 5.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-b-c.10.01.html#1937997">Upgrading the ClaimCenter 5.0.x Database</a> : Creating Extensions to Preserve Data</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1937997">Creating Extensions to Preserve Data</a></div>
+      <div class="B_-_Body"><a name="1937998">The database upgrade removes some tables and columns. If you have data in a table or column that you want to </a>preserve, create an extension as described in the sections within this topic.</div>
+      <div class="B_-_Body"><a name="1937999">The database upgrade looks for specific extensions, and moves data from the table or column to be deleted to the </a>extension before deleting. If there is data in the table or column to be deleted, and no extension defined, an upgrade check reports the issue. The upgrader then stops before it makes any changes to the database.</div>
+      <div class="B_-_Body"><a name="1938001">If you create an extension to preserve data, update references to that data in rules, libraries, PCF files, and so </a>forth to point to the new extension.</div>
+      <div class="H2_-_Heading_2"><a name="1879333">Catastrophes</a></div>
+      <div class="B_-_Body"><a name="1879337">ClaimCenter 6.0 changed from using </a><span class="cv_-_computer_voice">CatastropheStates</span> to <span class="cv_-_computer_voice">CatastropheZones</span>. <span class="cv_-_computer_voice">CatastropheStates</span> were introduced in ClaimCenter 5.0. By default, a database upgrade trigger converts <span class="cv_-_computer_voice">CatastropheStates</span> to <span class="cv_-_computer_voice">CatastropheZones</span>. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.21.html#1939576', '');" title="Starting the Server to Begin Automatic Database Upgrade">“Converting Catastrophe States to Catastrophe Zones”</a>. However, you can choose to continue to use <span class="cv_-_computer_voice">CatastropheState</span> instead of the <span class="cv_-_computer_voice">CatastropheZone</span> functionality. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1879359', '');" title="Creating Extensions to Preserve Data">“Retaining Catastrophe States Instead of Catastrophe Zones”</a>.</div>
+      <div class="B_-_Body"><a name="1879350">If you do decide to use the new functionality, be aware that ClaimCenter 6.0 does not include a </a><span class="cv_-_computer_voice">Comments</span> column on <span class="cv_-_computer_voice">CatastropheZone</span>. However, ClaimCenter 5.0 included a <span class="cv_-_computer_voice">Comments</span> column on <span class="cv_-_computer_voice">CatastropheState</span>. If you have data in <span class="cv_-_computer_voice">CatastropheState.Comments</span>, either add a <span class="cv_-_computer_voice">Comments</span> column to <span class="cv_-_computer_voice">CatastropheZone</span> to have the upgrader populate the column based on <span class="cv_-_computer_voice">CatastropheState</span>, or remove the data before upgrading. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1879473', '');" title="Creating Extensions to Preserve Data">“Preserving Comments from Catastrophe State”</a>.</div>
+      <div class="B_-_Body"><a name="1879357">This topic contains two sections that provide procedures for continuing to use </a><span class="cv_-_computer_voice">CatastropheStates</span> instead of <span class="cv_-_computer_voice">CatastropheZones</span> and for preserving <span class="cv_-_computer_voice">CatastropheState</span> comments if you do take the new functionality.</div>
+      <div class="H3_-_Heading_3"><a name="1879359">Retaining Catastrophe States Instead of Catastrophe Zones</a></div>
+      <div class="B_-_Body"><a name="1879360">You can choose to continue to use </a><span class="cv_-_computer_voice">CatastropheState</span> instead of the <span class="cv_-_computer_voice">CatastropheZone</span> functionality. To do so, define a <span class="cv_-_computer_voice">CatastropheState</span> extension table, <span class="cv_-_computer_voice">ccx_catastrophestate</span>, as described in the procedure in this section. If the upgrader detects this table in the data model, it renames <span class="cv_-_computer_voice">cc_catastrophestate</span> to <span class="cv_-_computer_voice">ccx_catastrophestate</span>, preserving data in the table. In this case, the upgrade step that converts catastrophe states to catastrophe zones stops after the rename operation and does not perform the conversion.</div>
+      <div class="HS_-_Head_Sub"><a name="1879361">To preserve the CatastropheState table</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1879362">Create a </a><span class="cv_-_computer_voice">CatastropheState.eti</span> file in <span class="cv_-_computer_voice">configuration/config/extensions</span> of the target configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879363">Define your </a><span class="cv_-_computer_voice">CatastropheState</span> data model in <span class="cv_-_computer_voice">CatastrophState.eti</span>. For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1879364">&lt;?xml version="1.0"?&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879365">&lt;entity admin="true" desc="Details of states associated to a catastrophe." entity="CatastropheState"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879366">&nbsp;</a>&nbsp;exportable="true" loadable="true" platform="false" table="catastrophestate" type="joinarray"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879367">&nbsp;</a>&nbsp;&lt;foreignkey columnName="CatastropheID" exportable="false" fkentity="Catastrophe" name="Catastrophe"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879368">&nbsp;</a>&nbsp;&nbsp;nullok="false"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879369">&nbsp;</a>&nbsp;&lt;typekey desc="The state associated to the peril" name="State" nullok="true" typelist="State"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879370">&nbsp;</a>&nbsp;&lt;column desc="Comments regarding the state" name="Comments" nullok="true" type="shorttext"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879371">&nbsp;</a>&nbsp;&lt;index desc="Enforce uniqueness of state per catastrophe" name="internal1" unique="true"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879372">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;indexcol keyposition="1" name="CatastropheID"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879373">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;indexcol keyposition="2" name="State"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879374">&nbsp;</a>&nbsp;&lt;/index&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1879375">&lt;/entity&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879376">Create a </a><span class="cv_-_computer_voice">Catastrophe.etx</span> file in <span class="cv_-_computer_voice">configuration/config/extensions.</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879377">Add the </a><span class="cv_-_computer_voice">CatastropheState</span> array to <span class="cv_-_computer_voice">Catastrophe</span> by inserting the following in <span class="cv_-_computer_voice">Catastrophe.etx</span>:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1879378">&lt;!-- Extension to catastrophe table --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879379">&lt;extension entityName="Catastrophe"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879380">&nbsp;</a>&nbsp;&lt;array arrayentity="CatastropheState" desc="Details of states associated with a catastrophe."</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879381">&nbsp;</a>&nbsp;&nbsp;exportable="true" name="States" owner="true"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1879382">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879383">Save and close </a><span class="cv_-_computer_voice">CatastrophState.eti</span> and <span class="cv_-_computer_voice">Catastrophe.etx.</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1879384">When you start the server to launch the database upgrade, the upgrader detects the </a><span class="cv_-_computer_voice">CatastropheState</span> extension and renames the existing <span class="cv_-_computer_voice">cc_CatastropheState</span> table to <span class="cv_-_computer_voice">ccx_CatastropheState</span>. In this case, the upgrader does not convert <span class="cv_-_computer_voice">CatastropheStates</span> to <span class="cv_-_computer_voice">CatastropheZones</span>.</div>
+      <div class="B_-_Body"><a name="1879385">Update PCF files and rules to reference </a><span class="cv_-_computer_voice">CatastropheState</span> instead of <span class="cv_-_computer_voice">CatastropheZone</span>. By default, ClaimCenter 6.0 references <span class="cv_-_computer_voice">CatastropheZone</span> or uses a library to get <span class="cv_-_computer_voice">CatastropheZone </span>information in the following rules:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ui_-_UI_element"><a name="1879398">Validation</a></span> → <span class="ui_-_UI_element">ClaimValidationRules</span> → <span class="ui_-_UI_element">CLV10000</span> - <span class="ui_-_UI_element">Catastrophe</span> → <span class="ui_-_UI_element">CLV10200 Check Loss Date and Zone</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ui_-_UI_element"><a name="1879405">Preupdate</a></span> →<span style="font-weight: bold"> </span><span class="ui_-_UI_element">ClaimPreupdate</span> → <span class="ui_-_UI_element">CPU09000 - Related to Catastrophe</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1879409">See </a><a href="javascript:WWHClickedPopup('upgrade', 'procedure-config-b-c.09.08.html#1855090', '');" title="Merging the ClaimCenter Configuration">“Catastrophes”</a> for PCF information.</div>
+      <div class="B_-_Body"><a name="1879410">You must also update the </a><span class="cv_-_computer_voice">CatastropheClaimFinder</span> batch process. This batch process uses the <span class="cv_-_computer_voice">GWCatastropheEnhancement</span> method <span class="cv_-_computer_voice">findClaimsByCatastropheZone()</span> to identify claims that have a loss location within the zones of the catastrophe. Use the following procedure to add a <span class="cv_-_computer_voice">findClaimsByCatastropheState()</span> method to <span class="cv_-_computer_voice">GWCatastropheEnhancement</span> and update the <span class="cv_-_computer_voice">CatastropheClaimFinder</span> batch process to call the new method.</div>
+      <div class="HS_-_Head_Sub"><a name="1879411">To update the </a><span class="cv_-_computer_voice">CatastropheClaimFinder</span> batch process</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1879421">Open Studio 6.0.8 by entering </a><span class="cv_-_computer_voice">gwcc studio</span> from <span class="cv_-_computer_voice">ClaimCenter/bin</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879434">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, open <span class="ui_-_UI_element">configuration</span> → <span class="ui_-_UI_element">Classes</span> → <span class="ui_-_UI_element">gw</span> → <span class="ui_-_UI_element">entity</span> → <span class="ui_-_UI_element">GWCatastropheEnhancement</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879435">Add a new method to search for claims based on the catastrophe states. For example:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1879436">public function findClaimsByCatastropheState() : gw.api.database.IQueryBeanResult&lt;entity.Claim&gt; { </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879437">&nbsp;</a>&nbsp;var q = findClaims()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879438">&nbsp;</a>&nbsp;if(this.States.Count &gt; 0) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879439">&nbsp;</a>&nbsp;&nbsp;&nbsp;q.join("LossLocation").or( \ or1 -&gt; { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879440">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(state in this.States) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879441">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or1.compare("State", Equals, state.Code)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879442">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879443">&nbsp;</a>&nbsp;&nbsp;&nbsp;})</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879444">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879445">&nbsp;</a>&nbsp;return q.select()</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1879446">}</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879450">Select </a><span class="ui_-_UI_element">File</span> → <span class="ui_-_UI_element">Save Changes</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879463">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, open <span class="ui_-_UI_element">configuration</span> → <span class="ui_-_UI_element">Classes</span> → <span class="ui_-_UI_element">gw</span> → <span class="ui_-_UI_element">util</span> → <span class="ui_-_UI_element">CatastropheClaimFinderBatch</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879464">Within the </a><span class="cv_-_computer_voice">doWork()</span> method, change the line</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1879465">var catClaims = _catastrophe.findClaimsByCatastropheZone()</a></div>
+      <div class="LP_-_List_Para"><a name="1879466">to</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="1879467">var catClaims = _catastrophe.findClaimsByCatastropheState()</a></div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879471">Select </a><span class="ui_-_UI_element">File</span> → <span class="ui_-_UI_element">Save Changes</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1879473">Preserving Comments from Catastrophe State</a></div>
+      <div class="B_-_Body"><a name="1879474">If you do convert to using </a><span class="cv_-_computer_voice">CatastropheZones</span>, and you have comments on existing <span class="cv_-_computer_voice">CatastropheStates</span>, you must create an extension on <span class="cv_-_computer_voice">CatastropheZone</span> to preserve the comments.</div>
+      <div class="B_-_Body"><a name="1879478">The ClaimCenter 5.0.x version of </a><span class="cv_-_computer_voice">CatastropheState</span> included a <span class="cv_-_computer_voice">Comments</span> column. If there is any data in this column, and there is a <span class="cv_-_computer_voice">Comments</span> column on <span class="cv_-_computer_voice">CatastropheZone</span>, the database upgrader copies the data to the <span class="cv_-_computer_voice">CatastropheZone</span> <span class="cv_-_computer_voice">Comments</span> column. The <span class="cv_-_computer_voice">CatastropheZone</span> entity does not have a <span class="cv_-_computer_voice">Comments</span> column by default. If you have comments in <span class="cv_-_computer_voice">CatastropheState</span>, and you want those comments moved to the new <span class="cv_-_computer_voice">CatastropheZone</span> entity, create a <span class="cv_-_computer_voice">Comments</span> column extension on <span class="cv_-_computer_voice">CatastropheZone</span>. Or, if you do not want to preserve the comments from <span class="cv_-_computer_voice">CatastropheState</span>, alter <span class="cv_-_computer_voice">cc_catastrophestate</span> to remove the <span class="cv_-_computer_voice">Comments</span> column before beginning the upgrade. If the upgrader detects data in <span class="cv_-_computer_voice">cc_catastrophestate.Comments</span>, and does not detect a <span class="cv_-_computer_voice">Comments</span> column extension on <span class="cv_-_computer_voice">CatastropheZone</span>, it reports an error message and aborts the upgrade.</div>
+      <div class="HS_-_Head_Sub"><a name="1879479">To preserve Catastrophe State comments</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1879480">Create a </a><span class="cv_-_computer_voice">CatastropheZone.etx</span> file in <span class="cv_-_computer_voice">configuration/config/extensions</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879481">Add a </a><span class="cv_-_computer_voice">Comments</span> column to <span class="cv_-_computer_voice">CatastropheZone</span> by inserting the following in <span class="cv_-_computer_voice">CatastropheZone.etx</span>:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1879482">&lt;!-- Extension to CatastropheZone --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879483">&lt;extension entityName="CatastropheZone"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1879484">&nbsp;</a>&nbsp;&lt;column desc="Comments regarding the state" name="Comments" nullok="true" type="shorttext"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1879485">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1879486">Save and close </a><span class="cv_-_computer_voice">CatastropheZone.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="1938009">Deductible Fields</a></div>
+      <div class="B_-_Body"><a name="1938012">The database upgrade removes deductible-related fields from Claim, Transaction and Payment. See </a><a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.21.html#1939419', '');" title="Starting the Server to Begin Automatic Database Upgrade">“Removing Unused Deductible Columns”</a>.</div>
+      <div class="B_-_Body"><a name="1938014">If you want to preserve these fields, add their definitions as extensions to the data model, as described in this </a>topic. If the upgrader finds these fields defined in the data model, it does not remove them or their data during the upgrade.</div>
+      <div class="HS_-_Head_Sub"><a name="1938015">To preserve deductible fields</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938016">Copy the </a><span class="cv_-_computer_voice">Claim.etx</span> file from the <span class="cv_-_computer_voice">cc/config/extensions</span> folder to <span class="cv_-_computer_voice">configuration/config/extensions</span> in the target configuration. If you already have <span class="cv_-_computer_voice">Claim.etx</span> in <span class="cv_-_computer_voice">configuration/config/extensions</span>, skip this step.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938017">Open </a><span class="cv_-_computer_voice">Claim.etx</span> in a text editor.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938018">Comment out the sample extensions listed below by adding </a><span class="cv_-_computer_voice">&lt;!--</span> before their definitions and <span class="cv_-_computer_voice">--&gt;</span> after, as shown. Leave the index definitions beneath these definitions uncommented.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938019">&lt;!--</a></span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938020">&lt;column default="foo" desc="varchar(30) extension; default value of 'foo'" name="VarcharExt"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938021">&nbsp;</a>nullok="true" type="varchar"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938022">&nbsp;</a>&nbsp;&lt;columnParam name="size" value="30"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938023">&lt;/column&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938024">&lt;column default="12" desc="integer extension; default value of '12'" name="IntegerExt" nullok="true"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938025">&nbsp;</a>type="integer"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938026">&lt;array arrayentity="GWXExtArray" desc="Sample array extension, using an entity type defined only in the</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938027">&nbsp;</a>extensions file." name="GWXExtArray"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938028">&lt;typekey desc="Sample TypeKey extension." name="TypeKeyExt" nullok="true" typelist="LossType"/&gt;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938029">--&gt;</a></span></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938030">Add a definition for a </a><span class="cv_-_computer_voice">DeductibleStatus</span> typekey, as shown in bold:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938031">&lt;!-- Extension to Claim --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938032">&lt;extension entityName="Claim"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938033">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938034">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;typekey desc="Whether the deductible has been paid." name="DeductibleStatus"</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938035">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">typelist="DeductibleStatus"/&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938036">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938037">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938038">Save and close </a><span class="cv_-_computer_voice">Claim.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938039">Create a </a><span class="cv_-_computer_voice">Transaction.etx</span> file in <span class="cv_-_computer_voice">configuration/config/extensions</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938040">Open </a><span class="cv_-_computer_voice">Transaction.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938041">Add a definition for a </a><span class="cv_-_computer_voice">DeductiblePaid</span> typekey column.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938042">&lt;!-- Extension to Transaction --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938043">&lt;extension entityName="Transaction"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938044">&nbsp;</a>&nbsp;&lt;typekey desc="Whether the deductible has been paid." name="DeductiblePaid"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938045">&nbsp;</a>&nbsp;&nbsp;typelist="YesNo"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938046">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	9.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938047">Save and close </a><span class="cv_-_computer_voice">Transaction.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	10.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938048">Create a </a><span class="cv_-_computer_voice">Payment.etx</span> file in <span class="cv_-_computer_voice">configuration/config/extensions</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	11.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938049">Open </a><span class="cv_-_computer_voice">Payment.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	12.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938050">Add definitions for the following columns:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938051">DeductibleAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938052">DeductibleSubtracted</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938053">NetAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938054">OriginalAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1938055">For example:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938056">&lt;!-- Extension to Payment --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938057">&lt;extension entityName="Payment"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938058">&nbsp;</a>&nbsp;&lt;column desc="Amount subtracted for deductible." name="DeductibleAmount" nullok="true"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938059">&nbsp;</a>&nbsp;&nbsp;type="money"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938060">&nbsp;</a>&nbsp;&lt;column desc="Has the deductible been paid?" name="DeductibleSubtracted" nullok="true"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938061">&nbsp;</a>&nbsp;&nbsp;type="bit"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938062">&nbsp;</a>&nbsp;&lt;column desc="Net amount to pay." name="NetAmount" nullok="true"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938063">&nbsp;</a>&nbsp;&nbsp;type="money"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938064">&nbsp;</a>&nbsp;&lt;column desc="Original payment amount." name="OriginalAmount" nullok="true"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938065">&nbsp;</a>&nbsp;&nbsp;type="money"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938066">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	13.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938067">Save and close </a><span class="cv_-_computer_voice">Payment.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="1938069">Reinsurance Status</a></div>
+      <div class="B_-_Body"><a name="1938072">The database upgrade removes the </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey and references to it. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.21.html#1939365', '');" title="Starting the Server to Begin Automatic Database Upgrade">“Removing Reinsurance Status Typekey and References”</a>.</div>
+      <div class="B_-_Body"><a name="1938074">If you have data in </a><span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span> that you want to keep, do the following:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938075">Create a </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey extension on <span class="cvt_-_computer_voice_table">Claim</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938082">Add the </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typelist back to the ClaimCenter 6.0.8 configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1938083">These procedures are described in this topic.</a></div>
+      <div class="B_-_Body"><a name="1938084">If the upgrader does not detect a </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey extension, and there is data in <span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span>, a version check reports an error. If there is no data in <span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span>, and the extension is not defined, the upgrader drops the column. If the upgrader does detect the extension, it does not drop the <span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span> column.</div>
+      <div class="HS_-_Head_Sub"><a name="1938085">To preserve reinsurance status</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938086">Copy the </a><span class="cv_-_computer_voice">Claim.etx</span> file from the <span class="cv_-_computer_voice">cc/config/extensions</span> folder to <span class="cv_-_computer_voice">configuration/config/extensions</span> in the target configuration. If you already have <span class="cv_-_computer_voice">Claim.etx</span> in <span class="cv_-_computer_voice">configuration/config/extensions</span>, skip this step.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938087">Open </a><span class="cv_-_computer_voice">Claim.etx</span> in a text editor.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938088">If using the copied </a><span class="cv_-_computer_voice">Claim.etx</span>, comment out the sample extensions listed below by adding <span class="cv_-_computer_voice">&lt;!--</span> before their definitions and <span class="cv_-_computer_voice">--&gt;</span> after, as shown. Leave the index definitions beneath these definitions uncommented.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938089">&lt;!--</a></span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938090">&lt;column default="foo" desc="varchar(30) extension; default value of 'foo'" name="VarcharExt"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938091">&nbsp;</a>nullok="true" type="varchar"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938092">&nbsp;</a>&nbsp;&lt;columnParam name="size" value="30"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938093">&lt;/column&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938094">&lt;column default="12" desc="integer extension; default value of '12'" name="IntegerExt" nullok="true"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938095">&nbsp;</a>type="integer"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938096">&lt;array arrayentity="GWXExtArray" desc="Sample array extension, using an entity type defined only in the</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938097">&nbsp;</a>extensions file." name="GWXExtArray"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938098">&lt;typekey desc="Sample TypeKey extension." name="TypeKeyExt" nullok="true" typelist="LossType"/&gt;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938099">--&gt;</a></span></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938100">Add a definition for a </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey, as shown in bold:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938101">&lt;!-- Extension to Claim --&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938102">&lt;extension entityName="Claim"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938103">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938104">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;typekey desc="The reinsurance status for a claim." name="ReinsuranceStatus"</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><span class="s_-_strong"><a name="1938105">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">typelist="ReinsuranceStatus"/&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938106">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938107">&lt;/extension&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938108">Save and close </a><span class="cv_-_computer_voice">Claim.etx</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938109">Create a </a><span class="cv_-_computer_voice">ReinsuranceStatus.tti</span> file in <span class="cv_-_computer_voice">configuration/config/extensions</span> in the target configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938110">Open </a><span class="cv_-_computer_voice">ReinsuranceStatus.tti</span> in a text editor.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938111">Add the following text to </a><span class="cv_-_computer_voice">ReinsuranceStatus.tti</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938112">&lt;?xml version="1.0"?&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938113">&lt;typelist</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938114">&nbsp;</a>xmlns="http://guidewire.com/typelists"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938115">&nbsp;</a>desc=""</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938116">&nbsp;</a>name="ReinsuranceStatus"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938117">&nbsp;</a>&nbsp;&lt;typecode</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938118">&nbsp;</a>&nbsp;&nbsp;&nbsp;code="Does_Not_Apply"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938119">&nbsp;</a>&nbsp;&nbsp;&nbsp;desc="Reinsurance does not apply"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938120">&nbsp;</a>&nbsp;&nbsp;&nbsp;name="Does not apply"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938121">&nbsp;</a>&nbsp;&nbsp;&nbsp;priority="1"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938122">&nbsp;</a>&nbsp;&lt;typecode</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938123">&nbsp;</a>&nbsp;&nbsp;&nbsp;code="Evaluating"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938124">&nbsp;</a>&nbsp;&nbsp;&nbsp;desc="Evaluating reinsurance potential"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938125">&nbsp;</a>&nbsp;&nbsp;&nbsp;name="Evaluating"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938126">&nbsp;</a>&nbsp;&nbsp;&nbsp;priority="2"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938127">&nbsp;</a>&nbsp;&lt;typecode</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938128">&nbsp;</a>&nbsp;&nbsp;&nbsp;code="Pursuing"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938129">&nbsp;</a>&nbsp;&nbsp;&nbsp;desc="Pursuing reinsurance"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938130">&nbsp;</a>&nbsp;&nbsp;&nbsp;name="Pursuing"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938131">&nbsp;</a>&nbsp;&nbsp;&nbsp;priority="3"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938132">&lt;/typelist&gt;</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	9.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938133">Save and close </a><span class="cv_-_computer_voice">ReinsuranceStatus.tti</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

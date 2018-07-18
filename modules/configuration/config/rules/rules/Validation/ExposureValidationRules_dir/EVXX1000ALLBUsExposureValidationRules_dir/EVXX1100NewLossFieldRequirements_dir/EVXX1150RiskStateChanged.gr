@@ -1,0 +1,24 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1100NewLossFieldRequirements_dir
+
+@gw.rules.RuleName("EVXX1150 - Risk State Changed")
+internal class EVXX1150RiskStateChanged {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Updated: Stephanie Przygocki - 5/26/11 - 920 now uses TypeOfLossMostExt
+exposure.Changed and
+((exposure.Coverage.State == "TX" and (exposure.OriginalVersion as Exposure).Coverage.State != "TX") or 
+ (exposure.Coverage.State != "TX" and (exposure.OriginalVersion as Exposure).Coverage.State == "TX")) and
+!exposure.Claim.PolicyChanged and !exposure.New
+ /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(exposure.Coverage.SublineExt == "920" and exposure.LossLocationExt == null and exposure.TypeOfLossMostExt == null){
+    exposure.reject(null, null, "newloss", displaykey.Rules.Validation.Exposure.Enterprise.NewLoss.RiskStateChanged)
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

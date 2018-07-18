@@ -1,0 +1,43 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX2000SpecialtyESActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX2400 - Manager Reserve Review - 6 Month")
+internal class ABXX2400ManagerReserveReview6Month {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isConvertedExt() == false/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "specialtyes_reserve_review" )
+var latestUpdate:DateTime;
+var queryResults = gw.api.database.Query.make(Reserve).compare("Claim", Equals, claim).select()
+try{
+  for(exp in claim.Exposures.where(\ e ->e.getFeatureFinancialStatus().equals(  "Open" ) )){  //loop thru financial open exposures 
+     if(exists(reserve in queryResults where reserve.Exposure==exp) ){
+       for(reserve in queryResults){ //loop thru the transactions
+          if(reserve.Exposure==exp){
+            for(res in exp.ReserveLines){ //loop thru reserves
+              latestUpdate = res.CreateTime //find the latest update to updateTime and set, then compare
+              //print(latestUpdate)
+              for(act in claim.Activities){
+                if( act.ActivityPattern.Code=="specialtyes_reserve_review" and act.Exposure==exp and
+                (gw.api.util.DateUtil.compareIgnoreTime(act.AssignmentDate, latestUpdate)>0)){
+                  latestUpdate = act.AssignmentDate
+                }//end if
+              }//end act for loop
+                 
+              //then if the current date is 6 months greater than the last updateTime create the activity
+              if(gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.currentDate(),gw.api.util.DateUtil.addDays(latestUpdate,180)) >=0){
+                  claim.createActivity( exp, ap, "6 Month Outstanding Manager Reserve Review", null, null, null, null, null)
+                 
+              }//end if
+            }//end for
+          }//end if
+        }//end for
+      }//end if
+    }//end if
+}//end try
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

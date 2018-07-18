@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="typeof contactISO.Contact == Person || typeof contactISO.Contact == InjuredWorkerExt"
+    id="ContactMedicareDataDV">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="contactISO"
+      type="ContactISOMedicareExt"/>
+    <Require
+      name="pageProcRef"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Require
+      name="exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="exposure != null ? pageProcRef.detailedInit(contactISO, claim, exposure) : pageProcRef.detailedInit(contactISO, claim)"
+      name="pageProc"
+      recalculateOnRefresh="true"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Variable
+      initialValue="util.WCHelper.isWCLossType(claim)"
+      name="isWCLossType"
+      type="Boolean"/>
+    <InputColumn>
+      <InputSetRef
+        def="CMSWorkCompInfoInputSet(pageProc, claim, exposure)"
+        visible="contactISO.Contact typeis Person &amp;&amp; isWCLossType"/>
+      <InputSetRef
+        def="CMSMedicareInfoInputSet(pageProc, claim, exposure)"
+        visible="contactISO.Contact typeis Person"/>
+      <!-- <InputDivider/> -->
+      <ListViewInput
+        def="DiagICDCodeLV(contactISO, pageProc,claim)"
+        editable="!isWCLossType"
+        label="displaykey.Web.Medicare.DiagnosticCodes"
+        labelAbove="true"
+        validationExpression="pageProc.DiagnosticCodes.Count &gt; 19 ? &quot;You can only enter 19 Diagnostic Codes&quot; : null//pageProc.DiagnosticCodes.Count == 0 and contactISO.Contact typeis Person and contactISO.Contact.MedicareEligibleExt == true and (contactISO.Contact.ContactISOMedicareExt.ORMIndExt or contactISO.Contact.ContactISOMedicareExt.TPOCExt.Count != 0) ? &quot;You must enter at least one Diagnostic Code&quot; : null"
+        visible="true">
+        <Toolbar>
+          <ToolbarButton
+            action="ICD9CodePopup.push(pageProc, &quot;Diagnostic&quot;, null)"
+            available="CurrentLocation.InEditMode and pageProc.DiagnosticCodes.Count &lt; 19"
+            hideIfReadOnly="true"
+            id="addCode"
+            label="&quot;Diagnostic Code Lookup&quot;"
+            visible="pageProc.DiagnosticCodes.last().ICDCode != null or pageProc.DiagnosticCodes.Count == 0 ? true : false"/>
+          <IteratorButtons
+            addVisible="pageProc.DiagnosticCodes.Count == 19 ? false : true"
+            removeVisible="true"/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        label="&quot;Cause of Injury&quot;"
+        labelAbove="true">
+        <Toolbar>
+          <ToolbarButton
+            action="ICD9CodePopup.push(pageProc, &quot;CauseOfInjury&quot;, null)"
+            available="CurrentLocation.InEditMode and pageProc.CauseOfInjury.Count == 0"
+            hideIfReadOnly="true"
+            id="addCode2"
+            label="&quot;Cause of Injury Code Lookup&quot;"
+            visible="CurrentLocation.InEditMode and pageProc.CauseOfInjury.Count == 0"/>
+          <IteratorButtons
+            addVisible="contactISO.ContactICDExt.where(\ c -&gt; c.CauseOfInjury ).Count == 0 ? true : false"
+            removeVisible="true"/>
+        </Toolbar>
+        <ListViewPanel>
+          <RowIterator
+            editable="true"
+            elementName="ICDHelper2"
+            hasCheckBoxes="true"
+            hideCheckBoxesIfReadOnly="true"
+            id="ICDHelper2"
+            numEntriesRequired="0"
+            toCreateAndAdd="pageProc.addCauseHelper()"
+            toRemove="pageProc.removeInjuryHelper(ICDHelper2)"
+            value="pageProc.CauseOfInjury">
+            <Row>
+              <Cell
+                editable="ICDHelper2.ContactICD.ICDCode == null ? true : false"
+                id="CauseOfInjuryCode"
+                label="&quot;Cause of Injury&quot;"
+                onChange="submitInjuryCode(ICDHelper2)"
+                postOnChange="true"
+                required="true"
+                value="ICDHelper2.ICDCode"/>
+              <Cell
+                id="descriptionCell"
+                label="displaykey.Web.Medicare.Description"
+                required="false"
+                value="ICDHelper2.ContactICD.ICDCode.CodeDesc"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <InputSetRef
+        def="ExposureISOMedicareDataInputSet(contactISO, claim, pageProc)"/>
+      <InputDivider/>
+      <ListViewInput
+        available="true"
+        boldLabel="true"
+        editable="true"
+        id="TPOCInfoLV"
+        label="displaykey.Web.Medicare.TPOC"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            addVisible="contactISO.TPOCExt.length &lt; 5 "/>
+        </Toolbar>
+        <ListViewPanel
+          id="EditableTPOCLineItemLV">
+          <RowIterator
+            editable="true"
+            elementName="TPOC"
+            hasCheckBoxes="true"
+            hideCheckBoxesIfReadOnly="true"
+            id="TPOCIterator"
+            toAdd="pageProc.addTPOCInfo(TPOC)"
+            toRemove="pageProc.removeTPOCInfo(TPOC)"
+            validationLabel="&quot;TPOC: &quot;"
+            value="pageProc.ContactISOMedicare.TPOCExt">
+            <Row>
+              <Cell
+                id="RecordNum"
+                value="TPOC.CMSTPOCNumber"
+                visible="false"/>
+              <DateCell
+                editable="true"
+                id="TPOCDate"
+                label="displaykey.Web.Medicare.TPOCDate"
+                required="true"
+                validationExpression="TPOCValExpr(TPOC)"
+                value="TPOC.CMSTPOCDate"
+                visible="true"/>
+              <Cell
+                editable="true"
+                formatType="currency"
+                id="TPOCAmount"
+                label="displaykey.Web.Medicare.TPOCAmount"
+                outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                required="true"
+                value="TPOC.CMSTPOCAmount"/>
+              <DateCell
+                editable="true"
+                id="TPOCStartDate"
+                label="displaykey.Web.Medicare.FundingDelayedTPOCDate"
+                required="false"
+                validationExpression="TPOC.CMSTPOCStartDate == null or TPOC.CMSTPOCStartDate &gt; TPOC.CMSTPOCDate? null : &quot;Funding Delayed Beyond TPOC Date must be greater than the TPOC Date&quot;"
+                value="TPOC.CMSTPOCStartDate"/>
+              <RangeCell
+                editable="true"
+                id="TPOCExposure"
+                label="&quot;Feature&quot;"
+                required="true"
+                value="TPOC.ExposureExt"
+                valueRange="getContactsExposures()"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="InjuredPartyRepLV(contactISO, claim, pageProc) "
+        label="&quot;Injured Party Representative&quot;"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            addVisible="contactISO.Contact.AllContactContacts.where(\c-&gt; c.InjuredPartyFlagExt == true).Count &lt; 4"/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ClaimantLV(contactISO, claim, pageProc)"
+        label="&quot;Survivor or Wrongful Death Beneficiary&quot;"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            addVisible="contactISO.Contact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantFlagExt ).Count &gt;=4 ? false : true"/>
+          <!-- <ToolbarButton
+            action="AddClaimantRepsPopup.push(contactISO, claim, pageProc)"
+            id="ToolbarButton"
+            label="&quot;Add Representatives&quot;"
+            visible="CurrentLocation.InEditMode and contactISO.Contact.TargetRelatedContacts.Count != 0 and contactISO.Contact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantFlagExt )*.RelatedContact != null"/> -->
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn/>
+    <Code><![CDATA[uses java.util.ArrayList
+function TPOCValExpr(TPOC : TPOCExt ) : String{
+  var message : String
+  if(contactISO.CMSIncidentDateExt != null){
+    message = TPOC.CMSTPOCDate == null || (gw.api.util.DateUtil.compareIgnoreTime(TPOC.CMSTPOCDate, util.DateUtil.currentDate()) <= 0 and gw.api.util.DateUtil.compareIgnoreTime(TPOC.CMSTPOCDate, contactISO.CMSIncidentDateExt) > 0) ? null : displaykey.Java.Validation.Date.ForbidFuture + " Date must be greater than the CMS Date of Incident."    
+  }
+  
+  return message
+}
+
+function getContactsExposures() : List<Exposure> {
+ var expos : List<Exposure>
+ expos = new ArrayList<entity.Exposure>()
+ if(claim.Exposures.Count != 0){
+   for(ex in claim.Exposures.where(\ e -> e.Claimant == contactISO.Contact && e.IsMedicareExposureExt==true ))   {
+     expos.add(ex)
+   }
+ }
+  
+ return expos 
+}
+
+// function for checking if the Cause of Injury code is invalid,
+// then shows an error message
+function submitInjuryCode(helper: pcf_gs.ContactCauseICDHelper){
+   helper.ValidCode = true; 
+   if(helper.newCode!=null && !pageProc.isValidICDCode(helper.newCode, "CauseOfInjury")){
+     helper.ValidCode = false; 
+     throw new com.guidewire.pl.web.controller.UserDisplayableException("Cause of Injury : Invalid Cause of Injury Code: " + helper.newCode);
+   }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

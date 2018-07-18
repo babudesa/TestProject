@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This InputSet is only appropriate for editing a Payment, in spite of its more generic name  This file automatically generated from nvv_financials.xml -->
+  <InputSet
+    id="EditTransactionInputSet">
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <Require
+      name="Payment"
+      type="Payment"/>
+    <Require
+      name="helper"
+      type="financials.EditTransactionHelper"/>
+    <Variable
+      initialValue="Payment.ReserveLine"
+      name="reserveLine"
+      type="ReserveLine"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Transaction.Claim)"
+      name="isWCClaim"/>
+    <RangeInput
+      editable="true"
+      filter="(Payment as Transaction).removeCostCat(VALUE) and Transaction.filterReserveLine(helper.getReserveLinePickerOptionLabel(VALUE), VALUE)"
+      id="Transaction_ReserveLine"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.ReserveLine"
+      onChange="Payment.setReserveLine(reserveLine); validateRecurringCostType(); financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      optionLabel="helper.getReserveLinePickerOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      validationExpression="Payment.Check.isRecurringCheck ? validateRecurringRecode() : Transaction.validateForRecode()"
+      value="reserveLine"
+      valueRange="Payment.Check.filterReserveLines(helper.getPayableReserveLines(Payment).toList())"/>
+    <Input
+      id="Transaction_CurrentInjuryType"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.CurrentInjuryType"
+      value="reserveLine.CostType == &quot;claimcost&quot; ? reserveLine.Exposure.WCLossInjuryTypeExt : reserveLine.Exposure.WCExpenseInjuryTypeExt"/>
+    <RangeInput
+      editable="true"
+      id="Exposure"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Exposure"
+      onChange="financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      optionLabel="(VALUE as Exposure).FullDescriptionwithLossParty"
+      postOnChange="true"
+      required="true"
+      validationExpression="Transaction.validateForRecode()"
+      value="Transaction.Exposure"
+      valueRange="helper.getPossibleExposures(Payment)"
+      visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+    <RangeInput
+      id="Coverage"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Coverage"
+      optionLabel="Transaction.Exposure.Coverage.covTypeDisplayName()"
+      value="Transaction.Exposure.PrimaryCoverage"
+      valueRange="getCoverages(Transaction.Exposure.Coverage)"/>
+    <RangeInput
+      editable="true"
+      id="CostType"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.CostType"
+      onChange="validateRecurringCostType(); financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment);"
+      postOnChange="true"
+      required="true"
+      value="Transaction.CostType"
+      valueRange="util.financials.CheckFunctions.getCostTypeValues(Transaction.Claim, Payment.Check.PaymentMethod, Payment.Check.BankAccount)"
+      visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+    <!-- <TypeKeyInput
+      editable="true"
+      id="CostCategory"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.CostCategory"
+      onChange="financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      postOnChange="true"
+      required="true"
+      showNoneSelected="false"
+      value="Transaction.CostCategory"
+      valueRange="helper.getPossibleCostCategories(Payment)"
+      visible="true"/> -->
+    <!-- Fix for Integration Test Defects #76 and #77 - CategoryCode must be set to the default -->
+    <HiddenInput
+      id="CategoryCode"
+      value="Transaction.setCostCategory()"/>
+    <!-- <Input
+      editable="true"
+      id="Comments"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Comments"
+      value="Transaction.Comments"/> -->
+    <!-- Commenting out the comments, found during intgration testing.  djohnson  Defect 1386 - Sprzygocki - Total Loss Indicator - matching requirements for Method of Settlement  4/1/10 erawe defect 2894 - added needsTotalLossReporting()check to visible so not to show TLI on checks, recodes, transfer for Auto -->
+    <Input
+      editable="true"
+      id="TotalLoss"
+      label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.TotalLoss"
+      postOnChange="true"
+      required="true"
+      value="Payment.Exposure.TotalLossIndExt"
+      visible="(Payment.PaymentType==&quot;final&quot; || Payment.PaymentType==&quot;supplement&quot;) and Payment.CostType==&quot;claimcost&quot; and (Payment.Exposure!=null &amp;&amp; Payment.Exposure.totalLossNeededForPymt()) and  ( Payment.Exposure!=null &amp;&amp; !Payment.Exposure.needsTotalLossReporting())"/>
+    <!-- Method of Settlement - sprzygocki - defect 1087 -->
+    <InputSet
+      visible="checkMOS()">
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Title"/>
+      <Input
+        editable="true"
+        id="MethodOfSettlement"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Method"
+        postOnChange="true"
+        required="!isWCClaim or (isWCClaim and (Transaction as Payment).CostType==&quot;claimcost&quot;)"
+        value="Transaction.Exposure.MethodOfSettlementExt"/>
+      <RangeInput
+        editable="true"
+        id="SettlementType"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.SettlementType"
+        postOnChange="true"
+        required="true"
+        value="Transaction.Exposure.SettleMethod"
+        valueRange="typekey.SettleMethod.getTypeKeys(false).where(\ e -&gt; e.hasCategory(Transaction.Claim.LossType) &amp;&amp; e.hasCategory(Transaction.Claim.JurisdictionState))"
+        valueWidth="250"
+        visible="isWCClaim"/>
+      <Input
+        editable="true"
+        id="PolicyNumber"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.PolicyNum"
+        postOnChange="true"
+        required="true"
+        value="Transaction.Exposure.PolicyNumberExt"
+        visible="Transaction.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      <ClaimContactInput
+        claim="Transaction.Exposure.Claim"
+        editable="true"
+        id="InsuranceCo"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsuranceCo"
+        newContactMenu="ClaimNewCompanyOnlyPickerMenuItemSet"
+        postOnChange="true"
+        required="true"
+        showSearchInMenu="false"
+        validationExpression="annuityFieldsRequired() ? displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.MethodOfSettlement : null"
+        value="Transaction.Exposure.InsuranceCoExt"
+        valueRange="Transaction.Exposure.getCompanies()"
+        visible="Transaction.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      <Input
+        id="Location"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoAddress"
+        required="true"
+        value="Transaction.Exposure.InsuranceCoExt.getPrimaryAddressDisplayValue()"
+        visible="Transaction.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      <Input
+        id="InsurCoPhone"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoPhone"
+        required="true"
+        value="Transaction.Exposure.InsuranceCoExt != null?Transaction.Exposure.InsuranceCoExt.getPhoneNumber():&quot;&quot;"
+        visible="Transaction.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      <Input
+        editable="true"
+        id="AntFinalPayDate"
+        label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.AntFinalPayDate"
+        postOnChange="true"
+        required="true"
+        validationExpression="Transaction.Exposure.AnticFinalPmtDateExt&lt;Transaction.Exposure.Claim.LossDate ? &quot;Anticipated Final Payment Date cannot occur before the Date of Loss&quot; : null"
+        value="Transaction.Exposure.AnticFinalPmtDateExt"
+        visible="Transaction.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      <InputDivider/>
+    </InputSet>
+    <Code><![CDATA[function annuityFieldsRequired() : boolean {
+     		var needFields : boolean = false;
+     		if(Transaction.Exposure.InsuranceCoExt.PrimaryAddress==null){
+     			needFields = true;
+     		}
+     		if(Transaction.Exposure.InsuranceCoExt.FaxPhone==null and
+     		   Transaction.Exposure.InsuranceCoExt.TollFreeNumberExt==null and
+     		   Transaction.Exposure.InsuranceCoExt.WorkPhone==null){
+     		  	needFields = true; 
+     		}
+     		return needFields;
+     	}
+     	
+function getCoverages(cov:Coverage):List{
+    
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+}
+
+function checkMOS() : boolean {
+  var exp : Exposure = Payment.Exposure;
+  if(Payment.PaymentType=="final" || Payment.PaymentType=="supplement"){
+    if(isWCClaim){
+      return true;
+    }else if(Payment.CostType=="claimcost" and 
+          (exp.ExposureType == ExposureType.TC_SP_BODILY_INJURY || exp.ExposureType=="ab_AGG_auto_BodInjury" || exp.ExposureType=="ab_AGG_gl_BodInjury" || exp.ExposureType=="ab_BodilyInjury"
+        || exp.ExposureType=="ex_auto_BodInjury" || exp.ExposureType=="ex_excess_BodInjury"|| (exp.ExposureType=="el_DutyDefOtsdLimits"and exp.Claim.BodilyInjuryExt)
+        ||(exp.ExposureType=="el_DutyDefWthnLimits" and exp.Claim.BodilyInjuryExt) || (exp.ExposureType=="el_Indemnity" and exp.Claim.BodilyInjuryExt)
+        ||(exp.ExposureType=="el_LossAdjustExp" and exp.Claim.BodilyInjuryExt)|| exp.ExposureType == ExposureType.TC_EN_BODILYINJURY
+        || exp.ExposureType == ExposureType.TC_PE_BODILYINJURY
+        || exp.ExposureType == ExposureType.TC_AV_BODILYINJURY)) {
+          return true;
+    }
+  }else{
+    return false;
+  }
+  return false;
+}
+
+function validateRecurringCostType() {
+  if (Payment.Check.isRecurringCheck && Payment.ReserveLine.CostType != null && Payment.ReserveLine.CostType != typekey.CostType.TC_CLAIMCOST){
+    throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.Validation.NewCheckWizard.RecurringCostType.Recode)
+  }
+  if (Payment.Check.isRecurringCheck && Transaction.CostType != null && Transaction.CostType != typekey.CostType.TC_CLAIMCOST){
+    throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.Validation.NewCheckWizard.RecurringCostType.Recode)
+  }
+}
+
+function validateRecurringRecode() {
+  if (Payment.Check.isRecurringCheck && financials.FinancialsCalculationUtil.getAvailableReservesForCostCategory(Payment) < 0){
+    throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.Validation.NewCheckWizard.RecurringTotal.Recode(reserveLine))
+  }
+  if (Payment.Check.isRecurringCheck && financials.FinancialsCalculationUtil.getAvailableReservesForCostCategory(Transaction) < 0){
+    throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.Validation.NewCheckWizard.RecurringTotal.Recode(reserveLine))
+  }
+  if (Payment.Check.isRecurringCheck && Transaction.CostType != null && Transaction.CostType != typekey.CostType.TC_CLAIMCOST){
+    throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.Validation.NewCheckWizard.RecurringCostType.Recode)
+  }
+  Transaction.validateForRecode()
+}]]></Code>
+  </InputSet>
+</PCF>

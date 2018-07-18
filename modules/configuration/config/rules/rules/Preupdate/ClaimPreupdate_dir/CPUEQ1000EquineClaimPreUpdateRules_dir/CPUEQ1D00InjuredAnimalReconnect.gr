@@ -1,0 +1,36 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1D00 - Injured Animal Reconnect")
+internal class CPUEQ1D00InjuredAnimalReconnect {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists (Propinc in claim.FixedPropertyIncidentsOnly 
+where Propinc.PreviousPropertyExt != Propinc.Property)
+or claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Claim FixedPropertyIncident (animal name) lost in policy refresh mode
+for(Incd in claim.FixedPropertyIncidentsOnly){  //attempt to reconnect
+  if((Incd.Property == null and 
+    Incd.PreviousPropertyExt != null) or (Incd.Property != null and Incd.Property != Incd.PreviousPropertyExt and claim.Policy.isPolicyInRefresh( 1 ))){
+    for(Pol in claim.Policy.Properties){
+      if (Pol.Property != null and Incd.PreviousPropertyExt != null and Pol.Property.LocationNumber.compareToIgnoreCase(Incd.PreviousPropertyExt.LocationNumber) == 0){
+        Incd.PreviousPropertyExt = Pol.Property
+        Incd.Property = Pol.Property
+      }
+     }
+     //this is a fix for selecting the same policy #.  Don't automatically choose first property
+     if(Incd.Property != Incd.PreviousPropertyExt and claim.Policy.isPolicyInRefresh( 1 )){
+       Incd.Property = null;
+     }
+    }
+   else if (Incd.PreviousPropertyExt ==null){  //first incident, populate previous
+     Incd.PreviousPropertyExt = Incd.Property
+   }
+   else if(Incd.PreviousPropertyExt != Incd.Property and Incd.Property != null){ //update previous horse
+     Incd.PreviousPropertyExt = Incd.Property
+   }
+
+}/*end00rule*/
+  }
+}

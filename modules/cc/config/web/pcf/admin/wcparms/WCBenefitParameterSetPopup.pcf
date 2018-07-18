@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    beforeCommit="validate(aWCBenefitParameterSet)"
+    canEdit="true"
+    canVisit="true"
+    id="WCBenefitParameterSetPopup"
+    returnType="WCBenefitParameterSet"
+    startInEditMode="willStartInEditMode"
+    title="displaykey.Web.Admin.WCBenefitParameterSetDetail">
+    <LocationEntryPoint
+      signature="WCBenefitParameterSetPopup()"/>
+    <LocationEntryPoint
+      signature="WCBenefitParameterSetPopup( specificWCBenefitParameterSet: WCBenefitParameterSet, willStartInEditMode : boolean)"/>
+    <Variable
+      initialValue="true"
+      name="willStartInEditMode"
+      type="boolean"/>
+    <Variable
+      name="specificWCBenefitParameterSet"
+      type="WCBenefitParameterSet"/>
+    <Variable
+      initialValue="specificWCBenefitParameterSet == null ? new WCBenefitParameterSet() : specificWCBenefitParameterSet"
+      name="aWCBenefitParameterSet"
+      type="WCBenefitParameterSet"/>
+    <Screen>
+      <PanelRef
+        def="WCBenefitParameterSetDV(aWCBenefitParameterSet)">
+        <Toolbar>
+          <EditButtons
+            pickValue="aWCBenefitParameterSet"/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[
+function validate(wcbp : WCBenefitParameterSet) {
+  var startDate = wcbp.StartDate
+  var endDate = wcbp.EndDate
+  var jurisdiction = wcbp.JurisdictionState
+
+  var overlaps = find(
+        bc in WCBenefitParameterSet 
+      where 
+        bc.JurisdictionState == jurisdiction
+      and 
+        bc != wcbp
+      and 
+        (bc.StartDate <= endDate AND bc.EndDate >= startDate))
+        
+  if (overlaps.Count > 0) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Admin.WCParams.BenefitParameters.ConflictWarning)
+  }
+}
+      
+    ]]></Code>
+  </Popup>
+</PCF>

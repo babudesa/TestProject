@@ -1,0 +1,17 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir
+
+@gw.rules.RuleName("EVXX1260 - Close Reason Required")
+internal class EVXX1260CloseReasonRequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Closed and exposure.ClosedOutcome==null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason:String = "Close reason required on all closed features."
+try{
+  exposure.reject("payment", reason, null, null)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

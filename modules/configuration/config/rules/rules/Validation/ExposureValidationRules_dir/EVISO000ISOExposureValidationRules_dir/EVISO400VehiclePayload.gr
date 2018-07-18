@@ -1,0 +1,18 @@
+package rules.Validation.ExposureValidationRules_dir.EVISO000ISOExposureValidationRules_dir
+
+@gw.rules.RuleName("EVISO400 - Vehicle Payload")
+internal class EVISO400VehiclePayload {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///VIN, make, model, year NOT required for 3rd Party Claimant losses
+//ISO XML Manual v.5 page 32
+//Be careful that Vehicle Payload is NOT the same as Total Loss Reporting information
+
+(exposure.LossParty.Code=="insured" or 
+(exposure.Claimant==exposure.Claim.Insured and exposure.LossParty==LossPartyType.TC_THIRD_PARTY)) and 
+exposure.getISOPayloadType() == "Vehicle" and !exposure.Claim.Policy.isPolicyInRefresh(1)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*//*end00rule*/
+  }
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="true"
+    canVisit="perm.Payment.view(Payment)"
+    id="DeleteSinglePayment"
+    parent="ClaimFinancialsChecksDetail(Claim, Payment.Check)"
+    title="displaykey.JSP.DeleteCheck.Confirm.Title">
+    <LocationEntryPoint
+      signature="DeleteSinglePayment(Claim : Claim, Payment : Payment)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Payment"
+      type="Payment"/>
+    <Variable
+      initialValue="Payment.Check"
+      name="Check"
+      recalculateOnRefresh="true"/>
+    <Screen
+      id="DeleteSinglePaymentScreen">
+      <Toolbar>
+        <!-- Need to finish permissions and other visible/available controls -->
+        <ToolbarButton
+          action="ClaimFinancialsTransactionsDetail.go(Claim, Payment)"
+          id="DeleteSinglePayment_CancelButton"
+          label="displaykey.Button.Cancel"/>
+        <ToolbarButton
+          action="deleteCheckAndGo(Check);  "
+          available="Check.Deleteable and perm.Payment.edit(Check)"
+          id="DeleteSinglePayment_DeleteButton"
+          label="displaykey.Button.Delete"
+          visible="perm.payment.edit(Check)"/>
+      </Toolbar>
+      <Verbatim
+        label="displaykey.Java.Financials.DeleteCheck.Tip.Payment"/>
+      <PanelRef
+        def="CheckDV(Check)"
+        visible="!Check.Retired"/>
+    </Screen>
+    <Code><![CDATA[
+function deleteCheckAndGo(aCheck : Check){
+  CurrentLocation.startEditing();
+  var destClaim = aCheck.Claim
+  var success = false;
+  try {
+    aCheck.unlinkDeductibles()
+    aCheck.delete();
+    CurrentLocation.commit();
+    success = true;
+    gw.api.financials.ClaimFinancialsTransactionsOption.PAYMENT.saveOption(destClaim)
+    ClaimFinancialsTransactions.go(destClaim);
+  } finally {
+    if (!success) {
+      CurrentLocation.cancel();
+    }
+  }
+}
+    ]]></Code>
+  </Page>
+</PCF>

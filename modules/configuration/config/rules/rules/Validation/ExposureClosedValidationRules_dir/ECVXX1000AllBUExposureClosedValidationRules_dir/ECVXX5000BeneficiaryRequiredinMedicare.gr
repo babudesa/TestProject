@@ -1,0 +1,25 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX5000 - Beneficiary Required in Medicare")
+internal class ECVXX5000BeneficiaryRequiredinMedicare {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claimant typeis Person and
+exposure.isDateOfDeath()
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6539 - jjesudhasan - 9/26/14 - Added to check the If Medicare Eligible = Yes 
+and there is a Beneficiary on the Medicare tab but no Date of Death, a soft warning
+has been displayed.
+or If Medicare Eligible = Yes and there is a Date of Death and no Beneficiary on
+ the Medicare tab,a soft warning has been displayed. 
+*/
+exposure.reject(null,null, "newloss", 
+"Medicare Beneficiary exists, Date of Death for claimant "+exposure.Claimant +" is required.")
+
+
+/*end00rule*/
+  }
+}

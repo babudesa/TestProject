@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="BusinessWeekDetailDV"
+    mode="US">
+    <Require
+      name="BusinessWeek"
+      type="BusinessWeek"/>
+    <Variable
+      name="zoneType"
+      type="ZoneType"/>
+    <Variable
+      name="linkedZone"
+      type="Zone"/>
+    <Variable
+      initialValue="typekey.Country.TC_US"
+      name="country"
+      type="Country"/>
+    <InputColumn>
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="zoneType"
+        label="displaykey.Web.Admin.BusinessWeekDetailDV.BusinessWeekType"
+        onChange="linkedZone=null;                           BusinessWeek.filterCriteria.linkedZone=null;                           BusinessWeek.filterCriteria.zoneType=zoneType"
+        postOnChange="true"
+        value="zoneType"
+        valueRange="gw.api.admin.BaseAdminUtil.getRegionZoneTypesWithGranularity(country)"
+        visible="true"/>
+      <ListViewInput
+        def="BusinessWeekZonesLV(BusinessWeek, zoneType, country)"
+        editable="true"
+        hideIfReadOnly="true"
+        label="displaykey.Web.Admin.BusinessWeeksLV.Zones"
+        visible="BusinessWeek.filterCriteria.zoneType==&quot;zip&quot;">
+        <Toolbar
+          visible="true">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- filter for counties, filter on state before showing
+           shuttlelist -->
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="state"
+        label="displaykey.Java.Admin.BusinessWeeks.SelectState"
+        onChange="BusinessWeek.FilterCriteria.LinkedZone=linkedZone"
+        postOnChange="true"
+        value="linkedZone"
+        valueRange="Zone.finder.findZones(country,typekey.ZoneType.TC_STATE)"
+        visible="BusinessWeek.FilterCriteria.ZoneType == &quot;county&quot;"/>
+      <!-- used here for counties,states
+           not visible if applicable filter has not been selected -->
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="ZoneInput"
+        label="displaykey.Web.Admin.BusinessWeekDetailDV.Zones"
+        numRows="10"
+        shuttleList="true"
+        value="BusinessWeek.ZoneCodes"
+        valueRange="Zone.finder.findZoneCodes(country,BusinessWeek.filterCriteria.zoneType,BusinessWeek.filterCriteria.linkedZone)"
+        visible="!(BusinessWeek.filterCriteria.zoneType==null || BusinessWeek.filterCriteria.zoneType==&quot;zip&quot;                   || (BusinessWeek.filterCriteria.zoneType == &quot;county&quot; AND BusinessWeek.filterCriteria.linkedZone==null))"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

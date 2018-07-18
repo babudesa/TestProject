@@ -1,0 +1,62 @@
+package rules.EventMessage.EventFired_dir.CashReceiptForm_dir
+
+@gw.rules.RuleName("Cash Received Ticket Document Creation")
+internal class CashReceivedTicketDocumentCreation {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.Root as Recovery).Status == "submitting" &&
+messageContext.EventName == "RecoveryAdded"
+and (messageContext.Root as Recovery).LoadCommandID == null
+and (messageContext.Root as Recovery).IsBulkedExt == false
+
+
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap
+
+var rec = messageContext.Root as Recovery
+
+if(!rec.OffsetRecovery and rec.New and rec.Amount > 0){
+  uses java.util.HashMap                
+  if (rec.RecodeExt ==false){
+    var values = new HashMap();
+    values.put( "Insured", rec.Claim.Insured );
+    values.put( "Payer", rec.Payer );
+    values.put( "Received", rec.CreateTime );
+    values.put( "Amount", gw.api.util.StringUtil.formatNumber(rec.Amount as java.lang.Double, "$###,###.00") );
+    values.put( "ChkNo", rec.ex_recoveryCheckNumber );
+    values.put( "ChkDate", rec.ex_recoverycheckdate );
+    values.put( "Office", rec.UpdateUser.getUserGroupBusinessUnit("Office") );
+    values.put( "BUO", rec.UpdateUser.getUserGroupBusinessUnit("BusinessUnit") );
+    values.put( "UpdUser", rec.UpdateUser );
+    values.put( "ClmNbr", rec.Claim.ClaimNumber );
+    values.put( "PolNbr", rec.Claim.Policy.PolicyNumber );
+    values.put( "CType", rec.CostType );
+    values.put( "RecCat", rec.CostCategory );
+    values.put( "RcptNbr", rec.ex_CashReceiptNumber );
+    values.put( "LineCat", rec.LineItems[0].LineCategory);
+
+    var doc : Document = new Document(rec.Claim);
+    doc.MimeType = "application/rtf";
+    doc.Claim = rec.Claim;
+    doc.Name = "CashReceivedTicket" + "_" + rec.ex_CashReceiptNumber;
+    doc.Exposure = rec.Exposure;
+    doc.ex_Type = "Recovery";
+    doc.ex_SubType = "Other";
+    doc.Privileged = "No";
+    doc.ProcessMethod = "Sent_to_File";
+    //doc.Claimant = rec.Claim.claimant;
+    doc.Status = "approved";
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.DMSOnlyExt=true;
+    doc.Description = "CashReceivedTicket" + "_" + rec.ex_CashReceiptNumber;
+    doc.FormIDExt = "ENT0010";
+    
+    values.put( "FormID", doc.FormIDExt );
+    util.document.DocumentProduction.createAndStoreDocumentSynchronously("CashReceivedTicket.gosu.rtf", values, doc );
+  }
+}
+/*end00rule*/
+  }
+}

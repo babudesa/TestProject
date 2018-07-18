@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewteam and GroupInfo.Group != null"
+    id="TeamGroupActivities"
+    title="displaykey.Web.Team.GroupActivitiesTitle(GroupInfo.DisplayName)">
+    <LocationEntryPoint
+      signature="TeamGroupActivities(GroupInfo : admin.TreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="admin.TreeGroupInfo"/>
+    <Variable
+      initialValue="team.TeamGroupActivityFilterSet.TEAM_GROUP_ACTIVITY_FILTER"
+      name="FilterSet"
+      type="team.TeamGroupActivityFilterSet"/>
+    <Variable
+      initialValue="ActivityTeamView.finder.findPendingByGroup(GroupInfo.Group, false)"
+      name="ActivityTeamViewList"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="&quot;TeamGroupActivitiesLV&quot;"
+      name="PrintTargetLV"/>
+    <Screen
+      id="TeamGroupActivitiesScreen">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.Team.GroupActivitiesTitle(GroupInfo.DisplayName)"/>
+      <Toolbar
+        reflectOnBottom="true">
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignActivitiesPopup.push(new activity.ActivityAssignmentPopup(CheckedValues))"
+          flags="all CanAssignActivity"
+          id="TeamGroupActivities_Assign"
+          iterator="TeamGroupActivitiesLV"
+          label="displaykey.Web.Team.Toolbar.Assign"
+          shortcut="G"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV)"
+          available="perm.User.printlistviews"
+          id="TeamGroupActivities_Print"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="TeamGroupActivitiesLV(ActivityTeamViewList as ActivityTeamViewQuery, FilterSet)"/>
+    </Screen>
+  </Page>
+</PCF>

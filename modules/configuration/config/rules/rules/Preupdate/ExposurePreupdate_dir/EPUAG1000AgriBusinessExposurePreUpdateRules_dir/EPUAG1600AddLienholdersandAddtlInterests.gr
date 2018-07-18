@@ -1,0 +1,45 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG1600 - Add Lienholders and Addtl Interests")
+internal class EPUAG1600AddLienholdersandAddtlInterests {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var role:ClaimContactRole;
+
+if(exposure.Coverage.Subtype =="PropertyCoverage"){
+  var propertyRU = ((exposure.Coverage as PropertyCoverage).RiskUnit as PropertyRU)
+  
+  for(lienHolder in propertyRU.Property.Lienholders){
+    if(!exists (role in exposure.Claim.getClaimContact( lienHolder.Lienholder ).Roles where role.Role == "lienholder")){ 
+      role = exposure.addRole( "lienholder", lienHolder.Lienholder );
+      role.Comments = lienHolder.ex_LienHolderType.DisplayName;
+    }
+  }
+  for(addtlRisk in propertyRU.Property.AdditionalInterestRisksExt){
+    if(!exists (role in exposure.Claim.getClaimContact( addtlRisk.Contact ).Roles where role.Role == "AdditionalInterestRisk")){ 
+      role = exposure.addRole( "AdditionalInterestRisk", addtlRisk.Contact )  
+      role.Comments = addtlRisk.CoveredPartyType.DisplayName;
+    }
+  }
+}
+if(exposure.Coverage.Subtype =="VehicleCoverage"){
+  var vehicleRU = ((exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU)
+  
+  for(lienholder in vehicleRU.Vehicle.Lienholders){
+    if(!exists (role in exposure.Claim.getClaimContact( lienholder.Lienholder ).Roles where role.Role == "lienholder")){ 
+      role = exposure.addRole( "lienholder", lienholder.Lienholder );
+      role.Comments = lienholder.LienHolderTypeExt.DisplayName;
+    }
+  }
+  for(addtlRisk in vehicleRU.Vehicle.AdditionalInterestRisksExt){
+    if(!exists (role in exposure.Claim.getClaimContact( addtlRisk.Contact ).Roles where role.Role == "AdditionalInterestRisk")){ 
+      role = exposure.addRole( "AdditionalInterestRisk", addtlRisk.Contact )  
+      role.Comments = addtlRisk.CoveredPartyType.DisplayName;
+    }  
+  }
+}/*end00rule*/
+  }
+}

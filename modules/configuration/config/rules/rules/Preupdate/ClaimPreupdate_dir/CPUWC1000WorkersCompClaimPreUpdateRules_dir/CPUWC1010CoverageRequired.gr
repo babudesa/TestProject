@@ -1,0 +1,25 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUWC1010 - Coverage Required")
+internal class CPUWC1010CoverageRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Policy.Verified
+// 3/25/2015 dnmiller: Rule to require that as least one Policy-level
+// coverage was added to an unverifed WC policy before a claim can be saved.
+// This rule has to run before Default Features - cannot add coverages to a 
+// policy once features are created.
+// 10/2/15 cmullin: Requirements change - Policy Coverage is not required for 
+// Incident Only claims. Moved coverage checks and error messages to CPUWC1100 -
+// Default Features rule. Disabled this CPUWC1010 rule. 
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses com.guidewire.pl.web.controller.UserDisplayableException;
+
+if (claim.Policy.Coverages.IsEmpty){
+  throw new UserDisplayableException(displaykey.Rules.Validation.Claim.WorkersComp.PolicyCoverage)
+}/*end00rule*/
+  }
+}

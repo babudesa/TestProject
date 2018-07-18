@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <MenuItemSet
+    id="NewClaimNewExposureMenuItemSet"
+    mode="default">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="wizard"
+      type="gw.api.claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="util.exposures.ExposureMenuUtils.getExposureMenu(claim)"
+      name="menuItems"
+      recalculateOnRefresh="true"
+      type="util.exposures.ExposureMenuItem[]"/>
+    <MenuItemTree
+      children="item.Children"
+      elementName="item"
+      id="ReducedMenu"
+      type="util.exposures.ExposureMenuItem"
+      value="menuItems">
+      <MenuItem
+        action="NewClaimNewExposureRiskSelectPopup.push(claim, wizard, item)"
+        available="claim.containsReducedItem(menuItems)"
+        id="RM_Item"
+        label="item.displaylabel"/>
+    </MenuItemTree>
+    <MenuItemTree
+      children="item.Children"
+      elementName="item"
+      id="FullMenu"
+      type="util.exposures.ExposureMenuItem"
+      value="menuItems">
+      <MenuItem
+        action="NewClaimNewExposureCoverageSelectPopup.push(claim, wizard, item)"
+        available="!claim.containsReducedItem(menuItems)"
+        id="FM_Item"
+        label="item.displaylabel"/>
+    </MenuItemTree>
+  </MenuItemSet>
+</PCF>

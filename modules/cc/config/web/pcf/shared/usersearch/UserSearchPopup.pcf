@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    autosaveable="false"
+    countsAsWork="false"
+    id="UserSearchPopup"
+    returnType="User"
+    title="displaykey.Web.Admin.UserSearchPopup">
+    <LocationEntryPoint
+      signature="UserSearchPopup()"/>
+    <LocationEntryPoint
+      signature="UserSearchPopup(Organization : Organization)"/>
+    <Variable
+      initialValue="new contact.CCProximitySearchPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      initialValue="null"
+      name="Organization"
+      type="Organization"/>
+    <Screen
+      id="UserSearchPopupScreen">
+      <SearchPanel
+        criteriaName="SearchCriteria"
+        resultsName="searchResults"
+        search="SearchCriteria.performSearchByProximity(CurrentLocation, PageHelper)"
+        searchCriteria="new UserSearchCriteria()"
+        searchResultsType="UserQuery">
+        <PanelRef
+          def="UserSearchDV(SearchCriteria,PageHelper)"/>
+        <PanelRef
+          def="UserSearchResultsLV(searchResults, true, PageHelper, SearchCriteria, false)">
+          <TitleBar
+            appendListViewPaging="true"
+            title="displaykey.Web.Search.Results"/>
+          <Toolbar>
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="PageHelper.getDrivingDirectionsCache().getSelectedDirections(CheckedValues, SearchCriteria.getContact());"
+              flags="any User"
+              id="RetrieveRequested"
+              iterator="UserSearchResultsLV"
+              label="displaykey.Web.Addressbook.Search.Result.GetRequested"
+              visible="SearchCriteria.Contact.isProximitySearch()"/>
+          </Toolbar>
+        </PanelRef>
+      </SearchPanel>
+    </Screen>
+  </Popup>
+</PCF>

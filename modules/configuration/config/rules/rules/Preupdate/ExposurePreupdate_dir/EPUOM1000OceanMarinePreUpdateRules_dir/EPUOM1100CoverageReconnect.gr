@@ -1,0 +1,71 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUOM1000OceanMarinePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUOM1100 - Coverage Reconnect")
+internal class EPUOM1100CoverageReconnect {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.Policy.isPolicyInRefresh( 1 ) or
+exposure.Coverage == null or 
+exposure.Coverage != exposure.PreviousCoverageExt or
+(exposure.ReconnectFailExt == true and exposure.Coverage!=null)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var expCvg:Coverage = null;
+if(exposure.Claim.Policy.isPolicyInRefresh( 1 ) and exposure.Coverage == null){
+  expCvg = exposure.PreviousCoverageExt;
+  
+  //Properties will always be manually reconnected
+//  if(expCvg.Subtype == "PropertyCoverage"){
+//    Exposure.createReconnectFailEvent();
+//  }
+//  else{
+    for(cvg in exposure.Claim.Policy.AllCoverages){
+      if(cvg.Subtype == expCvg.Subtype and cvg.Type == expCvg.Type and cvg.State == expCvg.State and cvg.ClassCodeExt == expCvg.ClassCodeExt){
+        if(cvg.Subtype == "PolicyCoverage"){
+          var newPolCvg:PolicyCoverage = cvg as PolicyCoverage;
+          var oldPolCvg:PolicyCoverage = expCvg as PolicyCoverage;
+          //are there any checks to be done here?
+          exposure.setCoverage(cvg)
+          exposure.createReconnectSuccessEvent( true );
+        }
+        else if(cvg.Subtype == "PropertyCoverage"){
+          var newProp:PolicyLocation = ((cvg as PropertyCoverage).RiskUnit as LocationBasedRU).Property;
+          var oldProp:PolicyLocation = ((expCvg as PropertyCoverage).RiskUnit as LocationBasedRU).Property;
+          //print("Old Property EBI: " + oldProp.PhysicalPropertyEBIExt);
+          //print("New Property EBI: " + newProp.PhysicalPropertyEBIExt);
+          if(oldProp.PhysicalPropertyEBIExt.compareTo(newProp.PhysicalPropertyEBIExt) == 0){
+            exposure.setCoverage(cvg)
+            exposure.createReconnectSuccessEvent( true );
+          }
+        }
+        else if(cvg.Subtype == "VehicleCoverage"){
+          var newVeh:Vehicle = ((cvg as VehicleCoverage).RiskUnit as VehicleRU).Vehicle;
+          var oldVeh:Vehicle = ((expCvg as VehicleCoverage).RiskUnit as VehicleRU).Vehicle;
+          if( newVeh.Style == oldVeh.Style){
+            if((newVeh.Vin != null and newVeh.Vin == oldVeh.Vin) || 
+                (newVeh.SerialNumber != null and newVeh.SerialNumber == oldVeh.SerialNumber)){
+              exposure.setCoverage( cvg );
+              exposure.createReconnectSuccessEvent( true );
+            }
+          }  
+        }
+      }
+    }//end allCoverage loop
+    //if we made it through the loop and didn't find a coverage, set the flag
+    if(exposure.Coverage == null and !(exposure.Closed and exposure.ClosedOutcome == "invalidfeature")){
+      exposure.createReconnectFailEvent();
+    }
+  //}//end else  
+}//end if policy refresh
+if(exposure.Coverage != null and exposure.Coverage != exposure.PreviousCoverageExt){
+  exposure.setCoverage( exposure.Coverage )
+  if(exposure.ReconnectFailExt){
+    exposure.ReconnectFailExt = false;
+    exposure.createReconnectSuccessEvent( false );
+  }
+}
+if(exposure.Closed and exposure.ClosedOutcome =="invalidfeature"){
+   exposure.ReconnectFailExt = false; 
+}/*end00rule*/
+  }
+}

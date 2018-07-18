@@ -1,0 +1,32 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAXX100AllBUsGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAXX150 - Binder Super Assign")
+internal class GAAXX150BinderSuperAssign {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*1/27/10 erawe - added for defect 2935 - moved this pattern from GAAEQ150
+*/
+activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_adj_unverifiedpolicy")/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/try{
+var unitManager:User = util.user.GroupsHelper.getClaimManager(activity.Claim.AssignedUser)
+var unitManagerGroup:Group
+  if(unitManager.AllGroups!=null){
+  unitManagerGroup = unitManager.AllGroups.first() as Group;
+  }
+
+  if(activity.Claim.AssignedUser != activity.Claim.AssignedGroup.Supervisor){
+    activity.CurrentAssignment.assign(activity.Claim.AssignedGroup, activity.Claim.AssignedGroup.Supervisor);
+    actions.exit()
+  }else{
+    activity.CurrentAssignment.assign( unitManagerGroup, unitManager );
+    actions.exit()
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule().getDisplayName(), e, "" ) 
+}/*end00rule*/
+  }
+}

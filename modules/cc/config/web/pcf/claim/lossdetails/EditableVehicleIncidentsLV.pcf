@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableVehicleIncidentsLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="true"
+      elementName="VehicleIncident"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="5"
+      pickLocation="NewVehicleIncidentPopup.push(Claim)"
+      toRemove="removeVehicleIncident(VehicleIncident)"
+      value="Claim.VehicleIncidentsOnly">
+      <ToolbarFlag
+        name="Removeable"/>
+      <Row>
+        <Cell
+          action="EditVehicleIncidentPopup.push(VehicleIncident, util.LocationUtil.isCurrentLocationEditable())"
+          id="Make"
+          label="displaykey.Web.EditableVehicleIncidentsLV.Make"
+          outputConversion="VALUE.Vehicle.Make != null ? VALUE.Vehicle.Make : displaykey.Web.EditableVehicleIncidentsLV.Unknown"
+          sortOrder="1"
+          value="VehicleIncident"/>
+        <Cell
+          action="EditVehicleIncidentPopup.push(VehicleIncident, util.LocationUtil.isCurrentLocationEditable())"
+          id="Model"
+          label="displaykey.Web.EditableVehicleIncidentsLV.Model"
+          numCols="20"
+          sortOrder="2"
+          value="VehicleIncident.Vehicle.Model"/>
+        <Cell
+          id="LicensePlate"
+          label="displaykey.Web.EditableVehicleIncidentsLV.LicensePlate"
+          numCols="10"
+          sortOrder="3"
+          value="VehicleIncident.Vehicle.LicensePlate"
+          wrapLabel="true"/>
+        <Cell
+          id="State"
+          label="displaykey.Web.EditableVehicleIncidentsLV.State"
+          numCols="10"
+          value="VehicleIncident.Vehicle.State"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"
+          wrapLabel="true"/>
+        <Cell
+          id="LossParty"
+          label="displaykey.Web.EditableVehicleIncidentsLV.LossParty"
+          value="VehicleIncident.VehicleLossParty"
+          wrapLabel="true"/>
+        <Cell
+          id="Driver"
+          label="displaykey.Web.EditableVehicleIncidentsLV.Driver"
+          numCols="25"
+          value="VehicleIncident.Driver"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function removeVehicleIncident(vehicleIncidentParam : VehicleIncident) {
+  if (vehicleIncidentParam.UsedByExposure) {
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExposureLabel)
+  }  
+  for (report in Claim.MetroReports) {
+    if (report.VehicleIncident == vehicleIncidentParam){      
+      throw new gw.api.util.DisplayableException(displaykey.Web.NewLossDetailsScreen.CannotDeleteVehicleIncidentExceptionLabel)      
+    }
+  }
+  Claim.removeFromIncidents( vehicleIncidentParam )
+  
+}
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

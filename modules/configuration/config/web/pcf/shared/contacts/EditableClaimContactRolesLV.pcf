@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    editable="claimContact.Roles.hasMatch(\ c -&gt; c.Role != &quot;beneficiary&quot;)"
+    id="EditableClaimContactRolesLV">
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="claimContact.addToRoles(ClaimContactRole)"
+      toRemove="removedRoleToFormerRole(ClaimContactRole);ClaimContactRole.removeRoleOnly()"
+      validationLabel="displaykey.Web.ContactBasicsHeaderDV.Roles"
+      value="claimContact.Roles">
+      <Row
+        editable="ClaimContactRole.isEditableInELV() and ClaimContactRole.isRoleEditable()">
+        <RangeCell
+          editable="true"
+          id="Role"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.Role"
+          onChange="ClaimContactRole.Owner = null ;ClaimContactRole.setRoleOwner()"
+          optionLabel="claimContact.Contact.getContactRoleName(VALUE as java.lang.String, claimContact)"
+          postOnChange="true"
+          printWidth="0.2"
+          validationExpression="validationUpdateRoleAndFormerRole(ClaimContactRole)"
+          value="ClaimContactRole.Role"
+          valueRange="claimContact.Contact.getValidRoles()"/>
+        <RangeCell
+          editable="true"
+          enableSort="false"
+          filter="filterMatterOwners(ClaimContactRole,VALUES.whereTypeIs(Matter))"
+          id="Owner"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.RelateOwner"
+          optionLabel="formatOwner(VALUE)"
+          postOnChange="true"
+          printWidth="0.35"
+          sortValueRange="false"
+          value="ClaimContactRole.Owner"
+          valueRange="claimContact.Claim.getRoleOwnersExt()"
+          valueWidth="300"/>
+        <Cell
+          editable="true"
+          id="IsActive"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.IsActive"
+          numCols="5"
+          printWidth="0.1"
+          value="ClaimContactRole.Active"
+          visible="false"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="Comments"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.Comments"
+          numCols="10"
+          printWidth="0.35"
+          value="ClaimContactRole.Comments"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Claim.Status"
+          value="ClaimContactRole.RoleStatusExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses com.guidewire.cc.domain.claim.ClaimContactRoleOwner
+
+function formatOwner(owner : KeyableBean) : String {
+         var result : String;
+         // If it's a draft claim (i.e., a "new claim wizard" claim), then just print out the "DraftClaim" display key;
+  // otherwise, just use the default label (DisplayName). For injury incidents use the display name with injured party name
+         if (owner typeis Claim) {
+    var claim = owner;
+           if (claim.State == "draft") {
+             result = displaykey.LV.Claim.EditableClaimContactRoles.DraftClaim;
+           } else {
+      result = owner.DisplayName;
+           }
+  } else if (owner typeis InjuryIncident) {
+    result = (owner).DisplayNameWithInjuredParty
+         } else {
+    result = owner.DisplayName;
+         }
+         return result;
+}
+
+function filterMatterOwners(role : ClaimContactRole, unfilteredOwners : ClaimContactRoleOwner[]) : List<ClaimContactRoleOwner> {
+  var filteredOwners : List<ClaimContactRoleOwner> = new java.util.ArrayList<ClaimContactRoleOwner>()
+  for(owner in unfilteredOwners){
+      if(!ClaimContactRole.RestrictedRolesForMatters.contains(role.Role)){
+        filteredOwners.add(owner)
+      }
+    }
+  return filteredOwners
+}
+
+/**
+ * Run on ClaimContactRole.Role validation so that the code will run on only on submit instead of just when the user changes the field.
+ * Will set the changed role to Former, if valid, and will remove the former role from the updated value.
+ */
+function validationUpdateRoleAndFormerRole(ccRole : ClaimContactRole) : String{
+
+ // Set of roles with former roles as a map (key: role, value: former role)
+  var RolesWithFormerRoles = new java.util.HashMap<ContactRole,ContactRole>()
+      RolesWithFormerRoles.put(ContactRole.TC_CLAIMANTDEP,ContactRole.TC_FORMERCLAIMANTDEP)
+
+  // Check if previous role needs FormerRole
+  if (RolesWithFormerRoles.containsKey((ccRole.getOriginalValue("Role") as ContactRole))){
+    updateToFormerRole(ccRole,RolesWithFormerRoles)
+  }
+  
+  // Handle if new Role has a FormerRole
+  if (RolesWithFormerRoles.containsKey(ccRole.Role)){
+      removeFormerRoleFromNewClaimContact(ccRole,RolesWithFormerRoles)
+    }
+  return null
+}
+
+/**
+ * Code to run on Remove button before removing the role, if valid, will make it a Former Role.
+ * As of defect 8270 (2/8/16), this is only valid for Claimant Dependent and its Former
+ */
+function removedRoleToFormerRole(ccRole : ClaimContactRole){
+  
+  // Set of roles with former roles as a map (key: role, value: former role) that this will apply to.
+  var rolesWithFormerRoles = new java.util.HashMap<ContactRole,ContactRole>()
+      rolesWithFormerRoles.put(ContactRole.TC_CLAIMANTDEP,ContactRole.TC_FORMERCLAIMANTDEP)
+      
+  // Check if previous role needs FormerRole
+  if (rolesWithFormerRoles.containsKey(ccRole.Role)){
+    updateToFormerRole(ccRole,rolesWithFormerRoles)
+  }
+}
+
+/**
+ * Update the ClaimContactRole's orignal ContactRole to it's former role - e.g. if the Role was originaly ClaimantDependent, a FormerClaimantDependent Role
+ * would be added.
+ * As of defect 8270 (2/8/16), this is only valid for Claimant Dependent and its Former
+ * Note: This works differently than the createFormerRole function in ContactFunction.gsx
+ */
+function updateToFormerRole(ccRole: ClaimContactRole, rolesWithFormerRoles :java.util.Map<ContactRole,ContactRole>){
+    var originalRole : ContactRole = ccRole.getOriginalValue("Role") as ContactRole
+
+    if (ccRole.Exposure != null)
+      ccRole.Exposure.addRole(rolesWithFormerRoles.get(originalRole), ccRole.Contact )
+    else if(ccRole.Matter != null)
+      ccRole.Matter.addRole(rolesWithFormerRoles.get(originalRole), ccRole.Contact )
+    else
+      ccRole.ClaimContact.Claim.addRole(rolesWithFormerRoles.get(originalRole), ccRole.Contact)
+}
+
+/**
+ * If a role being added already has a former role, remove that former role - e.g. if the ClaimantDependent is added, remove matching FormerClaimantDependent Role
+ * As of defect 8270 (2/8/16), this is only valid for Claimant Dependent and its Former
+ */
+function removeFormerRoleFromNewClaimContact(ccRole : ClaimContactRole, rolesWithFormerRoles : java.util.Map<ContactRole,ContactRole>){
+  
+  var formerRole = rolesWithFormerRoles.get(ccRole.Role)
+  
+  var oldFormerRole = ccRole.ClaimContact.Roles.firstWhere(\ c -> c.Role.equals(formerRole) 
+    and c.Exposure == null
+  )
+  if (oldFormerRole != null){
+   oldFormerRole.removeRoleOnly() 
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

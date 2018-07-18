@@ -1,0 +1,65 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1300ValidationatISOLevel_dir
+
+@gw.rules.RuleName("CVWC1340 - Injured Worker Address")
+internal class CVWC1340InjuredWorkerAddress {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true
+// Defect 7750 - cmullin - Injured Worker address validation moved from Exposure-level (Enterprise) to 
+// Claim-level for WC. Rule code adapted from Enterprise rules: EVXX1220, EVXX1281 & EVXX1282.
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try
+{
+  var address = claim.claimant.PrimaryAddress;
+  //checking Address line 1
+  var msg = claim.performAddressValidation(address.AddressLine1)
+  if(msg == "1") {
+    claim.rejectField("claimant.PrimaryAddress.AddressLine1", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Injured Worker", "Address Line 1"), null, null )    
+  } else if(msg == "2") {
+    claim.rejectField("claimant.PrimaryAddress.AddressLine1", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Injured Worker", "Address Line 1"), null, null )
+  } else if(msg == "3") {
+    claim.rejectField("claimant.PrimaryAddress.AddressLine1", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Injured Worker", "Address Line 1"), null, null )
+  }
+
+  //checking City
+  msg = claim.performAddressValidation(address.City)
+  if(msg == "1") {
+    claim.rejectField( "claimant.PrimaryAddress.City", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Injured Worker", "City"), null, null )
+  } else if(msg == "2") {
+    claim.rejectField( "claimant.PrimaryAddress.City", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Injured Worker", "City"), null, null )
+  } else if(msg == "3") {    
+    claim.rejectField( "claimant.PrimaryAddress.City", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Injured Worker", "City"), null, null )
+  }
+    
+  //checking State
+  //sprzygocki 3-5-09 only requiring state if US or Canada
+  if(address.Country=="US"){
+    msg = claim.performAddressValidation(address.State.toString())
+    if(msg == "1") {
+      claim.rejectField( "claimant.PrimaryAddress.State", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Injured Worker", "State"), null, null )
+    } else if(msg == "2") {
+      claim.rejectField( "claimant.PrimaryAddress.State", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Injured Worker", "State"), null, null )
+    } else if(msg == "3") {    
+      claim.rejectField( "claimant.PrimaryAddress.State", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Injured Worker", "State"), null, null )
+    }
+  }
+  
+  //checking Postal Code
+  msg = claim.performAddressValidation(address.PostalCode)
+  var postCodeReq : Boolean = util.custom_Ext.finders.postCodeRequired(address.Country.Code, true)
+
+  if(msg == "1"){
+    claim.rejectField( "claimant.PrimaryAddress.PostalCode", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Injured Worker", "Postal Code"), null, null )
+  } else if(msg == "2"){
+    claim.rejectField( "claimant.PrimaryAddress.PostalCode", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Injured Worker", "Postal Code"), null, null )
+  } else if(msg == "3" and postCodeReq){
+    claim.rejectField( "claimant.PrimaryAddress.PostalCode", "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Injured Worker", "Postal Code"), null, null )
+  }
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

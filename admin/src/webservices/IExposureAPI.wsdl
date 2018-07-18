@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://api.webservices.cc.guidewire.com/" xmlns:intf="http://api.webservices.cc.guidewire.com/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://fault.webservices.cc.guidewire.com/" xmlns:tns2="http://entity.webservices.cc.guidewire.com/" xmlns:tns3="http://enumeration.webservices.cc.guidewire.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><wsdl:types><schema targetNamespace="http://fault.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://enumeration.webservices.cc.guidewire.com/"/><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="SOAPException"><xsd:annotation><xsd:documentation>A generic SOAP exception.</xsd:documentation></xsd:annotation><sequence><element name="Message" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The message associated with this exception</xsd:documentation></xsd:annotation></element><element name="OtherMessages" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Other messages attached to this exception. This message may contain information
+related to other exceptions that occurred during a SOAP call, but not directly
+associated with this particular exception.</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="SOAPSenderException"><xsd:annotation><xsd:documentation>SOAPSenderException is the base class for all exceptions that resulted from
+a sender error. This usually means that required data was not properly encoded
+or was absent. Senders should not send the message again unless some steps have
+been taken to make the encoded data valid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="DataConversionException"><xsd:annotation><xsd:documentation>Thrown by many APIs when they encounter a problem translating a SOAP data object into
+an internal system object.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="BadIdentifierException"><xsd:annotation><xsd:documentation>Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect).</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="EntityStateException"><xsd:annotation><xsd:documentation>Thrown when an attempt is made to manipulate an object that is in a state
+that prevents the operation from being performed. An example is trying to
+modify a Claim that is marked as closed.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="PermissionException"><xsd:annotation><xsd:documentation>Thrown when the authenticated SOAP user does not have permission to
+perform the requested operation</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="SOAPServerException"><xsd:annotation><xsd:documentation>SOAPServerException is the base class for all exceptions that resulted from
+a server error. This is something of a catch-all exception type insofar as
+some things which might in fact be considered SOAPSenderExceptions are reported
+as SOAPServerExceptions. Perhaps a rule failed or something else. Generally it
+indicates a problem in the server that is likely retryable at some future time.
+The database being down, an unavailable plugin, etc would fall into this catagory.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="ServerStateException"><xsd:annotation><xsd:documentation>ServerStateException is thrown when a request is made at a time the
+server is in a state that disallows the request. An example is if
+an attempt is made to add a claim and the server is in maintenance
+mode.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="SOAPRetryableException"><xsd:annotation><xsd:documentation>SOAPRetryableException is the class for all exceptions that are retryable
+immediately. The primary example of this is ConcurrentDataChangeException.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="LoginException"><xsd:annotation><xsd:documentation>Class of exceptions thrown when a user tries to log in and an authentication failure occurs.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:PermissionException"><sequence/></extension></complexContent></complexType><complexType name="DuplicateKeyException"><xsd:annotation><xsd:documentation>Throws if a duplicate data exception is detected in the database. I.e. a unique index violation.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldConversionException"><xsd:annotation><xsd:documentation>Thrown when a data type cannot be converted into the native data type.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldFormatException"><xsd:annotation><xsd:documentation>Thrown when the input type does not match the format specified in the metadata. I.e. a string is too long.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="RequiredFieldException"><xsd:annotation><xsd:documentation>Thrown when required data is missing from a bean.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="UnknownTypeKeyException"><xsd:annotation><xsd:documentation>Thrown when a typekey value isn't available on the server. This exception can only
+happen if the SOAP WSDL that is being used on the remote side is invalid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="BatchProcessException"><xsd:annotation><xsd:documentation>SOAP Exception specific to batch process operations</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="AlreadyExecutedException"><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType></schema><schema targetNamespace="http://enumeration.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><simpleType name="RefTypeEnum"><xsd:annotation><xsd:documentation>Enumeration used to control how beans are used when calling into the system.</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="GW_NotByRef"><xsd:annotation><xsd:documentation>Use this value to specify the bean is being inserted into the database</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GW_ByRef"><xsd:annotation><xsd:documentation>Use this value to refer to a pre-existing bean.</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="GW_Events"><xsd:annotation><xsd:documentation>Typelist containing all events that can be fired</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="ActivityAdded"><xsd:annotation><xsd:documentation>Activity was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ActivityChanged"><xsd:annotation><xsd:documentation>Activity was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ActivityRemoved"><xsd:annotation><xsd:documentation>Activity was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="AuthorityLimitProfileAdded"><xsd:annotation><xsd:documentation>AuthorityLimitProfile was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="AuthorityLimitProfileChanged"><xsd:annotation><xsd:documentation>AuthorityLimitProfile was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="AuthorityLimitProfileRemoved"><xsd:annotation><xsd:documentation>AuthorityLimitProfile was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="BulkInvoiceAdded"><xsd:annotation><xsd:documentation>BulkInvoice was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="BulkInvoiceChanged"><xsd:annotation><xsd:documentation>BulkInvoice was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="BulkInvoiceRemoved"><xsd:annotation><xsd:documentation>BulkInvoice was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="BulkInvoiceStatusChanged"><xsd:annotation><xsd:documentation>Fired when the BulkInvoice is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CatastropheAdded"><xsd:annotation><xsd:documentation>Catastrophe was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CatastropheChanged"><xsd:annotation><xsd:documentation>Catastrophe was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CatastropheRemoved"><xsd:annotation><xsd:documentation>Catastrophe was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckAdded"><xsd:annotation><xsd:documentation>Check was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckChanged"><xsd:annotation><xsd:documentation>Check was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckIssued"><xsd:annotation><xsd:documentation>Deprecated.  Use CheckStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckRemoved"><xsd:annotation><xsd:documentation>Check was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckStatusChanged"><xsd:annotation><xsd:documentation>Fired when the check is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckStopped"><xsd:annotation><xsd:documentation>Deprecated.  Use CheckStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckSubmitted"><xsd:annotation><xsd:documentation>Deprecated.  Use CheckStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckTransferred"><xsd:annotation><xsd:documentation>Deprecated.  Use CheckStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CheckVoided"><xsd:annotation><xsd:documentation>Deprecated.  Use CheckStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimAdded"><xsd:annotation><xsd:documentation>Claim was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimAssociationAdded"><xsd:annotation><xsd:documentation>ClaimAssociation was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimAssociationChanged"><xsd:annotation><xsd:documentation>ClaimAssociation was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimAssociationRemoved"><xsd:annotation><xsd:documentation>ClaimAssociation was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimChanged"><xsd:annotation><xsd:documentation>Claim was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactAdded"><xsd:annotation><xsd:documentation>ClaimContact was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactChanged"><xsd:annotation><xsd:documentation>ClaimContact was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactContactChanged"><xsd:annotation><xsd:documentation>Fired when the contact of a claim contact changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactRemoved"><xsd:annotation><xsd:documentation>ClaimContact was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactRoleAdded"><xsd:annotation><xsd:documentation>ClaimContactRole was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactRoleChanged"><xsd:annotation><xsd:documentation>ClaimContactRole was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimContactRoleRemoved"><xsd:annotation><xsd:documentation>ClaimContactRole was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimInfoAdded"><xsd:annotation><xsd:documentation>ClaimInfo was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimInfoChanged"><xsd:annotation><xsd:documentation>ClaimInfo was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimInfoRemoved"><xsd:annotation><xsd:documentation>ClaimInfo was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimRemoved"><xsd:annotation><xsd:documentation>Claim was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimResync"><xsd:annotation><xsd:documentation>Claim resync event. Generated only as a result of an administrator requesting a claim resync.  All pending messages for the claim are dumped and the event is fired.  Implementors will generally handle this event to dump the entire claim to bring the remote system up to date.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ClaimValid"><xsd:annotation><xsd:documentation>Deprecated - test for validity directly in rules.  Fired only if DeprecatedEventGeneration is set to true in config.xml.  This event denotes that a new Claim is valid or an existing Claim has become valid.  All other events raised in this database transaction related to the Claim, including events related to Exposures and other objects associated with the Claim, will be subsumed into this event.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactAdded"><xsd:annotation><xsd:documentation>Contact was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactAutoSyncFailed"><xsd:annotation><xsd:documentation>Fired when a contact auto sync work item is failed to process.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactAutoSyncWorkItemAdded"><xsd:annotation><xsd:documentation>ContactAutoSyncWorkItem was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactAutoSyncWorkItemChanged"><xsd:annotation><xsd:documentation>ContactAutoSyncWorkItem was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactAutoSyncWorkItemRemoved"><xsd:annotation><xsd:documentation>ContactAutoSyncWorkItem was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactChanged"><xsd:annotation><xsd:documentation>Contact was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ContactRemoved"><xsd:annotation><xsd:documentation>Contact was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CoverageAdded"><xsd:annotation><xsd:documentation>Coverage was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CoverageChanged"><xsd:annotation><xsd:documentation>Coverage was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="CoverageRemoved"><xsd:annotation><xsd:documentation>Coverage was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="DocumentAdded"><xsd:annotation><xsd:documentation>Document was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="DocumentChanged"><xsd:annotation><xsd:documentation>Document was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="DocumentRemoved"><xsd:annotation><xsd:documentation>Document was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="DocumentStore"><xsd:annotation><xsd:documentation>This is used by the asynchronous storage to inform the transport that this document needs to be processed.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ExposureAdded"><xsd:annotation><xsd:documentation>Exposure was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ExposureChanged"><xsd:annotation><xsd:documentation>Exposure was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ExposureRemoved"><xsd:annotation><xsd:documentation>Exposure was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ExposureValid"><xsd:annotation><xsd:documentation>Deprecated - test for validity directly in rules.  Fired only if DeprecatedEventGeneration is set to true in config.xml.  This event denotes that a new Exposure is valid or an existing Exposure has become valid. All events raised in this database transaction related to the Exposure, including events related to objects off of the Exposure, will be subsumed into this event.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupAdded"><xsd:annotation><xsd:documentation>Group was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupChanged"><xsd:annotation><xsd:documentation>Group was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupRemoved"><xsd:annotation><xsd:documentation>Group was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupUserAdded"><xsd:annotation><xsd:documentation>GroupUser was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupUserChanged"><xsd:annotation><xsd:documentation>GroupUser was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="GroupUserRemoved"><xsd:annotation><xsd:documentation>GroupUser was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="InboundHistoryAdded"><xsd:annotation><xsd:documentation>InboundHistory was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="InboundHistoryChanged"><xsd:annotation><xsd:documentation>InboundHistory was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="InboundHistoryRemoved"><xsd:annotation><xsd:documentation>InboundHistory was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MatterAdded"><xsd:annotation><xsd:documentation>Matter was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MatterChanged"><xsd:annotation><xsd:documentation>Matter was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MatterRemoved"><xsd:annotation><xsd:documentation>Matter was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MetroReportAdded"><xsd:annotation><xsd:documentation>MetroReport was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MetroReportChanged"><xsd:annotation><xsd:documentation>MetroReport was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="MetroReportRemoved"><xsd:annotation><xsd:documentation>MetroReport was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NegotiationAdded"><xsd:annotation><xsd:documentation>Negotiation was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NegotiationChanged"><xsd:annotation><xsd:documentation>Negotiation was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NegotiationRemoved"><xsd:annotation><xsd:documentation>Negotiation was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NoteAdded"><xsd:annotation><xsd:documentation>Note was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NoteChanged"><xsd:annotation><xsd:documentation>Note was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="NoteRemoved"><xsd:annotation><xsd:documentation>Note was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="OrganizationAdded"><xsd:annotation><xsd:documentation>Organization was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="OrganizationChanged"><xsd:annotation><xsd:documentation>Organization was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="OrganizationRemoved"><xsd:annotation><xsd:documentation>Organization was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PaymentAdded"><xsd:annotation><xsd:documentation>Payment was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PaymentChanged"><xsd:annotation><xsd:documentation>Payment was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PaymentRecoded"><xsd:annotation><xsd:documentation>Deprecated - use PaymentStatusChanged instead (fired when the this object is submitted).</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PaymentRemoved"><xsd:annotation><xsd:documentation>Payment was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PaymentStatusChanged"><xsd:annotation><xsd:documentation>Fired when the payment is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PolicyAdded"><xsd:annotation><xsd:documentation>Policy was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PolicyChanged"><xsd:annotation><xsd:documentation>Policy was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="PolicyRemoved"><xsd:annotation><xsd:documentation>Policy was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ProcessHistoryAdded"><xsd:annotation><xsd:documentation>ProcessHistory was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ProcessHistoryChanged"><xsd:annotation><xsd:documentation>ProcessHistory was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ProcessHistoryRemoved"><xsd:annotation><xsd:documentation>ProcessHistory was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryAdded"><xsd:annotation><xsd:documentation>Recovery was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryChanged"><xsd:annotation><xsd:documentation>Recovery was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryRemoved"><xsd:annotation><xsd:documentation>Recovery was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryReserveAdded"><xsd:annotation><xsd:documentation>RecoveryReserve was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryReserveChanged"><xsd:annotation><xsd:documentation>RecoveryReserve was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryReserveRemoved"><xsd:annotation><xsd:documentation>RecoveryReserve was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryReserveStatusChanged"><xsd:annotation><xsd:documentation>Fired when the recovery reserve is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryReserveSubmitted"><xsd:annotation><xsd:documentation>Deprecated.  Use RecoveryReserveStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryStatusChanged"><xsd:annotation><xsd:documentation>Fired when the recovery is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoverySubmitted"><xsd:annotation><xsd:documentation>Deprecated.  Use RecoveryStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RecoveryVoided"><xsd:annotation><xsd:documentation>Deprecated.  Use RecoveryStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ReserveAdded"><xsd:annotation><xsd:documentation>Reserve was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ReserveChanged"><xsd:annotation><xsd:documentation>Reserve was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ReserveRemoved"><xsd:annotation><xsd:documentation>Reserve was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ReserveStatusChanged"><xsd:annotation><xsd:documentation>Fired when the reserve is added, and each time its status changes.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="ReserveSubmitted"><xsd:annotation><xsd:documentation>Deprecated.  Use ReserveStatusChanged instead.</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RoleAdded"><xsd:annotation><xsd:documentation>Role was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RoleChanged"><xsd:annotation><xsd:documentation>Role was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="RoleRemoved"><xsd:annotation><xsd:documentation>Role was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="SoapCallHistoryAdded"><xsd:annotation><xsd:documentation>SoapCallHistory was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="SoapCallHistoryChanged"><xsd:annotation><xsd:documentation>SoapCallHistory was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="SoapCallHistoryRemoved"><xsd:annotation><xsd:documentation>SoapCallHistory was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="StartablePluginHistoryAdded"><xsd:annotation><xsd:documentation>StartablePluginHistory was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="StartablePluginHistoryChanged"><xsd:annotation><xsd:documentation>StartablePluginHistory was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="StartablePluginHistoryRemoved"><xsd:annotation><xsd:documentation>StartablePluginHistory was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TransactionAdded"><xsd:annotation><xsd:documentation>Transaction was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TransactionChanged"><xsd:annotation><xsd:documentation>Transaction was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TransactionRemoved"><xsd:annotation><xsd:documentation>Transaction was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserAdded"><xsd:annotation><xsd:documentation>User was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserChanged"><xsd:annotation><xsd:documentation>User was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserRemoved"><xsd:annotation><xsd:documentation>User was removed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserSettingsAdded"><xsd:annotation><xsd:documentation>UserSettings was added</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserSettingsChanged"><xsd:annotation><xsd:documentation>UserSettings was changed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="UserSettingsRemoved"><xsd:annotation><xsd:documentation>UserSettings was removed</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="LanguageType"><xsd:annotation><xsd:documentation>Users' preferred languages</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_en_US"><xsd:annotation><xsd:documentation>English (US)</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="DocumentSection"><restriction base="xsd:string"><xsd:enumeration value="TC_bills"><xsd:annotation><xsd:documentation>Bills</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_correspondence"><xsd:annotation><xsd:documentation>Correspondence</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_indemnity"><xsd:annotation><xsd:documentation>Indemnity</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_legal"><xsd:annotation><xsd:documentation>Legal</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_medical"><xsd:annotation><xsd:documentation>Medical</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_misc"><xsd:annotation><xsd:documentation>Misc</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_rehab"><xsd:annotation><xsd:documentation>Rehab</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="DocumentSecurityType"><xsd:annotation><xsd:documentation>Type of the document for access-restriction purposes</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_sensitive"><xsd:annotation><xsd:documentation>Document that is sensitive in nature</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_unrestricted"><xsd:annotation><xsd:documentation>Document that does not require access restriction</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="DocumentStatusType"><restriction base="xsd:string"><xsd:enumeration value="TC_approved"><xsd:annotation><xsd:documentation>Approved</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_approving"><xsd:annotation><xsd:documentation>Approving</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_draft"><xsd:annotation><xsd:documentation>Draft</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_final"><xsd:annotation><xsd:documentation>Final</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_filed"><xsd:annotation><xsd:documentation>Filed</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="DocumentType"><restriction base="xsd:string"><xsd:enumeration value="TC_iso"><xsd:annotation><xsd:documentation>ISO match report</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_metro"><xsd:annotation><xsd:documentation>Metro report</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_diagram"><xsd:annotation><xsd:documentation>Diagram</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_email"><xsd:annotation><xsd:documentation>Email</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_email_sent"><xsd:annotation><xsd:documentation>Email Sent by CreateEmail</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_fnol"><xsd:annotation><xsd:documentation>First notice of loss (original report)</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_letter_received"><xsd:annotation><xsd:documentation>Letter received</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_letter_sent"><xsd:annotation><xsd:documentation>Letter sent</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_policereport"><xsd:annotation><xsd:documentation>Police report</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_repairestimate"><xsd:annotation><xsd:documentation>Repair estimate</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_statement"><xsd:annotation><xsd:documentation>Statement</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="NoteSecurityType"><xsd:annotation><xsd:documentation>Type of the note for access-restriction purposes</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_medical"><xsd:annotation><xsd:documentation>Medical note, viewable by internal users with medical note view/edit permissions</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_private"><xsd:annotation><xsd:documentation>Note viewable by internal users only</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_public"><xsd:annotation><xsd:documentation>Note viewable by any user in the system</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_sensitive"><xsd:annotation><xsd:documentation>Confidential note, viewable by select internal users only</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="NoteTopicType"><xsd:annotation><xsd:documentation>Topic to which this note belongs</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_general"><xsd:annotation><xsd:documentation>General</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_fnol"><xsd:annotation><xsd:documentation>First notice of loss</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_coverage"><xsd:annotation><xsd:documentation>Coverage</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_investigation"><xsd:annotation><xsd:documentation>Investigation</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_medical"><xsd:annotation><xsd:documentation>Medical issues</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_evaluation"><xsd:annotation><xsd:documentation>Evaluation</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_settlement"><xsd:annotation><xsd:documentation>Settlement</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_subrogation"><xsd:annotation><xsd:documentation>Subrogation</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_salvage"><xsd:annotation><xsd:documentation>Salvage</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_litigation"><xsd:annotation><xsd:documentation>Litigation</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_denial"><xsd:annotation><xsd:documentation>Denial</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_reinsurance"><xsd:annotation><xsd:documentation>Reinsurance</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="ExposureClosedOutcomeType"><xsd:annotation><xsd:documentation>The possible outcomes of an exposure when it is closed</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_completed"><xsd:annotation><xsd:documentation>Completed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_duplicate"><xsd:annotation><xsd:documentation>Duplicate</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_fraud"><xsd:annotation><xsd:documentation>Fraud</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_mistake"><xsd:annotation><xsd:documentation>Mistake</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_paymentscomplete"><xsd:annotation><xsd:documentation>Payments complete</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_unnecessary"><xsd:annotation><xsd:documentation>Unnecessary</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="ExposureState"><xsd:annotation><xsd:documentation>Standard states for a exposure, such as open or closed</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_draft"><xsd:annotation><xsd:documentation>Draft</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_open"><xsd:annotation><xsd:documentation>Open</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_closed"><xsd:annotation><xsd:documentation>Closed</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_exception"><xsd:annotation><xsd:documentation>None of the above</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType><simpleType name="ExposureReopenedReason"><xsd:annotation><xsd:documentation>The possible reasons for an exposure to be reopened</xsd:documentation></xsd:annotation><restriction base="xsd:string"><xsd:enumeration value="TC_mistake"><xsd:annotation><xsd:documentation>Mistake</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_newinfo"><xsd:annotation><xsd:documentation>New information</xsd:documentation></xsd:annotation></xsd:enumeration><xsd:enumeration value="TC_paymentdenied"><xsd:annotation><xsd:documentation>Final Payment causing this exposure to close has been denied</xsd:documentation></xsd:annotation></xsd:enumeration></restriction></simpleType></schema><schema targetNamespace="http://entity.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://enumeration.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType abstract="true" name="GWObject"><sequence><element maxOccurs="1" minOccurs="0" name="refType" type="tns3:RefTypeEnum"/><element maxOccurs="1" minOccurs="0" name="PublicID" nillable="true" type="soapenc:string"/></sequence></complexType><complexType name="Document"><xsd:annotation><xsd:documentation>&lt;p&gt;
+        Represents a physical or electronic document. This entity only contains information about the referenced document,
+        known as metadata, not the actual document contents. Use &lt;code&gt;IDocumentContentSource&lt;/code&gt; to retrieve and store
+        document contents.  Multiple &lt;code&gt;Document&lt;/code&gt; entities may have the same value for the &lt;code&gt;docUID&lt;/code&gt;
+        field. This means simply that the &lt;code&gt;Document&lt;/code&gt; entities represent the same physical document, for example,
+        a document that applies to multiple claims.
+        &lt;/p&gt;&lt;p&gt;
+        Note that &lt;code&gt;Document&lt;/code&gt; entities may or may not be stored in the database. You can implement a plugin
+        interface, {@link com.guidewire.pl.plugin.document.IDocumentMetadataSource}, to retrieve document metadata from
+        an external document management system (DMS). If you do not implement and register this interface, the system stores
+        the &lt;code&gt;Document&lt;/code&gt; entities in the database in the normal manner.
+        &lt;/p&gt;&lt;p&gt;
+        It is important to coordinate customizations of this entity with those of the &lt;code&gt;DocumentSearchCriteria&lt;/code&gt;
+        and &lt;code&gt;DocumentSearchResult&lt;/code&gt; entities, so that users will be able to search for documents based on the
+        most appropriate fields and select from the results.
+        &lt;/p&gt;&lt;p&gt;
+        The system retrieves the documents' contents (as referenced by &lt;code&gt;Document&lt;/code&gt; entities) through the
+        {@link com.guidewire.pl.plugin.document.IDocumentContentSource} plugin interface. This interface connects a Guidewire
+        application to a DMS. The DMS property on the &lt;code&gt;Document&lt;/code&gt; entity indicates whether the contents of the
+        document are stored in the document management system; if not, then the entity merely denotes the existence of a
+        physical document and no electronic access is available. If the contents do exist in the DMS, then the &lt;code&gt;DocUID&lt;/code&gt;
+        property must be a key that uniquely identifies the contents which should be displayed for a particular
+        &lt;code&gt;Document&lt;/code&gt; entity.
+        &lt;/p&gt;&lt;p&gt;
+        You can control access to particular &lt;code&gt;Document&lt;/code&gt; entities through the &lt;code&gt;SecurityType&lt;/code&gt; property.
+        Use this property in conjunction with the security settings in &lt;code&gt;security-config.xml&lt;/code&gt;. See the
+        Administration Guide for more details.
+        &lt;/p&gt;
+      
+    </xsd:documentation></xsd:annotation><complexContent><extension base="tns2:GWObject"><sequence><element maxOccurs="1" minOccurs="0" name="Author" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Name of the person who created the document.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="BeanVersion" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>Auto-incremented object version</xsd:documentation></xsd:annotation></element><element name="Claim" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Associated claim. NOTE: value is the PublicId of the Claim.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="ClaimContact" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Associated claim contact. Note that only one of Exposure, Matter, and ClaimContact may be set. NOTE: value is the PublicId of the ClaimContact.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="DMS" nillable="true" type="soapenc:boolean"><xsd:annotation><xsd:documentation>Whether this document has content stored in a Document Management System.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="DateCreated" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>Date and time the document was created.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="DateModified" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>Date and time the document was last modified.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Description" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Description of the document.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="DocUID" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The Unique Identifier (UID) for this document.     The format of this UID is specific to the deployed Document Management System (DMS), and is passed to the configured IDocumentContentSource implementation.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="DocumentIdentifier" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Short human-readable identifier for the document, often used as an extra storage location for form codes, when name and documenttype are inadequate.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Exposure" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Associated exposure. Note that only one of Exposure, Matter, and ClaimContact may be set. NOTE: value is the PublicId of the Exposure.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Inbound" nillable="true" type="soapenc:boolean"><xsd:annotation><xsd:documentation>Whether the document is an inbound, outbound, or stationary (null) document</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Language" nillable="true" type="tns3:LanguageType"><xsd:annotation><xsd:documentation>The language in which this document is created.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Matter" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Associated matter. Note that only one of Exposure, Matter, and ClaimContact may be set. NOTE: value is the PublicId of the Matter.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="MimeType" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The MIME type of this document; for example, application/msword for a Microsoft Word document.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Name" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Human-readable name of the document.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Obsolete" nillable="true" type="soapenc:boolean"><xsd:annotation><xsd:documentation>If true, the information in the document can no longer be relied upon to be up-to-date and relevant. This is often used instead of deletion to preserve history.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="PendingDocUID" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The document is pending, and it's pending storage has Unique Identifier (UID).     The format of this UID is specific to the IDCS implementation.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Recipient" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Name of the intended recipient of the document (if any).</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Section" nillable="true" type="tns3:DocumentSection"><xsd:annotation><xsd:documentation>The section to which this document belongs, if any.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="SecurityType" nillable="true" type="tns3:DocumentSecurityType"><xsd:annotation><xsd:documentation>Type of document used for access-restriction purposes, in conjunction with the information in security-config.xml.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Status" nillable="true" type="tns3:DocumentStatusType"><xsd:annotation><xsd:documentation>The current status of the document, if any.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Type" nillable="true" type="tns3:DocumentType"><xsd:annotation><xsd:documentation>The specific type of the document, if any.</xsd:documentation></xsd:annotation></element></sequence></extension></complexContent></complexType><complexType name="Note"><xsd:annotation><xsd:documentation>
+            Information entered by a user into a text field in the ClaimCenter interface.
+            ClaimCenter associates a note with a specific claim, and may additionally associate
+            it with one of the following also: an exposure, a matter, or a claimant.
+    </xsd:documentation></xsd:annotation><complexContent><extension base="tns2:GWObject"><sequence><element maxOccurs="1" minOccurs="0" name="Author" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>User who wrote the note. NOTE: value is the PublicId of the User.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="AuthoringDate" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>Date on which the note was originally authored.  If null, the CreateTime seves this purpose.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="BeanVersion" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>Auto-incremented object version</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Body" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Body of the note.</xsd:documentation></xsd:annotation></element><element name="Confidential" nillable="true" type="soapenc:boolean"><xsd:annotation><xsd:documentation>Whether the note is confidential.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Language" nillable="true" type="tns3:LanguageType"><xsd:annotation><xsd:documentation>The language in which this note is created.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="SecurityType" nillable="true" type="tns3:NoteSecurityType"><xsd:annotation><xsd:documentation>Type of note; used for access-restriction purposes</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Subject" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Subject or summary of the note.</xsd:documentation></xsd:annotation></element><element maxOccurs="1" minOccurs="0" name="Topic" nillable="true" type="tns3:NoteTopicType"><xsd:annotation><xsd:documentation>Topic to which the note belongs.</xsd:documentation></xsd:annotation></element></sequence></extension></complexContent></complexType></schema></wsdl:types>
+  <wsdl:message name="addActivityFromPatternResponse">
+    <wsdl:part name="addActivityFromPatternReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String of the newly created activity.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addDocumentResponse">
+    <wsdl:part name="addDocumentReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">An EntityIdentifer containing the identifier of the newly created document.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="reopenExposureRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String that specifies the exposure to close</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="reason" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">    Optional string giving the reason for closing the exposure</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addNoteResponse">
+    <wsdl:part name="addNoteReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">An EntityIdentifer containing the identifier of the newly created note.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="reopenExposureResponse">
+  </wsdl:message>
+  <wsdl:message name="PermissionException">
+    <wsdl:part name="fault" type="tns1:PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have all of the following permissions: VIEW_CLAIM, CREATE_ACTIVITY.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addDocumentRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String that specifies the exposure with which to associate the document.</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="doc" type="tns2:Document">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">       The document to associate with the specified exposure.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeExposureResponse">
+  </wsdl:message>
+  <wsdl:message name="BadIdentifierException">
+    <wsdl:part name="fault" type="tns1:BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="reopenExposureRequest1">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String that specifies the exposure to close</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="reasonType" type="tns3:ExposureReopenedReason">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">ExposureReopenedReason typekey, or null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="reason" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">    Optional string giving the reason for closing the exposure</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addActivityFromPatternRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">       The ID of the exposure to which the activity should be added.</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="activityPatternId" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The ID of the activity pattern that is to be used for the activity.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ServerStateException">
+    <wsdl:part name="fault" type="tns1:ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPException">
+    <wsdl:part name="fault" type="tns1:SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="EntityStateException">
+    <wsdl:part name="fault" type="tns1:EntityStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If there is an attempt to add an activity using an activity pattern that isn't available to the particular type of the given exposure, or that isn't available to a closed exposure (if the given exposure is closed).</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPServerException">
+    <wsdl:part name="fault" type="tns1:SOAPServerException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="reopenExposureResponse1">
+  </wsdl:message>
+  <wsdl:message name="DataConversionException">
+    <wsdl:part name="fault" type="tns1:DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If either the exposureID or activityPatternID does not exist.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getExposureStateResponse">
+    <wsdl:part name="getExposureStateReturn" type="tns3:ExposureState">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">String representing the given exposure's state</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addNoteRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String that specifies the exposure with which to associate the NoteData</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="note" type="tns2:Note">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">      The note to associate with the specified exposure.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getExposureStateRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The String that specifies the exposure to get the state from</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="closeExposureRequest">
+    <wsdl:part name="exposureID" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">    The String that specifies the exposure to close</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="outcome" type="tns3:ExposureClosedOutcomeType">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">       the outcome type key</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="reason" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">        Optional string giving the reason for closing the claim</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="IExposureAPI">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">IExposureAPI encapsulates the mechanisms available for the manipulation of exposures in the system. External
+systems make ClaimCenter aware of new exposures by associating them with or adding them to a claim.</wsdl:documentation>
+    <wsdl:operation name="addActivityFromPattern" parameterOrder="exposureID activityPatternId">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds an activity to a exposure using an activity pattern. First, attempts to generate an activity from the given
+pattern.  The activity pattern must be from the list of activity patterns for the given exposure's claim that meet
+the following criteria:
+&lt;p/&gt;
+1) if the exposure's claim is closed, then the activity pattern must be available to closed claims&lt;br&gt;
+2) the activity pattern's loss type must either be null, or must match the exposure's claim's loss type.
+&lt;p/&gt;
+If the activity pattern doesn't match the above criteria, an EntityStateException is thrown.
+&lt;p/&gt;
+The new activity is initialized with the following fields from the activity pattern:
+Pattern, Type, Subject, Description, Mandatory, Priority, Recurring, Command
+&lt;p/&gt;
+The activity's target date is calculated using the pattern's targetStartPoint, TargetDays,
+TargetHours, and TargetIncludeDays fields.  The activity's escalation date is calculated using the pattern's
+escalationStartPoint, EscalationDays, EscalationHours, and EscalationIncludeDays fields.  If those fields aren't
+included in the activity pattern, then the target and/or escalation date won't be set.  If the target date is
+calculated to be after the escalation date, then the target date is set to be the same as the escalation date.
+&lt;p/&gt;
+The activity's exposure ID is set to the given exposure ID.  The activity's previousUserID is set to the current
+user.
+&lt;p/&gt;
+The newly created activity is then assigned to a group and/or user using the Assignment Engine.  Finally, the
+activity is saved in the database, and the String of the newly created activity is returned.</wsdl:documentation>
+      <wsdl:input message="impl:addActivityFromPatternRequest" name="addActivityFromPatternRequest"/>
+      <wsdl:output message="impl:addActivityFromPatternResponse" name="addActivityFromPatternResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:EntityStateException" name="EntityStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="addDocument" parameterOrder="exposureID doc">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Associates the given document with the claim specified by the identifier.</wsdl:documentation>
+      <wsdl:input message="impl:addDocumentRequest" name="addDocumentRequest"/>
+      <wsdl:output message="impl:addDocumentResponse" name="addDocumentResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="addNote" parameterOrder="exposureID note">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Associates the given note with the exposure identified by the given identifier.  Also associates the note with
+the exposure's claim.</wsdl:documentation>
+      <wsdl:input message="impl:addNoteRequest" name="addNoteRequest"/>
+      <wsdl:output message="impl:addNoteResponse" name="addNoteResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="closeExposure" parameterOrder="exposureID outcome reason">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Closes the exposure specified by the identifier.  Uses the same logic that governs the Close Exposure screen.</wsdl:documentation>
+      <wsdl:input message="impl:closeExposureRequest" name="closeExposureRequest"/>
+      <wsdl:output message="impl:closeExposureResponse" name="closeExposureResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getExposureState" parameterOrder="exposureID">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns the code of the exposure's state (a typekey from the ExposureState typelist) as a string.  If for some
+reason the exposure's state is not defined, returns a null string.</wsdl:documentation>
+      <wsdl:input message="impl:getExposureStateRequest" name="getExposureStateRequest"/>
+      <wsdl:output message="impl:getExposureStateResponse" name="getExposureStateResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="reopenExposure" parameterOrder="exposureID reason">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Reopens the exposure specified by the identifier.  Uses the same logic that governs the Reopen Exposure screen
+&lt;br&gt;@deprecated       Use the version of this method that takes a reopened reason type key.</wsdl:documentation>
+      <wsdl:input message="impl:reopenExposureRequest" name="reopenExposureRequest"/>
+      <wsdl:output message="impl:reopenExposureResponse" name="reopenExposureResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="reopenExposure" parameterOrder="exposureID reasonType reason">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Reopens the exposure specified by the identifier.  Uses the same logic that governs the Reopen Exposure screen</wsdl:documentation>
+      <wsdl:input message="impl:reopenExposureRequest1" name="reopenExposureRequest1"/>
+      <wsdl:output message="impl:reopenExposureResponse1" name="reopenExposureResponse1"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:DataConversionException" name="DataConversionException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="IExposureAPISoapBinding" type="impl:IExposureAPI">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="addActivityFromPattern">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="addActivityFromPatternRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="addActivityFromPatternResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If either the exposureID or activityPatternID does not exist.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="EntityStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If there is an attempt to add an activity using an activity pattern that isn't available to the particular type of the given exposure, or that isn't available to a closed exposure (if the given exposure is closed).</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="EntityStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have all of the following permissions: VIEW_CLAIM, CREATE_ACTIVITY.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addDocument">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="addDocumentRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="addDocumentResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have VIEW_CLAIM permission.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addNote">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="addNoteRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="addNoteResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have both the VIEW_CLAIM and the ADD_NOTE permission.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="closeExposure">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="closeExposureRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="closeExposureResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the exposure fails open/close validation rules</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have CLOSE_CLAIM_OR_EXPOSURE permission.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getExposureState">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getExposureStateRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getExposureStateResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="reopenExposure">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="reopenExposureRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="reopenExposureResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the exposure fails open/close validation rules</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have REOPEN_CLAIM_OR_EXPOSURE permission.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="reopenExposure">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="reopenExposureRequest1">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="reopenExposureResponse1">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataConversionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the String doesn't correspond to an existing exposure, throws DataConversionException.BadIdentifierException.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="DataConversionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the exposure fails open/close validation rules</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the caller does not have REOPEN_CLAIM_OR_EXPOSURE permission.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="IExposureAPIService">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">IExposureAPI encapsulates the mechanisms available for the manipulation of exposures in the system. External
+systems make ClaimCenter aware of new exposures by associating them with or adding them to a claim.</wsdl:documentation>
+    <wsdl:port binding="impl:IExposureAPISoapBinding" name="IExposureAPI">
+      <wsdlsoap:address location="http://dontuse.defaultvalue.com/IExposureAPI"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

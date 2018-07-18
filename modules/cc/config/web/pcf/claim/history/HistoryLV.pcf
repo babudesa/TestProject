@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    id="HistoryLV">
+    <Require
+      name="HistoryList"
+      type="HistoryQuery"/>
+    <Variable
+      initialValue="new claim.HistoryListFilterSet()"
+      name="FilterSet"
+      type="claim.HistoryListFilterSet"/>
+    <RowIterator
+      editable="false"
+      elementName="History"
+      pageSize="20"
+      value="HistoryList">
+      <ToolbarFilter
+        name="HistoryFilter">
+        <ToolbarFilterOption
+          filter="FilterSet.NoneFilter"
+          label="displaykey.Java.HistoryFilter.None"/>
+        <ToolbarFilterOption
+          filter="FilterSet.AllFilter"
+          label="displaykey.Java.HistoryFilter.All"
+          selectOnEnter="true"/>
+        <ToolbarFilterOption
+          filter="FilterSet.AssignmentFilter"
+          label="displaykey.Java.HistoryFilter.Assignment"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ViewingFilter"
+          label="displaykey.Java.HistoryFilter.Viewing"/>
+        <ToolbarFilterOption
+          filter="FilterSet.CustomFilter"
+          label="displaykey.Java.HistoryFilter.Custom"/>
+        <ToolbarFilterOption
+          filter="FilterSet.OpenedFilter"
+          label="displaykey.Java.HistoryFilter.Opened"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ClosedFilter"
+          label="displaykey.Java.HistoryFilter.Closed"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ReopenedFilter"
+          label="displaykey.Java.HistoryFilter.Reopen"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ArchivedFilter"
+          label="displaykey.Java.HistoryFilter.Archived"/>
+        <ToolbarFilterOption
+          filter="FilterSet.RestoredFilter"
+          label="displaykey.Java.HistoryFilter.Restored"/>
+        <ToolbarFilterOption
+          filter="FilterSet.FlaggedFilter"
+          label="displaykey.Java.HistoryFilter.Flagged"/>
+        <ToolbarFilterOption
+          filter="FilterSet.RetrievedFilter"
+          label="displaykey.Java.HistoryFilter.Retrieved"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ImportFilter"
+          label="displaykey.Java.HistoryFilter.Import"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ActivityDelayedFilter"
+          label="displaykey.Java.HistoryFilter.ActivityDelayed"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ActivityEscalationDelayedFilter"
+          label="displaykey.Java.HistoryFilter.ActivityEscalationMoved"/>
+        <ToolbarFilterOption
+          filter="FilterSet.PolicyEditedFilter"
+          label="displaykey.Java.HistoryFilter.PolicyEdited"/>
+        <ToolbarFilterOption
+          filter="FilterSet.PolicySelectedFilter"
+          label="displaykey.Java.HistoryFilter.PolicySelected"/>
+        <ToolbarFilterOption
+          filter="FilterSet.ApprovalFilter"
+          label="displaykey.Java.HistoryFilter.Approval"/>
+        <ToolbarFilterOption
+          filter="FilterSet.CheckVoidedFilter"
+          label="displaykey.Java.HistoryFilter.CheckVoided"/>
+        <ToolbarFilterOption
+          filter="FilterSet.CheckStoppedFilter"
+          label="displaykey.Java.HistoryFilter.CheckStopped"/>
+        <ToolbarFilterOption
+          filter="FilterSet.CheckTransferredFilter"
+          label="displaykey.Java.HistoryFilter.CheckTransferred"/>
+        <ToolbarFilterOption
+          filter="FilterSet.CheckDeletedFilter"
+          label="displaykey.Java.HistoryFilter.CheckDeleted"/>
+        <ToolbarFilterOption
+          filter="FilterSet.LitigatedFilter"
+          label="displaykey.Java.HistoryFilter.Litigated"/>
+      </ToolbarFilter>
+      <Row>
+        <Cell
+          id="Type"
+          label="displaykey.LV.Claim.History.Type"
+          printWidth="0.1"
+          value="History.Type"/>
+        <Cell
+          enableSort="false"
+          id="RelatedTo"
+          label="displaykey.LV.Claim.History.RelatedTo"
+          printWidth="0.15"
+          value="getClaimRelatedToString(History)"/>
+        <Cell
+          enableSort="false"
+          id="User"
+          label="displaykey.LV.Claim.History.User"
+          printWidth="0.1"
+          value="History.User != null ? History.User.DisplayName : displaykey.Java.HistoryView.AutomatedEntry"
+          wrap="false"/>
+        <DateCell
+          dateFormat="short"
+          id="EventTimeStamp"
+          label="displaykey.LV.Claim.History.EventTimeStamp"
+          printWidth="0.1"
+          sortDirection="descending"
+          sortOrder="1"
+          timeFormat="short"
+          value="History.EventTimestamp"
+          wrap="false"/>
+        <Cell
+          id="Description"
+          label="displaykey.LV.Claim.History.Description"
+          printWidth="0.45"
+          value="History.Description"/>
+        <Cell
+          action="HistoryForward.go(History)"
+          enableSort="false"
+          id="Link"
+          label="displaykey.LV.Claim.History.Link"
+          printWidth="0.1"
+          value="History.Type == &quot;approval&quot; ? displaykey.Java.HistoryView.Details : &quot;&quot;"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getClaimRelatedToString( history : History ) : String {
+  var result : String
+  var exposure = history.Exposure
+
+  // Are we examining history related to an exposure?
+  if (exposure != null) {
+    /*
+    var caseOrder = (exposure.ClaimOrder != null ? exposure.ClaimOrder as String : "")
+    var lossCategory = (exposure.LossCategory != null ? exposure.LossCategory.DisplayName : "")
+    var lossParty = (exposure.LossParty != null ? exposure.LossParty.DisplayName : "")
+    */
+    result = exposure.DisplayName //"(" + caseOrder + ")" + " " + lossCategory + " - " + lossParty
+  }
+
+  // Are we examining history related to a matter?
+  else if (history.Matter != null) {
+    result = history.Matter.Name
+  }
+
+  // Unspecific--show the default "Entire Claim"
+  else {
+    result = displaykey.Java.HistoryView.EntireClaim
+  }
+
+  return result
+}]]></Code>
+  </ListViewPanel>
+</PCF>

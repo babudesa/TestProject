@@ -1,0 +1,19 @@
+package rules.EventMessage.EventFired_dir
+
+@gw.rules.RuleName("Mitchell Payment Remit Summary")
+internal class MitchellPaymentRemitSummary {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis BulkInvoice && 
+messageContext.EventName == "DoSendMitchellPaymentRemit" &&
+messageContext.DestID == 3 //piggy back off EDW destination since it listens for all events/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*///pass the check off the first invoice item, as the data will be the same across all checks
+var bulkInvoice = messageContext.Root as BulkInvoice
+var body = templates.email.PaymentRemittanceSummary.renderToString(bulkInvoice.InvoiceItems.first().BulkInvoiceItemInfo.Check)
+var emailAddy : String = ScriptParameters.MitchellPaymentRemitSummaryEmail
+var env = gw.api.system.server.ServerUtil.getEnv()
+util.Email.sendMail(emailAddy, "Payment Remittance Summary" + (env == "prod" ? "" : (" - " + env)), body) /*end00rule*/
+  }
+}

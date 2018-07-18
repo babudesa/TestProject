@@ -1,0 +1,23 @@
+package rules.Validation.ClaimValidationRules_dir.CVSP1000SpecialtyESClaimValidationRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVSP1100 - Claims Made Date can't be before Loss Date")
+internal class CVSP1100ClaimsMadeDatecantbebeforeLossDate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimsMadePolicyExt == true &&
+gw.api.util.DateUtil.compareIgnoreTime( claim.ReportedDate, claim.LossDate ) < 0
+
+//Disabling as this will be enterprise/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+    msg="Claims Made Date cannot occur before the Loss Date."
+    claim.rejectField( "ReportedDate", "newloss", msg, null, null)
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

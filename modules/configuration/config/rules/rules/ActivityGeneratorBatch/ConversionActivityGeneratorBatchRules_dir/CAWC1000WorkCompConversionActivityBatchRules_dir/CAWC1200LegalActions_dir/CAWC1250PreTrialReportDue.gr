@@ -1,0 +1,64 @@
+package rules.ActivityGeneratorBatch.ConversionActivityGeneratorBatchRules_dir.CAWC1000WorkCompConversionActivityBatchRules_dir.CAWC1200LegalActions_dir
+
+@gw.rules.RuleName("CAWC1250 - Pre Trial Report Due")
+internal class CAWC1250PreTrialReportDue {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for non-converted claims. 
+ */
+
+!claim.Matters.IsEmpty &&
+exists(ma in claim.Matters*.MatterAssignmentsExt where
+         ma.MatterAssignmentStatusExt != MatterAssignmentStatus.TC_DECLINED and
+         ma.StatusExt != typekey.AssignmentStatusExt.TC_CLOSED and
+         ma.PreTrialReportDueDate != null &&
+         gw.api.util.DateUtil.differenceInDays(gw.api.util.DateUtil.currentDate().trimToMidnight(),
+         ma.PreTrialReportDueDate.trimToMidnight()) <= 15
+and (!exists(doc in claim.Documents where doc.ex_SubType == "Suit Approaching Trial Report"
+        && doc.Description != null && doc.Description.containsIgnoreCase(ma.LSSMatterID) ||
+        doc.Description.containsIgnoreCase(ma.AssignmentIDNumber)  
+        && doc.ECFIDExt != null )))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    uses gw.api.util.DateUtil
+    var pattern = util.custom_Ext.finders.findActivityPattern("pretrial_report_due")
+    //get all valid assignments for activity
+    var assignments = claim.Matters*.MatterAssignmentsExt.where(\ m -> m.PreTrialReportDueDate != null 
+             and  m.MatterAssignmentStatusExt != MatterAssignmentStatus.TC_DECLINED 
+             and m.StatusExt != typekey.AssignmentStatusExt.TC_CLOSED and
+             gw.api.util.DateUtil.differenceInDays(DateUtil.currentDate().trimToMidnight(),
+             m.PreTrialReportDueDate.trimToMidnight()) <= 15
+            and !(exists(doc in claim.Documents where doc.ex_SubType == "Suit Approaching Trial Report"
+                && doc.Description != null
+                && (doc.Description.containsIgnoreCase(m.LSSMatterID) ||
+                 doc.Description.containsIgnoreCase(m.AssignmentIDNumber))
+                && doc.ECFIDExt != null))
+            and !exists(act in claim.Activities where act.ActivityPattern.Code == "pretrial_report_due" and
+                            act.MatterAssignmentExt == m))
+        
+    for(ma in assignments){  
+        //Create new activity from existing pattern and add the matter name to the pattern
+        //subject and description  
+        var newAct = claim.createActivity(null,
+                     pattern, pattern.Subject + " (" + ma.CounselLawFirmExt + ") on the Legal Action (" + ma.Matter.DisplayName + ")",
+                     pattern.Description + " (" + ma.CounselLawFirmExt + ") on the Legal Action (" + ma.Matter.DisplayName + ")",
+                     pattern.Priority, pattern.Mandatory,null, null)
+
+        //associate exposure,matter, and matter assignment
+        newAct.Exposure = ma.AssignmentExposuresExt.where(\ a -> a.PrimaryClaimantExt).first().Exposure
+        newAct.Matter = ma.Matter
+        newAct.MatterAssignmentExt = ma
+  
+        //assign user 
+        newAct.AssignedUser = claim.AssignedUser
+        //set custom target date 
+        newAct.TargetDate = DateUtil.currentDate().trimToMidnight()
+    }
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

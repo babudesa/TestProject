@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="NewClaimWizard_PolicyDetailsScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="new ContactRole[] {&quot;coveredparty&quot;}"
+      name="userRoles"
+      type="ContactRole[]"/>
+    <Variable
+      initialValue="gw.api.policy.PolicyTabUtil.getTabSet(Claim)"
+      name="PolicyTabSet"
+      type="java.util.Set"/>
+    <Toolbar
+      reflectOnBottom="true">
+      <WizardButtons/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="Wizard.deverifyPolicy()"
+        confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+        default="true"
+        id="NewClaimWizard_PolicyDetailsScreen_EditExternalFieldsButton"
+        label="displaykey.Button.EditExternalFields"
+        shortcut="P"
+        visible="Claim.Policy.Verified and perm.Policy.makeeditable(Claim) and perm.Policy.edit(Claim) and perm.System.editverifiedpolicy"/>
+    </Toolbar>
+    <Verbatim
+      label="Claim.Policy.Verified ? displaykey.JSP.NewClaimPolicyDetails.ReviewPolicyDetails.Tip :                      displaykey.JSP.NewClaimPolicyDetails.ReviewOrEditPolicyDetails.Tip"/>
+    <!-- Vehicles -->
+    <PanelRef
+      def="NewClaimVehiclesLV(Claim.Policy.getAutomobiles() as VehicleRU[], Claim.Policy)"
+      visible="PolicyTabSet.contains(&quot;Vehicles&quot;) and (Claim.LossType == &quot;AGRIAUTO&quot; OR Claim.LossType == LossType.TC_ALTMARKETSAUTO OR Claim.LossType == LossType.TC_SHSAUTO OR Claim.LossType == LossType.TC_TRUCKINGAUTO)">
+      <TitleBar
+        appendListViewPaging="true"
+        title=" (!Claim.Policy.Verified or (Claim.Policy.TotalVehicles == Claim.Policy.Vehicles.length)) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Vehicles as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Vehicles.PartialList(Claim.Policy.TotalVehicles)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible="!Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Properties -->
+    <PanelRef
+      def="NewClaimLocationsLV(getProperties(), Claim.Policy)"
+      id="NewClaimLocationsWithPropertiesLV"
+      mode="Claim.LossType"
+      visible="PolicyTabSet.contains(&quot;properties&quot;)">
+      <TitleBar
+        appendListViewPaging="true"
+        title=" !Claim.Policy.Verified or (Claim.Policy.TotalProperties == Claim.Policy.Properties.length) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Locations as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Locations.PartialList(Claim.Policy.TotalProperties)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible="!Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Vehicles -->
+    <PanelRef
+      def="EquipmentLV(Claim.Policy.getAutomobiles() as VehicleRU[], Claim)"
+      visible="PolicyTabSet.contains(&quot;Equipment&quot;) and Claim.LossType == &quot;PIMINMARINE&quot; and Claim.filterItems()">
+      <TitleBar
+        appendListViewPaging="true"
+        title=" (!Claim.Policy.Verified or (Claim.Policy.TotalVehicles == Claim.Policy.Vehicles.length)) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Items as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Items.PartialList(Claim.Policy.TotalVehicles)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible="!Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Boats -->
+    <PanelRef
+      def="NewClaimBoatsLV(Claim.Policy.getWatercraft(), Claim.Policy, Claim)"
+      visible="PolicyTabSet.contains(&quot;boats&quot;) and Claim.LossType == &quot;AGRILIABILITY&quot;">
+      <TitleBar
+        appendListViewPaging="true"
+        title=" (!Claim.Policy.Verified or (Claim.Policy.TotalVehicles == Claim.Policy.Vehicles.length)) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Boats as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Boats.PartialList(Claim.Policy.TotalVehicles)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Class Codes (WC Locations)  This entry is very similar to the properties LV above but has different visibility and a different title -->
+    <PanelRef
+      def="NewClaimLocationsLV(Claim.Policy.Properties, Claim.Policy)"
+      mode="Claim.LossType"
+      visible="PolicyTabSet.contains(&quot;Classcodes&quot;)">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Policy.Classcodes"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Class Codes (WC Locations)  This entry is very similar to the properties LV above but has different visibility and a different title -->
+    <PanelRef
+      def="NewClaimJobsiteLocationsLV(Claim.Policy.Jobsites as entity.JobsiteRUExt[], Claim)"
+      mode="Claim.LossType"
+      visible="Claim.Policy.PolicyType == &quot;IMP&quot;">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Policy.Jobsites"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Endorsements -->
+    <PanelRef
+      def="NewClaimEndorsementsLV(Claim.Policy.Endorsements, Claim.Policy)"
+      visible="PolicyTabSet.contains(&quot;Endorsements&quot;)">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Endorsements.Title"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Drivers 12/4/07   <PanelRef def="DriversLV(Claim.Policy.getClaimContactRolesByRoles(userRoles), Claim, Claim.Policy, &quot;driver&quot;)" visible="PolicyTabSet.contains(&quot;drivers&quot;) and Claim.LossType == &quot;AGRILIABILITY&quot; or  Claim.LossType == &quot;AGRIAUTO&quot;"> -->
+    <PanelRef
+      def="DriversLV(Claim.Policy.getClaimContactRolesByRoles(userRoles), Claim, Claim.Policy, &quot;coveredparty&quot;)"
+      visible="PolicyTabSet.contains(&quot;drivers&quot;) and Claim.LossType == &quot;AGRILIABILITY&quot; or  Claim.LossType == &quot;AGRIAUTO&quot; OR Claim.LossType == LossType.TC_ALTMARKETSAUTO OR Claim.LossType == LossType.TC_SHSAUTO OR Claim.LossType == LossType.TC_TRUCKINGAUTO">
+      <!-- commented out drivers and uncommented coveredparty for defect 2644 12/7/09 erawe test,test -->
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Driver.CoveredDrivers"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <!-- Stat Codes -->
+    <PanelRef
+      def="NewClaimStatCodesLV(Claim.Policy.StatCodes, Claim.Policy)"
+      visible="PolicyTabSet.contains(&quot;Statcodes&quot;)">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Policy.StatCodes"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="ClaimPolicyUnderlyingLV(Claim.Policy)"
+      visible="Claim.setUnderlyingVisible()">
+      <TitleBar
+        title="displaykey.NVV.Claim.UnderlyingSched"/>
+      <Toolbar/>
+    </PanelRef>
+    <Code><![CDATA[function getProperties(): LocationBasedRU[] {
+  var locations :List<LocationBasedRU> = new java.util.ArrayList <LocationBasedRU> ()
+   if(Claim.LossType == "PIMINMARINE"){  
+     for(prop in Claim.Policy.Properties){
+        if(!(prop typeis JobsiteRUExt)){
+          if (!Claim.Policy.Verified){
+            locations.add(prop)
+          }else{
+            if(prop.Coverages.length > 0) {
+             locations.add(prop)
+            }
+          }
+       }
+     }
+     return locations as entity.LocationBasedRU[]    
+   }
+   else if((Claim.LossType == LossType.TC_OMAVALON or Claim.Policy.PolicyType == PolicyType.TC_DPP or Claim.Policy.PolicyType == PolicyType.TC_DPX) and Claim.Policy.Verified){
+     var newProperty : PropertyRU = new PropertyRU()
+     newProperty.PropertyNumberExt = 0
+     newProperty.Property.Address = Claim.Policy.insured.getPrimaryAddress()
+     if(newProperty.Property.BuildingNumberExt == null){
+      newProperty.Property.BuildingNumberExt = "0" 
+     }
+     locations.add(newProperty)
+     return locations as entity.LocationBasedRU[]
+   }
+   else if((Claim.Policy.PolicyType == PolicyType.TC_PRC || Claim.Policy.PolicyType == PolicyType.TC_PRX || (Claim.LossType == LossType.TC_SPECIALTYES and Claim.Policy.PolicyType == PolicyType.TC_IMP)) and Claim.Policy.Verified){
+     var newProperty : PropertyRU = new PropertyRU()
+     newProperty.PropertyNumberExt = 0
+     newProperty.Property.Address = Claim.Policy.insured.getPrimaryAddress()
+     if(newProperty.Property.BuildingNumberExt == null){
+      newProperty.Property.BuildingNumberExt = "0" 
+     }
+     locations.add(newProperty)
+     return locations as entity.LocationBasedRU[]
+   }
+   else{
+       return Claim.Policy.Properties
+   }
+}]]></Code>
+  </Screen>
+</PCF>

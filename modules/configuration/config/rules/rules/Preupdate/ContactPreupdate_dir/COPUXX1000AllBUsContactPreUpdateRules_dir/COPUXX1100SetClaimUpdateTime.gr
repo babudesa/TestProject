@@ -1,0 +1,28 @@
+package rules.Preupdate.ContactPreupdate_dir.COPUXX1000AllBUsContactPreUpdateRules_dir
+
+@gw.rules.RuleName("COPUXX1100 - Set ClaimUpdateTime")
+internal class COPUXX1100SetClaimUpdateTime {
+  static function doCondition(contact : entity.Contact) : boolean {
+    return /*start00rule*/true /*end00rule*/
+  }
+
+  static function doAction(contact : entity.Contact, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  var claimUpdateTime:util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+  var claimContactQuery = gw.api.database.Query.make(ClaimContact)
+  claimContactQuery.compare("Contact", Equals, contact);
+  var claimContactRS = claimContactQuery.select()
+  
+ for(clmContact in claimContactRS){
+    if(clmContact.Claim.State != "draft" and 
+      (clmContact.Claim.OriginalVersion as Claim).State != "draft"){
+      claimUpdateTime.setClaimUpdateTime(clmContact.Claim.ClaimNumber, gw.api.util.DateUtil.currentDate())
+    }
+  }
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( contact, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

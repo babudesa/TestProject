@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCommit="updatePlan()"
+    canEdit="perm.ScriptParameter.edit"
+    canVisit="true"
+    id="LSS"
+    title="displaykey.Matter.Admin.LSSAdmin">
+    <Variable
+      initialValue="getList() //find (a in LSSAdminExt where a.LossTypeExt != null )"
+      name="LSSAdminList"
+      type="LSSAdminExt[]"/>
+    <Variable
+      initialValue="new java.util.HashMap()"
+      name="lssHash"
+      type="java.util.HashMap"/>
+    <Screen
+      editable="true"
+      id="LSSScreen">
+      <Variable
+        name="LSSAdminExt"
+        type="LSSAdminExt"/>
+      <TitleBar
+        title="displaykey.Matter.Admin.LSSAdmin"/>
+      <Toolbar
+        visible="true">
+        <EditButtons/>
+        <IteratorButtons/>
+      </Toolbar>
+      <DetailViewPanel
+        compress="false">
+        <InputColumn>
+          <Label
+            id="LSSAdmin"
+            label="displaykey.Matter.Admin.StatusLSS"/>
+          <ListViewInput
+            def="ListLSSValuesLV(LSSAdminList, lssHash)">
+            <Toolbar
+              visible="true">
+              <EditButtons/>
+              <IteratorButtons
+                addVisible="false"
+                removeVisible="false"/>
+            </Toolbar>
+          </ListViewInput>
+          <Label
+            id="Blank"
+            label="&quot;    &quot;"/>
+          <Label
+            id="LitAdvisor"
+            label="displaykey.Matter.Admin.LitAdvisorScriptParameters"/>
+          <ListViewInput
+            def="LitAdvisorLV()">
+            <Toolbar
+              visible="true">
+              <EditButtons
+                cancelVisible="true"
+                editVisible="false"
+                updateVisible="true"/>
+            </Toolbar>
+          </ListViewInput>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+    <Code><![CDATA[uses gw.api.database.Query
+
+function getList() : LSSAdminExt[] {
+  uses gw.transaction.Transaction
+  var test = true
+  var currentList = find (a in LSSAdminExt where a.LossTypeExt != null )
+  var lossType = LossType.getTypeKeys(false)
+  
+ for(lType in lossType){
+   if(!exists (var l in currentList where l.LossTypeExt == lType)) {
+     Transaction.runWithNewBundle(\ bundle -> {
+     var newType = new LSSAdminExt()
+     newType.LossTypeExt = lType
+     newtype.EnableLSSExt = false
+     newtype.MatterModuleExt = false
+     newtype.EffectiveDateExt = DateTime.CurrentDate
+     test=false
+     } )
+   }
+ }
+ var newList = (find (a in LSSAdminExt where a.LossTypeExt != null))
+ return SortedLSSAdmins(newList)
+ //return (find (a in LSSAdminExt where a.LossTypeExt != null ))
+}
+
+
+function updatePlan (){
+  for (key in lssHash.Keys){
+    var lt = (key as typekey.LossType)
+    var enabled=(lssHash.get(key) as boolean)
+    //if (enabled and LSSAdminList.toTypedArray().where(\ l -> l.LossTypeExt ==lt).first().EnableLSSExt ){
+      if (enabled and LSSAdminList.where(\ l -> l.LossTypeExt ==lt).first().EnableLSSExt ){
+      var matterAsmtQry = Query.make(MatterAssignmentExt)
+      matterAsmtQry.compare("StatusExt", Equals, AssignmentStatusExt.TC_OPEN)
+      matterAsmtQry.join("Matter").compare("StatusExt", Equals, MatterStatus.TC_OPEN).join("Claim").compare("LossType", Equals, lt)
+
+      for(mAssign in matterAsmtQry.select()) {
+        gw.transaction.Transaction.runWithNewBundle(\ bundle -> {
+          mAssign=bundle.add(mAssign)
+          if (mAssign.StaffBudgetRequiredExt){
+            mAssign.StaffBudgetRequiredExt = false;
+          }
+          mAssign.Matter.addEvent("LSSSendOld")
+          }
+          )
+      }
+
+    }
+  }
+  lssHash = new java.util.HashMap()
+}
+
+function SortedLSSAdmins(LSSAdmin : LSSAdminExtQuery) : LSSAdminExt[] {
+    var lsslist = new java.util.ArrayList()
+    var ltlist = new java.util.ArrayList()
+    
+    // get list of lss admin loss types
+    for(ltype in LSSAdmin){
+      ltlist.add(ltype.LossTypeExt.Description)
+    }
+    // sort the list
+    sortString(ltlist.toArray() as String[])
+    
+    // sort lss admins based on sorted list
+    for(lt in ltlist){
+     for(lss in LSSAdmin){
+       if( lt as String == lss.LossTypeExt.Description){
+        lsslist.add(lss) 
+       }
+     }
+    }
+  
+    return lsslist as LSSAdminExt[]
+}
+
+
+function sortString(strArr : String[]) : String[] {
+  var temp : String
+  var x = 0
+  
+  while(x < strArr.length -1){
+    if(strArr[x].compareToIgnoreCase(strArr[x+1]) > 0){
+      temp = strArr[x]
+      strArr[x] = strArr[x+1]
+      strArr[x+1] = temp
+    }
+    x++;
+  }
+  return strArr
+}]]></Code>
+  </Page>
+</PCF>

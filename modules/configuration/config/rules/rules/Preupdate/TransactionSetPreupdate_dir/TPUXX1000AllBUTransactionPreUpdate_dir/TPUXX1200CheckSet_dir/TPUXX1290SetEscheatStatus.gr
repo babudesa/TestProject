@@ -1,0 +1,21 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1290 - Set Escheat Status")
+internal class TPUXX1290SetEscheatStatus {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(check in (transactionSet as CheckSet).Checks where
+check.New and !check.Transferred and check.TransferredCheck == null)==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(check in (transactionSet as CheckSet).Checks){
+  //Defect 5118 Canadian Check should not be escheatable  -tray2
+  //Defect 5965 Canadian checks are now escheatable  -tray2 
+  if(check.ManualCheck /* or check.TypeOfCheckExt=="canadian_check" */)
+    check.EscheatStatusExt = "notapplicable"
+  else
+  check.EscheatStatusExt ="escheatable" ;
+}
+/*end00rule*/
+  }
+}

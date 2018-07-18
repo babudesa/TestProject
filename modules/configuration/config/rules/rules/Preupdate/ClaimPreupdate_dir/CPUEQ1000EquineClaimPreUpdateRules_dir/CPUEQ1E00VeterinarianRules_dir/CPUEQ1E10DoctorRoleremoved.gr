@@ -1,0 +1,19 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1E00VeterinarianRules_dir
+
+@gw.rules.RuleName("CPUEQ1E10 - Doctor Role removed")
+internal class CPUEQ1E10DoctorRoleremoved {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(doc in claim.getRelatedContacts( Doctor ) where (doc.Doctor.DoctorSpecialty == "veterinarian" or doc.Doctor.getOriginalValue( "DoctorSpecialty" ) == "veterinarian") and claim.getClaimContact(doc).getRemovedArrayElements( "Roles" ).length > 0) or
+exists(mco in claim.getRelatedContacts( MedicalCareOrg ) where (mco.MedicalCareOrg.MedicalOrgSpecialty == "veterinarian" or mco.MedicalCareOrg.getOriginalValue("MedicalOrgSpecialty") == "veterinarian") and claim.getClaimContact(mco).getRemovedArrayElements( "Roles" ).length > 0) 
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.removeDoctorFromVets();
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<!-- Vehicle -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="Vehicles."
+  entity="Vehicle"
+  exportable="true"
+  extendable="true"
+  javaClass="com.guidewire.cc.domain.policy.Vehicle"
+  platform="false"
+  table="vehicle"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <fulldescription><![CDATA[
+A vehicle (car, boat, etc.) on a policy.  Describes the vehicle's physical
+characteristics (make, model, VIN etc.) and relates the vehicle to its coverages.
+    ]]></fulldescription>
+  <column
+    desc="License plate of the vehicle."
+    name="LicensePlate"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Make of the vehicle."
+    name="Make"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Model of the vehicle."
+    name="Model"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Color of the vehicle."
+    name="Color"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="VIN of the vehicle."
+    name="Vin"
+    type="vin"/>
+  <column
+    desc="Serial number; only use if VIN is not appropriate (e.g. for boats)."
+    name="SerialNumber"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="20"/>
+  </column>
+  <column
+    desc="Year of the vehicle's manufacture."
+    name="Year"
+    type="year"/>
+  <column
+    desc="Whether a loan is owed for the vehicle."
+    name="Loan"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Monthly loan payment."
+    name="LoanMonthlyPayment"
+    nullok="true"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="PolicyCurrency"/>
+  </column>
+  <column
+    desc="Months remaining on loan."
+    name="LoanMonthsRemaining"
+    nullok="true"
+    type="integer"/>
+  <column
+    desc="Loan payoff amount."
+    name="LoanPayoffAmount"
+    nullok="true"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="PolicyCurrency"/>
+  </column>
+  <typekey
+    desc="Type of boat; only applies if vehicle style is boat."
+    name="BoatType"
+    typelist="BoatType"/>
+  <typekey
+    desc="Company that manufactured the vehicle."
+    name="Manufacturer"
+    nullok="true"
+    typelist="VehicleManufacturer">
+    <keyfilters>
+      <keyfilter
+        name="Style"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="Style of snowmobile or ATV (wheels, tracks etc.). Used by ISO."
+    name="OffRoadStyle"
+    nullok="true"
+    typelist="OffRoadVehicleStyle">
+    <keyfilters>
+      <keyfilter
+        name="Style"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="State in which the vehicle is registered."
+    name="State"
+    typelist="State"/>
+  <typekey
+    desc="Style of Vehicle."
+    name="Style"
+    nullok="true"
+    typelist="VehicleStyle"/>
+  <array
+    arrayentity="VehicleOwner"
+    desc="List of lienholders for the vehicle."
+    name="Lienholders"
+    owner="true"
+    triggersValidation="true"/>
+  <index
+    desc="Index to help claim search by VIN"
+    expectedtobecovering="true"
+    name="vehicleu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="Vin"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ID"/>
+  </index>
+</entity>

@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<Entity
+  name="Exposure">
+  <Columns>
+    <Column
+      beanPath="Exposure.ClaimOrder"
+      name="ClaimOrder"
+      sortOrder="1"/>
+    <Column
+      beanPath="Exposure.ExposureType"
+      name="ExposureType"
+      sortOrder="2"/>
+    <Column
+      beanPath="Exposure.LossParty"
+      name="lossParty"
+      sortOrder="3"/>
+    <DisplayNameColumn
+      beanPath="Exposure.ClaimantDenorm"
+      displayName="true"
+      name="Claimant"
+      sortOrder="4"/>
+    <Column
+      beanPath="Exposure.Claim.LossType"
+      name="lossType"
+      sortOrder="5"/>
+  </Columns>
+  <!-- end claimant in exposure namebegin claimant in exposure name -->
+  <DisplayName><![CDATA[var sb = new java.lang.StringBuffer();
+   sb.append("(").append( ClaimOrder as Object ).append(") ");
+   if (lossType=="WC") {
+     if (ExposureType != null) {
+       sb.append(ExposureType);
+     }
+   } 
+   else {
+     sb.append(LossParty=="insured"? displaykey.DisplayName.Exposure.LossParty.Insured :(LossParty=="third_party"? displaykey.DisplayName.Exposure.LossParty.ThirdParty : " "));
+     if (ExposureType != null) {
+       sb.append(ExposureType);
+     }     
+     sb.append(Claimant != null?" - " + Claimant: " ");
+   }
+   var retString = sb.toString();
+   return retString;]]></DisplayName>
+  <DisplayName
+    type="short"><![CDATA[
+"(" + ClaimOrder + ") " + ExposureType != null? ExposureType.DisplayName : ""
+    
+  ]]></DisplayName>
+  <DisplayName
+    type="ContactRoleMessage"><![CDATA[
+var exposureTypeName = exposureType != null ? gw.api.util.TypeKeyUtil.toDisplayName(ExposureType) : "";
+      var retString = "(" + ClaimOrder + ") " + exposureTypeName + " - ";
+      if (lossParty != null) {
+        retString = retString + gw.api.util.TypeKeyUtil.toDisplayName(lossParty);
+      } else {
+        retString = retString + displaykey.Java.Exposure.Unknown;
+      }
+
+      return retString;
+    
+  ]]></DisplayName>
+</Entity>

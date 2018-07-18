@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewteam"
+    id="TeamGroupSummary"
+    title="displaykey.Web.Team.GroupSummaryTitle(GroupInfo.DisplayName)">
+    <LocationEntryPoint
+      signature="TeamGroupSummary(GroupInfo : admin.TreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="admin.TreeGroupInfo"/>
+    <Variable
+      initialValue="new team.TeamGroupStatisticsHelper(GroupInfo)"
+      name="PageHelper"/>
+    <Variable
+      initialValue="new print.PrintSettings()"
+      name="PrintSettings"
+      type="print.PrintSettings"/>
+    <Variable
+      initialValue="gw.api.team.TeamStatisticsUtil.getTeamSummaryStatistics(GroupInfo.Group)"
+      name="StatisticsList"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="&quot;GroupStatisticsLV&quot;"
+      name="PrintTargetLV"/>
+    <Variable
+      initialValue="&quot;BarGraphTitle&quot;"
+      name="BarGraphTitleId"/>
+    <Screen
+      id="TeamGroupSummaryScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <ToolbarButton
+          action="                          PrintSettings.InternalSettings.excludeWidget(BarGraphTitleId);                          print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV, PrintSettings);                        "
+          available="perm.User.printlistviews"
+          id="PrintButton"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+        <ToolbarDivider/>
+        <ToolbarDivider/>
+        <ToolbarInput
+          boldLabel="true"
+          editable="false"
+          id="AsOf"
+          value="displaykey.Web.Team.AsOf(PageHelper.AsOfDate)"/>
+      </Toolbar>
+      <PanelRef
+        def="GroupStatisticsLV(StatisticsList, PageHelper)"/>
+      <PanelRef
+        def="GroupStatisticsBarChart(gw.api.team.TeamStatisticsUtil.getMaxedTeamSummaryStatistics(GroupInfo.Group), GroupInfo.Group)"
+        visible="GroupInfo.Group != null and gw.api.team.TeamStatisticsUtil.showChart()">
+        <TitleBar
+          id="BarGraphTitle"
+          title="displaykey.JSP.TeamGroupSummary.Statistics.Caseload"/>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

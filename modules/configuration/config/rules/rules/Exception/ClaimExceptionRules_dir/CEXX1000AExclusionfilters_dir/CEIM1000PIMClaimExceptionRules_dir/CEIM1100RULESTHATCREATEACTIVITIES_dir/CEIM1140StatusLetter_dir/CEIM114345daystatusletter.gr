@@ -1,0 +1,41 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir.CEIM1140StatusLetter_dir
+
+@gw.rules.RuleName("CEIM1143 - 45 day status letter")
+internal class CEIM114345daystatusletter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Author: erawe
+Date:7/23/10
+Update: 9/6/12 - Defect 5609 Josh wanted to check Loss State instead of Insured State
+*/
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="mandatory_status_letter") &&
+(claim.AddressOwner.Address.State=="AK" or
+claim.AddressOwner.Address.State=="AR" or
+claim.AddressOwner.Address.State=="AZ" or
+claim.AddressOwner.Address.State=="KS" or
+claim.AddressOwner.Address.State=="KY" or
+claim.AddressOwner.Address.State=="MD" or
+claim.AddressOwner.Address.State=="MO" or
+claim.AddressOwner.Address.State=="NJ" or
+claim.AddressOwner.Address.State=="NV" or
+claim.AddressOwner.Address.State=="OH" or
+claim.AddressOwner.Address.State=="OK" or
+claim.AddressOwner.Address.State=="OR" or
+claim.AddressOwner.Address.State=="PA" or
+claim.AddressOwner.Address.State=="RI" or
+claim.AddressOwner.Address.State=="TX" or
+claim.AddressOwner.Address.State=="UT" or
+claim.AddressOwner.Address.State=="VA"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "mandatory_status_letter" )
+  if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 40 )){
+     claim.createActivity( null, ap, null, "Send the mandatory status letter for " + claim.AddressOwner.Address.State, null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ), null )
+  } 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+//actions.exit()/*end00rule*/
+  }
+}

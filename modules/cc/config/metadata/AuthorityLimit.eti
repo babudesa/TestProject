@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!-- ====================================================================  AuthorityLimit  ==================================================================== -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  admin="true"
+  desc="Describes the authority a user has to make payments and reserves."
+  entity="AuthorityLimit"
+  exportable="true"
+  javaClass="com.guidewire.cc.domain.community.AuthorityLimit"
+  platform="false"
+  table="authoritylimit"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <fulldescription><![CDATA[
+      Defines a dollar amount limiting a particular financial authority within the system. An AuthorityLimit has an
+      associated LimitType indicating what the limit applies to, for example, setting reserves. You can also restrict
+      limits to a particular CoverageType or CostType. Each AuthorityLimit belongs to a particular AuthorityProfile. 
+      
+    ]]></fulldescription>
+  <column
+    desc="The amount of the limit, in whole dollars."
+    name="LimitAmount"
+    nullok="false"
+    type="positivecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="Currency"/>
+  </column>
+  <foreignkey
+    columnName="ProfileID"
+    desc="The authority limit profile this limit is a part of."
+    exportable="false"
+    fkentity="AuthorityLimitProfile"
+    name="Profile"
+    nullok="true"/>
+  <foreignkey
+    columnName="ClaimID"
+    desc="If non-null, the limit applies only to this claim."
+    exportable="false"
+    fkentity="Claim"
+    name="Claim"
+    nullok="true"/>
+  <typekey
+    desc="The limit type."
+    name="LimitType"
+    nullok="false"
+    typelist="authoritylimittype"/>
+  <typekey
+    desc="If non-null, the limit applies only to this coverage type."
+    name="CoverageType"
+    nullok="true"
+    typelist="coveragetype"/>
+  <typekey
+    desc="If non-null, the limit applies only to this cost type."
+    name="CostType"
+    nullok="true"
+    typelist="costtype"/>
+  <index
+    desc="Two authority limits must differ in at least one of LimitType, Profile, Claim, CoverageType, CostType, or Retired."
+    name="authoritylimitu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="LimitType"/>
+    <indexcol
+      keyposition="2"
+      name="ProfileID"/>
+    <indexcol
+      keyposition="3"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="4"
+      name="CoverageType"/>
+    <indexcol
+      keyposition="5"
+      name="CostType"/>
+    <indexcol
+      keyposition="6"
+      name="Retired"/>
+  </index>
+  <checkconstraint
+    desc="An authority limit must have one of these be non-null: ProfileID, and ClaimID"
+    predicate="ProfileID IS NOT NULL OR ClaimID IS NOT NULL"/>
+</entity>

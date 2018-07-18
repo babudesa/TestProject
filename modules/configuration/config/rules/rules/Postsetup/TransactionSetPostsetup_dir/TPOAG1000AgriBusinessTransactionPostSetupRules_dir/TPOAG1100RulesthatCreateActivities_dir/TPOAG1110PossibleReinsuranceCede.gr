@@ -1,0 +1,17 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOAG1000AgriBusinessTransactionPostSetupRules_dir.TPOAG1100RulesthatCreateActivities_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPOAG1110 - Possible Reinsurance Cede")
+internal class TPOAG1110PossibleReinsuranceCede {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet" &&
+!exists(act in transactionSet.Claim.Activities where act.ActivityPattern.Code=="ab_possible_rein_cede") &&
+transactionSet.Claim.ClaimRpt.TotalPayments + transactionSet.Amount>=475000 )
+// 7140 - cmullin - 8/26/14 - Disabled per Steve Heffelmire./*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_possible_rein_cede" )
+transactionSet.Claim.createActivityFromPattern( null, ap)/*end00rule*/
+  }
+}

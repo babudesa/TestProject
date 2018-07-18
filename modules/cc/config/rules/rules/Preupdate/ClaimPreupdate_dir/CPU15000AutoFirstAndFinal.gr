@@ -1,0 +1,46 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleName("CPU15000 - AutoFirstAndFinal")
+internal class CPU15000AutoFirstAndFinal {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.FirstAndFinal && Claim.State == "Open" && Claim.LossType == "Auto" && ((Claim.Exposures != null) && (Claim.Exposures.length == 1)) && (Claim.NumTransactions == 1)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses com.guidewire.pl.web.controller.UserDisplayableException
+uses java.util.Iterator
+
+var iPayments = Claim.getPaymentsIterator( true )
+
+var activityArray = Claim.Activities
+
+/**
+ * Complete all activities that do not require approval
+ */
+for (activity in activityArray){
+  if(! (activity.ActivityPattern.Category == ActivityCategory.TC_APPROVAL)) {
+    activity.complete()
+  }
+}
+
+Claim.FaultRating = FaultRating.TC_NOFAULT;
+
+/**
+ * This next bit requests the check automatically.
+ * We're turning this default off, but if the end-user wants the claim
+ * to close automatically, they can re-enable it.
+ */
+ 
+ /*
+if (iPayments.hasNext()){
+  var payment = iPayments.next() as Payment;
+  if (!iPayments.hasNext()) {
+    if ((payment.CostType == "claimcost") &&
+        (payment.CostCategory == CostCategory.TC_AUTOPARTS) &&
+        (payment.PaymentType == "final")){
+      payment.Check.requestCheck()
+    }
+  }
+}*//*end00rule*/
+  }
+}

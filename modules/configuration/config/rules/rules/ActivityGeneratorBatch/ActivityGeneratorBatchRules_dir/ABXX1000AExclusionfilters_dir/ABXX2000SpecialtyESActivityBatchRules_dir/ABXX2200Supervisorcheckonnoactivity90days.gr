@@ -1,0 +1,38 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX2000SpecialtyESActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX2200 - Supervisor check on no activity - 90 days")
+internal class ABXX2200Supervisorcheckonnoactivity90days {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.Policy.PolicyType == PolicyType.TC_XS ||
+claim.Policy.PolicyType == PolicyType.TC_UM ||
+claim.Policy.PolicyType == PolicyType.TC_UMB ||
+claim.Policy.PolicyType == PolicyType.TC_PRC ||
+claim.Policy.PolicyType == PolicyType.TC_PRX)
+&& !exists(act in claim.Activities 
+          where act.ActivityPattern.Code == "supervisor_no_activity_check_spec" 
+          && act.Status == typekey.ActivityStatus.TC_OPEN)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+    var clmUpdateUtil :util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+    var updateTime = clmUpdateUtil.getClaimUpdateTime(claim.ClaimNumber).LastUpdateTime
+    
+    if(updateTime != null){
+        updateTime = updateTime.trimToMidnight()
+    }else {
+        updateTime = claim.UpdateTime.trimToMidnight()
+    }
+    var currentDate = gw.api.util.DateUtil.currentDate().trimToMidnight()
+    if((gw.api.util.DateUtil.daysBetween(updateTime, currentDate) >= ScriptParameters.Activity_SP_SupervisorCheckNoActivity90)){ 
+      var ap = util.custom_Ext.finders.findActivityPattern("supervisor_no_activity_check_spec")
+      var newAct = claim.createActivity(null,
+               ap, ap.Subject, ap.Description, ap.Priority, ap.Mandatory, null, null)
+      //set custom target date  
+      newAct.TargetDate = updateTime.trimToMidnight().addDays(ScriptParameters.Activity_SP_SupervisorCheckNoActivity90)        
+    }
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

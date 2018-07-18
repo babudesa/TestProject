@@ -1,0 +1,19 @@
+package rules.Validation.ClaimReopenedValidationRules_dir.CRVWC1000WorkersCompClaimReopenedValidationRules_dir
+
+@gw.rules.RuleName("CRVWC1150 - Incident Only for Employers Liability")
+internal class CRVWC1150IncidentOnlyforEmployersLiability {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/util.WCHelper.isELLossType(claim) and 
+claim.State != "draft"
+and claim.AssignedUser != null
+and claim.IncidentReport == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.rejectField( "IncidentReport", "newloss", "Incident Only must be set to No.", null, null)    
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

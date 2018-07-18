@@ -1,0 +1,40 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEIM1120 - 30 Day Reserve Recommend")
+internal class CEIM112030DayReserveRecommend {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Author: erawe
+Date: 7/15/10
+*/
+(claim.LevelOfReserveExt=="over_10k" || claim.LevelOfReserveExt==null) && (claim.ReserveLines.length==0) and
+((!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_adj")))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*7/23/10 I need to continue if reserve is pending approval or rejected
+per Danny's email 7/23/10  -** But Santosh wants to talk them out of this!!! Yeah
+*/
+var ap1 = util.custom_Ext.finders.findActivityPattern( "30_day_reserve_adj" )
+var ap1desc = "Any claim  with no reserve must be reviewed within 30 days from reported date when the level of reserve is either Over $10,000 or has not been selected"
+try{
+  if(claim.Exposures.length==0){
+    if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 23 ))
+     {  
+       claim.createActivity(null, ap1, null, ap1desc , null, null,gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 7 ) , null)
+      }
+  }
+  else{
+     for(exp in claim.Exposures){
+      if((exp.ReserveLines.getCount()==0) and (!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_adj"))){ 
+              if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 23 ) ){
+          claim.createActivity(null, ap1, null, ap1desc , null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 7 ), null)}
+        }
+      }
+    }
+  }
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

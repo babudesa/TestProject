@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  admin="true"
+  desc="An activity pattern is a template for an activity. An activity pattern is not assigned to a user, nor does it belong to a claim; it is used only to create new activity instances. To create a new activity, an activity pattern is first chosen, and the values in the activity pattern are used to seed the values of the new activity instance."
+  entity="ActivityPattern"
+  exportable="true"
+  extendable="true"
+  javaClass="com.guidewire.pl.domain.activity.ActivityPatternBase"
+  platform="true"
+  table="activitypattern"
+  type="retireable">
+  <implementsEntity
+    name="DecentralizedEntity"/>
+  <column
+    default="false"
+    desc="True if the activity pattern is used only by automated additions to the workplan. If true, the pattern won't be shown as an option for users to choose in the application's interface."
+    name="AutomatedOnly"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="Description of the activity pattern."
+    name="Description"
+    type="mediumtext">
+    <localization
+      tableName="actpat_desc_l10n"/>
+  </column>
+  <column
+    desc="Used in conjunction with EscalationStartPoint and EscalationIncludedDays to calculate the EscalationDate of the activity."
+    name="EscalationDays"
+    type="integer"/>
+  <column
+    desc="Used in conjunction with EscalationStartPoint and EscalationIncludedDays to calculate the EscalationDate of the activity."
+    name="EscalationHours"
+    type="integer"/>
+  <column
+    desc="A Gosu command to execute for this activity."
+    name="Command"
+    type="mediumtext"/>
+  <column
+    desc="The id of an associated document template. The id gets passed to IDocumentTemplateSource to retrieve the DocumentTemplateDescriptor."
+    name="DocumentTemplate"
+    type="shorttext"/>
+  <column
+    desc="The id of an associated email template. The id gets passed to IEmailTemplateSource to retrieve the EmailTemplateDescriptor."
+    name="EmailTemplate"
+    type="shorttext"/>
+  <column
+    default="false"
+    desc="Whether completion of the activity is mandatory."
+    name="Mandatory"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="The concise name of the activity pattern, used to identify the pattern within rules."
+    name="Code"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <column
+    default="false"
+    desc="Whether this activity is recurring."
+    name="Recurring"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="Subject field of the activity."
+    name="Subject"
+    type="shorttext">
+    <localization
+      tableName="actpat_subj_l10n"/>
+  </column>
+  <column
+    desc="Short subject field of the activity. For use in small areas e.g., a calendar event entry."
+    name="ShortSubject"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="10"/>
+  </column>
+  <column
+    desc="Used in conjunction with TargetStartPoint and TargetIncludedDays to calculate the ActionDate of the activity."
+    name="TargetDays"
+    type="integer"/>
+  <column
+    desc="Used in conjunction with TargetStartPoint and TargetIncludedDays to calculate the ActionDate of the activity."
+    name="TargetHours"
+    type="integer"/>
+  <typekey
+    desc="Category used to organize the activity pattern."
+    name="Category"
+    typelist="ActivityCategory">
+    <keyfilters>
+      <keyfilter
+        name="Type"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    default="task"
+    desc="The class of the activity."
+    name="ActivityClass"
+    nullok="false"
+    typelist="ActivityClass"/>
+  <typekey
+    desc="Which existing date on the activity or associated claim to use as the starting date for the EscalationDate."
+    name="EscalationStartPt"
+    typelist="StartPointType">
+    <keyfilters>
+      <keyfilter
+        name="ActivityClass"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="Which existing date on the activity or associated claim to use as the starting date for the TargetDate."
+    name="TargetStartPoint"
+    typelist="StartPointType">
+    <keyfilters>
+      <keyfilter
+        name="ActivityClass"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="Which days to include in calculating the EscalationDate."
+    name="EscalationInclDays"
+    typelist="IncludeDaysType"/>
+  <typekey
+    desc="Holiday tag code to use for business calendar in calculating EscalationDate, if applicable."
+    name="EscalationBusCalTag"
+    typelist="HolidayTagCode"/>
+  <column
+    desc="Location bean path to use for business calendar in calculating EscalationDate, if applicable."
+    name="EscBusCalLocPath"
+    type="shorttext"/>
+  <typekey
+    desc="Which days to include in calculating the TargetDate."
+    name="TargetIncludeDays"
+    typelist="IncludeDaysType"/>
+  <typekey
+    desc="Holiday tag code to use for business calendar in calculating TargetDate, if applicable."
+    name="TargetBusCalTag"
+    typelist="HolidayTagCode"/>
+  <column
+    desc="Location bean path to use for business calendar in calculating TargetDate, if applicable."
+    name="TargetBusCalLocPath"
+    type="shorttext"/>
+  <typekey
+    desc="Priority of the activity with respect to other activities."
+    name="Priority"
+    typelist="Priority"/>
+  <typekey
+    default="general"
+    desc="Type of the activity."
+    name="Type"
+    nullok="false"
+    typelist="ActivityType"/>
+  <index
+    name="code"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="Code"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+  </index>
+</entity>

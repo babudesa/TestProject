@@ -1,0 +1,20 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVWC1000WorkersCompPolicyValidationRules_dir.PVWC1200AbilityToPay_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("PVWC1210 - Risk State")
+internal class PVWC1210RiskState {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(exists(pol in policy.Coverages where(pol.State==null))){
+    policy.reject(ValidationLevel.TC_PAYMENT, displaykey.Rules.Validation.Policy.WorkersComp.RiskState, null, null)
+  }
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

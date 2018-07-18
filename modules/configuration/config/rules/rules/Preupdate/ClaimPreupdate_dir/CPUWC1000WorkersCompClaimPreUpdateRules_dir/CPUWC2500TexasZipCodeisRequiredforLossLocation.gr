@@ -1,0 +1,18 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC2500 - Texas Zip Code is Required for Loss Location")
+internal class CPUWC2500TexasZipCodeisRequiredforLossLocation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossLocation.State == typekey.State.TC_TX &&
+claim.LossLocation.PostalCode == null && 
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(claim.LoadCommandID)&&
+claim.State==ClaimState.TC_DRAFT
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses com.guidewire.pl.web.controller.UserDisplayableException
+
+throw new UserDisplayableException("Zip Code : Missing required field \"Zip Code\"")/*end00rule*/
+  }
+}

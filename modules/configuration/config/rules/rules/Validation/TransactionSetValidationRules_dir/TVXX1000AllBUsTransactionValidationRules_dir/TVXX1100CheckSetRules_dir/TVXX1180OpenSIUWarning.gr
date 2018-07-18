@@ -1,0 +1,32 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1180 - Open SIU Warning")
+internal class TVXX1180OpenSIUWarning {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/((transactionSet as CheckSet).PrimaryCheck.New or 
+(transactionSet as CheckSet).PrimaryCheck.Changed)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var check = (transactionSet as CheckSet).PrimaryCheck.Payments;
+
+ var SiuInvestigation=transactionSet.Claim.SIUInvestigationsExt.where(\ Inv ->(Inv.InvestigationStatus!="closed"or Inv.InvestigationStatus==null) and Inv.SIUReferralType!="data")
+  
+   
+ for(pay in check)
+ {
+   if(pay.PaymentType=="final"and SiuInvestigation.Count>0)
+   {
+          transactionSet.reject(null, null, "newloss", "This claim cannot be closed ; an open SIU Referral exists")
+     
+   }
+   
+ 
+ 
+ }
+ 
+ 
+
+/*end00rule*/
+  }
+}

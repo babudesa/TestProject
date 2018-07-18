@@ -1,0 +1,35 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABBS1000BondsActivityBatchRules_dir
+
+@gw.rules.RuleName("ABBS1400 - No Update on Claim in 50 Days")
+internal class ABBS1400NoUpdateonClaimin50Days {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!exists(act in claim.Activities 
+          where act.ActivityPattern.Code == "no_update_in_50_days" 
+          && act.Status == typekey.ActivityStatus.TC_OPEN)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var clmUpdateUtil :util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+    var updateTime = clmUpdateUtil.getClaimUpdateTime(claim.ClaimNumber).LastUpdateTime
+    
+    if(updateTime != null){
+        updateTime = updateTime.trimToMidnight()
+    }
+    else{
+        updateTime = claim.UpdateTime.trimToMidnight()
+    }
+    var currentDate = gw.api.util.DateUtil.currentDate().trimToMidnight()
+    if((gw.api.util.DateUtil.daysBetween(updateTime, currentDate) >= ScriptParameters.Activity_BondsNoUpdateOnClaim50Days)){  
+      var ap = util.custom_Ext.finders.findActivityPattern("no_update_in_50_days")     
+      var newAct = claim.createActivity(null,
+                   ap, ap.Subject, ap.Description, ap.Priority, ap.Mandatory, null, null)
+      //set custom target date  
+      newAct.TargetDate = currentDate
+      newAct.AssignedByUser = claim.AssignedUser
+    }
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

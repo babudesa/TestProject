@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1AH0 - Add Incident Claimant to Parties Involved")
+internal class CPUXX1AH0AddIncidentClaimanttoPartiesInvolved {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.State !="draft"
+and (claim.OriginalVersion as Claim).incidentclaimant!=null
+and (claim.OriginalVersion as Claim).incidentclaimant!= claim.incidentclaimant)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Defect 6263 Add Former Incident Claimsnt role
+try{
+  
+  var clmoriginal = claim.OriginalVersion as Claim
+  
+  if(clmoriginal.incidentclaimant!=null and clmoriginal.incidentclaimant != claim.incidentclaimant){
+    claim.addRole(ContactRole.TC_FRMINCIDENTCLAIMANT, clmoriginal.incidentclaimant)
+    //uncomment line below if you do NOT want to see Former I/C if that contact is also current I/C -erawe 8/27/13
+    //claim.removeRole(ContactRole.TC_FRMINCIDENTCLAIMANT, claim.incidentclaimant)
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

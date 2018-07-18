@@ -1,0 +1,33 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleName("TXV12000 - Pending Reserves & Matching Pending Payments")
+internal class TXV12000PendingReservesMatchingPendingPayments {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/TransactionSet.Subtype =="ReserveSet" and TransactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var totalPaymentsCalculation = gw.api.financials.FinancialsCalculationUtil.getTotalPayments();
+var totalPaymentsWPendingCache = gw.api.financials.FinancialsCalculationUtil.getTotalPaymentsIncludingPending();
+var remainingResvCache = gw.api.financials.FinancialsCalculationUtil.getRemainingReserves();
+
+for (reserve in TransactionSet.Transactions as Reserve[]) {
+  var reserveLine = reserve.ReserveLine;
+
+  var totalPaymentsWPending = totalPaymentsWPendingCache.getAmount(reserveLine);
+  var totalPayments = totalPaymentsCalculation.getAmount(reserveLine);
+
+  // pending payments = total payments including pending - total payments
+  var pendingPayments = (null == totalPaymentsWPending ? java.math.BigDecimal.ZERO : totalPaymentsWPending.Amount) - (null == totalPayments ? java.math.BigDecimal.ZERO : totalPayments.Amount);
+
+  if (pendingPayments > 0) {
+    var remainingResv = remainingResvCache.getAmount(reserveLine);
+    remainingResv = (null == remainingResv ? java.math.BigDecimal.ZERO : remainingResv.Amount);
+
+    if (pendingPayments > remainingResv) {
+      TransactionSet.reject(null, null, "loadsave", displaykey.Rules.Validation.Transaction.SaveWithPaymentsPendingApproval);
+    }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,63 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir.MPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MPUXX1110 - Mediator Changed")
+internal class MPUXX1110MediatorChanged {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.mediatorsChanged() == true or
+matter.ChangedFields.contains("MediatorsExt")
+
+
+/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var originalMatter = matter.OriginalVersion as Matter
+var originalMediators = originalMatter.MediatorsExt
+var currentMediators = matter.MediatorsExt
+var removedMediators : MatterMediatorExt[]
+var roleHelper = new libraries.Matter_Entity.MatterRoleHelper(matter)
+
+try{
+  //Get the mediators to remove and add roles to
+  foreach(currentMediator in currentMediators){
+  
+    var toRemove = originalMatter.MediatorsExt
+      .where(\ m -> m.MediatorExt.ID != currentMediator.MediatorExt.ID )
+     
+     removedMediators = toRemove  
+  }
+
+   //add former roles to removed mediators 
+   foreach(mediator in removedMediators){
+   
+       var originalRoles = originalMatter.Roles
+      .where(\ r -> r.ClaimContact.Contact == mediator.MediatorExt)*.Role   
+          
+      if(originalRoles.IsEmpty == false){
+       
+        //foreach role on the mediator set former roles
+        foreach (ccRole in originalRoles){  
+            roleHelper.setFormerRole(ccRole, mediator.MediatorExt)     
+        }
+      } 
+     } 
+
+
+  //add the mediator role to current mediators on the matter
+  foreach(currentMediator in currentMediators){
+ 
+    //add the correct new roles and remove corresponding former roles 
+    if(currentMediator != null){
+
+      var roleToAdd = ContactRole.TC_MEDIATOR
+  
+      matter.addRole(roleToAdd, currentMediator.MediatorExt)
+      roleHelper.removeFormerRole(roleToAdd, currentMediator.MediatorExt)   
+    }
+  }
+ }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

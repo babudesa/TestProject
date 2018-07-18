@@ -1,0 +1,347 @@
+<?xml version="1.0"?>
+<!-- Extension to check entity Adding these fields as part of the Check Writer integration -->
+<extension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="Check">
+  <index
+    desc="Index used for CheckSearchPayeeLastName or CompanyName and enteredtime or issuedate or              date fo service - ID column is 1st as we expect contact/checkpayee to be              outer, claimid added for covering. Index can be dropped or modified based              on the type of check searches in the deployment. Indexes combined to include              different dates to reduce index count with column repitition"
+    expectedtobecovering="true"
+    name="checku7"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="EnteredTime"/>
+    <indexcol
+      keyposition="4"
+      name="IssueDate"/>
+    <indexcol
+      keyposition="5"
+      name="DateOfService"/>
+    <indexcol
+      keyposition="6"
+      name="ClaimID"/>
+  </index>
+  <index
+    desc="Index used for CheckSearchPayeeLastName or CompanyName with Service Period start and end date -              ID column is 1st as we expect contact/checkpayee to be outer, claimid added for covering.              Index can be dropped or modified based on the type of check searches in the deployment.              Indexes combined to include different dates to reduce index count with column repitition"
+    expectedtobecovering="true"
+    name="checku8"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ServicePdStart"/>
+    <indexcol
+      keyposition="4"
+      name="ServicePdEnd"/>
+    <indexcol
+      keyposition="5"
+      name="ClaimID"/>
+  </index>
+  <column
+    desc="Date the check was printed"
+    name="ex_DatePrinted"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="Date the check was endorsed"
+    name="ex_DateEndorsed"
+    nullok="true"
+    type="dateonly"/>
+  <typekey
+    default="No"
+    desc="Yes no field for whether or not we generate a producer copy of the check"
+    name="ex_ProducerCopy"
+    nullok="false"
+    typefilter="YesNoOnly"
+    typelist="YesNo"/>
+  <column
+    desc="The date the check was requested to be voided"
+    name="ex_DateVoided"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="The date the check was requested to be stopped"
+    name="ex_DateStopped"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="The date the check was stopped"
+    name="ex_DateStopExec"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="The date the check was voided"
+    name="ex_DateVoidExec"
+    nullok="true"
+    type="dateonly"/>
+  <foreignkey
+    desc="The EFT account used to process the payment."
+    fkentity="ABEFTAccountInfoExt"
+	owner="true"
+    name="EFTAccountUsedExt"/>
+  <typekey
+    desc="The type of check"
+    name="TypeOfCheckExt"
+    typelist="TypeOfCheck"/>
+  <!-- nscavelli 02/26/2007 : ex_Prefix is no longer used, please reference typelist PrefixExt -->
+  <column
+    deprecated="true"
+    desc="Prefixes for checks"
+    exportable="false"
+    name="ex_Prefix"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="3"/>
+  </column>
+  <!-- nscavelli 02/26/2007 : New typelist for manual checks, replaces ex_Prefix free form field -->
+  <typekey
+    desc="Prefixes for checks"
+    name="PrefixExt"
+    typelist="CheckPrefixExt">
+    <keyfilters>
+      <keyfilter
+        name="ex_ManualPaymentMethod"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="Check Region for checks"
+    name="ex_DraftRegion"
+    nullok="true"
+    typelist="CheckRegions">
+	<keyfilters>
+      <keyfilter
+        name="ex_ManualPaymentMethod"/>
+    </keyfilters>
+  </typekey>
+  <foreignkey
+    desc="Mail To Recepient"
+    fkentity="Contact"
+    owner="true"
+    name="ex_MailTo"/>
+  <foreignkey
+    desc="Mailing state of check"
+    fkentity="Address"
+	owner="true"
+    name="ex_MailToAddress"/>
+  <foreignkey
+    desc="Address of the primary payee on the check"
+    fkentity="Address"
+	owner="true"
+    name="ex_PayToAddress"/>
+  <typekey
+    desc="Check void/stop reason."
+    name="ex_CheckVoidStopReasonType"
+    nullok="true"
+    typelist="CheckVoidStopReasonType"/>
+  <typekey
+    desc="Attribute for payment method type"
+    name="ex_ManualPaymentMethod"
+    nullok="true"
+    typelist="ManualPaymentMethod"/>
+  <column
+    desc="Designates whether this check being issued to satisfy a backup withholding requirement."
+    name="BackupWithholdingCheckExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="List of the payees on the check, just names"
+    name="IssuedPayeesExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="List of the payee types for each payee on the check"
+    name="IssuedPayeeTypesExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="List of the payee tax id's for each payee on the check"
+    name="IssuedPayeeTaxIDExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="Primary payee on the check"
+    name="IssuedPayToExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="Primary payee address on the check"
+    name="IssuedPayToAddressExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="Claimant on the check"
+    name="IssuedClaimantExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    desc="List of the dates the payees were added."
+    name="IssuedPayeeDateAddedExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="1000"/>
+  </column>
+  <column
+    default="false"
+    desc="Set to true if a new or updated check."
+    name="UpdateCheckHistoryExt"
+    nullok="true"
+    type="bit"/>
+  <typekey
+    name="CheckCategoryExt"
+    typelist="CheckCategoryExt"/>
+  <typekey
+    name="EscheatStatusExt"
+    typelist="CheckEscheatStatusExt"/>
+  <column
+    desc="First line of the check Pay To field"
+    name="PayToLine1Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Second line of the check Pay To field"
+    name="PayToLine2Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Third line of the check Pay To field"
+    name="PayToLine3Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Fourth line of the check Pay To field"
+    name="PayToLine4Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Fifth line of the check Pay To field"
+    name="PayToLine5Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Sixth line of the check Pay To field"
+    name="PayToLine6Ext"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="The day the check was escheated."
+    name="DateEscheatedExt"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="The invoice date of the check"
+    name="InvoiceDateExt"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    default="false"
+    desc="Indicator that Deductions will be applied to the check"
+    name="ApplyDeductionsExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Attention field for Mail to Address"
+    name="AttentionMailToExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  
+  <typekey
+    desc="Source System from which the check originated. Used to identify external systems when check is created through an integration."
+    name="SourceSystemExt"
+    nullok="true"
+    typelist="SourceSystemExt"/>
+  <column
+    desc="Vendor Bill ID added for WC Vendor Bill Detail"
+    name="VendorBillIDExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="100"/>
+  </column>
+  <column
+    desc="Original Bill Amount added for WC Vendor Bill Detail"
+    name="OrigBillAmtExt"
+    nullok="true"
+    type="money"/>
+  <column
+    desc="Original Invoice Date added for WC Vendor Bill Detail"
+    name="OrigInvoiceDateExt"
+    nullok="true"
+    type="dateonly"/>
+  <column
+    desc="GAI Invoice Received Date added for WC Vendor Bill Detail"
+    name="GAIInvoiceRecDateExt"
+    nullok="true"
+    type="dateonly"/>
+  <typekey
+    desc="Used on the check wizard screens - store whether the check has a Date/s of Service or Recurring Start/End Dates"
+    name="DOSTypeExt"
+    nullok="true"
+    typelist="DateOfServiceExt"/>
+  <column
+    desc="Date on which last status change occurred. Used for suspect report batch process."
+    name="StatusChangeDateExt"
+    type="datetime"/>    
+</extension>

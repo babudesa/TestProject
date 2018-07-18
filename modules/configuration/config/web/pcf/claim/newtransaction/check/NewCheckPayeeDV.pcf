@@ -1,0 +1,692 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="NewCheckPayeeDV">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <Require
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <Variable
+      name="CheckPayToHidden"
+      type="String"/>
+    <Variable
+      initialValue="User.util.getCurrentUser()==Check.Claim.AssignedUser || User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;))"
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <Variable
+      initialValue="resetPayToFlag()"
+      name="CopyPayToAddy"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <!-- Hack to change a space to a hyphen to fix AutoFill and Standardized without going through integration -->
+    <Variable
+      initialValue="(Check.ex_PayToAddress != null) ? Check.ex_PayToAddress.zipFix() : false"
+      name="fixZip"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="(Check.ex_MailToAddress != null) ? Check.ex_MailToAddress.zipFix() : false"
+      name="fixZip2"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="Check.setCheckData(CopyPayToAddy)"
+      name="setCheckData"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="validatePayToAddress()"
+      name="validPayToAddress"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Check.getPayeeClaimContacts()"
+      name="payeeList"
+      type="List"/>
+    <InputColumn>
+      <!-- <HiddenInput
+        id="CheckWithholding"
+        value="Check.checkPayeesForWithholding()"/> -->
+      <!-- Customization Warning: the following fields are explicitly used by the code
+      and they should not be removed or have their names changed:
+      Check.PrimaryPayee.Type:    is used to decide on Check.Reportability
+      Check.JointPayee.Name:    is used to check that PrimaryPayee and JointPayee are not equal
+      Check.JointPayee.Type:    is used to decide on Check.Reportability
+      In general this NVV has a very high concentration of custom tags and it
+      will be hard to remove or change any of the existing items.
+      7/24/09 Disabling EFT for the implemenation of Agri 0/1 by making Payment Method not editable sprzygocki -->
+      <TypeKeyInput
+        filter="Check.getPaymentMethods(VALUE.toString())"
+        id="ManualPayMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.CheckType"
+        postOnChange="true"
+        required="true"
+        value="Check.PaymentMethod"
+        visible="true"/>
+      <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee"
+        visible="Check.Payees.Length &lt;= 1"/>
+      <ClaimContactInput
+        claim="Check.Claim"
+        editable="true"
+        id="PrimaryPayee_Name"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        onChange="Check.throwClosedDateError(Check.FirstPayee);Check.FirstPayee.Payee.syncToAB(); hasWithholdingsError(Check.FirstPayee); Check.FirstPayee.CheckPayeeRoleExt = null;Check.checkForSameAddy(CopyPayToAddy); util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, automatedCheckInfo.ShowFullCoName);  displayMNIPayeeWarning(Check.FirstPayee);setDeliveryMethod()"
+        onPick="hasWithholdingsError(Check.FirstPayee); Check.FirstPayee.CheckPayeeRoleExt = null; util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, automatedCheckInfo.ShowFullCoName); displayMNIPayeeWarning(Check.FirstPayee); setDeliveryMethod()"
+        postOnChange="true"
+        required="true"
+        validationExpression="Check.FirstPayee.Payee.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+        value="Check.FirstPayee.Payee"
+        valueRange="payeeList"
+        visible="Check.Payees.length &lt;= 1"/>
+      <BooleanRadioInput
+        editable="true"
+        id="FullName"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.ShowFullName"
+        onChange="util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, automatedCheckInfo.ShowFullCoName); util.financials.CheckFunctions.handleonpickforJointPayees(Check, null, automatedCheckInfo.ShowFullCoName)"
+        postOnChange="true"
+        required="false"
+        value="automatedCheckInfo.ShowFullCoName"
+        visible="Check.FirstPayee.Payee.Name.length &gt; 60"/>
+      <!-- 2/26/2008 - zthomas - Defect 783, Remove reflect to use postOnChange from PayeeName, set editable to false. -->
+      <Input
+        id="PrimaryPayee_Type"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+        required="true"
+        value="(Check.FirstPayee!=null and Check.FirstPayee.Payee!=null) ? Check.FirstPayee.Payee.getContactRoleName(Check.FirstPayee.PayeeType.Code, Check.FirstPayee.ClaimContact) : null"
+        visible="Check.Payees.length &lt;= 1"/>
+      <!-- <Reflect
+        triggerIds="PrimaryPayee_Name"
+        value="Check.getSuggestedPayeeType(VALUE)"
+        valueRange="Check.getAllowedPayeeTypes(VALUE)"/> -->
+      <!-- <Input
+        id="PrimaryPayee_Currency"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.Payee.Currency"
+        value="Check.FirstPayee.Payee.PreferredCurrency"
+        visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode() &amp;&amp; Check.Payees.Length &lt;= 1">
+        <Reflect
+          triggerIds="PrimaryPayee_Name"/>
+      </Input> -->
+      <!-- GW ADDED -->
+      <RangeInput
+        editable="true"
+        id="VendorType"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.ContactRole"
+        optionLabel="Check.FirstPayee.Payee.getContactRoleName(VALUE.toString(), Check.FirstPayee.ClaimContact)"
+        required="true"
+        value="Check.FirstPayee.CheckPayeeRoleExt"
+        valueRange="Check.FirstPayee.Payee.getValidRoles()"
+        visible="Check.FirstPayee.PayeeType==&quot;vendor&quot; and Check.Payees.length &lt;= 1 and Check.FirstPayee.ClaimContact.New"/>
+      <ButtonInput
+        action="Check.addNewPayee()"
+        id="AddJointPayees"
+        value="displaykey.NVV.Financials.Check.AddJointPayees"
+        visible="Check.Payees.Length &lt;= 1 and Check.PaymentMethod == &quot;check&quot;"/>
+      <ListViewInput
+        boldLabel="true"
+        editable="true"
+        label="displaykey.NVV.Financials.Check.Payees"
+        labelAbove="true"
+        visible="Check.Payees.length &gt; 1">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          id="NewCheckPayeeDVPayeesLV"
+          validationExpression="Wizard.validateCheckPayees(Check); return null">
+          <RowIterator
+            editable="true"
+            elementName="CheckPayee"
+            toCreateAndAdd="Check.addNewPayee()"
+            toRemove="Check.removeFromPayees(CheckPayee); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, null, automatedCheckInfo.ShowFullCoName); Check.checkForSameAddy(CopyPayToAddy); displayMNIPayeeWarning(CheckPayee)"
+            value="Check.Payees">
+            <Row>
+              <ClaimContactCell
+                claim="Check.Claim"
+                editable="true"
+                id="PayeeName"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+                newContactMenu="BlankNewContactPickerMenuItemSet()"
+                onChange="Check.throwClosedDateError(CheckPayee);CheckPayee.Payee.syncToAB(); hasWithholdingsError(CheckPayee); CheckPayee.CheckPayeeRoleExt = null; Check.checkForSameAddy(CopyPayToAddy); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, CheckPayee, automatedCheckInfo.ShowFullCoName); displayMNIPayeeWarning(CheckPayee)"
+                onPick="hasWithholdingsError(CheckPayee); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, CheckPayee, automatedCheckInfo.ShowFullCoName); displayMNIPayeeWarning(CheckPayee)"
+                postOnChange="true"
+                required="true"
+                validationExpression="CheckPayee.Payee.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+                value="CheckPayee.Payee"
+                valueRange="payeeList"/>
+              <!-- 2/26/2008 - zthomas - Defect 783, Set editable to false. -->
+              <Cell
+                id="PayeeType"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+                required="true"
+                validationExpression="CheckPayee.PayeeType == &quot;claimant&quot; &amp;&amp; !CheckPayee.ClaimContact.isClaimant() ? displaykey.Java.NewPayment.Error.PayeeIsNotClaimant : null"
+                value="(CheckPayee.Payee!=null and CheckPayee.Payee!=null) ? CheckPayee.Payee.getContactRoleName(CheckPayee.PayeeType.Code, CheckPayee.ClaimContact) : null"/>
+              <!-- <Cell
+                id="Payee_Currency"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.Payee.Currency"
+                value="CheckPayee.Payee.PreferredCurrency"
+                visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode()"/> -->
+              <!-- GW ADDED -->
+              <RangeCell
+                editable="CheckPayee.PayeeType==&quot;vendor&quot; and CheckPayee.ClaimContact.New"
+                id="ContactRoleCell"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.ContactRole"
+                optionLabel="CheckPayee.Payee.getContactRoleName(VALUE.toString(), CheckPayee.ClaimContact)"
+                required="true"
+                value="CheckPayee.CheckPayeeRoleExt"
+                valueRange="CheckPayee.Payee != null ? CheckPayee.Payee.getValidRoles() : {}"
+                visible="exists(payee in check.payees where payee.payeetype==&quot;vendor&quot; and payee.claimcontact.new)"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <!-- <Reflect
+        triggerIds="PrimaryPayee_Name"
+        valueRange="VALUE.AllAddresses"/> -->
+      <InputSetRef
+        def="AddressInputSet(Check.PayToAddressOwner)"
+        id="PayToAddress"
+        mode="Check.PayToAddressOwner.InputSetMode"/>
+      <InputDivider/>
+      <!-- <InputDivider
+        visible="Check.PaymentMethod == &quot;check&quot;"/> -->
+      <!-- <HiddenInput
+        id="CheckPayTo"
+        value="Check.checkPayTo()"/> -->
+      <!-- <HiddenInput
+        id="CheckPayToHidden"
+        value="CheckPayToHidden">
+        <Reflect
+          triggerIds="PrimaryPayee_Name"
+          value="VALUE.DisplayName"/>
+      </HiddenInput> -->
+      <!-- PJR Removing Hidden Function call as per defect 1529
+      		  Replaced with gscript function -->
+      <TextInput
+        boldLabel="true"
+        editable="true"
+        id="PayTo_Line1"
+        label="displayKey.NVV.Financials.NewCheckPayee.Check.PayTo"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        required="true"
+        value="Check.PayToLine1Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line2"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine2Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line3"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine3Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line4"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine4Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line5"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine5Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line6"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine6Ext"/>
+      <!-- <InputSet
+        id="EFTDataInputSet"
+        visible="Check.PaymentMethod == PaymentMethod.TC_EFT">
+        <RangeInput
+          editable="true"
+          id="EFTRecords"
+          label="displaykey.Web.Financials.Check.BankData.SelectEFT"
+          value="Check.EFTData"
+          valueRange="Check.FirstPayee.Payee.EFTRecords">
+          <Reflect
+            triggerIds="PrimaryPayee_Name"
+            valueRange="VALUE.EFTRecords"/>
+        </RangeInput>
+        <TextAreaInput
+          editable="true"
+          id="PayTo"
+          label="displaykey.Web.Financials.Check.BankData.BankAcctHolderName"
+          numRows="1"
+          required="true"
+          value="Check.PayTo">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.AccountName"/>
+        </TextAreaInput>
+        <Input
+          editable="true"
+          id="BankName"
+          label="displaykey.Web.Financials.Check.BankData.BankName"
+          value="Check.BankName">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankName"/>
+        </Input>
+        <RangeRadioInput
+          editable="true"
+          id="BankAccountType"
+          label="displaykey.Web.Financials.Check.BankData.BankAccountType"
+          required="true"
+          value="Check.BankAccountType"
+          valueRange="BankAccountType.getTypeKeys( false )">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankAccountType"/>
+        </RangeRadioInput>
+        <PrivacyInput
+          editable="true"
+          encryptionExpression="Check.maskBankAccountNumber(VALUE)"
+          id="BankAccountNumber"
+          label="displaykey.Web.Financials.Check.BankData.BankAccountNumber"
+          required="true"
+          value="Check.BankAccountNumber">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankAccountNumber"/>
+        </PrivacyInput>
+        <Input
+          editable="true"
+          id="BankRoutingNumber"
+          label="displaykey.Web.Financials.Check.BankData.BankRoutingNumber"
+          required="true"
+          value="Check.BankRoutingNumber">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankRoutingNumber"/>
+        </Input>
+      </InputSet> -->
+      <!-- GW ADDED -->
+      <TextAreaInput
+        id="PayToAddyOnChk"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PayTo.AsSeenOn"
+        maxChars="240"
+        numCols="60"
+        numRows="6"
+        value="Check.getPayToAppearingOnCheck()"/>
+      <InputDivider/>
+      <Label
+        label="Check.PaymentMethod == &quot;check&quot;?displaykey.NVV.Financials.NewCheckPayee.Check.MailTo:displaykey.NVV.Financials.NewCheckPayee.Check.EFTMailTo"/>
+      <CheckBoxInput
+        available="Check.Payees.length &gt; 0 and !Check.hasPayeeWithholdings() and Check.ex_PayToAddress != null"
+        editable="true"
+        id="CopyPayTo"
+        label="displaykey.GAIC.Financials.Check.CopyPayTo"
+        onChange="Check.checkMailToAddy(CopyPayToAddy); copyPayToAddyCanadianAddressCheck(); throwLongNameMailToWarning()"
+        postOnChange="true"
+        value="CopyPayToAddy"/>
+      <TypeKeyInput
+        available="!Check.hasPayeeWithholdings()"
+        editable="!CopyPayToAddy"
+        id="DeliveryMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.DeliveryMethod"
+        onChange="resetMailToAddressSection();Check.checkAddress();Check.setAttention()"
+        postOnChange="true"
+        validationExpression="!contactHasBusAddy() and Check.DeliveryMethod==&quot;hold&quot; ? displaykey.Validation.Financials.NewCheckPayee.Check.DeliveryMethod : null"
+        value="Check.DeliveryMethod"/>
+      <!-- <HiddenInput
+        id="SetBankAccount"
+        value="Check.setBankAccount()"/> -->
+      <!-- llynch Defect ID: 3700 Make Check Type not editable when awaiting status/pending status -->
+      <TypeKeyInput
+        id="TypeOfCheck"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.TypeOfCheck"
+        onChange="Check.setAccount()"
+        postOnChange="true"
+        required="false"
+        showNoneSelected="false"
+        value="Check.TypeOfCheckExt"/>
+      <TypeKeyInput
+        available="false"
+        id="BankAccount"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.BankAccount"
+        value="Check.BankAccount"/>
+      <ClaimContactInput
+        available="!CopyPayToAddy and Check.DeliveryMethod != DeliveryMethod.TC_AGENT and Check.DeliveryMethod != DeliveryMethod.TC_HOLD and !Check.hasPayeeWithholdings()"
+        claim="Check.Claim"
+        editable="!CopyPayToAddy"
+        id="Check_MailToContact"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact"
+        onChange="throwLongNameMailToWarning()"
+        postOnChange="true"
+        required="true"
+        validationExpression="Check.ex_MailTo.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+        value="Check.ex_MailTo"
+        valueRange="Check.Claim.getRelatedContacts()"
+        visible="Check.DeliveryMethod != DeliveryMethod.TC_HOLD"/>
+      <RangeInput
+        available="Check.DeliveryMethod == DeliveryMethod.TC_HOLD"
+        editable="true"
+        id="Check_MailToAdjuster"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact"
+        onChange="setMailTo();"
+        postOnChange="true"
+        sortValueRange="false"
+        value="Check.ex_MailTo"
+        valueRange="getAdjusterList()"
+        visible="Check.DeliveryMethod == DeliveryMethod.TC_HOLD"/>
+      <RangeInput
+        editable="!CopyPayToAddy"
+        id="MailToRoleRangeInput"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact.ContactRole"
+        optionLabel="VALUE != null ? Check.ex_MailTo.getContactRoleName(VALUE.toString(), Check.Claim.getClaimContact(Check.ex_MailTo)) : null"
+        required="true"
+        value="Check.MailToRole"
+        valueRange="Check.ex_MailTo.getValidRoles()"
+        visible="Check.ex_MailTo != null and Check.Claim.getClaimContact(Check.ex_MailTo).Roles.Count == 0 and Check.DeliveryMethod != &quot;hold&quot;"/>
+      <!-- 10/20/09 erawe defect 2376 added company of the user to display on checks -->
+      <Input
+        available="true"
+        id="UserCompany"
+        required="Check.DeliveryMethod == &quot;hold&quot;"
+        value="Check.defaultUserCompany()"
+        visible="Check.DeliveryMethod == &quot;hold&quot;"/>
+      <TextInput
+        available="Check.DeliveryMethod!=&quot;hold&quot;"
+        editable="true"
+        id="Attention"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact.Attention"
+        maxChars="34"
+        required="false"
+        value="Check.AttentionMailToExt"/>
+      <InputSetRef
+        def="Address2InputSet(Check.MailToAddressOwner)"
+        editable="!CopyPayToAddy"
+        id="MailToAddress"
+        mode="Check.MailToAddressOwner.InputSetMode"/>
+      <!-- end of Standardize button -->
+      <InputDivider
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <Label
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.Issuance"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <HiddenInput
+        id="SetEFTRefNum"
+        value="Check.PaymentMethod == &quot;eft&quot; ? Check.getEFTReferenceNumber(Check.BankAccount.toString()) : null"/>
+      <Input
+        available="false"
+        editable="Check.New"
+        id="Check_CheckNumber"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.EFTRefNum"
+        required="false"
+        value="Check.CheckNumber"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <RangeInput
+        available="true"
+        editable="true"
+        id="AccountSelection"
+        label="displaykey.NVV.Financials.NewCheckPayee.AccountSelection"
+        optionLabel="util.EFTAccountInformation.electronicFundsInfo.buildDisplayName(VALUE, currentUserIsAdjuster)"
+        postOnChange="true"
+        required="true"
+        value="Check.EFTAccountUsedExt"
+        valueRange="Check.FirstPayee.ClaimContact.Contact.ABEFTAccountInfoExt"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <Input
+        id="AccountType"
+        label="displayKey.NVV.Financials.NewCheckPayee.Check.AccountType"
+        value="Check.EFTAccountUsedExt.AccountTypeExt"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <Input
+        id="ABANumber"
+        label="displayKey.NVV.Financials.NewCheckPayee.Check.ABARoutingNum"
+        value="util.EFTAccountInformation.electronicFundsInfo.maskABANumber(Check.EFTAccountUsedExt.ABANumberExt, perm.System.editeftinformation)"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <Input
+        id="AccountNumber"
+        label="displayKey.NVV.Financials.NewCheckPayee.Check.AccountNum"
+        value="util.EFTAccountInformation.electronicFundsInfo.maskAccountInfo(Check.EFTAccountUsedExt.AccountNumberExt, perm.System.editeftinformation)"
+        visible="Check.PaymentMethod == &quot;eft&quot;"/>
+      <HiddenInput
+        id="HiddenAdjuster"
+        label="&quot;Hidden Adjuster&quot;"
+        postOnChange="true"
+        value="Check.Claim.AssignedUser.toString()"/>
+    </InputColumn>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException;
+uses java.util.ArrayList
+
+function setMailTo(){
+  Check.AttentionMailToExt = Check.ex_MailTo.DisplayName
+  Check.ex_MailToAddress = null
+
+  for(address in Check.ex_MailTo.AllAddresses){
+    if(address.AddressType ==  AddressType.TC_BUSINESS){
+      Check.ex_MailToAddress = address
+      break
+    }
+  }
+  
+  // Error handling for if there is no business address
+  if(Check.ex_MailToAddress == null){
+    GeneralErrorWorksheet.goInWorkspace("The selected adjuster does not have a business address; please select a different adjuster.")
+    Check.setAttention()
+    Check.checkAddress()
+  }
+}
+
+// Custom built adjuster list for Defect 9159
+function getAdjusterList() : Contact [] {
+  var userAdjusters = gw.api.database.Query.make(User)
+  .subselect("ID", CompareIn, UserRole, "User")
+  .join("Role")
+  .subselect("ID", CompareIn, RolePrivilege, "Role")
+  .compareIn("Permission", {SystemPermissionType.TC_CLAIMOWN})
+  .select()
+  
+  var contactAdjusters = new ArrayList<Contact>()
+  
+  // Pull contacts from the list of returned users
+  for(user in userAdjusters){
+    contactAdjusters.add(user.Contact)
+  }
+  
+  // Convert list to array and return it sorted
+  return contactAdjusters.orderBy(\ c -> c.DisplayName) as entity.Contact[]
+}
+
+function hasWithholdingsError(cPayee : CheckPayee){
+  if(Check.hasTaxWithholdings(cPayee)){
+    TaxWithholdingWorksheet.goInWorkspace(cPayee.Payee.Ex_TaxStatusCode)
+    // 12/7/2009 - zthomas - Defect 1762, Tax Levy vendors should no longer default to IRS.
+    // Instead default to the vendor name like backup withholding vendors.
+    //if(cPayee.Payee.Ex_TaxStatusCode.Code == "T"){
+    // Check.PayTo = "Internal Revenue Service"
+    //}
+  } 
+}
+
+		
+function formatOwner(owner : KeyableBean) : String {
+  var result : String;
+  // If it's a draft claim (i.e., a "new claim wizard" claim), then just print out the "DraftClaim" display key;
+  // otherwise, just use the default label (DisplayName).
+  if (owner typeis Claim) {
+    var claim = owner;
+      if (claim.State == "draft") {
+        result = displaykey.LV.Claim.EditableClaimContactRoles.DraftClaim;
+      } else {
+        result = owner.toString();
+      }
+    } else {
+      result = owner.toString();
+  }
+  return result;
+}
+
+function contactHasBusAddy() : boolean {
+  var result : boolean = false;
+  for(addy in Check.ex_MailTo.AllAddresses){
+    if(addy.AddressType=="business"){
+      result = true;
+    }
+  }
+  return result;
+}
+function displayMNIPayeeWarning(chkPayee:CheckPayee){
+  automatedCheckInfo.InsuredPayeeWarningMsg = Check;
+  if(chkPayee.ClaimContact!=null and chkPayee.ClaimContact.isInsuredContact() and !automatedCheckInfo.InsuredWarningDisplayed and
+    automatedCheckInfo.InsuredPayeeWarningMsg != null){
+    automatedCheckInfo.DisplayMNIPayeeWarning = true
+  }
+  if(automatedCheckInfo.DisplayMNIPayeeWarning and !automatedCheckInfo.InsuredWarningDisplayed){
+    MoreNamedInsuredWarningWorksheet.goInWorkspace(automatedCheckInfo);
+    automatedCheckInfo.InsuredWarningDisplayed = true
+    automatedCheckInfo.DisplayMNIPayeeWarning = false      
+  }
+}
+
+//Calls the GeneralErrorWorksheet.  Displays the Canadian Address Warning:
+//This payee has a Canadian address.  Please select the appropriate Check Type to determine if you want a anadian check or a U.S. Check issued
+function getCanadianAddressWarning() {
+  pcf.GeneralErrorWorksheet.goInWorkspace(displaykey.Validator.Check.CanadianAddress.Warning.Message(Check.Claim.Policy.CurrencyTypeExt));
+}
+
+//If the "Same As Primary Payee" field checkbox is checked
+//and the payee address is Canadian then display the
+//Canadian Address Warning
+function copyPayToAddyCanadianAddressCheck() {
+  if(CopyPayToAddy) {    
+    if(Check.Status != TransactionStatus.TC_PENDINGAPPROVAL && Check.Status!=TransactionStatus.TC_AWAITINGSUBMISSION && Check.Status!=TransactionStatus.TC_REJECTED){    
+    if(Check.Claim.Policy.CurrencyTypeExt!="usd" )
+      getCanadianAddressWarning();
+  }
+  }
+}
+// Same as Functionality Code 
+//determines whether or not the paytoflag should be reset, this is in case they decide to come back to the screen after leaving it
+
+function resetPayToFlag():boolean{
+  
+	if(CopyPayToAddy == null){
+          if(Check.Payees.length > 0 and 
+			Check.ex_PayToAddress == Check.ex_MailToAddress and 
+			Check.Payees[0].Payee == Check.ex_MailTo and
+			Check.Payees[0].Payee != null
+			){
+        	return true;
+          }
+     	}
+     
+	else if(CopyPayToAddy and (Check.Payees[0].Payee !=null && Check.ex_MailTo==null )){
+         CopyPayToAddy=false        
+         Check.checkMailToAddy(CopyPayToAddy)
+       } else if(CopyPayToAddy and Check.ex_MailToAddress!=Check.ex_PayToAddress){
+         CopyPayToAddy=false        
+         Check.checkMailToAddy(CopyPayToAddy)
+       }
+	return CopyPayToAddy;
+}
+
+function validatePayToAddress(){
+  if(Check.PayToAddressOwner.Address != null and 
+     Check.PayToAddressOwner.Address.Country != "US" and 
+     Check.PayToAddressOwner.Address.Country != "CA"){
+       automatedCheckInfo.ValidPayToAddress = false
+  }else{
+    automatedCheckInfo.ValidPayToAddress = true
+  }
+  
+  if(!automatedCheckInfo.ValidPayToAddress){
+    throw new UserDisplayableException(displaykey.Validator.Check.ForeignAddress.Error)
+  }
+}
+
+function throwLongNameMailToWarning(){
+ if(Wizard.Check.ex_MailTo.Name.length > 60){
+   GeneralErrorWorksheet.goInWorkspace(displaykey.Validator.Check.FullCoName)
+  }
+}
+
+
+function resetMailToAddressSection(){
+    Check.ex_MailTo = null;
+    Check.ex_MailToAddress = null;
+ }
+ 
+function setDeliveryMethod():void{
+if(Check.hasTaxWithholdings(Check.FirstPayee)){
+  Check.DeliveryMethod=typekey.DeliveryMethod.TC_HOLD
+}else{
+   Check.DeliveryMethod=typekey.DeliveryMethod.TC_SEND
+     }
+}]]></Code>
+    <!-- <HiddenInput
+      id="Recipient"
+      value="Check.setInitialValues()"/> -->
+    <!-- <HiddenInput
+      id="RecipientAddress"
+      value="Check.setAddressValues()"/> -->
+    <!-- <Input
+      editable="true"
+      id="MailToContact"
+      label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact"
+      required="true"
+      value="Check.MailTo">
+      <Reflect
+        triggerIds="PrimaryPayee_Name">
+        <ReflectCondition
+          condition="VALUE != null"
+          value="VALUE.DisplayName"/>
+        <ReflectCondition
+          condition="true"
+          value="&quot;&quot;"/>
+      </Reflect>
+    </Input> -->
+    <!-- <Input
+      editable="true"
+      id="MailingAddress"
+      label="displaykey.NVV.Financials.NewCheckPayee.Check.MailingAddress"
+      required="true"
+      value="Check.MailToAddress">
+      <Reflect
+        triggerIds="PrimaryPayee_Name">
+        <ReflectCondition
+          condition="VALUE != null"
+          value="VALUE.PrimaryAddress.DisplayName"/>
+        <ReflectCondition
+          condition="true"
+          value="&quot;&quot;"/>
+      </Reflect>
+    </Input> -->
+    <!-- <InputDivider/> -->
+    <!-- <Label
+      label="displaykey.NVV.Financials.NewCheckPayee.Check.TaxReporting"
+      visible="!Check.New and Libraries.Utilities.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;)"/> -->
+    <!-- <Input
+      editable="Libraries.Utilities.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;)"
+      id="Reportability"
+      label="displaykey.NVV.Financials.NewCheckPayee.Check.Reportability"
+      value="Check.Reportability"
+      visible="!Check.New and Libraries.Utilities.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;)"/> -->
+  </DetailViewPanel>
+</PCF>

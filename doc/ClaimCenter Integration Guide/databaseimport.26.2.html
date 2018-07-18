@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Introduction to Database Staging Table Import</title>
+    <link rel="StyleSheet" href="css/databaseimport.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="databaseimport.26.1.html#1603698">Importing from Database Staging Tables</a> : Introduction to Database Staging Table Import</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="1603698">Introduction to </a>Database Staging Table Import</div>
+      <div class="B_-_Body"><a name="1926943">Database import provides significantly higher performance than importing individual records with web services </a>APIs. Database staging table import avoids intermediate data formats such as XML. It also avoids the need to parse and transform that data into internal Java objects. </div>
+      <div class="B_-_Body"><a name="1926948">Also, database import uses bulk SQL </a><span class="cv_-_computer_voice">Insert</span> and <span class="cv_-_computer_voice">Select</span> statements to insert entire tables at a time. It does not operate on single rows at a time to import such as if using web services APIs.</div>
+      <div class="B_-_Body"><a name="1603574">The following sections explain important ClaimCenter database staging table import concepts. Review the topics </a>and terminology in this section before proceeding to following sections in this topic.</div>
+      <div class="H2_-_Heading_2"><a name="1568842">Staging Tables</a></div>
+      <div class="B_-_Body"><span class="e_-_emphasis"><a name="1568846">Staging tables</a></span> are database tables that are near-duplicates of your ClaimCenter database’s operational tables that contain all ClaimCenter data. To prepare data for import into ClaimCenter using its bulk import features, you load data into these database staging tables. In general, staging tables correspond one-to-one with ClaimCenter operational tables. For most operational tables with names that start with <span class="cv_-_computer_voice">cc_</span> prefix<span class="cv_-_computer_voice">, </span>there is a corresponding staging table with a <span class="cv_-_computer_voice">ccst_ </span>prefix. </div>
+      <div class="B_-_Body"><a name="1933979">For example, the claim table for the </a><span class="cv_-_computer_voice">Claim</span> entity is <span class="cv_-_computer_voice">cc_claim</span> and it has a corresponding staging table <span class="cv_-_computer_voice">ccst_claim</span>.</div>
+      <div class="B_-_Body"><a name="1933983">Similarly, the ContactCenter application has an address table </a><span class="cv_-_computer_voice">ab_address</span> that has a corresponding staging table <span class="cv_-_computer_voice">abst_address</span>.</div>
+      <div class="B_-_Body"><a name="1933992">There are important differences between staging table columns and operational columns, discussed further in </a><a href="javascript:WWHClickedPopup('integration', 'databaseimport.26.6.html#1927272', '');" title="Populating the Staging Tables">"Populating the Staging Tables"</a>. However the basic data columns are the same between the corresponding tables. For a detailed list of tables, refer to the ClaimCenter Data Dictionary documentation. </div>
+      <div class="B_-_Body"><a name="1821765">Any loadable data model </a><span class="e_-_emphasis">extension entities</span> have table names that start with the <span class="cv_-_computer_voice">ccx_</span> prefix rather than <span class="cv_-_computer_voice">cc_</span> in operational tables. In these cases, the staging table name prefix is the same as for built-in entities. For example, a custom entity called ABC would have regular table name <span class="cv_-_computer_voice">ccx_abc</span> and the staging table <span class="cv_-_computer_voice">ccst_abc</span>.</div>
+      <div class="B_-_Body"><a name="1869086">Staging tables are created during the database upgrade subroutines as the server is loading. </a></div>
+      <div class="B_-_Body"><a name="1869087">During upgrade, the server creates staging tables if both of the following are </a><span class="cv_-_computer_voice">true</span>:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1869088">At least one entity is defined as </a><span class="cv_-_computer_voice">loadable</span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1821926">The entity has at least one property defined as </a><span class="cv_-_computer_voice">loadable</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1821930">Only loadable properties appear as columns in staging tables.</a></div>
+      <div class="H2_-_Heading_2"><a name="1932702">Zone Import</a></div>
+      <div class="B_-_Body"><a name="1932674">ClaimCenter uses zone mapping functionality used by both the </a><span class="e_-_emphasis">assign by location</span> feature and the <span class="e_-_emphasis">address auto-</span><span class="e_-_emphasis">fill</span> feature. ClaimCenter uses staging tables to import this data.</div>
+      <div class="B_-_Body"><a name="1934532">The zone mapping import is a several step process:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><span class="ri_-_run_in_header"><a name="1932675">Get your zone data files or create them.</a></span> Create zone mapping data in comma separated value (CSV) files containing the postal code, the state, the city, and the county. Each line must look like this:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1932676">postalcode,state,city,county</a></div>
+      <div class="LP_-_List_Para"><a name="1932677">For example,</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="1932678">94114,CA,San Francisco,San Francisco</a></div>
+      <div class="LP_-_List_Para"><a name="1932679">You can also use the built-in zone data files that you can find in the directory:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="1932680">ClaimCenter/modules/pl/config/geodata </a></div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="1934582">Run the zone import tool to add data to staging tables.</a></span> The easiest way to run the zone import tool is to use the command line tool <span class="cv_-_computer_voice">zone_import</span> in the directory <span class="cv_-_computer_voice">ClaimCenter/admin/bin</span>. You can also use the web service <span class="cv_-_computer_voice">IZoneImportAPI</span> to add your zone data to the staging tables. For example, with the command line tool, your command might look like this:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1932685">zone_import -clearstaging -import myzonedata.csv -server http://myserver:8080/pc -user myusername</a></div>
+      <div class="LP_-_List_Para"><a name="1932688">For reference of all options on the </a><span class="cv_-_computer_voice">zone_import</span> tool, see <a href="javascript:WWHClickedPopup('admin', 'commandsref.15.1.html#1025815', '');" title="ClaimCenter Administrative Commands">"ClaimCenter Administrative Commands"</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="1932690">Run the main staging table import procedure.</a></span> This topic contains detailed information about the staging table import process. Carefully follow the instructions to import the staging tables into the operational tables.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="1926953">Your Conversion Tool</a></div>
+      <div class="B_-_Body"><a name="1926955">A critical component of this process is some sort of custom </a><span class="e_-_emphasis">conversion tool</span> that you write. Your conversion tool converts legacy data into the ClaimCenter format and place the converted data into the staging tables to await table-based import. Any conversion tool must map a legacy data format, which might be a flat file format, into a format almost identical to ClaimCenter operational tables. If the legacy format is dissimilar to the ClaimCenter format, which is most often the case, this tool must support complex internal logic.</div>
+      <div class="H2_-_Heading_2"><a name="1833457">Integrity Checks</a></div>
+      <div class="B_-_Body"><a name="1607626">Before loading the staging table data into operational database tables, ClaimCenter runs many ClaimCenter-</a>specific data integrity checks. These checks find and report problems that would cause import to fail or might put ClaimCenter into an inconsistent state. Integrity checks are a large set of auto-generated database queries (SQL queries) built-in to the application.</div>
+      <div class="B_-_Body"><a name="1821967">You can check if any integrity checks failed using the user interface at </a><span class="ui_-_UI_element">Server</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Tools </span>→ <span class="ui_-_UI_element">Info</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Pages</span> → <span class="ui_-_UI_element">Load Errors</span>. For more information, see <a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">“Using the Server Tools” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">System Administration Guide</a></span>.</div>
+      <div class="H2_-_Heading_2"><a name="1926969">Logical Units of Work, LUW, and LUWIDs</a></div>
+      <div class="B_-_Body"><a name="1926973">The data related to a claim is spread out across many tables and potentially many rows. You must identify self-</a>contained units of data that must load together, or fail together if something is wrong within that claim. ClaimCenter uses the generic term <span class="e_-_emphasis">logical unit of work</span> (LUW) to refer to all rows across all tables as a single unit for integrity checks and loading. For example, if a claim fails an integrity check, all associated records such as related <span class="cv_-_computer_voice">Address</span> records in that logical unit of work fail the integrity check with the claim. </div>
+      <div class="B_-_Body"><a name="1926989">Each staging table row has a </a><span class="e_-_emphasis">logical unit of work ID </span>property, called <span class="cv_-_computer_voice">LUWID</span>, which identifies the LUW grouping of this data. This topic sometimes refers to this logical unit of work ID as an <span class="e_-_emphasis">LUWID</span>. After your conversion tool populates the staging tables, your conversion tool must set the <span class="cv_-_computer_voice">LUWID</span> property to something useful for each row. For example, a pre-defined legacy claim number/ID.</div>
+      <div class="B_-_Body"><a name="1926996">An LUWID is used in the following ways:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927000">LUWIDs help identify which data failed (see </a><a href="javascript:WWHClickedPopup('integration', 'databaseimport.26.2.html#1635002', '');" title="Introduction to Database Staging Table Import">"Load Error Tables"</a>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927001">LUWIDs identify which data to exclude from future integrity checks or load requests (see </a><a href="javascript:WWHClickedPopup('integration', 'databaseimport.26.2.html#1927010', '');" title="Introduction to Database Staging Table Import">"Exclusion Table"</a>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="1635002">Load Error Tables</a></div>
+      <div class="B_-_Body"><a name="1635004">The </a><span class="e_-_emphasis">load error tables</span> hold data from failed data integrity checks. Do <span class="s_-_strong">not</span> directly read or write these tables. Instead, examine them using the Server Tools user interface. You can view these errors in ClaimCenter within <span class="ui_-_UI_element">Server</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Tools </span>→ <span class="ui_-_UI_element">Info</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Pages</span> → <span class="ui_-_UI_element">Load Errors</span>. For more information about using this screen, see <a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">“Using the Server Tools” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">System Administration Guide</a></span>. Most errors relate to a particular staging table row and so this user interface error shows:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1867607">the table</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1867612">the row number</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1867614">the logical unit of work ID</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1867616">the error message</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1867618">the data integrity check (also called the </a><span class="e_-_emphasis">query</span>) that failed.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1867623">In some cases, ClaimCenter cannot identify or store a single LUWID for the error.</a> For example, this may happen for some types of invalid ClaimCenter financials imports. </div>
+      <div class="H2_-_Heading_2"><a name="1927010">Exclusion Table</a></div>
+      <div class="B_-_Body"><a name="1927014">The </a><span class="e_-_emphasis">load exclusion table</span> is a table of logical unit of work IDs to exclude from staging table processing during the next integrity check or load request. Do <span class="s_-_strong">not</span> directly read or write these tables. To add records to load exclusion tables, use SOAP APIs or command line tools to populate exclusion tables from logical units of work IDs (LUWIDs) in the load error tables.</div>
+      <div class="H2_-_Heading_2"><a name="1568928">Load History Tables</a></div>
+      <div class="B_-_Body"><a name="1608316">Load history tables store results for import processes, including rows for each integrity check, and each step of </a>the integrity check, and row counts for the expected results. Use these to verify that the table-based import tools loaded the correct amount of data. You can view this information in ClaimCenter within <span class="ui_-_UI_element">Server</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Tools</span>→ <span class="ui_-_UI_element">Info</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Pages</span> → <span class="ui_-_UI_element">Load History</span>. For more information about using this screen, see the <span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'cover-admin.html#1151903', '');" title="ClaimCenter System Administration Guide">ClaimCenter System Administration Guide</a></span>. </div>
+      <div class="H2_-_Heading_2"><a name="1608329">Load Commands and Loadable Entities</a></div>
+      <div class="B_-_Body"><a name="1608334">If a ClaimCenter table is </a><span class="e_-_emphasis">loadable</span> and has at least one loadable property, the system creates a staging table for that table during the upgrade process during server startup. </div>
+      <div class="B_-_Body"><a name="1822115">During staging table import, all loadable entities are copied from the staging tables to the operational tables. </a>After an entity imports successfully, the application sets each entity’s <span class="e_-_emphasis">load command</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">ID</span> property (<span class="cv_-_computer_voice">LoadCommandID</span>) to corresponds to the staging table conversion run that brought the row into ClaimCenter.</div>
+      <div class="B_-_Body"><a name="1822057">An entity’s </a><span class="cv_-_computer_voice">LoadCommandID</span> property is always <span class="cv_-_computer_voice">null</span> for rows that were created in some other way, in other words new entities that did not enter ClaimCenter through staging table import.</div>
+      <div class="B_-_Body"><a name="1818940">The load command ID property persists even after performing additional import jobs. The presence of the </a><span class="cv_-_computer_voice">LoadCommandID</span> property does not guarantee that the current data is unchanged since the row was imported. If the user, application logic, or integration APIs change the data, the load command ID property stays the same as the time it first imported.</div>
+      <div class="B_-_Body"><a name="1796749">You can use this feature to test whether an entity was loaded using database staging tables or some other way. </a>From your business rules or from a Java plugin, test an entity’s load command&nbsp;ID. From Gosu, check <span class="cv_-_computer_voice">entity.LoadCommandID</span>. From Java, check the <span class="cv_-_computer_voice">entity.getLoadCommandID</span> method. If the load command is non-<span class="cv_-_computer_voice">null</span>, the entity was imported through the staging table import system and all entities with that load command ID loaded together in one import request. If the load command is <span class="cv_-_computer_voice">null</span>, the entity was created in some way other than database table import.</div>
+      <div class="B_-_Body"><a name="1796786">These load command IDs correspond to results of programmatic load requests to import staging tables. </a></div>
+      <div class="B_-_Body"><a name="1927026">For example, use the command line </a><span class="cv_-_computer_voice">table_import</span> tool in the <span class="cv_-_computer_voice">ClaimCenter/admin/bin</span> directory. The tool returns the load command ID. Alternatively, you can call the SOAP API to load database tables:</div>
+      <div class="CS_-_Code_Single_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline;"><span class="cv_-_computer_voice"><a name="1927027">result = ITableImport.integrityCheckStagingTableContentsAndLoadSourceTables(...);</a></span></div>
+      <div class="B_-_Body"><a name="1822106">The result of that method is a </a><span class="cv_-_computer_voice">TableImportResult</span> entity, which contains a load command ID. Call <span class="cv_-_computer_voice">result.getLoadCommandID()</span> to get the load command ID for that load request. Save that value and test specific entities to see how they were loaded. Compare that value against that saved load command ID. Similarly, if you used the command line tools to trigger database table import, those tools return the load command ID.</div>
+      <div class="B_-_Body"><a name="1818916">You can also track load import history using the database load history tool user interface at </a><span class="ui_-_UI_element">Server</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Tools </span>→ <span class="ui_-_UI_element">Info</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Pages</span> → <span class="ui_-_UI_element">Load History</span>. For more information about using this screen, see the <a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">“Using the Server Tools” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'maintenance.14.02.html#1518441', '');" title="Using the Server Tools">System Administration Guide</a></span>. </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1822088">You can use the </a><span class="cv_-_computer_voice">LoadCommandID</span> property to check whether an entity was loaded through the staging tables, and which load job was associated. Be aware that entity data may have been changed at some later time after it was loaded.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

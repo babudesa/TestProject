@@ -1,0 +1,297 @@
+<?xml version="1.0"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://api.webservices.pc.guidewire.com/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://api.webservices.pc.guidewire.com/" xmlns:intf="http://api.webservices.pc.guidewire.com/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://fault.webservices.pc.guidewire.com/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <!-- WSDL created by Apache Axis version: 1.2.1
+Built on Mar 05, 2007 (11:15:56 PST) -->
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://fault.webservices.pc.guidewire.com/">
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+      <complexType name="SOAPException">
+        <xsd:annotation>
+          <xsd:documentation>
+A generic SOAP exception.     </xsd:documentation>
+        </xsd:annotation>
+        <sequence>
+          <element name="Message" nillable="true" type="soapenc:string">
+            <xsd:annotation>
+              <xsd:documentation>
+The message associated with this exception       </xsd:documentation>
+            </xsd:annotation>
+          </element>
+          <element name="OtherMessages" nillable="true" type="soapenc:string">
+            <xsd:annotation>
+              <xsd:documentation>
+Other messages attached to this exception. This message may contain information
+related to other exceptions that occurred during a SOAP call, but not directly
+associated with this particular exception.       </xsd:documentation>
+            </xsd:annotation>
+          </element>
+        </sequence>
+      </complexType>
+      <complexType name="SOAPSenderException">
+        <xsd:annotation>
+          <xsd:documentation>
+SOAPSenderException is the base class for all exceptions that resulted from
+a sender error. This usually means that required data was not properly encoded
+or was absent. Senders should not send the message again unless some steps have
+been taken to make the encoded data valid.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="DataConversionException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown by many APIs when they encounter a problem translating a SOAP data object into
+an internal system object.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPSenderException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="BadIdentifierException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect).     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="PermissionException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when the authenticated SOAP user does not have permission to
+perform the requested operation     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPSenderException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="SOAPServerException">
+        <xsd:annotation>
+          <xsd:documentation>
+SOAPServerException is the base class for all exceptions that resulted from
+a server error. This is something of a catch-all exception type insofar as
+some things which might in fact be considered SOAPSenderExceptions are reported
+as SOAPServerExceptions. Perhaps a rule failed or something else. Generally it
+indicates a problem in the server that is likely retryable at some future time.
+The database being down, an unavailable plugin, etc would fall into this catagory.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="ServerStateException">
+        <xsd:annotation>
+          <xsd:documentation>
+ServerStateException is thrown when a request is made at a time the
+server is in a state that disallows the request. An example is if
+an attempt is made to add a claim and the server is in maintenance
+mode.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPServerException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="LoginException">
+        <xsd:annotation>
+          <xsd:documentation>
+Class of exceptions thrown when a user tries to log in and an authentication failure occurs.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:PermissionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="EntityStateException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when an attempt is made to manipulate an object that is in a state
+that prevents the operation from being performed. An example is trying to
+modify a Claim that is marked as closed.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPSenderException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="DuplicateKeyException">
+        <xsd:annotation>
+          <xsd:documentation>
+Throws if a duplicate data exception is detected in the database. I.e. a unique index violation.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="FieldConversionException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when a data type cannot be converted into the native data type.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="FieldFormatException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when the input type does not match the format specified in the metadata. I.e. a string is too long.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="RequiredFieldException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when required data is missing from a bean.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="UnknownTypeKeyException">
+        <xsd:annotation>
+          <xsd:documentation>
+Thrown when a typekey value isn't available on the server. This exception can only
+happen if the SOAP WSDL that is being used on the remote side is invalid.     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:DataConversionException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="BatchProcessException">
+        <xsd:annotation>
+          <xsd:documentation>SOAP Exception specific to batch process operations     </xsd:documentation>
+        </xsd:annotation>
+        <complexContent>
+          <extension base="tns1:SOAPServerException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+      <complexType name="AlreadyExecutedException">
+        <complexContent>
+          <extension base="tns1:SOAPSenderException">
+            <sequence/>
+          </extension>
+        </complexContent>
+      </complexType>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="BadIdentifierException">
+    <wsdl:part name="fault" type="tns1:BadIdentifierException">
+      <wsdl:documentation>
+If the policyNumber and lossDate do not identify a policy.   </wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="claimExceedsThresholdRequest">
+    <wsdl:part name="lossDate" type="xsd:dateTime">
+      <wsdl:documentation>
+the loss date of the claim, used to identify the correct policy version   </wsdl:documentation>
+    </wsdl:part>
+    <wsdl:part name="policyNumber" type="soapenc:string">
+      <wsdl:documentation>
+the number of the policy   </wsdl:documentation>
+    </wsdl:part>
+    <wsdl:part name="grossTotalIncurred" type="soapenc:string">
+      <wsdl:documentation>
+the amount incurred, as a user displaying string   </wsdl:documentation>
+    </wsdl:part>
+    <wsdl:part name="transactionId" type="soapenc:string">
+      <wsdl:documentation>
+a unique id identifying this notification. If another notification
+arrives with the same transactionId then it is a duplicate (rare, but can happen due
+to network failures). The implementation can use this, if necessary, to discard
+duplicate notifications.   </wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ServerStateException">
+    <wsdl:part name="fault" type="tns1:ServerStateException">
+      <wsdl:documentation>
+Thrown when a request is made at a time the server is in a state that disallows the request.   </wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="claimExceedsThresholdResponse"/>
+  <wsdl:message name="PermissionException">
+    <wsdl:part name="fault" type="tns1:PermissionException">
+      <wsdl:documentation>
+Thrown when the authenticated SOAP user does not have permission to perform the requested operation   </wsdl:documentation>
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="ClaimToPolicySystemNotificationAPI">
+    <wsdl:documentation>
+WebService for claim system to notify the policy system of changes in the claim system that
+may be of interest.  </wsdl:documentation>
+    <wsdl:operation name="claimExceedsThreshold" parameterOrder="lossDate policyNumber grossTotalIncurred transactionId">
+      <wsdl:documentation>
+Report a policy against which a claim has incurred losses past a certain threshold.   </wsdl:documentation>
+      <wsdl:input message="impl:claimExceedsThresholdRequest" name="claimExceedsThresholdRequest"/>
+      <wsdl:output message="impl:claimExceedsThresholdResponse" name="claimExceedsThresholdResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ClaimToPolicySystemNotificationAPISoapBinding" type="impl:ClaimToPolicySystemNotificationAPI">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="claimExceedsThreshold">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="claimExceedsThresholdRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.pc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="claimExceedsThresholdResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.pc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+        <wsdl:documentation>
+Thrown when a request is made at a time the server is in a state that disallows the request.    </wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.pc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdl:documentation>
+Thrown when the authenticated SOAP user does not have permission to perform the requested operation    </wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.pc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+        <wsdl:documentation>
+If the policyNumber and lossDate do not identify a policy.    </wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.pc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ClaimToPolicySystemNotificationAPIService">
+    <wsdl:documentation>
+WebService for claim system to notify the policy system of changes in the claim system that
+may be of interest.  </wsdl:documentation>
+    <wsdl:port binding="impl:ClaimToPolicySystemNotificationAPISoapBinding" name="ClaimToPolicySystemNotificationAPI">
+      <wsdlsoap:address location="http://localhost:8180/pc/soap/ClaimToPolicySystemNotificationAPI"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

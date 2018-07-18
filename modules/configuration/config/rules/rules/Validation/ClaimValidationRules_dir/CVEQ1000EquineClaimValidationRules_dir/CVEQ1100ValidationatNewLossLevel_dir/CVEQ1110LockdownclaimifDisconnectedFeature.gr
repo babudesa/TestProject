@@ -1,0 +1,32 @@
+package rules.Validation.ClaimValidationRules_dir.CVEQ1000EquineClaimValidationRules_dir.CVEQ1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVEQ1110 - Lock down claim if Disconnected Feature")
+internal class CVEQ1110LockdownclaimifDisconnectedFeature {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Prevents the claim from being edited when there are features with 
+  ReconnectFailExt set to true.
+  Sprint/Maintenance Release: EM 10 - Defect 1131
+  Author: Zach Thomas
+  Date: 05/20/08
+*/
+claim.checkDisconnectedFeatures() and claim.Policy.isPolicyInRefresh( 0 ) and
+!exists(exp in claim.Exposures where !exp.New and (exp.isFieldChanged( "Coverage" ) 
+or (exp.Incident!=null and exp.Incident.DisplayName=="FixedPropertyIncident" and exp.isFieldChanged("Incident"))
+)) 
+//and !exists(fixedProp in Claim.FixedPropertyIncidentsOnly where !fixedProp.New and fixedProp.isFieldChanged( "Property" ))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      claim.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+      //gw.api.util.Logger.logInfo( actions.getRule().DisplayName + " - " + displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName) )
+    }// end if
+  }// end for
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}
+/*end00rule*/
+  }
+}

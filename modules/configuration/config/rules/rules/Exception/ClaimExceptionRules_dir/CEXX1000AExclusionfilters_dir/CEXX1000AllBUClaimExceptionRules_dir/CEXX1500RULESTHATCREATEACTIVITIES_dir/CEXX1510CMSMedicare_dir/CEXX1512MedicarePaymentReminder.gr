@@ -1,0 +1,121 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir.CEXX1510CMSMedicare_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX1512 - Medicare Payment Reminder")
+internal class CEXX1512MedicarePaymentReminder {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Defect 3771 - sprzygocki - 12/27/10 - Activities for CMS have been changed
+//  This activity will generate whenever CMS information is missing regardless of
+//  the Medicare Eligible flag being filled in or not. This will fire after a loss payment
+//  has been made against the feature. It is due 7 days from creation and has no escalation.
+//  It will reoccur every 30 days.
+//Defect 8182 - cprakash - 1/19/2016 - Changed Rule condition to make applicable for Injured Worker
+//Checking for ORM information
+
+exists(trans in claim.getPaymentsIterator(false) where 
+(trans as Payment).CostType == CostType.TC_CLAIMCOST and
+((trans as Payment).Status == TransactionStatus.TC_SUBMITTING  or 
+(trans as Payment).Status == TransactionStatus.TC_SUBMITTED)and
+(trans as Payment).Exposure.MedicareExposureExt and
+(trans as Payment).Exposure.ExposureType != "ab_IdentityTheft" and 
+((trans as Payment).Exposure.Claimant.Subtype == "Person" or 
+(trans as Payment).Exposure.Claimant.Subtype == "InjuredWorkerExt") and
+(trans as Payment).Exposure.Claimant.Subtype != "PersonVendor" and
+(trans as Payment).Exposure.Claimant.getMissingCMSInfo() != "" and
+!exists(act in claim.Activities where
+act.ActivityPattern  == util.custom_Ext.finders.findActivityPattern( "cms_med_financials" ) and
+act.Exposure.Claimant == (trans as Payment).Exposure.Claimant and
+act.Status  ==  "open"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.util.Logger
+uses java.util.ArrayList;
+
+var payments : List  = new ArrayList() 
+var pattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "cms_med_financials" )
+
+for(claimContact in claim.Contacts)
+   {
+    //Checking for valid contacts under the parties involved 
+     if(claimContact.Roles.hasMatch(\ role ->role.Role == "claimant")  and 
+       (claimContact.Contact.Subtype == "Person" or 
+        claimContact.Contact.Subtype == "InjuredWorkerExt") and 
+        claimContact.Contact.Subtype != "PersonVendor" and 
+        claimContact.Contact.getMissingCMSInfo() !="")
+       {
+        Logger.logDebug("Valid Contact Available,  "+(claimContact.Contact as Person).FirstName+" "+(claimContact.Contact as Person).LastName) 
+       
+        // Checking for valid payment transactions which are issued
+         var transactions = claim.getPaymentsIterator(false).toList().where(\ trans -> (trans as Payment).Exposure.Claimant == claimContact.Contact and 
+                                                                                      (trans as Payment).CostType == CostType.TC_CLAIMCOST and
+                                                                                      ((trans as Payment).Status == TransactionStatus.TC_SUBMITTING  or 
+                                                                                      (trans as Payment).Status == TransactionStatus.TC_SUBMITTED ) and 
+                                                                                      (trans as Payment).Exposure.MedicareExposureExt and
+                                                                                      (trans as Payment).Exposure.ExposureType!="ab_IdentityTheft")
+            Logger.logDebug("Number of valid Payments on the Contact,  "+transactions.Count) 
+                                                                               
+            for(trans in transactions)
+            {
+              payments.add(trans as Payment)
+            }
+        }
+   }
+   //If payments exists, on each payment verify for existing activity, will fire one if doesn't exists
+   if(payments!=null && payments.Count>0) 
+   {
+     for(payment in payments)
+     {
+       var exposure = (payment as Payment).Exposure
+       if(exists (act in claim.Activities where act.ActivityPattern == pattern and act.Exposure.Claimant == exposure.Claimant and act.Status=="open" ))
+       {
+          Logger.logDebug("Valid Activity already exists under workplan, skipping firing of activity") 
+         //do nothing
+       }
+       else
+       {
+         var createActivity : boolean = false
+         var daysSinceLastCreatedActivity : int =  0
+         if((exposure.Claimant as Person).MedicareEligibleExt != null && (exposure.Claimant as Person).DateOfMedicareEligibleExt != null)
+         {
+           
+          Logger.logDebug("No activities in Open state exists.... Looking forward to create new or recurring activity..")
+          var daysSinceMedicareEligibleisYes = gw.api.util.DateUtil.daysSince((exposure.Claimant as Person).DateOfMedicareEligibleExt)
+          var lastCreatedActivity = claim.Activities.where(\ act -> act.ActivityPattern == pattern and act.Claimant == exposure.Claimant ).maxBy(\ a -> a.CreateTime)
+         
+          if(lastCreatedActivity.CreateTime != null)
+           {
+              Logger.logDebug("daysSinceLastCreatedActivity, "+daysSinceLastCreatedActivity)
+              Logger.logDebug("daysSinceMedicareEligibleisYes, "+daysSinceMedicareEligibleisYes)
+              Logger.logDebug("Activity exists...checking for time differnce..if created 30 days ago, will create one")
+             daysSinceLastCreatedActivity = gw.api.util.DateUtil.daysSince(lastCreatedActivity.CreateTime)
+              if(daysSinceLastCreatedActivity >= 30 and  daysSinceMedicareEligibleisYes >= 30 and 
+              daysSinceMedicareEligibleisYes%30 >= 0 and daysSinceMedicareEligibleisYes%30 <= 3)
+             {
+                createActivity = true
+              }
+           }
+          else
+           {
+             Logger.logDebug("No activity exists...Can create new...")
+             if(daysSinceMedicareEligibleisYes >= 30 and daysSinceMedicareEligibleisYes%30 >= 0 and daysSinceMedicareEligibleisYes%30 <= 3)
+            { 
+              createActivity = true
+            }
+           }
+
+         if(createActivity)
+         {
+           var missingInfo = ""
+           var act = claim.createActivityFromPattern(exposure , pattern )
+               missingInfo = exposure.Claimant.getMissingCMSInfo() 
+               act.Description = displaykey.Rules.Activities.ISO.CMS.MedicareInformationMissing(exposure.Claimant, missingInfo)
+               act.Claimant = exposure.Claimant
+               Logger.logDebug("Medicare Query Incomplete Claimant Information Activity created successfully")
+         }
+        }
+       }
+      } 
+  }/*end00rule*/
+  }
+}

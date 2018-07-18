@@ -1,0 +1,290 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewClaimLossDetailsDV"
+    mode="EQUINE">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="util.admin.SecurityUtil.setInitialSecurityTypeValue(Claim)"
+      name="myinit"/>
+    <Variable
+      initialValue="Claim.setDOLIndicator()"
+      name="indicator"/>
+    <InputColumn>
+      <!-- <Label
+        label="displaykey.NVV.Claim.NewClaimLossDetailsProperty.Claim.Policy"/> -->
+      <!-- <Input
+        id="Policy_PolicyNumber"
+        label="displaykey.NVV.Claim.NewClaimLossDetailsProperty.Policy.PolicyNumber"
+        value="Claim.Policy.PolicyNumber"/> -->
+      <!-- <Input
+        id="Policy_Status"
+        label="displaykey.NVV.Claim.NewClaimLossDetailsProperty.Policy.Status"
+        value="Claim.Policy.Status"/> -->
+      <!-- <InputDivider/> -->
+      <!-- Equine Sprint 3 sdalal Commented Claim Policy section -->
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim"/>
+      <Input
+        id="Claim_LOBCode"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LOBCode"
+        required="true"
+        value="Claim.LOBCode"/>
+      <Input
+        id="Claim_LossType"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossType"
+        required="false"
+        value="Claim.LossType"/>
+      <RangeInput
+        editable="true"
+        id="Claim_PermissionRequired"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.PermissionRequired"
+        required="true"
+        showNoneSelected="false"
+        value="Claim.PermissionRequired"
+        valueRange="util.admin.SecurityUtil.getValueRange(Claim)"/>
+      <!-- 10/10/06 Equine Sprint 2 sdalal -->
+      <InputDivider/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="Description"
+        label="displaykey.NVV.Claim.NewClaimLossDetailsProperty.Claim.Description"
+        numCols="42"
+        numRows="3"
+        value="Claim.Description"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossDetails"/>
+      <Input
+        editable="true"
+        id="Claim_LossCause"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossCause"
+        postOnChange="true"
+        required="false"
+        value="Claim.LossCause"/>
+      <Input
+        editable="true"
+        id="LossCauseDetail"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossCauseDetail"
+        required="false"
+        value="Claim.ex_DetailLossCause"/>
+      <!-- <Input
+        editable="true"
+        id="Notification_Fault"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.Fault"
+        postOnChange="true"
+        value="claim.FaultRating"/> -->
+      <!-- 11/27/06 Equine Sprint 3 sdalal -->
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Claim_LossDate"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossDate"
+        onChange="Claim.setDOLIndicator()"
+        postOnChange="true"
+        required="true"
+        timeFormat="short"
+        validationExpression="Claim.LossDate == null || gw.api.util.DateUtil.compareIgnoreTime(Claim.LossDate,util.DateUtil.currentDate())&lt;=0 ? Claim.Policy.validatePolDates() : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Claim.LossDate"/>
+      <Input
+        id="DOLOutsidePolicyPeriodIndicator"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.DOLOutsideInd"
+        value="Claim.DOLOutsideIndExt"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Claim_DeathDate"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.DeathDate"
+        required="false"
+        timeFormat="short"
+        validationExpression="Claim.validateDeathDate()"
+        value="Claim.DeathDate"/>
+      <!-- 01/06/09 Equine Sprint 12 sdalal - Added the Optionlabel tag to match LossDetails -->
+      <RangeInput
+        editable="true"
+        id="Catastrophe_CatastropheNumber"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Catastrophe.CatastropheNumber"
+        onChange="Claim.getCatastropheWarning();Claim.clearWindHurricaneDedTriExt()"
+        optionLabel="VALUE.Name"
+        postOnChange="true"
+        required="false"
+        validationExpression="Claim.LossDate == null ? null : Claim.validateCat()"
+        value="Claim.Catastrophe"
+        valueRange="Claim.findValidCatastrophes()"/>
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="EstimatedDamage_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.EstimatedDamage_Ext"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        required="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot;"
+        validationExpression="Claim.validateAmount(Claim.EstimatedDamage_Ext) ? null : displaykey.Validation.Claim.EstimatedDamageExt"
+        value="Claim.EstimatedDamage_Ext"
+        visible="Claim.Catastrophe != null"/>
+      <Input
+        editable="true"
+        id="Notification_AtFaultPercentage"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.AtFaultPercentage"
+        value="Claim.Fault"
+        visible=" Claim.FaultRating == &quot;1&quot; "/>
+      <BooleanRadioInput
+        editable="true"
+        id="WindHurricaneDeductibleTriggered_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.WindHurricaneDeductibleTriggered_Ext"
+        onChange="setDeductible()"
+        postOnChange="true"
+        required="Claim.Catastrophe.Type == &quot;iso&quot;"
+        value="Claim.WindHurricaneDedTriExt"
+        visible="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot;"/>
+      <!-- 07/11/2008 MMANALILI  Commenting out line below. Auto claims do not need a "Estimated Damage" field -->
+      <Input
+        editable="true"
+        formatType="exactNumber"
+        id="WindHurricaneCatDeductibleAmt_Ext"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.WindHurricaneCatDeductibleAmt_Ext"
+        required="Claim.WindHurricaneDedTriExt == true"
+        validationExpression="Claim.validateAmount(Claim.WindHurricaneDedAmtExt) ? null : displaykey.Validation.Claim.WindHurricaneDedExtInvalid "
+        value="Claim.WindHurricaneDedAmtExt"
+        visible="Claim.Catastrophe != null and Claim.Catastrophe.Type == &quot;iso&quot; and Claim.WindHurricaneDedTriExt == true"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Notification_ReportedDate"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.ReportedDate"
+        required="true"
+        timeFormat="short"
+        validationExpression="Claim.ReportedDate == null ? null : gw.api.util.DateUtil.compareIgnoreTime(Claim.ReportedDate, util.DateUtil.currentDate())&gt; 0 ? displaykey.Java.Validation.Date.ForbidFuture : (Claim.reportedDateLessThanDOL())"
+        value="Claim.ReportedDate"/>
+      <Input
+        editable="true"
+        id="Notification_FirstNoticeSuit"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.FirstNoticeSuit"
+        value="Claim.FirstNoticeSuit"/>
+      <Input
+        editable="true"
+        id="Notification_HowReported"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Notification.HowReported"
+        value="Claim.HowReported"/>
+      <Input
+        editable="true"
+        id="Status_IncidentReport"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Status.IncidentReport"
+        value="Claim.IncidentReport"/>
+      <ClaimContactInput
+        available="Claim.showIncidentClaimant()"
+        claim="Claim"
+        editable="true"
+        id="IncidentClaimant_Picker"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.Status.IncidentClaimant"
+        newContactMenu="ClaimNewPersonCompanyOnlyPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Claim.IncidentClaimant"
+        valueRange="Claim.getFeatureContacts()"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Notification_DateReportedToAgent"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.Notification.DateReportedToAgent"
+        requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+        timeFormat="short"
+        value="Claim.DateRptdToAgent"/>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableFixedPropertyIncidentsLV(Claim)"
+        editable="true"
+        id="Claim_Properties"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Properties"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            removeFlags="all Removeable"/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossLocation"/>
+      <InputSetRef
+        def="AddressInputSet(Claim.AddressOwner)"
+        mode="Claim.AddressOwner.InputSetMode"/>
+      <!-- <Input
+        available="true"
+        id="GAITypeofLoss"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.GAITypeofLoss"
+        required="false"
+        value="Claim.getGAITypeOfLoss()"
+        visible="true"/> -->
+      <!-- <InputDivider/> -->
+      <!-- <Label
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.TypeofLoss"/> -->
+      <!-- <Input
+        editable="true"
+        id="LossLocation"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossLocation"
+        postOnChange="true"
+        required="false"
+        value="Claim.ex_LossLocation"/> -->
+      <!-- <Input
+        editable="true"
+        id="LossDueTo"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.LossDueTo"
+        postOnChange="true"
+        required="false"
+        value="Claim.ex_LossDueTo"/> -->
+      <!-- 02/15/2008 sprzygocki - Removed Type of Loss from New Claim Wizard - has been moved to the feature level -->
+      <InputDivider/>
+      <InputSetRef
+        def="CLEEInputSet(Claim)"/>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableOfficialsLV(Claim)"
+        editable="true"
+        id="Claim_Officials"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Officials"
+        labelAbove="true"
+        visible="Claim.Policy.Verified">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="PriorClaimsLV(entity.Claim.finder.findPriorClaimsByPolicyNumber(Claim.Policy.PolicyNumber))"
+        id="PriorClaims"
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.PriorClaims"
+        labelAbove="true">
+        <Toolbar/>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[// 3/3/14 - kniese - added for defect 6413
+function setDeductible(){
+ if(!claim.WindHurricaneDedTriExt)
+   claim.WindHurricaneDedAmtExt = null 
+}]]></Code>
+    <!-- <ListViewInput
+      boldLabel="true"
+      def="MetroReportsLV(Claim)"
+      editable="true"
+      id="MetroReports"
+      label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.MatroReports"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons
+          addLabel="displaykey.Button.Metro.New"
+          removeFlags="any RemovableMetroReport, no NotRemovableMetroReport"/>
+      </Toolbar>
+    </ListViewInput> -->
+  </DetailViewPanel>
+</PCF>

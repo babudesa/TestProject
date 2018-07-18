@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="FNOLWizard_BasicInfoScreen"
+    mode="default">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="((Claim.maincontact == Claim.reporter and Claim.MainContactType == Claim.ReportedByType) || (Claim.maincontact == null and claim.maincontacttype == null))"
+      name="maincontactSamePerson"
+      type="boolean"/>
+    <Variable
+      name="contact"
+      type="Contact"/>
+    <Toolbar>
+      <WizardButtons/>
+    </Toolbar>
+    <PanelRow
+      id="PanelRow">
+      <PanelColumn
+        id="BasicInfoPanelColumn">
+        <DetailViewPanel
+          id="BasicInfoDetailViewPanelDV">
+          <InputColumn
+            id="BasicInfoInputColumn">
+            <Label
+              id="ReporterLabel"
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.ReportedBy"/>
+            <Input
+              editable="true"
+              id="HowReported"
+              label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.Notification.HowReported"
+              value="Claim.howreported"/>
+            <ClaimContactInput
+              claim="claim"
+              editable="true"
+              forceContactSubtype="entity.Person.Type"
+              id="ReportedBy_Name"
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.ReportedBy.Name"
+              newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+              onChange="if (Claim.reporter == Claim.Insured) Claim.ReportedByType = PersonRelationType.TC_SELF else Claim.ReportedByType = null; if (maincontactSamePerson) {Claim.maincontact = Claim.reporter as Person;  Claim.MainContactType = Claim.ReportedByType;}"
+              postOnChange="true"
+              required="true"
+              value="Claim.reporter"
+              valueRange="Claim.RelatedPersonArray"/>
+            <Input
+              editable="true"
+              id="Claim_ReportedByType"
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.ReportedByType"
+              onChange="if (mainContactSamePerson) {Claim.MainContactType = Claim.reportedByType;}"
+              postOnChange="true"
+              required="true"
+              value="Claim.ReportedByType"/>
+            <DateInput
+              editable="true"
+              id="Notification_ReportedDate"
+              label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.Notification.ReportedDate"
+              required="false"
+              validationExpression="Claim.ReportedDate != null and Claim.ReportedDate &gt; util.DateUtil.currentDate() ? displaykey.Java.Validation.Date.ForbidFuture : null"
+              value="Claim.ReportedDate"/>
+            <Label
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.VerifyDOBLabel"
+              visible="Claim.reporter != null"/>
+            <Input
+              id="DOB"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.DOB.Label"
+              value="(Claim.reporter as Person).DateOfBirth"
+              visible="Claim.reporter != null"/>
+            <Label
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.ConfirmContactLabel"
+              visible="Claim.reporter != null"/>
+            <Input
+              id="reporter_Address"
+              label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured.Address"
+              value="(Claim.reporter as Person).PrimaryAddressDisplayValue"
+              visible="Claim.reporter != null"/>
+            <Input
+              editable="true"
+              id="reporter_businessphone"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.BusinessPhone.Label"
+              value="(Claim.reporter as Person).WorkPhone"
+              visible="Claim.reporter != null"/>
+            <Input
+              editable="true"
+              id="reporter_homephone"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.HomePhone.Label"
+              value="(Claim.reporter as Person).HomePhone"
+              visible="Claim.reporter != null"/>
+            <Input
+              editable="true"
+              id="reporter_mobile"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.Mobile.Label"
+              value="(Claim.reporter as Person).CellPhone"
+              visible="Claim.reporter != null"/>
+            <Input
+              editable="true"
+              id="reporter_primarytype"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.PrimaryPhone.Label"
+              value="(Claim.reporter as Person).PrimaryPhone"
+              visible="Claim.reporter != null"/>
+            <Input
+              editable="true"
+              id="reporter_email"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.Email.Label"
+              value="(Claim.reporter as Person).EmailAddress1"
+              visible="Claim.reporter != null"/>
+            <ButtonInput
+              action="ClaimContactDetailPopup.push(Claim.reporter, Claim, true)"
+              id="EditContact"
+              shortcut="E"
+              value="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.EditContactButton.Value"
+              visible="Claim.reporter != null"/>
+            <InputDivider/>
+            <Label
+              label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured"/>
+            <Input
+              action="ClaimContactDetailPopup.push(Claim.insured, Claim, true)"
+              id="Insured_Name"
+              label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured.Name"
+              value="Claim.Insured"/>
+            <Input
+              id="Insured_Address"
+              label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured.Address"
+              value="Claim.Insured.PrimaryAddressDisplayValue"/>
+            <Input
+              id="Insured_WorkPhone"
+              label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured.WorkPhone"
+              value="Claim.Insured.PrimaryPhoneValue"/>
+            <InputDivider/>
+            <Label
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.MainContact"/>
+            <BooleanRadioInput
+              editable="true"
+              falseLabel="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.SamePerson.False.Label"
+              id="MainContactChoice"
+              label="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.SamePerson.Label"
+              onChange="if (maincontactSamePerson) {Claim.maincontact = Claim.reporter as Person;  Claim.MainContactType = Claim.ReportedByType;} else {Claim.maincontact = null;  Claim.MainContactType = null;}"
+              postOnChange="true"
+              stacked="true"
+              trueLabel="displaykey.Web.BasicInfoScreen.BasicInfoDetailViewPanel.SamePerson.True.Label"
+              value="maincontactSamePerson"/>
+            <ClaimContactInput
+              claim="Claim"
+              editable="true"
+              id="MainContact_Name"
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.MainContact.Name"
+              newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+              value="Claim.MainContact"
+              valueRange="Claim.RelatedPersonArray"
+              visible="!mainContactSamePerson"/>
+            <Input
+              editable="true"
+              id="Claim_MainContactType"
+              label="displaykey.NVV.Claim.NewClaimPeople.Claim.MainContactType"
+              value="Claim.MainContactType"
+              visible="!mainContactSamePerson"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <PanelColumn
+        id="VehiclePanelColumn">
+        <PanelRef
+          def="FNOLWizard_BasicInfoRightPanelSet(Claim, Wizard)"
+          id="RightPanel"
+          mode="Claim.LossType"/>
+      </PanelColumn>
+    </PanelRow>
+  </Screen>
+</PCF>

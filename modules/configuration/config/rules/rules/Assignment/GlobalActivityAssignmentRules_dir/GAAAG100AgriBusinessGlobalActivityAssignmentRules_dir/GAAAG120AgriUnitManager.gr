@@ -1,0 +1,54 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAAG100AgriBusinessGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAAG120 - Agri Unit Manager")
+internal class GAAAG120AgriUnitManager {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//* Agri Super Assign
+  Sprint/Maintenance Release: 
+  Author: Eric Rawe
+  Date: ?
+  Updated: Eric Rawe - 5/19/08 Agri Int testing/defects - now assigning 
+  manager only activities using a ScriptParameter instead of parent of supervisor
+*/
+//removed ab_check_reserves_mgr per defect 3141
+//activity.ActivityPattern.Code=="ab_check_reserves_mgr" ||
+activity.ActivityPattern.Code=="ab_possible_rein_cede" ||
+activity.ActivityPattern.Code=="ab_recov_est_closed" ||
+activity.ActivityPattern.Code=="ab_ecf_summons" ||
+activity.ActivityPattern.Code=="ab_reserve_manager"||
+activity.ActivityPattern.Code=="ab_flash_manager" ||
+activity.ActivityPattern.Code=="ab_no_activity_manager" ||
+activity.ActivityPattern.Code=="ab_ror" ||
+activity.ActivityPattern.Code=="ab_lienholder_manager" //||
+//(activity.ActivityPattern.Code=="ab_239_reserve"&& activity.CurrentAssignment.AssignedUser==activity.CurrentAssignment.AssignedGroup.Supervisor && activity.Escalated) //||
+//(activity.ActivityPattern.Code=="ab_factor_reserve"&& activity.CurrentAssignment.AssignedUser==activity.CurrentAssignment.AssignedGroup.Supervisor && activity.Escalated)
+//defect 3145 removed ab_factor_reserve activity from manager activities.
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var user = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType )
+var group = util.GlobalParameters.ParameterFinder.getGroupParameter( "agribusunit", activity.Claim.LossType )
+
+try{
+  activity.CurrentAssignment.assign( group, user )
+  actions.exit()
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex
+}catch(e){
+  var body = "stack trace: " + e.StackTraceAsString
+  var emailAddy = java.lang.System.getProperty( "gw.cc.env" ) == "prod" 
+                   ? ScriptParameters.ClaimCenterProdEmail
+                   : ScriptParameters.ClaimCenterDevEmail
+  
+  gw.api.util.Logger.logError(body)
+  
+  util.email.sendMail(emailAddy, 
+    "An error has occurred in rule " + actions.getRule().DisplayName 
+    + " - ENV: " + gw.api.system.server.ServerUtil.getEnv(), body)
+}
+
+
+/*end00rule*/
+  }
+}

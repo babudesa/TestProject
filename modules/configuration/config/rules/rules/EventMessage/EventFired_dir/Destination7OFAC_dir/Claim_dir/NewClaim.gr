@@ -1,0 +1,19 @@
+package rules.EventMessage.EventFired_dir.Destination7OFAC_dir.Claim_dir
+
+@gw.rules.RuleName("NewClaim")
+internal class NewClaim {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "NewClaim"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses templates.messaging.ofac.OFACClaimContact;
+uses templates.messaging.ofac.OFACCompClaimContact;
+var claim = messageContext.Root as Claim;
+
+for (theClaimContact in claim.getContactsWithPreload()) {
+  util.gaic.OFAC.OFACFunctions.sendClaimContactChanges(messageContext, theClaimContact);
+}
+/*end00rule*/
+  }
+}

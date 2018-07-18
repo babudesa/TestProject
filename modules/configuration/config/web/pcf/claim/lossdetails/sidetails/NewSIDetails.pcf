@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="Claim.removeFromSIUInvestigationsExt(Investigation);ClaimLossDetails.go(Claim)"
+    afterCommit="SIDetails.go(Claim)"
+    afterEnter="Claim.addToSIUInvestigationsExt(Investigation);setDefaults(Investigation)"
+    beforeCommit="Claim.sendInvestigationEmail(Investigation); Claim.createInvestigationNote(Investigation); Claim.createNewSIUActivity(Investigation);closedSIU(); removeDRP()"
+    canEdit="perm.System.createSIUReferral"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewclaimbasics and perm.System.createSIUReferral"
+    id="NewSIDetails"
+    parent="Claim(Claim)"
+    startInEditMode="true"
+    title="displaykey.Web.Claim.SIDetails">
+    <LocationEntryPoint
+      signature="NewSIDetails(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new SIUInvestigationExt()"
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Screen
+      editable="true"
+      id="NewSIDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          updateLabel="displaykey.Web.Claim.SpecialInvestDetails.Submit"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim, Investigation)"
+          id="LinkDocument"
+          label="displaykey.NVV.SIU.LinkDocument"
+          onPick="Claim.linkDocumentToInvestigation(PickedValue, Investigation)"
+          visible="perm.System.viewdocs"/>
+      </Toolbar>
+      <PanelSet
+        id="NewSIPanelSet">
+        <CardViewPanel>
+          <Card
+            id="InvestPropertiesCard"
+            title="displaykey.Web.Claim.SpecialInvestDetails">
+            <PanelRef
+              def="SIDetailsDV(Claim, Investigation)"
+              editable="true"/>
+          </Card>
+          <Card
+            id="InvestNotesCard"
+            title="displaykey.Web.Claim.SIUNotes"
+            visible="Investigation.Notes.length&gt;0">
+            <PanelRef
+              def="SIUNotesDV(Claim, Investigation)"
+              editable="false"/>
+          </Card>
+        </CardViewPanel>
+      </PanelSet>
+    </Screen>
+    <Code><![CDATA[/* 3/15/17 erawe > var drp, drp.Contact, invest.add... is for this  SIU only
+NOT the New data research.  It create a dataResearchParty since one does not
+exist, in order to add the research types */
+function setDefaults(invest : SIUInvestigationExt){
+     	invest.ReferralDate = gw.api.util.DateUtil.currentDate();
+     	invest.ClaimOrder = Claim.SIUInvestigationsExt.length;
+     	var drp : DataResearchPartyExt = new DataResearchPartyExt()
+     	invest.addToDataResearchParties(drp)
+     }
+ function closedSIU ()
+    {
+      if(Claim.State =="closed")
+      {
+        throw new com.guidewire.pl.web.controller.UserDisplayableException("SIU Referrals may not be created on closed claims. Please reopen this claim before creating a referral")
+      }
+    }
+    
+ /*If no Research Types added then remove the DataResearch Party 3/15/17 erawe */
+function removeDRP(){
+  if (Investigation.DataResearchParties.HasElements){
+    var party = Investigation.DataResearchParties[0]
+    if (party.ResearchTypes.length == 0){
+      var partyContact = Investigation.Claim.Contacts.where(\ cc -> cc.Contact == party.Contact).first()
+      Investigation.removeFromDataResearchParties(party)
+    }
+  }
+}]]></Code>
+  </Page>
+</PCF>

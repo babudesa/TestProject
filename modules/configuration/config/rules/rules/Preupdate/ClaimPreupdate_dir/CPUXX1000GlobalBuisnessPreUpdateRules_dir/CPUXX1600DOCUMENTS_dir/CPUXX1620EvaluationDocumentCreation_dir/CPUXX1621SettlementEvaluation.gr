@@ -1,0 +1,76 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1621 - Settlement Evaluation")
+internal class CPUXX1621SettlementEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in claim.Evaluations where evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "settlement")
+and claim.BeanVersion == find(clm in Claim where clm.ClaimNumber == claim.ClaimNumber).getAtMostOneRow().BeanVersion/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var values = new HashMap();
+var doc: Document;
+
+for(evaluation in Claim.Evaluations){
+  if(evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "settlement"){
+    //The line below was commented out because as of sprint 8, documents are no
+    //longer editable after they are saved to ECF.
+    //evaluation.SaveToECFExt = false;  //reset the save to ECF flag so it&apos;s not saved multiple times
+    doc = new Document(Claim);
+    values.put( "EvaluationName", evaluation.Name);
+    values.put( "RelatedTo", evaluation.getRelatedToValue());
+    values.put( "Claim", Claim );
+    values.put( "Insured", Claim.Insured);
+    values.put( "GeneralD", evaluation.DamageOverviewExt);
+    values.put( "GeneralLiability", evaluation.LiabilityOverviewExt);
+    //values.put( "SettleRange", "$"+evaluation.LowSettlementRangeExt +"-"+"$"+ evaluation.HighSettlementRangeExt);
+    values.put("SettleRange",evaluation.getDamageRange(evaluation.LowSettlementRangeExt,evaluation.HighSettlementRangeExt,"$"));
+    values.put( "DefenseStrength", evaluation.DefenseStrengthsExt);
+    values.put( "PlaintiffStrength", evaluation.PlaintiffStrengthsExt);
+    values.put( "StructPotential", evaluation.StructPotentialExt);
+    values.put( "ADRPotentl", evaluation.ADRPotentialExt);
+    values.put( "Claimant", evaluation.ClaimantNameExt);
+    values.put( "SettlementTargetAmt", evaluation.SettlementTargetAmtExt);
+    values.put( "AddComments", evaluation.CommentsExt);
+    
+    //Grab the exposure and claimant to be saved to the document
+    if(evaluation.getRelatedToValue() typeis Exposure){
+      doc.Exposure = (evaluation.getRelatedToValue() as Exposure)
+      doc.Ex_ECFFeatureType = doc.Exposure.DisplayName
+    }
+    if(evaluation.Claimant!=null){
+      doc.ex_ClaimantName = doc.Exposure.claimant.DisplayName
+    }
+    doc.Claim = Claim;
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.Name = "Settlement Evaluation";
+    doc.MimeType = "application/rtf";
+    doc.Status = "approved";
+    doc.ex_SubType = "Settlement Evaluation"
+    doc.ex_Type = "Investigation"
+    doc.ProcessMethod = "Sent_to_File"
+    doc.Description = "Settlement Evaluation"
+    doc.Privileged = "No"
+    doc.FormIDExt = "ENT0015"
+    
+    values.put( "FormID", doc.FormIDExt );
+        
+    if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "SettlementEvaluation.gosu.rtf" )) {
+      util.document.DocumentProduction.createAndStoreDocumentSynchronously( "SettlementEvaluation.gosu.rtf", values, doc );
+      var note:String = "Settlement evaluation document successfully generated.";
+      var noteSubject:Note;
+      noteSubject = Claim.addNote("general", note);
+      noteSubject.Subject = "Settlement Evaluation Created";
+    }
+    else {
+      //changed to logging in Debug - SR
+	  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+    }
+    values.clear();
+  }
+  
+}/*end00rule*/
+  }
+}

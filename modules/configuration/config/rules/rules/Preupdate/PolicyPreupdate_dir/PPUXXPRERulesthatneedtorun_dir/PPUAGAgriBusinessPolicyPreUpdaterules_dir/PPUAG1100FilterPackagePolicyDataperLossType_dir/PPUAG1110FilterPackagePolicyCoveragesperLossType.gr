@@ -1,0 +1,37 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUAGAgriBusinessPolicyPreUpdaterules_dir.PPUAG1100FilterPackagePolicyDataperLossType_dir
+
+@gw.rules.RuleName("PPUAG1110 - Filter Package Policy Coverages per Loss Type")
+internal class PPUAG1110FilterPackagePolicyCoveragesperLossType {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///Defect 2694 mmanalili Disabling rule because there is a EDW filter that will handlle the 
+//filter for Policy coverages.
+true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*///// remove coverages that are not related to the loss type
+for (cvrg in policy.Coverages) {
+  var riskType = gw.api.util.TypecodeMapperUtil.getTypecodeMapper().getInternalCodeByAlias( "EDWRiskType", "CoverageRisk", cvrg.Type.Code )
+  for (tk in EDWRiskType.getTypeKeys(false)) {
+    if (tk == riskType) {
+      if (!tk.hasCategory( policy.Claim.LossType )) {
+        // remove all reinsurance data related to the coverage to be removed
+        for (rein in cvrg.ReinsurancesExt) {
+          cvrg.removeFromReinsurancesExt( rein )
+        }
+        // remove all coverage basis limit related to the coverage to be removed
+        for (cvrgBasisLimit in cvrg.CoverageBasisLimitsExt) {
+          cvrg.removeFromCoverageBasisLimitsExt( cvrgBasisLimit )
+        }
+        // remove all attachment point related to the coverage to be removed
+        for (underlyingCoverageExt in cvrg.UnderlyingCoverageExt) {
+          cvrg.removeFromUnderlyingCoverageExt( underlyingCoverageExt )
+        }
+        cvrg.remove();
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

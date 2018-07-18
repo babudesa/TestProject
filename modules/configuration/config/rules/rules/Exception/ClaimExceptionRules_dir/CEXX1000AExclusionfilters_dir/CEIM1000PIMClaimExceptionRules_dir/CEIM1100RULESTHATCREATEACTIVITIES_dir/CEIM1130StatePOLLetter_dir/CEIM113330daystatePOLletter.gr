@@ -1,0 +1,24 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir.CEIM1130StatePOLLetter_dir
+
+@gw.rules.RuleName("CEIM1133 - 30 day state POL letter")
+internal class CEIM113330daystatePOLletter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Author: erawe
+Date:7/16/10
+Update: 9/6/12 - Defect 5609 Josh wanted to check Loss State instead of Insured State
+*/
+claim.AddressOwner.Address.State=="MI"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "mandatory_pol_letter" )
+  if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 25 )){
+        claim.createActivity( null, ap, null, "Send the mandatory state POL letter for " + claim.AddressOwner.Address.State, null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ), null )
+  } 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+//actions.exit()/*end00rule*/
+  }
+}

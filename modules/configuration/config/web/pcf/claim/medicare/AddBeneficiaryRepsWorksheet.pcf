@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    canEdit="true"
+    id="AddBeneficiaryRepsWorksheet"
+    startInEditMode="true"
+    tabLabel="&quot;Add Beneficiary Representatives&quot;"
+    title="&quot;Survivor or Wrongful Death Beneficiary Representatives&quot;">
+    <LocationEntryPoint
+      signature="AddBeneficiaryRepsWorksheet(contactISO:ContactISOMedicareExt, claim:Claim, pageProc: pcf_gs.Medicare_PageProc)"/>
+    <Scope
+      location="*"/>
+    <Variable
+      name="contactISO"
+      type="ContactISOMedicareExt"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Screen>
+      <ListDetailPanel
+        selectionName="selectedContact"
+        selectionType="Contact">
+        <PanelRef>
+          <Toolbar/>
+          <ListViewPanel>
+            <RowIterator
+              editable="false"
+              elementName="Contact"
+              value="contactISO.Contact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantFlagExt )*.RelatedContact">
+              <Row>
+                <Cell
+                  id="ContactName"
+                  label="&quot;Name&quot;"
+                  value="Contact.DisplayName"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </PanelRef>
+        <CardViewPanel>
+          <Card
+            id="BeneficiaryRep"
+            title="&quot;Beneficiary Representative&quot;">
+            <PanelRef>
+              <Toolbar>
+                <EditButtons/>
+              </Toolbar>
+              <DetailViewPanel>
+                <InputColumn>
+                  <ListViewInput
+                    def="ClaimantRepLV(selectedContact, claim, pageProc)">
+                    <Toolbar>
+                      <IteratorButtons
+                        addVisible="selectedContact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantAddRepFlagExt ).Count == 0 ? true : false"/>
+                    </Toolbar>
+                  </ListViewInput>
+                </InputColumn>
+              </DetailViewPanel>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+  </Worksheet>
+</PCF>

@@ -1,0 +1,18 @@
+package rules.Preupdate.TransactionSetPreupdate_dir
+
+@gw.rules.RuleName("TPU06000 - Unlink Deductible After Check Denial")
+internal class TPU06000UnlinkDeductibleAfterCheckDenial {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.financials.FinancialsUtil;
+
+for (check in (transactionSet as CheckSet).Checks) {
+  if (check.isFieldChanged( "Status" ) and check.Status == "Denied") {
+    check.unlinkDeductibles()
+  }
+}/*end00rule*/
+  }
+}

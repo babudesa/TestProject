@@ -1,0 +1,39 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1300MedicalVendorApproval_dir.BIAR1320AlternateApprover_dir
+
+@gw.rules.RuleName("BIAR1323 - Approve by SCO")
+internal class BIAR1323ApprovebySCO {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/util.user.GroupsHelper.isClaimManager(bulkInvoice.LastApprovingUser) and
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.getSCOUser(LossType.TC_ALTMARKETSWC) and
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var lastApprovingUser = bulkInvoice.LastApprovingUser
+  var scoUser = util.user.SCOHelper.getSCOUser(LossType.TC_ALTMARKETSWC)
+  var scoUserGroup : Group = util.GlobalParameters.ParameterFinder.getGroupParameter( "gaicclaims", LossType.TC_ALTMARKETSWC)
+  var approvalHistory = bulkInvoice.BeanVersion != null ? util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice) : null
+  var currentApprovalAssignedToUser = bulkInvoice.BeanVersion != null ? util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory) : null
+  
+  //If the activity is already assigned to the CorpClaimsOneUser or CorpClaimsTwo user then do
+  //not reassign. 
+  if(currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsOneUser || currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsTwoUser) {
+    var nextApprovingUser = currentApprovalAssignedToUser
+    var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+    bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    actions.exit()
+  //else continue normal assignment
+  } else if(bulkInvoice.LastApprovingUser != scoUser){
+    bulkInvoice.setApprovingUser( scoUser, scoUserGroup );
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName );
+    actions.exit();
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

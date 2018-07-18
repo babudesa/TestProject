@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- for creating new activities   This file automatically generated from nvv_activity.xml, but excluded during the development cycle -->
+  <DetailViewPanel
+    id="NewActivityDV">
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Require
+      name="AssigneeHolder"
+      type="assignment.Assignee[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="Activity_Subject"
+        label="displaykey.NVV.Activity.NewActivity.Activity.Subject"
+        required="true"
+        value="Activity.Subject"/>
+      <TextAreaInput
+        editable="true"
+        id="Activity_Description"
+        label="displaykey.NVV.Activity.NewActivity.Activity.Description"
+        numCols="50"
+        numRows="2"
+        value="Activity.Description"/>
+      <RangeInput
+        editable="true"
+        id="Activity_RelatedTo"
+        label="displaykey.NVV.Activity.NewActivity.Activity.RelatedTo"
+        optionLabel="VALUE typeis Claim ? displaykey.Java.NoteView.EntireClaim : VALUE.DisplayName"
+        postOnChange="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="Activity.RelatedTo"
+        valueRange="Activity.Claim.RelatedToCandidates"/>
+      <InputDivider/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Activity_DueDate"
+        label="displaykey.NVV.Activity.NewActivity.Activity.DueDate"
+        required="Activity.Importance != &quot;notOnCalendar&quot;"
+        value="Activity.TargetDate"
+        visible="Activity.ActivityClass != &quot;event&quot;"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Activity_StartDate"
+        label="displaykey.NVV.Activity.NewActivity.Activity.StartDate"
+        required="Activity.Importance != &quot;notOnCalendar&quot;"
+        timeFormat="short"
+        value="Activity.TargetDate"
+        visible="Activity.ActivityClass == &quot;event&quot;"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Activity_EndDate"
+        label="displaykey.NVV.Activity.NewActivity.Activity.EndDate"
+        timeFormat="short"
+        value="Activity.EndDate"
+        visible="Activity.ActivityClass == &quot;event&quot;"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Activity_EscalationDate"
+        label="displaykey.NVV.Activity.NewActivity.Activity.EscalationDate"
+        value="Activity.EscalationDate"/>
+      <Input
+        editable="true"
+        id="Activity_Priority"
+        label="displaykey.NVV.Activity.NewActivity.Activity.Priority"
+        required="true"
+        value="Activity.Priority"/>
+      <Input
+        editable="Activity.canMakeMandatory()"
+        id="Activity_Mandatory"
+        label="displaykey.NVV.Activity.NewActivity.Activity.Mandatory"
+        required="true"
+        value="Activity.Mandatory"/>
+      <Input
+        editable="true"
+        id="Activity_Importance"
+        label="displaykey.NVV.Activity.SubView.ActivityDetails.Activity.Importance"
+        required="true"
+        value="Activity.Importance"/>
+      <Input
+        id="Activity_Recurring"
+        label="displaykey.NVV.Activity.NewActivity.Activity.Recurring"
+        value="Activity.Recurring"/>
+      <Input
+        editable="true"
+        id="Activity_ExternallyOwned"
+        label="displaykey.NVV.Activity.NewActivity.Activity.ExternallyOwned"
+        required="true"
+        value="Activity.ExternallyOwned"/>
+      <ClaimContactInput
+        claim="Activity.Claim"
+        editable="true"
+        id="Activity_ExternalOwner"
+        label="displaykey.NVV.Activity.NewActivity.Activity.ExternalOwner"
+        value="Activity.ExternalOwner"
+        valueRange="Activity.Claim.RelatedContacts"/>
+      <InputDivider/>
+      <DocumentTemplateInput
+        conversionExpression="PickedValue.TemplateId"
+        editable="true"
+        freeInputEnabled="false"
+        id="Activity_CreateDocument"
+        label="displaykey.NVV.Activity.NewActivity.Activity.CreateDocument"
+        pickLocation="DocumentTemplateSearchPopup.push(Activity.Claim)"
+        value="Activity.DocumentTemplate"/>
+      <PickerInput
+        conversionExpression="PickedValue.getFilename()"
+        editable="true"
+        freeInputEnabled="false"
+        id="EmailTemplate"
+        label="displaykey.Web.Email.EmailTemplate"
+        outputConversion="getDisplayName(VALUE)"
+        pickLocation="PickEmailTemplatePopup.push(new gw.api.email.EmailTemplateSearchCriteria({&quot;Activity&quot;}))"
+        value="Activity.EmailTemplate"/>
+      <InputDivider/>
+      <CCAssigneeInput
+        assignable="Activity"
+        claim="Claim"
+        editable="true"
+        id="Activity_AssignActivity"
+        label="displaykey.NVV.Activity.NewActivity.Activity.AssignActivity"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="AssigneeHolder[0]"
+        valueRange="Activity.SuggestedAssignees"/>
+      <InputDivider/>
+      <InputSetRef
+        def="ActivityDocumentInputSet(Activity)"
+        visible="gw.document.DocumentsUtil.claimHasDocuments(Activity.Claim) and perm.Claim.view(Activity.Claim) and perm.System.viewdocs"/>
+    </InputColumn>
+    <Code><![CDATA[
+function getDisplayName(templateFilename : String) : String {
+        if (templateFilename == null) {
+          return null;
+        }
+        var ets : gw.plugin.email.IEmailTemplateSource
+      try {
+          ets = com.guidewire.pl.system.dependency.PLDependencies.getPluginConfig().getPlugin("IEmailTemplateSource") as
+      gw.plugin.email.IEmailTemplateSource;
+      } catch (e : com.guidewire.pl.system.integration.plugins.PluginException) {
+          throw new gw.api.util.DisplayableException(displaykey.Web.Email.NoTemplateSourcePlugin);
+        }
+        if (ets.getEmailTemplate(templateFilename) == null) {
+          return displaykey.Web.Email.TemplateNotFound;
+        }
+        return ets.getEmailTemplate(templateFilename).getName();
+      }
+      
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

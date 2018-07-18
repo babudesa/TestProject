@@ -1,0 +1,21 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX2200 - Update Jurisdiction Case Number for NY")
+internal class CEXX2200UpdateJurisdictionCaseNumberforNY {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "update_jurisdiction_case_number_NY" )
+for(exp in claim.Exposures){
+if(exp.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS  && exp.Claim.JurisdictionState=="NY"){
+if(gw.api.util.DateUtil.daysBetween( gw.api.util.DateUtil.currentDate(),exp.CreateTime)>= 30){
+      exp.Claim.createActivityFromPattern(null, ap)
+    }
+  }
+}
+/*end00rule*/
+  }
+}

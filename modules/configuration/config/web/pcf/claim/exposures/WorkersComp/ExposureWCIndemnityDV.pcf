@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ExposureWCIndemnityDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="&quot;&quot;"
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="InjuredWorkerSectionInputSet(Exposure, ExpType)"/>
+      <!-- METHOD OF SETTLEMENT SECTION -->
+      <InputSetRef
+        def="MethodOfSettlementInputSet(Exposure)"/>
+      <InputDivider/>
+      <InputSet>
+        <Label
+          label="displaykey.NVV.Exposure.LostWagesSummary.LostWages.Dependents"/>
+        <Input
+          id="NumDependents"
+          label="displaykey.NVV.Exposure.LostWagesSummary.LostWages.NumDependents"
+          value="Exposure.getClaimContactRolesByRole(&quot;claimantdep&quot;).Count"/>
+      </InputSet>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- Loss Description Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+      <TextAreaInput
+        id="Description"
+        numCols="42"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <InputSetRef
+        def="WCOtherCarrierInputSet(Exposure)"/>
+      <InputDivider/>
+      <InputSet>
+        <Label
+          label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.Benefits.WageStatement"/>
+        <Input
+          editable="true"
+          id="Exposure_WageStmtSent"
+          label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtReq"
+          postOnChange="true"
+          requestValidationExpression="dateWageStatementRequestedValidation(VALUE)"
+          value="Exposure.WageStmtSent"/>
+        <Input
+          editable="true"
+          id="Exposure_WageStmtRecd"
+          label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtRecd"
+          postOnChange="true"
+          requestValidationExpression="dateWageStatementRecievedValidation(VALUE)"
+          value="Exposure.WageStmtRecd"/>
+      </InputSet>
+    </InputColumn>
+    <Code><![CDATA[/**
+ * Will show the forbidFutureDate error message when the SatementRequested is a future date and will show
+ * an error when Statement Requested is after Statement Recieved.
+ */
+function dateWageStatementRequestedValidation(value : java.util.Date) : String {
+  
+  var errorString = gw.api.util.DateUtil.validateNonFutureDate(value)
+  
+  if (errorString == null and Exposure.WageStmtRecd != null){
+    errorString = gw.api.util.DateUtil.compareIgnoreTime(value,Exposure.WageStmtRecd) > 0
+      ? displaykey.Java.Validation.Date.DateCannotOccurAfterDate(displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtReq,
+        displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtRecd)
+      : null
+  }
+  return errorString
+}
+
+/**
+ * Will show the forbidFutureDate error message when the Satement Recieved is a future date, and will show
+ * an error when Satement Recieved is before Statement Requested.
+ */
+function dateWageStatementRecievedValidation(value : java.util.Date) : String {
+  
+  var errorString = gw.api.util.DateUtil.validateNonFutureDate(value)
+  
+  if (errorString == null and Exposure.WageStmtSent != null){
+    errorString = gw.api.util.DateUtil.compareIgnoreTime(Exposure.WageStmtSent,value) > 0
+      ? displaykey.Java.Validation.Date.DateCannotOccurAfterDate(displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtReq,
+        displaykey.NVV.Exposure.LostWagesSummary.Exposure.WageStmtRecd)
+      : null
+  }
+  return errorString
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

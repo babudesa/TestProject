@@ -1,0 +1,30 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1160 - Prevent Non-Suplemental Payment if Await Sub Final")
+internal class TVXX1160PreventNonSuplementalPaymentifAwaitSubFinal {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.AllTransactions where trans.Subtype =="Payment" 
+and (trans as Payment).PaymentType != "supplement" and (trans as Payment).New and 
+transactionSet.Claim.checkAwaitingSubFinalPayment((trans as Payment).ReserveLine))==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var rejectTrans:Boolean = true;
+  var origTransSet = (transactionSet.OriginalVersion as TransactionSet)
+  
+  for(origTrans in origTransSet.AllTransactions){
+    if(origTrans.Subtype == "Payment" and exists(trans in transactionSet.AllTransactions where trans.PublicID == origTrans.PublicID and trans.Subtype == "Payment" and
+    (origTrans as Payment).PaymentType == "final" and (trans as Payment).PaymentType == "partial")) {
+      rejectTrans = false;
+    }
+  }
+  
+  if(rejectTrans){
+    transactionSet.reject( "payment", displaykey.Rules.Validation.Transaction.Enterprise.Payment.FinalPaymentAwaitingSubmission, null, null);
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

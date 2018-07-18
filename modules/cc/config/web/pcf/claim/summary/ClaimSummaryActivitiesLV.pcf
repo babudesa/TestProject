@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_activity.xml -->
+  <ListViewPanel
+    id="ClaimSummaryActivitiesLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.api.claim.ClaimUtil.getActivities(Claim)"
+      name="ActivityList"
+      type="ActivityQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="Activity"
+      value="ActivityList">
+      <Row>
+        <Cell
+          fontColor="Activity.Overdue ? &quot;Red&quot; : &quot;&quot;"
+          id="DueDate"
+          label="displaykey.LV.Activity.ClaimSummaryActivities.Activities.DueDate"
+          sortOrder="2"
+          value="Activity.TargetDate"/>
+        <Cell
+          id="Priority"
+          label="displaykey.LV.Activity.ClaimSummaryActivities.Activities.Priority"
+          sortOrder="1"
+          value="Activity.Priority"/>
+        <Cell
+          action="ClaimWorkplan.go(Claim); ActivityDetailForward.goInWorkspace(Claim, Activity)"
+          available="perm.Activity.view(Activity)"
+          id="Subject"
+          label="displaykey.LV.Activity.ClaimSummaryActivities.Activities.Subject"
+          printWidth="3.5"
+          sortBy="Activity.Subject"
+          value="String.isEmpty(Activity.Subject) ? displaykey.LV.Activity.Activities.NoSubject : Activity.Subject"/>
+        <!-- Sort on user, then on queue, then on manual -->
+        <Cell
+          action="UserContactDetailPopup.push(Activity.AssignedUser)"
+          id="AssignedUser"
+          label="displaykey.LV.Activity.ClaimSummaryActivities.Activities.AssignedUser"
+          sortBy="Activity.AssignmentStatus, Activity.AssignedUser, Activity.AssignedQueue"
+          value="Activity.AssigneeDisplayString"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

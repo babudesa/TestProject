@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="VendorsUsedLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <RowIterator
+      editable="true"
+      elementName="Vendor"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="3"
+      toAdd="Investigation.addToSIUVendors(Vendor)"
+      toRemove="Investigation.removeFromSIUVendors(Vendor)"
+      value="Investigation.SIUVendors">
+      <Row>
+        <ClaimContactCell
+          claim="Claim"
+          editable="true"
+          id="Vendor"
+          label="displaykey.NVV.SIU.Vendor"
+          newContactMenu="BlankNewContactPickerMenuItemSet()"
+          required="true"
+          validationExpression="Vendor.Contact.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+          value="Vendor.Contact"
+          valueRange="getVendorList()"/>
+        <Cell
+          editable="true"
+          id="ReasonVended"
+          label="displaykey.NVV.SIU.ReasonVended"
+          value="Vendor.VendReason"/>
+        <Cell
+          editable="true"
+          id="DateAssigned"
+          label="displaykey.NVV.SIU.DateAssigned"
+          validationExpression="Vendor.AssignedDate == null || gw.api.util.DateUtil.compareIgnoreTime(Vendor.AssignedDate, gw.api.util.DateUtil.currentDate() )&lt;=0 ? null : displaykey.Java.Validation.Date.ForbidFuture"
+          value="Vendor.AssignedDate"/>
+        <Cell
+          editable="true"
+          id="DateCompleted"
+          label="displaykey.NVV.SIU.DateComplete"
+          validationExpression="Claim.validateSIUCloseDate(Vendor)"
+          value="Vendor.CompleteDate"/>
+        <Cell
+          editable="true"
+          id="Cost"
+          label="displaykey.NVV.SIU.Cost"
+          value="Vendor.VendorCost"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses java.util.ArrayList
+function getVendorList() :List
+{
+  var vendorList = new ArrayList<Contact>();
+  for(contact in Claim.RelatedContacts)
+  {
+    if(contact.Subtype=="Attorney" || contact.Subtype=="AutoRepairShop" ||contact.Subtype=="CompanyVendor" ||contact.Subtype=="Doctor"
+    ||contact.Subtype=="MedicalCareOrg" ||contact.Subtype=="Ex_GAIVendor" ||contact.Subtype=="LawFirm" ||contact.Subtype=="PersonVendor"
+    ||contact.Subtype=="ex_foreignpervndrattny" ||contact.Subtype=="frgnautorepairshopext" ||contact.Subtype=="ex_foreigncovendor"
+    ||contact.Subtype=="ex_foreignpervndrdoc" ||contact.Subtype=="ex_foreigncovenlawfrm" ||contact.Subtype=="ex_foreigncovenmedorg" 
+    ||contact.Subtype=="ex_foreignpersonvndr")
+    {
+      vendorList.add(contact)
+    }
+  }
+  return vendorList
+}]]></Code>
+  </ListViewPanel>
+</PCF>

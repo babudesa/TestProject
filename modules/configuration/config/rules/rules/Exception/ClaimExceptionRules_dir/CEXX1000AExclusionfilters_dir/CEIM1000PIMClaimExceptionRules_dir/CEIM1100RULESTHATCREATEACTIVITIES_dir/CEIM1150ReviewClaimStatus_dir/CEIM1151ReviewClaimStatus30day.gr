@@ -1,0 +1,45 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir.CEIM1150ReviewClaimStatus_dir
+
+@gw.rules.RuleName("CEIM1151 - Review Claim Status - 30 day")
+internal class CEIM1151ReviewClaimStatus30day {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true
+/*Author: erawe: check for claims that have the No Update on Claim in 30 days
+activity and that have not been changed for 50 days
+By default claim exception will check for claims that have not changed or been
+updated, in this rule we just check the time period
+Date:7/16/10
+Date:2/8/12 - ER - Above statement not altogether true, re-write to match Agri rule
+*/
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*Requirements say they want this to happen every 30 days if there
+is still no activity
+*/
+try{
+  //if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 30)){ 
+  if(claim.isClaimIdle(ScriptParameters.AdjusterInactivityThresholdDays)){
+    var ap = util.custom_Ext.finders.findActivityPattern( "review_claim_status" )
+    var num_of_days:int
+    var clmUpdated :util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+    var updateTime = clmUpdated.getClaimUpdateTime(claim.ClaimNumber).LastUpdateTime
+    var compareDate:DateTime
+  
+    if(updateTime == null){
+      compareDate = claim.CreateTime
+    }else{
+      compareDate = updateTime
+    }
+    
+    num_of_days = gw.api.util.DateUtil.daysBetween( compareDate, gw.api.util.DateUtil.currentDate())
+    
+    claim.createActivity( null, ap, "Review Claim Status - " + num_of_days + " Days" , "Review this claim; there has been no activity for " + num_of_days + " days", null, false, null, null )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

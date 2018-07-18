@@ -1,0 +1,74 @@
+package rules.Presetup.TransactionSetPresetup_dir.TPRXX1000AllBusinessUnit_dir
+
+@gw.rules.RuleName("TPRXX1100 - Add new addresses to contacts")
+internal class TPRXX1100Addnewaddressestocontacts {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Updated April 28 - Raj Akula
+
+transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///Add mail to addresses to parties involved contact and update AB if necessary
+for(check in (transactionSet as CheckSet).Checks){
+  if(check.PayTo==(check.ex_MailTo as java.lang.String)){
+    check.syncPayeeMaitoAddresses()
+  }
+  //Add payee addresses to parties involved contact and update AB if necessary
+  if(check.ex_PayToAddress.New){
+    //if(!exists(address in check.Payees[0].Payee.AllAddresses where address == check.ex_PayToAddress)){
+    if(check.Payees[0].Payee.AllAddresses.where(\a -> a == check.ex_PayToAddress).IsEmpty){
+      var contactAddy:ContactAddress = new ContactAddress();
+      contactAddy.Address = check.ex_PayToAddress
+      contactAddy.Contact = check.Payees[0].Payee;
+      
+      if(contactAddy.Contact.PrimaryAddress == null){
+        contactAddy.Contact.makePrimaryAddress(contactAddy.Address)
+      }
+      else{
+        check.Payees[0].Payee.addToContactAddresses( contactAddy );
+      }
+      if(check.Payees[0].Payee.AddressBookUID != null){
+        check.Payees[0].Payee.updateAddressBook(true)  
+      }
+    } 
+  }
+
+  if(!check.ex_PayToAddress.New 
+  //and exists(address in check.Payees[0].Payee.AllAddresses where address.Changed){
+    and check.Payees[0].Payee.AllAddresses.where(\a -> a.Changed).Count>0){
+    if(check.Payees[0].Payee.AddressBookUID != null){
+      check.Payees[0].Payee.updateAddressBook(true)  
+    }
+  }
+   
+  if(check.ex_MailToAddress.New){
+    //if(!exists(address in check.ex_MailTo.AllAddresses where address == check.ex_MailToAddress)){
+    if(check.ex_MailTo.AllAddresses.where(\a -> a == check.ex_MailToAddress).IsEmpty){
+      var contactAddy:ContactAddress = new ContactAddress();
+      contactAddy.Address = check.ex_MailToAddress
+      contactAddy.Contact = check.ex_MailTo;
+      if(contactAddy.Contact.PrimaryAddress == null){
+        contactAddy.Contact.makePrimaryAddress(contactAddy.Address)
+      }
+      else{
+        check.ex_MailTo.addToContactAddresses( contactAddy );
+      }
+      if(check.ex_MailTo.AddressBookUID != null){
+        check.ex_MailTo.updateAddressBook(true)  
+      }
+    }
+  }
+  
+  if(!check.ex_MailToAddress.New 
+  //and exists(address in check.ex_MailTo.AllAddresses where address.Changed)){
+    and check.ex_MailTo.AllAddresses.where(\a -> a.Changed).Count>0){
+    if(check.ex_MailTo.AddressBookUID != null){
+      check.ex_MailTo.updateAddressBook(true)  
+    }
+  }
+}//end loop through checks
+/*end00rule*/
+/*end00rule*/
+  }
+}

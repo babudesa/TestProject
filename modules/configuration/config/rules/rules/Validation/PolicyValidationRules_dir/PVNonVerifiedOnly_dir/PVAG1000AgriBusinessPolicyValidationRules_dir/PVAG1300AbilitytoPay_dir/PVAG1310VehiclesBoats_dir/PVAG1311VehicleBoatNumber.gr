@@ -1,0 +1,23 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVAG1000AgriBusinessPolicyValidationRules_dir.PVAG1300AbilitytoPay_dir.PVAG1310VehiclesBoats_dir
+
+@gw.rules.RuleName("PVAG1311 - Vehicle/Boat Number")
+internal class PVAG1311VehicleBoatNumber {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///Stephanie Przygocki 2/10/10
+//Stephanie Przygocki 5/25/11 - changed VehicleNumber to RUNumber
+policy.Vehicles.length > 0 and
+exists(veh in policy.Vehicles where veh.RUNumber==null)/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var message = "The vehicle number is required for the Policy to be ready to pay"
+var resultMsg = ""
+
+for(veh in policy.Vehicles){
+  if(veh.RUNumber==null){
+    resultMsg = veh.Vehicle + ": " + message
+    policy.reject( "payment", resultMsg, null, null )
+  }
+}/*end00rule*/
+  }
+}

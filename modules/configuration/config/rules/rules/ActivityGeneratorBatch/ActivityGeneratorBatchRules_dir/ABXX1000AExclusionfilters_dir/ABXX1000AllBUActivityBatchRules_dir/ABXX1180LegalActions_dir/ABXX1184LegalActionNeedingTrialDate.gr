@@ -1,0 +1,91 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir.ABXX1180LegalActions_dir
+
+@gw.rules.RuleName("ABXX1184 - Legal Action Needing Trial Date")
+internal class ABXX1184LegalActionNeedingTrialDate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Conversion Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for converted claims. 
+ */
+
+!claim.Matters.IsEmpty &&
+exists(mat in claim.Matters where
+       mat.TrialDate == null
+       and mat.StatusExt != MatterStatus.TC_CLOSED 
+       and gw.api.util.DateUtil.daysSince(mat.CreateTime.trimToMidnight())
+       >= ScriptParameters.Activity_LegalActionNeedsTrialDate)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+* Defect 8176 - cprakash - This rule has been modified to incorporate the logic of rule
+* ABXX1185 , this rule will fire activity for the first and recurrning instance
+* of Trial Date, if the matter is still open for more than 270 days and
+* there is no trial date entered.
+*/
+
+uses gw.api.util.Logger
+try{ 
+var pattern = util.custom_Ext.finders.findActivityPattern( "no_trial_date_exists" )
+var matters = claim.Matters.where(\ m -> m.TrialDate == null and m.StatusExt != MatterStatus.TC_CLOSED)  
+//checking for matters with open state and trial date as null                  
+for(matter in matters)
+{  
+  var createActivity : boolean = false
+  var daysSinceMatterCreated : int = 0
+  var daysSinceLastCreatedActivity : int =  0
+  var lastActivityCreatedAt : java.util.Date = null
+        
+  if(exists (act in claim.Activities where act.ActivityPattern == pattern and act.Subject.contains(matter.DisplayName) and act.Status=="open" ))
+  {
+     Logger.logDebug("Valid Activity already exists under workplan, skip firing activity on this matter") 
+     //do nothing
+  }
+  else
+  { 
+     Logger.logDebug("Activity may already exists, if so checking for valid activity or not")
+        
+     lastActivityCreatedAt = claim.Activities.where(\ a -> a.ActivityPattern == pattern and a.Subject.contains(matter.DisplayName)).maxBy(\ a -> a.CreateTime).CreateTime
+     daysSinceMatterCreated = gw.api.util.DateUtil.daysSince(matter.CreateTime)
+     
+     if(lastActivityCreatedAt!=null)
+     {
+       Logger.logDebug("Activity exists and is in completed state ")
+       daysSinceLastCreatedActivity = gw.api.util.DateUtil.daysSince(lastActivityCreatedAt) 
+             
+       if(daysSinceLastCreatedActivity >= ScriptParameters.Activity_LegalActionNeedsTrialDate &&
+          daysSinceLastCreatedActivity%ScriptParameters.Activity_LegalActionNeedsTrialDate>=0 && 
+          daysSinceLastCreatedActivity%ScriptParameters.Activity_LegalActionNeedsTrialDate<=3)
+         {
+              Logger.logDebug("Activity is created "+daysSinceLastCreatedActivity+" days ago, Creating a recurring activity again..")
+              createActivity = true
+         }
+    
+     }
+     else
+     {
+        if(daysSinceMatterCreated>=ScriptParameters.Activity_LegalActionNeedsTrialDate)
+        {
+              Logger.logDebug("No activity exists, creating a new one")
+              createActivity = true
+        }
+     }   
+     if(createActivity)
+     {
+        var act = claim.createActivity(null, pattern, pattern.Subject +
+                   " (" + matter.DisplayName +")", pattern.Description + 
+                   " (" + matter.DisplayName +")", pattern.Priority, 
+                   pattern.Mandatory, null, null)
+                   act.Matter = matter
+                   act.AssignedUser = claim.AssignedUser
+      Logger.logDebug("Activity created successfully on Matter ,"+matter.DisplayName)
+          }
+     }
+}
+}
+catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}     /*end00rule*/
+  }
+}

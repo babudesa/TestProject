@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>ISO Authentication and Security</title>
+    <link rel="StyleSheet" href="css/isointegration.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="isointegration.21.01.html#1760486">Insurance Services Office (ISO) Integration</a> : ISO Authentication and Security</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1760486">ISO Authentication and Security</a></div>
+      <div class="B_-_Body"><a name="1520858">All ISO communication across the unsecured Internet uses </a><span class="e_-_emphasis">secure sockets layer</span> (SSL) connections to protect claim data. SSL lets the message sender and receiver confirm the other’s identity and guarantees that no one can eavesdrop on the connection. For example, the ISO destination can be sure it is communicating with ISO because only ISO has the private encryption key associated with the certificate of <span class="cv_-_computer_voice">https://clmsrchwebsvc.iso.com</span>. Similarly, ISO can ensure it is connecting to the correct callback URL because only you have the private key associated with the certificate of the callback URL. Both ISO and you have your own public/private encryption key pairs and associated certificates signed by trusted parties. </div>
+      <div class="B_-_Body"><a name="1512383">The proxy server (not ClaimCenter) is the server that must contain all the appropriate encryption keys and certif</a>icates to ensure safe and secure SSL connections. Therefore, the proxy server is the main component of the ISO architecture that must be “hardened” to avoid unauthorized access to the sensitive private keys.</div>
+      <div class="B_-_Body"><a name="1773923">In the setup described earlier, connections between ClaimCenter and the proxy server are </a><span class="s_-_strong">not</span> encrypted with SSL. This is the typical setup because intranet connections typically are presumed to be secure. Also, this approach reduces server processing load for encrypting SSL/HTTPS data on the ClaimCenter server. Performing SSL encryption within the Java virtual machine is particularly resource intensive. If you have some special reason for encrypting data between ClaimCenter and the proxy server, it is possible. However, SSL configuration is more complex and this approach is not fully discussed in the <span class="bt_-_book_title">ClaimCenter Integration Guide</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1773928">ISO Security with Customer IDs and IP Ranges</a></div>
+      <div class="B_-_Body"><a name="1773930">All requests to ISO must contain a valid </a><span class="e_-_emphasis">ISO customer ID</span>. Because ISO tracks a range of IP addresses for each ISO customer ID, ISO strictly requires requests contain a valid customer ID and comes from your appropriate IP address range. Because requests from ClaimCenter to ISO go through the firewall, ClaimCenter requests appear to come from the IP address of your firewall. As you register with ISO, you tell ISO an IP address range of IP addresses that are valid for proxy server outgoing requests.</div>
+      <div class="B_-_Body"><a name="1582591">Similarly, set up the proxy server so that it rejects responses that do not come from ISO’s IP address. Confirm </a>with ISO precisely what IP addresses are sources of the callback requests. These IP addresses do not need to be associated with externally-identifiable domain names (<span class="e_-_emphasis">DNS names</span>). You can hard code these IP addresses by number in your firewall configuration.</div>
+      <div class="B_-_Body"><a name="1586876">For the ISO </a><span class="e_-_emphasis">production servers</span>, confirm with ISO what IP address from which they send the ISO callbacks for <span class="e_-_emphasis">Message</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">2</span> and <span class="e_-_emphasis">Message</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">3</span>. See <a href="javascript:WWHClickedPopup('integration', 'isointegration.21.04.html#1582539', '');" title="ISO Network Architecture">“ISO Network Architecture”</a>. As of the publication of this documentation, the production IP addresses were 206.208.171.134, 206.208.171.63, and 206.208.171.89. These ISO IP addresses may not have corresponding domain names.</div>
+      <div class="B_-_Body"><a name="1582575">For the ISO </a><span class="e_-_emphasis">testing servers</span> (not the production servers), several different servers can send the callback messages. The IP addresses of the test servers are 206.208.170.244, 206.208.170.250, and 206.208.170.249. These ISO IP addresses may not have corresponding domain names.</div>
+      <div class="B_-_Body"><a name="1581704">Configure any of your firewalls, intermediate computers, or reverse proxies to allow incoming ISO messages </a>from all of these servers.</div>
+      <div class="B_-_Body"><a name="1581705">If you have any problems with this type of configuration, or you think messages are coming in from other IP </a>addresses, immediately contact ISO to confirm any changes in configuration. Do not simply allow incoming messages from other IP addresses that you might see, as they may be unauthorized requests from unauthorized IP&nbsp;addresses.</div>
+      <div class="H3_-_Heading_3"><a name="1512230">ISO Security with Customer Passwords</a></div>
+      <div class="B_-_Body"><a name="1448162">All requests to ISO must contain a password. ISO checks that the password matches the customer ID and rejects </a>the request if it does not match.</div>
+      <div class="B_-_Body"><a name="1762208">Similarly, the </a><span class="cv_-_computer_voice">ISOReceive</span> servlet, which runs as part of ClaimCenter to receive the ISO callback, rejects responses that do not contain the correct customer password. This means that it is vital for you to protect your password in a configuration file on your ClaimCenter server.</div>
+      <div class="B_-_Body"><a name="1582441">After you receive your initial username and password from ISO (typically using email), immediately change the </a>password to avoid serious problems later on due to expiration of ISO-generated passwords. Once you change the password, then the ISO password never expires.</div>
+      <div class="B_-_Body"><a name="1582442">Change your ISO passwords using two different methods:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1582325">Tell ISO what passwords to use. Contact ISO directly using phone or other secure system, not unsecured </a>email.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1582326">After you first log on to the ISO web site, specify a new password.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1582278">If you do not change the initial password immediately, then you must change it before it expires. Changing it </a>immediately is better than waiting since the change itself can disrupt ISO service during the change. After you change the password, you might not receive some responses to some messages because the ClaimCenter password is out of sync with the initial password in the message. </div>
+      <div class="B_-_Body"><a name="1774951">ClaimCenter checks ISO responses to see if they contain the valid password. Because the message contains </a>initial password instead of the new password, ClaimCenter rejects the responses. There is no easy workaround for this type of issue. Therefore, change your ISO password immediately to avoid more serious problems later on. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1582391">After you receive your initial password from ISO, immediately change the password to </a>avoid serious problems related to password expiry. Once changed, the password does not expire. Do not change the password again.</div>
+      <div class="HS_-_Head_Sub"><a name="1774961">Other Notes About Passwords in Callbacks</a></div>
+      <div class="B_-_Body"><a name="1774962">As you request access to testing servers or production servers, the request form that ISO requires includes the </a>question:</div>
+      <div class="CS_-_Code_Single_Line"><a name="1771634">Do you wish to have ISO transmit an ID/Password/Domain back to your system for security?</a></div>
+      <div class="B_-_Body"><a name="1771636">This optional setting specifies whether to include additional information in the content of ISO-initiated </a>messages. This relates to <span class="e_-_emphasis">Message</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">2</span> and <span class="e_-_emphasis">Message</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">3</span> in the diagram in <a href="javascript:WWHClickedPopup('integration', 'isointegration.21.04.html#1582539', '');" title="ISO Network Architecture">“ISO Network Architecture”</a>. </div>
+      <div class="B_-_Body"><a name="1774974">However, these three items are </a><span class="s_-_strong">unrelated</span> to your standard ISO account ID or account password. All three fields in the context of this question (ID, password, and domain) are arbitrary text fields that ISO offers to send with responses for extra authentication. The ClaimCenter ISO receive servlet checks those fields on incoming messages for authentication.</div>
+      <div class="B_-_Body"><a name="1582711">Answer “yes” to that question on the form. Supply the desired password to ISO over the phone, which is their </a>preferred approach for this security information. Guidewire recommends that you prepare for the possibility of eventual support for this feature by supplying text for these items during initial account setup. Remember that these can be three arbitrary text data. They do not need to match any other ISO account information.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

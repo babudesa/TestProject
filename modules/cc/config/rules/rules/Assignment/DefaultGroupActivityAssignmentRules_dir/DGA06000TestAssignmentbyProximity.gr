@@ -1,0 +1,22 @@
+package rules.Assignment.DefaultGroupActivityAssignmentRules_dir
+
+@gw.rules.RuleName("DGA06000 - Test Assignment by Proximity")
+internal class DGA06000TestAssignmentbyProximity {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/gw.api.contact.ProximitySearchPageHelper.useGeocodeUILocally() AND (activity.Claimant.PrimaryAddress != null)/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.geocode.GeocodeScriptHelper;
+
+var usc = GeocodeScriptHelper.setupUserProximitySearch( activity.Claimant.PrimaryAddress, false, 5 );
+
+usc.Username="b";
+
+if (activity.CurrentAssignment.assignUserByProximityWithSearchCriteria( usc, -1, true, activity.CurrentAssignment.AssignedGroup)) {
+  gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Activity(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0,8)))
+  gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(Activity.AssignedUser));
+  actions.exit();
+}/*end00rule*/
+  }
+}

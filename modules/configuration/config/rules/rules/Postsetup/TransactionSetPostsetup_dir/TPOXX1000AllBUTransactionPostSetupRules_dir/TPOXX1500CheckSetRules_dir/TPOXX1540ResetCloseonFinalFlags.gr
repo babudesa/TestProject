@@ -1,0 +1,30 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1540 - Reset Close on Final Flags")
+internal class TPOXX1540ResetCloseonFinalFlags {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///put in p
+//Defects 6285 and 6688 dcarson2 - Commented out setAvailableReserves() function
+
+for(exp in transactionSet.Exposures){
+  if(exists(reserveLine in exp.ReserveLines where reserveLine.CloseOnFinalExt)){
+    for(reserveLine in exp.ReserveLines){
+      if(!reserveLine.hasPendingPayments(transactionSet.Transactions)){
+        //exp.delayedZeroOutReserves(TransactionSet.Transactions);
+         if(exp.getAvailableReserves(reserveLine.CostType, reserveLine.CostCategory) != 0){
+            //exp.setAvailableReserves( reserveLine.CostType, reserveLine.CostCategory, 0, util.custom_Ext.finders.getUserOb( "batchsu" ))
+         }
+        reserveLine.CloseOnFinalExt = false;
+      }
+      else{
+        reserveLine.CloseOnFinalExt = true;
+      }
+    } 
+  }
+}/*end00rule*/
+  }
+}

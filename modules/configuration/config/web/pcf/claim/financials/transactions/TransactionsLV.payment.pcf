@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="TransactionsLV"
+    mode="payment">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="TxnFilterOption"
+      type="financials.ClaimFinancialsTransactionsOption"/>
+    <Variable
+      initialValue="TxnFilterOption.getTransactionsQuery(Claim)"
+      name="TransactionList"
+      type="PaymentViewQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="TransactionView"
+      type="PaymentView"
+      value="TransactionList">
+      <Row>
+        <!-- Explicitly wrap column name once -->
+        <Cell
+          id="Check_ScheduledSendDate"
+          label="displaykey.LV.Financials.Payments.Check.ScheduledSendDate"
+          sortOrder="1"
+          value="TransactionView.Check_ScheduledSendDate"
+          width="75"
+          wrap="false"/>
+        <Cell
+          id="Check_IssueDate"
+          label="displaykey.LV.Financials.Payments.Check.IssueDate"
+          value="TransactionView.Check_IssueDate"
+          wrap="false"/>
+        <Cell
+          action="TransactionViewDetailForward.drilldown(Claim, TransactionView)"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.Payments.Amount"
+          sortBy="TransactionView.ClaimAmount"
+          value="TransactionView.Amount"/>
+        <Cell
+          action="ExposureDetailForward.go(Claim, TransactionView.Exposure)"
+          id="Exposure"
+          label="displaykey.LV.Financials.Payments.Exposure"
+          outputConversion="if (null != VALUE) {return TransactionView.Exposure.getFullDescription();} else {return displaykey.Financials.ReserveLine.NoExposure;}"
+          value="TransactionView.ExposureName"/>
+        <RangeCell
+          id="CoverageType"
+          label="displaykey.LV.Financials.Payments.CoverageType"
+          optionLabel="TransactionView.Exposure.Coverage.covTypeDisplayName()"
+          value="TransactionView.CoverageType"
+          valueRange="TransactionView.Exposure.Coverage.getCoverages()"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.Payments.CostType"
+          value="TransactionView.CostType"/>
+        <!-- <Cell
+          id="CostCategory"
+          label="displaykey.LV.Financials.Payments.CostCategory"
+          value="TransactionView.CostCategory"/> -->
+        <Cell
+          id="InjuryType"
+          label="displaykey.LV.Financials.Transactions.InjuryType"
+          value="Claim.formatInjuryType(TransactionView.WCInjuryTypeExt.DisplayName)"
+          visible="util.WCHelper.isWCorELLossType(Claim)"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Financials.Payments.Status"
+          value="TransactionView.Status"/>
+        <Cell
+          id="PaymentType"
+          label="displaykey.LV.Financials.Payments.PaymentType"
+          value="TransactionView.PaymentType"/>
+        <Cell
+          id="Check_CheckNumber"
+          label="displaykey.LV.Financials.Payments.Check.CheckNumber"
+          value="TransactionView.Check_CheckNumber"/>
+        <Cell
+          id="Check_PayTo"
+          label="displaykey.LV.Financials.Payments.Check.PayTo"
+          value="TransactionView.Check_PayTo"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

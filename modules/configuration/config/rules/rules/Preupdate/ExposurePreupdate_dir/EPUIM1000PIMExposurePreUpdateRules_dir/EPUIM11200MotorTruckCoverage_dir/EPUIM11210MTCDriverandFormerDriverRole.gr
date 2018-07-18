@@ -1,0 +1,46 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUIM1000PIMExposurePreUpdateRules_dir.EPUIM11200MotorTruckCoverage_dir
+
+@gw.rules.RuleName("EPUIM11210 - MTC Driver and Former Driver Role")
+internal class EPUIM11210MTCDriverandFormerDriverRole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* 5/12/16 - Defect 8622 - Rule to handle adding the driver role to the Motor
+   Truck Cargo feature. It will also handle adding the former role to previous
+   driver.
+*/
+not exposure.Closed 
+and (exposure.OriginalVersion as Exposure).DriverExt != exposure.DriverExt/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+
+var originalDriver = (exposure.OriginalVersion as Exposure).DriverExt
+var driver = exposure.DriverExt
+
+  // Update New Driver
+  if (driver!=null){
+    
+    // Add driver role
+    exposure.addRole(ContactRole.TC_DRIVER, driver)
+    
+    // Remove stale former driver role from the new driver
+    exposure.Roles.where(\ c -> c.Role == ContactRole.TC_FORMERDRIVER
+      and c.ClaimContact.Contact == driver)*.removeRoleOnly()
+  }
+
+  // Update Old Driver
+  if (originalDriver!=null){
+
+    // Add former driver role
+    exposure.addRole(ContactRole.TC_FORMERDRIVER, originalDriver)
+    
+    // Remove stale driver role from the old driver
+    exposure.Roles.where(\ c -> c.Role == ContactRole.TC_DRIVER
+      and c.ClaimContact.Contact == originalDriver)*.removeRoleOnly()
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,60 @@
+package rules.Preupdate.ContactPreupdate_dir
+
+@gw.rules.RuleName("COP01000 - Update Check Address")
+internal class COP01000UpdateCheckAddress {
+  static function doCondition(contact : entity.Contact) : boolean {
+    return /*start00rule*/// Note: this condition only evaluates to true when the address changes and the Contact is in sync. Therefore, it will
+// only reliably execute for Contact changes that originate in the Address Book.
+
+// In many configurations of ClaimCenter, only Contacts in the AddressBook are trusted. Therefore, only execute
+// the rule if the contents of this Contact match what is in the Address Book (Contact.Synced == true)
+contact.Synced and
+contact.PrimaryAddress != null and (
+  // This rule should be triggered whenever a Contact's Address changes because the Contact-Address foreign key
+  // is configured with triggersValidation="true".
+  // All of the fields used to construct an address' DisplayName should be tested here.
+  contact.PrimaryAddress.isFieldChanged( "AddressLine1" ) or
+  contact.PrimaryAddress.isFieldChanged( "AddressLine2" ) or
+  contact.PrimaryAddress.isFieldChanged( "AddressLine3" ) or
+  contact.PrimaryAddress.isFieldChanged( "City" ) or
+  contact.PrimaryAddress.isFieldChanged( "State" ) or
+  contact.PrimaryAddress.isFieldChanged( "PostalCode" ) )/*end00rule*/
+  }
+
+  static function doAction(contact : entity.Contact, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.util.DateUtil
+uses gw.transaction.Transaction
+
+var newAddress = contact.PrimaryAddress
+
+// to determine the address' old DisplayName, construct a copy of Contact.PrimaryAddress with the original values
+var simulatedOldAddress = new Address()
+simulatedOldAddress.AddressLine1 = newAddress.getOriginalValue( "AddressLine1" ) as String
+simulatedOldAddress.AddressLine2 = newAddress.getOriginalValue( "AddressLine2" ) as String
+simulatedOldAddress.AddressLine3 = newAddress.getOriginalValue( "AddressLine3" ) as String
+simulatedOldAddress.City = newAddress.getOriginalValue( "City" ) as String
+simulatedOldAddress.State = newAddress.getOriginalValue( "State" ) as State
+simulatedOldAddress.PostalCode = newAddress.getOriginalValue( "PostalCode" ) as String
+// call combine lines to emulate what happens to the payee's address in the check wizard
+var oldAddressDisplayName = simulatedOldAddress.DisplayName.combineLines()
+
+var checkpayees = find(p in CheckPayee where p.PayeeDenorm == contact and exists ( check in CheckPayee.Check where check.ScheduledSendDate != null and check.ScheduledSendDate >= DateUtil.currentDate()))
+for( payee in checkpayees ) {
+  // If the Check for this CheckPayee is already in the current bundle, use that bean (especially since
+  // it may contain changes that are not yet in the database). Otherwise, move the Check returned by
+  // the find expression (which will be in a read-only bundle) and add it to the current bundle (which
+  // should be writable).
+  var check = Transaction.getCurrent().loadByKey( payee.Check as Key ) as Check
+  if( check == null ) {
+    check = payee.Check
+    Transaction.getCurrent().add( check )
+  }
+
+  // Check.isScheduledSendDateInFuture() may have additional logic, so use it to check the send date again here
+  if( check.ScheduledSendDateInFuture  &&
+      check.MailToAddress == oldAddressDisplayName ) {
+    check.MailToAddress = String.makeSafe(newAddress as java.lang.String).combineLines()
+  }
+}/*end00rule*/
+  }
+}

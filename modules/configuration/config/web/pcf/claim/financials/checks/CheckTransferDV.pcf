@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="CheckTransferDV">
+    <Require
+      name="NewCheck"
+      type="Check"/>
+    <Require
+      name="OldCheck"
+      type="Check"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="false"
+      name="displayLink"
+      type="boolean"/>
+    <Variable
+      initialValue="setClaimData()"
+      name="setClaim"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Input
+        id="CheckPrefix"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.Prefix"
+        value="OldCheck.PrefixExt"
+        visible="OldCheck.ManualCheck == true and OldCheck.ex_ManualPaymentMethod != &quot;manual&quot;"/>
+      <Input
+        id="CheckRegion"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.DraftRegion"
+        value="OldCheck.ex_DraftRegion"
+        visible="OldCheck.ManualCheck == true and OldCheck.ex_ManualPaymentMethod  == &quot;manual&quot;"/>
+      <Input
+        id="CheckNumber"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.CheckNumber"
+        value="NewCheck.CheckNumber"/>
+      <Input
+        id="OrigClaim"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.OriginatingClaim"
+        value="OldCheck.Claim.ClaimNumber"/>
+      <ClaimPickerInput
+        conversionExpression="(PickedValue as ClaimSearchView).Claim"
+        editable="true"
+        id="Claim"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.Claim"
+        onChange="validateDestClaim();claimNumberOnPick();checkCurrency()"
+        onPick="validateDestClaim();claimNumberOnPick();checkCurrency()"
+        pickLocation="ClaimSearchPopup.push()"
+        postOnChange="true"
+        required="true"
+        value="NewCheck.Claim"/>
+      <!-- <Input
+        editable="true"
+        id="Comments"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.Comments"
+        value="NewCheck.Comments"/> -->
+      <Label
+        label="displaykey.NVV.Financials.CheckTransfer.Check.Payments.Tip"/>
+      <ListViewInput
+        def="CheckTransferPaymentsLV(NewCheck, Claim, displayLink)"
+        label="displaykey.NVV.Financials.CheckTransfer.Check.Payments">
+        <Toolbar/>
+      </ListViewInput>
+      <InputSetRef
+        def="CheckExchangeRateInputSet(NewCheck,displaykey.NVV.Financials.CheckTransfer.Check.SelectExchangeRate)"
+        visible="NewCheck.Claim != null  &amp;&amp;  NewCheck.Claim.Currency != OldCheck.Claim.Currency  &amp;&amp;  NewCheck.Claim.Currency != NewCheck.Currency and not (OldCheck.Bulked and NewCheck.Claim.Currency == gw.api.util.CurrencyUtil.getReportingCurrency())"/>
+    </InputColumn>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException;
+
+function claimNumberOnPick() {
+  if(NewCheck.Claim != null and OldCheck.Claim.Policy.CurrencyTypeExt==NewCheck.Claim.Policy.CurrencyTypeExt){
+    displayLink = (NewCheck.ClaimInfo.ClaimNumber != Claim.ClaimNumber); 
+  
+    NewCheck.updateCheckForTransfer( NewCheck.Claim, OldCheck);
+    NewCheck.Claim.freezeCurrency()
+
+    for(pay in NewCheck.Payments){
+      if(pay.Exposure != null){
+        GeneralErrorWorksheet.goInWorkspace(displaykey.NVV.Financials.CheckTransfer.Check.ReserveLineChange)
+        break;
+      }
+    }
+  }
+}
+
+function validateDestClaim(){
+//  var claimQuery = gw.api.database.Query.make(entity.Claim)
+//  claimQuery.compare("ClaimNumber", Equals, destClaim)
+//  var claimResultRow = claimQuery.select().AtMostOneRow
+//  if(claimResultRow == null){
+//    return ("Error Message: " + destClaim)
+//  }else{
+//    return null
+//  }
+  if(NewCheck.Claim == null){
+    throw new UserDisplayableException(displaykey.Java.ClaimPickerWidget.Error.NoClaim)
+  }
+}
+
+function setClaimData(){
+  if(NewCheck.Claim == null){
+    NewCheck.Claim = OldCheck.Claim
+  }  
+}
+function checkCurrency()
+{
+   if(OldCheck.Claim.Policy.CurrencyTypeExt!=NewCheck.Claim.Policy.CurrencyTypeExt)
+    	  { 
+    	    throw new UserDisplayableException(displaykey.NVV.Financials.CheckTransfer.Check.PolicyCurrency)    	   
+    	  }
+    	  
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,32 @@
+package rules.Validation.ContactValidationRules_dir.GAICValidationRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVR1700 - Error message on Missing SSN information")
+internal class CVR1700ErrormessageonMissingSSNinformation {
+  static function doCondition(contact : entity.Contact) : boolean {
+    return /*start00rule*/contact typeis Person and (contact.Subtype!= "PersonVendor" or contact.Subtype!= "Adjudicator" or contact.Subtype!= "Attorney" or contact.Subtype!= "Doctor" or 
+                            contact.Subtype!= "UserContact" or contact.Subtype!= "Ex_ForeignPersonVndr" or  contact.Subtype!= "Ex_ForeignPerVndrAttny"or 
+                            contact.Subtype!= "Ex_ForeignPerVndrDoc") 
+
+
+/*end00rule*/
+  }
+
+  static function doAction(contact : entity.Contact, actions : gw.rules.Action) {
+/*start00rule*/if(!(contact as Person).TaxID.Empty && 
+
+      ((contact as Person).Gender == null or 
+            (contact as Person).DateOfBirth == null or 
+                (contact as Person).FirstName == null or 
+                    (contact as Person).LastName == null))
+                    {
+        
+        
+        
+    contact.reject("loadsave",displaykey.Web.ContactDetail.Name.TaxID.SSN.Required, null, null)
+}
+
+
+/*end00rule*/
+  }
+}

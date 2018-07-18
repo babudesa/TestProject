@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="TypeOfLossInputSet"
+    visible="Exposure.ExposureType.Code != (typekey.ExposureType.TC_KR_KIDNAPRANSOM as java.lang.String)">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Label
+      label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.StatTypeOfLoss"
+      visible="true"/>
+    <!-- Karen would like to see the Type of Loss regardless of if it is required or not so 
+      	   we will now show a label explaining why it is not required if it is not
+      	   sprzygocki 2/21/10 -->
+    <TextInput
+      id="TOLError"
+      label="Exposure.getTypeofLossLabel()"
+      numCols="2"
+      value="Exposure.getTypeOfLossNotReqLabel()"
+      visible="Exposure.getTypeOfLossNotReqLabel()!=&quot;&quot;"/>
+    <InputSet
+      id="TypeOfLossValuesInputSet"
+      visible="Exposure.getTypeOfLossNotReqLabel()==&quot;&quot;">
+      <!-- Subline 920  Property Damage - Care Custody Control -->
+      <TypeKeyInput
+        editable="true"
+        id="LossLocation"
+        label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.LossLocation"
+        postOnChange="true"
+        value="Exposure.LossLocationExt"
+        visible="Exposure.Coverage.SublineExt==&quot;920&quot;"/>
+      <!-- Sublines 105 and 106 and 930 Farm Property and Earthquake -->
+      <TypeKeyInput
+        editable="true"
+        filter="filterLossApplicableToContents(VALUE as java.lang.String)"
+        id="LossAppTo"
+        label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.LossAppTo"
+        postOnChange="true"
+        showNoneSelected="false"
+        value="Exposure.LossAppToExt"
+        visible="Exposure.Coverage.SublineExt==&quot;105&quot; || (Exposure.Coverage.SublineExt==&quot;106&quot;) || Exposure.Coverage.SublineExt==&quot;930&quot;"/>
+      <!-- Subline 470  Scheduled Personal Property -->
+      <TypeKeyInput
+        editable="true"
+        id="SPPLossLocation"
+        label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.LossLocation"
+        postOnChange="true"
+        value="Exposure.SPP_LossLocationExt"
+        visible="Exposure.setSublineVisibility()"/>
+      <TypeKeyInput
+        editable="true"
+        id="Deductible"
+        label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.DeductibleApplied"
+        onChange="Exposure.getTOLValues();Exposure.TypeOfLossMostExt=null"
+        postOnChange="true"
+        value="Exposure.DeductibleAppliedExt"
+        visible="Exposure.Claim.LossDate &gt;=ScriptParameters.LossTypeSelectionDate and Exposure.Coverage.SublineExt == &quot;618&quot; and Exposure.ExposureType == &quot;ab_PhysicalDamage&quot; and Exposure.Coverage.State != typekey.State.TC_MA"/>
+      <!-- All Sublines except 920, 930 -->
+      <RangeInput
+        editable="true"
+        id="TypeOfLoss"
+        label="(Exposure.Coverage.SublineExt==&quot;470&quot; || Exposure.Coverage.SublineExt==&quot;920&quot;) ? displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.LossDueTo : displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.TypeOfLoss"
+        required="Exposure.Claim.LossType == &quot;EXECLIABDIV&quot; || Exposure.Claim.LossType == typekey.LossType.TC_MERGACQU || Exposure.Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV ? true : false"
+        sortValueRange="false"
+        value="Exposure.TypeOfLossMostExt"
+        valueRange="Exposure.getTOLValues()"
+        valueWidth="250"
+        visible="Exposure.setTypeOfLossVisibility()"/>
+    </InputSet>
+    <InputDivider
+      visible="Exposure.ExposureType != ExposureType.TC_AV_PERSONALINJURY"/>
+    <Code><![CDATA[function filterLossApplicableToContents(LossApplicableTo : String) : Boolean {
+  var result : Boolean = true;
+  if (Exposure.Coverage.Type == "ab_ORCHVINE" and (LossApplicableTo == "building" or LossApplicableTo == "time"))
+    result = false;
+  return result;
+}]]></Code>
+  </InputSet>
+</PCF>

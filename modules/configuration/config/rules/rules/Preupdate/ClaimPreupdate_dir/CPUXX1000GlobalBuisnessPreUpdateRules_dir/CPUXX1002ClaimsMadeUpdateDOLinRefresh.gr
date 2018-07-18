@@ -1,0 +1,43 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1002 - Claims Made Update DOL in Refresh")
+internal class CPUXX1002ClaimsMadeUpdateDOLinRefresh {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimsMadePolicyExt and
+claim.Policy.isPolicyInRefresh( 1 ) and 
+claim.LossDate != null and
+claim.Policy.ExpirationDate != null and
+gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.ExpirationDate) > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///if Claims Made Claim, DOL after Policy Expiration Date, Features, and Mixed Bag Policy,
+//set DOL = Policy Expiration and generate activity to update DOL.
+
+claim.ReportedDate = claim.LossDate
+claim.LossDate = claim.Policy.ExpirationDate
+
+var startDate = claim.Policy.EffectiveDate
+var endDate = claim.Policy.ExpirationDate
+
+if(claim.Policy.CancellationDate != null and claim.Policy.ex_ReinstatementDate == null){
+ endDate = claim.Policy.CancellationDate 
+}
+
+// Update DOL Indicator with new Loss Date change
+if(claim.LossDate.compareIgnoreTime(endDate)>0 or
+        claim.LossDate.compareIgnoreTime(startDate)<0){ 
+    claim.DOLOutsideIndExt = true 
+} else{ 
+    claim.DOLOutsideIndExt = false
+}
+
+try{
+    var ap = util.custom_Ext.finders.findActivityPattern("update_date_of_loss")
+    claim.createActivityFromPattern(null, ap)
+}catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,35 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEN1000EnvExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUEN1200 - Suspended Claim Activity Env")
+internal class EPUEN1200SuspendedClaimActivityEnv {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.checkDisconnectedFeatures() 
+and exposure.Claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses java.lang.StringBuffer;
+uses java.util.ArrayList;
+
+try{
+  var exposureList : ArrayList = exposure.Claim.Exposures as ArrayList;
+  var disconnectedFeatures : StringBuffer = new StringBuffer();
+
+  if(exposure == (exposureList.get( exposureList.length - 1 ) as Exposure)){ //If current exposure is the last of the exposures on the claim.
+    for(exp in exposureList){
+      
+      //print((exp as Exposure) + " : " + (exp as Exposure).ReconnectFailExt)
+      if((exp as Exposure).ReconnectFailExt){
+        disconnectedFeatures.append( "\n" + (exp as Exposure).DisplayName )
+      }
+    }  
+    exposure.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("suspended_claim"), null,
+    displaykey.Rules.Preupdate.Claim.Equine.SuspendedClaimBody(exposure.Claim.ClaimNumber, 
+    disconnectedFeatures.toString()), null, null, null, null )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, null );
+}
+/*end00rule*/
+  }
+}

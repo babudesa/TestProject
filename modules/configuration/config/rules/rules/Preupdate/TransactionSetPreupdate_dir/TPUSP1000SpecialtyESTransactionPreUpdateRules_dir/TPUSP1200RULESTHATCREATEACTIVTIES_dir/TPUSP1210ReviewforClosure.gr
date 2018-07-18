@@ -1,0 +1,25 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUSP1000SpecialtyESTransactionPreUpdateRules_dir.TPUSP1200RULESTHATCREATEACTIVTIES_dir
+
+@gw.rules.RuleName("TPUSP1210 - Review for Closure")
+internal class TPUSP1210ReviewforClosure {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.isNativeORUpdatedExt() and
+typeof transactionSet == ReserveSet &&
+exists(reserve in (transactionSet as ReserveSet).AllTransactions where
+  reserve.New && reserve.Amount == 35) &&  
+(!exists(act in transactionSet.Claim.Activities where 
+  act.ActivityPattern.Code == "review_closure_spec "))   /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+    
+    var ap = util.custom_Ext.finders.findActivityPattern("review_closure_spec")
+    transactionSet.Claim.createActivityFromPattern(null, ap)
+    
+ 
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(transactionSet, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

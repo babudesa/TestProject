@@ -1,0 +1,15 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1200ValidationatAbilitytoPayLevel_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVWC1220 - Average Weekly Wage")
+internal class CVWC1220AverageWeeklyWage {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.EmploymentData.WageAmount == null &&
+exists(exp in claim.Exposures where exp.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS) 
+// 10.26.15 - cmullin - rule moved to Exposure Validation EVWC1270/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.rejectField( "EmploymentData.WageAmount", "payment", displaykey.Rules.Validation.Claim.WorkersComp.AverageWeeklyWage, null, null )/*end00rule*/
+  }
+}

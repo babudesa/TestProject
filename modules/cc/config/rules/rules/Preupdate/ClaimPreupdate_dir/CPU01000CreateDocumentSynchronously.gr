@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPU01000 - Create Document Synchronously")
+internal class CPU01000CreateDocumentSynchronously {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isFieldChanged( "Description" )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses gw.document.DocumentProduction;
+
+var document : Document = new Document(claim);
+document.Claim = claim;
+document.Name = displaykey.Rules.PreUpdate.Claim.CreateByRule;
+document.Type = "letter_received";
+document.Status = "draft";
+//...possibly more property setting
+
+var contextObjects = new java.util.HashMap();
+contextObjects.put("Claim", claim);
+contextObjects.put("To", claim.maincontact);
+contextObjects.put("From", claim.AssignedUser.Contact);
+contextObjects.put("CC", null);
+
+DocumentProduction.createAndStoreDocumentSynchronously("SampleAcrobat.pdf", contextObjects, document);/*end00rule*/
+  }
+}

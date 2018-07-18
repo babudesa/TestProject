@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir.CLV10000Catastrophe_dir
+
+@gw.rules.RuleName("CLV10100 - Check Perils")
+internal class CLV10100CheckPerils {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// if no Perils are listed on the Catastrophe, error will not be created
+Claim.Catastrophe.Perils.length > 0 and
+  not exists(Peril in Claim.Catastrophe.Perils where
+    (Peril.LossCause == Claim.LossCause
+     and Peril.LossType == Claim.LossType))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ruleName = gw.api.util.StringUtil.substring( actions.getRule().DisplayName, 0,8);
+Claim.reject( null, null, "newloss", displaykey.Warning.Catastrophe.LossCauseNotConsistant(ruleName, Claim.LossCause.Description));/*end00rule*/
+  }
+}

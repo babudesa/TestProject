@@ -1,0 +1,32 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUAG1000AgriBusinessTransactionPreUpdateRules_dir.TPUAG2000AgriExcessUmbrellaPreUpdateRules_dir
+
+@gw.rules.RuleName("TPUAG2100 - Status Update to Underwriting")
+internal class TPUAG2100StatusUpdatetoUnderwriting {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/// change from factor reserve to case reserve
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/// generate 'Generate a status update to underwriting' immediately to the claim owner..
+// feature level activity
+try {
+  var ap = util.custom_Ext.finders.findActivityPattern("status_update_underwriting")
+  var newReserve: Reserve
+     
+  for (trans in transactionSet.AllTransactions){
+    if (trans.Subtype == "Reserve" && trans.New && !(trans as Reserve).FactorReserveExt){
+      if (!exists(act in transactionSet.Claim.Activities
+          where act.ActivityPattern.Code == "status_update_underwriting" 
+          && act.Exposure == trans.Exposure)){
+        transactionSet.Claim.createActivityFromPattern(trans.Exposure, ap) 
+      }
+    }
+  }
+}
+catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( transactionSet.Claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,41 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir
+
+@gw.rules.RuleName("TAP01000 - PIP")
+internal class TAP01000PIP {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype=="checkset" and
+exists (transaction in transactionSet.AllTransactions where
+	transaction.CostType=="claimcost")/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for (each in transactionSet.AllTransactions) {
+  var error : String = null
+  if (each.Exposure.IncidentLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.ExposureIncident
+  } else if (each.Exposure.ExposureLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.ExposureExposure
+  } else if (each.Exposure.PIPNonMedAggLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.PIPNonMedicalAggregate
+  } else if (each.Exposure.PIPESSLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.PIPEssentialServicesAggregate
+  } else if (each.Exposure.PIPPersonAggLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.PIPPerPersonAggregate
+  } else if (each.Exposure.PIPClaimAggLimitReached) {
+    error = displaykey.Rules.TransactionApproval.LimitExceeded.PIPClaimAggregate
+  }
+  if (error != null) {
+    // Make sure supervisor has not already approved this TransactionSet
+    if (not exists (act in transactionSet.Claim.Activities
+           where (act.TransactionSet == transactionSet
+           and act.ActivityPattern.Code == "approve_payment"
+           and act.Approved 
+           and act.AssignedUser == each.Exposure.AssignedGroup.Supervisor))) {
+      if (transactionSet.requireApproval(error)) {
+        actions.exit()
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

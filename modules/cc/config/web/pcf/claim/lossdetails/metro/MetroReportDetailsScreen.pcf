@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Screen
+    id="MetroReportDetailsScreen">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="metroReport"
+      type="MetroReport"/>
+    <Toolbar>
+      <EditButtons
+        editVisible="metroReport.Status == &quot;new&quot; or metroReport.Status == &quot;insufficientData&quot;"
+        pickValue="metroReport"
+        updateVisible="true"/>
+    </Toolbar>
+    <DetailViewPanel
+      id="MetroReportDetailsDV">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.MetroReportDV.Summary"/>
+        <Input
+          editable=" MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroReportType"
+          label="displaykey.Web.MetroReportDV.Summary.Type"
+          onChange="if( MetroReport.MetroReportType == &quot;E&quot; or MetroReport.MetroReportType == &quot;H&quot; ) {                                 if (MetroReport.LossType ==&quot;wc&quot;) {                                   MetroReport.DeceasedContact = claim.claimant;                                 } else {                                   MetroReport.DeceasedContact = claim.Insured;                                 }                           } else {                                 MetroReport.DeceasedContact = null;                   }"
+          postOnChange="true"
+          required="true"
+          value="MetroReport.MetroReportType"/>
+        <TextInput
+          id="MetroOrderBy"
+          label="displaykey.Web.MetroReportDV.Summary.OrderBy"
+          value="MetroReport.CreateUser"/>
+        <Input
+          editable="true"
+          id="ForceDuplicate"
+          label="displaykey.Web.MetroReportDV.Summary.ForceDuplicate"
+          value="MetroReport.ForceDuplicate"/>
+        <Input
+          id="MetroDateSent"
+          label="displaykey.Web.MetroReportDV.Summary.SentDate"
+          value="MetroReport.CreateTime"
+          visible="MetroReport.Status != &quot;new&quot;"/>
+        <Input
+          id="MetroDateReceived"
+          label="displaykey.Web.MetroReportDV.Summary.ReceivedDate"
+          value="MetroReport.ReceivedDate"
+          visible="MetroReport.Status != &quot;new&quot;"/>
+        <Input
+          id="MetroFailedReason"
+          label="displaykey.Web.MetroReportDV.Summary.FailedReason"
+          value="MetroReport.ErrorMessage"
+          visible="MetroReport.ErrorMessage != null and MetroReport.ErrorMessage != &quot;&quot;"/>
+        <Input
+          id="MetroStatus"
+          label="displaykey.Web.MetroReportDV.Summary.Status"
+          value="MetroReport.Status"/>
+        <ContentInput
+          id="DeferralReason"
+          label="displaykey.Web.MetroReportDV.Summary.DeferralReason"
+          visible="metroReport.DelayMemoURL != null">
+          <Link
+            action="MetroURL.push(metroReport.DelayMemoURL)"
+            id="DeferralReasonLink"
+            label="displaykey.Web.MetroReportDV.Summary.DeferralReasonLink"/>
+        </ContentInput>
+        <ContentInput
+          id="HoldReason"
+          label="displaykey.Web.MetroReportDV.Summary.HoldReason"
+          visible="metroReport.InformationURL != null">
+          <Link
+            action="MetroURL.push(metroReport.InformationURL)"
+            id="HoldReasonLink"
+            label="displaykey.Web.MetroReportDV.Summary.HoldReasonLink"/>
+        </ContentInput>
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.MetroReportDV.ReportInformation"/>
+        <InputSet
+          visible="MetroReport.MetroReportType == &quot;E&quot; or MetroReport.MetroReportType == &quot;H&quot;">
+          <ClaimContactInput
+            claim="claim"
+            editable="metroReport.Status == &quot;new&quot; or metroReport.Status == &quot;insufficientData&quot;"
+            id="MetroDeceased"
+            label="displaykey.Web.MetroReportDV.ReportInformation.deceased"
+            newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+            required="metroReport.MetroReportType == &quot;E&quot; or metroReport.MetroReportType == &quot;H&quot;"
+            value="metroReport.DeceasedContact"
+            valueRange="claim.RelatedPersonArray"/>
+          <DateInput
+            dateFormat="short"
+            editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+            id="MetroDeceasedDOD"
+            label="displaykey.Web.MetroReportDV.ReportInformation.deceased.DateOfDeath"
+            required="MetroReport.MetroReportType == &quot;E&quot; or MetroReport.MetroReportType == &quot;H&quot;"
+            value="MetroReport.DateOfDeath"/>
+        </InputSet>
+        <TextAreaInput
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroLossDescription"
+          label="displaykey.Web.MetroReportDV.ReportInformation.LossDescription"
+          numCols="40"
+          numRows="4"
+          required="MetroReport.MetroReportType == &quot;O&quot;"
+          value="MetroReport.LossDescription"/>
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.MetroReportDV.Investigating"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_Name"
+          label="displaykey.Web.MetroReportDV.Investigating.AgencyName"
+          value="MetroReport.AgentName"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_Type"
+          label="displaykey.Web.MetroReportDV.Investigating.AgencyType"
+          value="MetroReport.MetroAgency"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_Precinct"
+          label="displaykey.Web.MetroReportDV.Investigate.Precinct"
+          value="MetroReport.Precinct"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_ReportNumber"
+          label="displaykey.Web.MetroReportDV.Investigate.ReportNumber"
+          value="MetroReport.ReportNumber"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_OfficerNumber"
+          label="displaykey.Web.MetroReportDV.Investigate.Officer"
+          value="MetroReport.OfficerName"/>
+        <DateInput
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgency_DateReported"
+          label="displaykey.Web.MetroReportDV.Investigate.ReportDate"
+          value="MetroReport.DateReported"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgencyCity"
+          label="displaykey.Web.MetroReportDV.Investigate.AgencyCity"
+          required="true"
+          value="MetroReport.AgentCity"/>
+        <Input
+          editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+          id="MetroInvestAgencyState"
+          label="displaykey.Web.MetroReportDV.Investigate.AgencyState"
+          required="true"
+          value="MetroReport.AgentState"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+        <InputDivider/>
+        <InputSet
+          visible="MetroReport.LossType ==&quot;auto&quot;">
+          <Label
+            label="displaykey.Web.MetroReportDV.Vehicle"/>
+          <RangeInput
+            editable="MetroReport.Status == &quot;new&quot; or MetroReport.Status == &quot;insufficientData&quot;"
+            id="InsuredVehicle"
+            label="displaykey.Web.MetroReportDV.Vehicle.Insured"
+            required="MetroReport.MetroReportType == &quot;A&quot; or MetroReport.MetroReportType == &quot;M&quot; or                                   MetroReport.MetroReportType == &quot;D&quot; or MetroReport.MetroReportType == &quot;R&quot; or                                   MetroReport.MetroReportType == &quot;S&quot;"
+            value="MetroReport.VehicleIncident"
+            valueRange="Claim.VehicleIncidentsOnly"/>
+          <Input
+            id="InsuredDriverName"
+            label="displaykey.Web.MetroReportDV.Vehicle.Insured.DriverName"
+            value="metroReport.VehicleIncident.Driver">
+            <Reflect
+              triggerIds="InsuredVehicle"
+              value="VALUE.Driver"/>
+          </Input>
+          <Input
+            id="InsuredDriverAddress"
+            label="displaykey.Web.MetroReportDV.Vehicle.Insured.DriverAddress"
+            value="MetroReport.VehicleIncident.driver.PrimaryAddressDisplayValue">
+            <Reflect
+              triggerIds="InsuredVehicle"
+              value="VALUE.driver.PrimaryAddressDisplayValue"/>
+          </Input>
+          <InputDivider/>
+          <RangeInput
+            editable="MetroReport.Status == &quot;new&quot;  or MetroReport.Status == &quot;insufficientData&quot;"
+            id="ThirdPartyVehicle"
+            label="displaykey.Web.MetroReportDV.Vehicle.ThirdParty"
+            required="MetroReport.MetroReportType == &quot;M&quot;"
+            value="MetroReport.ThirdPartyVehicle"
+            valueRange="Claim.VehicleIncidentsOnly"/>
+          <Input
+            id="ThirdPartyDriverName"
+            label="displaykey.Web.MetroReportDV.Vehicle.ThirdParty.DriverName"
+            value="metroReport.ThirdPartyVehicle.Driver">
+            <Reflect
+              triggerIds="ThirdPartyVehicle"
+              value="VALUE.Driver"/>
+          </Input>
+          <Input
+            id="ThirdPartyDriverAddress"
+            label="displaykey.Web.MetroReportDV.Vehicle.ThirdParty.DriverAddress"
+            value="MetroReport.ThirdPartyVehicle.driver.PrimaryAddressDisplayValue">
+            <Reflect
+              triggerIds="ThirdPartyVehicle"
+              value="VALUE.driver.PrimaryAddressDisplayValue"/>
+          </Input>
+        </InputSet>
+      </InputColumn>
+    </DetailViewPanel>
+  </Screen>
+</PCF>

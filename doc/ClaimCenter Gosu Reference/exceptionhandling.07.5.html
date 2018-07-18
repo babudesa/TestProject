@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Object Lifecycle Management (‘using’ Clauses)</title>
+    <link rel="StyleSheet" href="css/exceptionhandling.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="exceptionhandling.07.1.html#1457329">Exception Handling</a> : Object Lifecycle Management (‘using’ Clauses)</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1457329">Object Lifecycle Management (‘using’ Clauses)</a></div>
+      <div class="B_-_Body"><a name="1468249">If you have an object with a lifecycle of a finite extent of code, you can simplify your code with the new </a><span class="cv_-_computer_voice">using</span> statement. The <span class="cv_-_computer_voice">using</span> statement is a more compact and less error-prone way of working with resources than using <span class="cv_-_computer_voice">try</span>/<span class="cv_-_computer_voice">catch</span>/<span class="cv_-_computer_voice">finally</span> clauses. The cleanup always occurs without requiring a separate <span class="cv_-_computer_voice">finally</span> clause, nor do you need to explicitly check whether resources have <span class="cv_-_computer_voice">null</span> values. The <span class="cv_-_computer_voice">using</span> statement also simplifies synchronization and locking, discussed more later in this section.</div>
+      <div class="B_-_Body"><a name="1468264">For example, to use an output stream typically code would open the stream, then use it, then close it to dispose of </a>related resources. If something goes wrong while using the output stream, your code must close the output stream and perhaps check whether it successfully opened before closing it. In Gosu (or Java) you can use a <span class="cv_-_computer_voice">try</span>/<span class="cv_-_computer_voice">finally</span> block like the following to clean up the stream:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457336">OutputStream os = SetupMyOutputStream() // insert your code that creates your output stream</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457337">try {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457338">&nbsp;</a>&nbsp;//do something with the output stream </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457339">} </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457340">&nbsp;</a>&nbsp;finally {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457341">&nbsp;</a>&nbsp;os.close();</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457342">}</a></PRE>
+      <div class="B_-_Body"><a name="1457343">You can simplify your code using the Gosu </a><span class="cv_-_computer_voice">using</span> statement as follows:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457344">using( var os = SetupMyOutputStream() ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457345">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457346">     //do something with the output stream</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457347">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1457348">} // Gosu disposes of the stream after it completes or if there is an exception</a></PRE>
+      <div class="B_-_Body"><a name="1468304">The basic form of a using clause is as follows:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1468305">using( </a><span class="pc_-_parameter_in_code">ASSIGNMENT_OR_LIST_OF_STATEMENTS</span> )</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1468306">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1468149">  // do something here</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1468150">}</a></PRE>
+      <div class="B_-_Body"><a name="1468151">The parentheses after the </a><span class="cv_-_computer_voice">using</span> keyword can contain either a Gosu expression or a comma-delimited list of one or more Gosu statements. Gosu runs any statements (including variable assignment) at run time and uses the result as an object to manage in the <span class="cv_-_computer_voice">using</span> clause. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1468319">You do not need an additional </a><span class="cv_-_computer_voice">return</span> statement to pass the value to the <span class="cv_-_computer_voice">using</span> clause. Also note that the statements must be delimited with commas, not semicolons.</div>
+      <div class="B_-_Body"><a name="1466690">There are several categories of objects that work with the </a><span class="cv_-_computer_voice">using</span> keyword: <span class="e_-_emphasis">disposable</span> objects, <span class="e_-_emphasis">closeable</span> objects, and <span class="e_-_emphasis">reentrant</span> objects. If you try to use an object that does not satisfy the requirements of one of these categories, Gosu displays a compile error. The following subtopics discuss these three types of objects.</div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1468337">If Gosu detects that an object is more than one category, at run time Gosu considers the object only </a>one category, defined by the following precedence: <span class="e_-_emphasis">disposable</span>, <span class="e_-_emphasis">closeable</span>, <span class="e_-_emphasis">reentrant</span>. For example, if an object has a <span class="cv_-_computer_voice">dispose</span> and <span class="cv_-_computer_voice">close</span> method, Gosu only calls the <span class="cv_-_computer_voice">dispose</span> method. </div>
+      <div class="B_-_Body"><a name="1469477">You can return values from </a><span class="cv_-_computer_voice">uses</span> clauses using the standard <span class="cv_-_computer_voice">return</span> statement, discussed further in <a href="javascript:WWHClickedPopup('gosu', 'exceptionhandling.07.5.html#1469250', '');" title="Object Lifecycle Management (‘using’ Clauses)">“Returning Values from ‘using’ Clauses”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="1466707">Disposable Objects</a></div>
+      <div class="B_-_Body"><a name="1466719">Disposable objects are objects that Gosu can dispose to release all system resources. For Gosu to recognize a </a>valid disposable object, the object must have one of the following attributes:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1467046">Implements the Gosu interface called </a><span class="cv_-_computer_voice">IDisposable</span>, which contains only a single method called <span class="cv_-_computer_voice">dispose</span>. This method takes no arguments. Guidewire recommends always using a type that implements <span class="cv_-_computer_voice">IDisposable</span> if possible due to faster run time performance.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1467127">Has a </a><span class="cv_-_computer_voice">dispose</span> method even if it does not implement the <span class="cv_-_computer_voice">IDisposable</span> interface. This approach works but is slower at run time because Gosu must use reflection (examining the type at run time) to find the method.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1467128">A type’s </a><span class="cv_-_computer_voice">dispose</span> method must release all the resources that it owns. The <span class="cv_-_computer_voice">dispose</span> method must release all resources owned by its base types by calling its parent type’s <span class="cv_-_computer_voice">dispose</span> method. </div>
+      <div class="B_-_Body"><a name="1467181">To help ensure that resources clean up appropriately even under error conditions, you must design your </a><span class="cv_-_computer_voice">dispose</span> method such that Gosu can call it multiple times without throwing an exception. In other words, if the stream is already closed, then invoking this method has no effect nor throw an exception. </div>
+      <div class="H2_-_Heading_2"><a name="1466986">Closeable Objects and ‘using’ Clauses</a></div>
+      <div class="B_-_Body"><a name="1467000">Closeable objects include objects such as data streams, reader or writer objects, and data channels. Many of the </a>objects in the package <span class="cv_-_computer_voice">java.io</span> are closeable objects. For Gosu to recognize a valid closeable object, the object must have one of the following attributes:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1467221">Implements the Java interface </a><span class="cv_-_computer_voice">java.io.ICloseable</span>, which contains only a single method called <span class="cv_-_computer_voice">close</span>. This method takes no arguments. Guidewire recommends using a type that implements <span class="cv_-_computer_voice">ICloseable</span> if possible due to faster run time performance.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1467253">Has a </a><span class="cv_-_computer_voice">close</span> method even if it does not implement the <span class="cv_-_computer_voice">ICloseable</span> interface. This approach works but is slower at run time because Gosu must use reflection (examining the type at run time) to find the method.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1467302">A type’s </a><span class="cv_-_computer_voice">close</span> method must release all the resources that it owns. The <span class="cv_-_computer_voice">close</span> method must release all resources owned by its base types by calling its parent type’s <span class="cv_-_computer_voice">dispose</span> method. </div>
+      <div class="B_-_Body"><a name="1467303">To help ensure that resources clean up appropriately even under error conditions, you must design your </a><span class="cv_-_computer_voice">dispose</span> method such that Gosu can call it multiple times without throwing an exception. In other words, if the object is already closed, then invoking this method must have no effect nor throw an exception. </div>
+      <div class="B_-_Body"><a name="1467836">The following example creates a new Java file writer instance (</a><span class="cv_-_computer_voice">java.io.FileWriter</span>) and uses the more verbose <span class="cv_-_computer_voice">try</span> and <span class="cv_-_computer_voice">finally</span> clauses:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467860">var writer = new FileWriter( "c:\\temp\\test1.txt" )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467861">try</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467862">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467863">  writer.write( "I am text within a file." )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467864">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467865">finally</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467866">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467867">  if( writer != null )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467868">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467869">    writer.close()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467870">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467871">}</a></PRE>
+      <div class="B_-_Body"><a name="1467872">In contrast, you can write more readable Gosu code using the </a><span class="cv_-_computer_voice">using</span> keyword:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467873">using( var writer = new FileWriter( "c:\\temp\\test1.txt" ) )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467874">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467875">  writer.write( "I am text within a file." )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467876">}</a></PRE>
+      <div class="B_-_Body"><a name="1467877">You can list multiple </a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467878">using( var reader = new FileReader( "c:\\temp\\usingfun.txt" ),</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467879">       var writer = new FileWriter( "c:\\temp\\usingfun2.txt" ) )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467880">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467881">  writer.write( StreamUtil.getContent( reader ) )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1467849">}</a></PRE>
+      <div class="HS_-_Head_Sub"><a name="1469344">JDBC Resources and Using Clauses</a></div>
+      <div class="B_-_Body"><a name="1469345">The following example shows how to use a using clause with a JDBC (Java Database Connection) object.</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469346">uses java.sql.*</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469387">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469401">...</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469394">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469369">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469380">function sampleJdbc( con : Connection )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469347">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469348">    using( var stmt = con.createStatement(),</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469349">           var rs = stmt.executeQuery( "SELECT a, b FROM TABLE2" ) )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469350">    {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469351">      rs.moveToInsertRow()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469352">      rs.updateString( 1, "AINSWORTH" )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469353">      rs.insertRow()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469354">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469355">  }</a></PRE>
+      <div class="H2_-_Heading_2"><a name="1457358">Reentrant Objects and ‘using’ Clauses</a></div>
+      <div class="B_-_Body"><a name="1478734">Re-entrant objects are objects that help manage safe access to data that is shared by re-entrant or concurrent code </a>execution. For example, if you must store data that is shared by multiple threads, ensure that you protect against concurrent access from multiple threads to prevent data corruption. The most prominent type of shared data is class <span class="e_-_emphasis">static variables</span>, which are variables that are stored on the Gosu class itself.</div>
+      <div class="B_-_Body"><a name="1478736">For Gosu to recognize a valid reentrant object, the object must have one of the following attributes:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1478737">Implements the </a><span class="cv_-_computer_voice">java.util.concurrent.locks.Lock</span> interface. This includes the Java classes in that pacakge: <span class="cv_-_computer_voice">ReentrantLock</span>, <span class="cv_-_computer_voice">ReadWriteLock</span>, <span class="cv_-_computer_voice">Condition</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1478738">Casted to the Gosu interface </a><span class="cv_-_computer_voice">IMonitorLock</span>. You can cast <span class="s_-_strong">any</span> arbitrary object to <span class="cv_-_computer_voice">IMonitorLock</span>. This is useful to cast Java monitor locks to this Gosu interface. For more information about monitor locks, refer to:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1478739">http://en.wikipedia.org/wiki/Monitor_(synchronization)</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1478740">Implements the Gosu class </a><span class="cv_-_computer_voice">gw.lang.IReentrant</span>. This interface contains two methods with no arguments: <span class="cv_-_computer_voice">enter</span> and <span class="cv_-_computer_voice">exit</span>. Your code must properly lock or synchronize data access as appropriate during the <span class="cv_-_computer_voice">enter</span> method and release any locks in the <span class="cv_-_computer_voice">exit</span> method.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1478741">For blocks of code using locks (code that implements </a><span class="cv_-_computer_voice">java.util.concurrent.locks.Lock</span>), a <span class="cv_-_computer_voice">using</span> clause simplifies your code. </div>
+      <div class="B_-_Body"><a name="1478742">The following code uses the </a><span class="cv_-_computer_voice">java.util.concurrent.locks.ReentrantLock</span> class using a longer (non-recommended) form:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478743">// in your class variable definitions...</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478744">var _lock : ReentrantLock = new ReentrantLock()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478745">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478746">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478747">function useReentrantLockOld() {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478748">&nbsp;</a>&nbsp;_lock.lock()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478749">&nbsp;</a>&nbsp;try { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478750">      // do your main work here</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478751">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478752">&nbsp;</a>&nbsp;finally {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478753">&nbsp;</a>&nbsp;&nbsp;&nbsp;_lock.unlock()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478754">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478755">}</a></PRE>
+      <div class="B_-_Body"><a name="1478756">In contrast, you can write more readable Gosu code using the </a><span class="cv_-_computer_voice">using</span> keyword:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478757">// in your class variable definitions...</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478758">var _lock : ReentrantLock = new ReentrantLock()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478759">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478760">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478761">function useReentrantLockNew() {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478762">&nbsp;</a>&nbsp;using( _lock ) { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478763">&nbsp;</a>&nbsp;&nbsp;&nbsp;// do your main work here</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478764">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478765">}</a></PRE>
+      <div class="B_-_Body"><a name="1478766">Similarly, you can cast any object to a monitor lock by adding “</a><span class="cv_-_computer_voice">as</span><span class="cv_-_computer_voice">&nbsp;</span><span class="cv_-_computer_voice">IMonitorLock</span>” after the object. For example, the following method call code uses itself (using the special keyword <span class="cv_-_computer_voice">this</span>) as the monitor lock:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478767">function monitorLock() {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478768">&nbsp;</a>&nbsp;using( this as IMonitorLock ) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478769">      // do stuff</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478770">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478771">  }</a></PRE>
+      <div class="B_-_Body"><a name="1478773">This approach effectively is equivalent to a </a><span class="cv_-_computer_voice">synchronized</span> block in the Java language.</div>
+      <div class="HS_-_Head_Sub"><a name="1478775">Assigning Variables Inside ‘using’ Expression Declaration</a></div>
+      <div class="B_-_Body"><a name="1478776">The using clause supports assigning a variable inside the declaration of the </a><span class="cv_-_computer_voice">using</span> clause.</div>
+      <div class="B_-_Body"><a name="1478777">This is useful if the expression that you pass to the </a><span class="cv_-_computer_voice">using</span> expression is both:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1478778">something other than a single variable </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1478779">you want to reference it from inside the statement list inside the </a><span class="cv_-_computer_voice">using</span> clause declaration</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1478780">For example, suppose you call a method that returns a file handle and you pass that to the </a><span class="cv_-_computer_voice">using</span> clause as the lock. From within the <span class="cv_-_computer_voice">using</span> clause contents, you probably want to access the file so you can iterate across its contents. </div>
+      <div class="B_-_Body"><a name="1478781">To simplify this kind of code, assign the variable before the expression using the </a><span class="cv_-_computer_voice">var</span> keyword:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1478782">using ( var </a><span class="pc_-_parameter_in_code">VARIABLE_NAME</span> = <span class="pc_-_parameter_in_code">EXPRESSION</span> ) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478783">&nbsp;</a>&nbsp;// code that references the <span class="pc_-_parameter_in_code">VARIABLE_NAME</span> variable</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478784">}</a></PRE>
+      <div class="B_-_Body"><a name="1478785">For example:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="1478786">using( var out = new FileOutputStream( this, false ) ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478787">&nbsp;</a>&nbsp;out.write( content )</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1478788">}</a></PRE>
+      <div class="HS_-_Head_Sub"><a name="1478789">Passing Multiple Items to the ‘using’ Statement</a></div>
+      <div class="B_-_Body"><a name="1478790">You can pass multiple items in the using clause expression. Separate each item by a comma character.</a></div>
+      <div class="B_-_Body"><a name="1478791">For example, </a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478792">function useReentrantLockNew() {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478793">&nbsp;</a>&nbsp;using( _lock1, _lock2, _lock3) { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478794">&nbsp;</a>&nbsp;&nbsp;&nbsp;// do your main work here</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478795">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478796">}</a></PRE>
+      <div class="B_-_Body"><a name="1478797">You can combine the multiple item feature with the ability to assign variables. For more about assigning vari</a>ables, see <a href="javascript:WWHClickedPopup('gosu', 'exceptionhandling.07.5.html#1478775', '');" title="Object Lifecycle Management (‘using’ Clauses)">“Assigning Variables Inside ‘using’ Expression Declaration”</a> .</div>
+      <div class="B_-_Body"><a name="1478801">For example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478802">using( var lfc = new FileInputStream(this).Channel,</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478803">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var rfc = new FileInputStream(that).Channel ) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478804">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478805">      var lbuff  = ByteBuffer.allocate(bufferSize)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478806">      var rbuff  = ByteBuffer.allocate(bufferSize)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478807">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478808">      while (lfc.position() &lt; lfc.size()) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478809">        lfc.read(lbuff)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478810">        rfc.read(rbuff)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478811">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478812">        if (not Arrays.equals(lbuff.array(), rbuff.array())) </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478813">        {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478814">          return true</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478815">        }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478816">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478817">        lbuff.clear()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478818">        rbuff.clear()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478819">      }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478820">      return false</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1478821">    }</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1478822">  }</a></PRE>
+      <div class="B_-_Body"><a name="1478823">Gosu ensures that all objects are properly cleaned up. In other words, for each object to create or resource to </a>acquire, if it creates or acquires successfully, Gosu releases, closes, or disposes the object. Also note that if one of the resources fails to create, Gosu does not attempt to acquire other resources in later-appearing items in the command-seperated list. Instead, Gosu simply releases the ones that did succeed. </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1469829">There is much more information about concurrency in the section </a><a href="javascript:WWHClickedPopup('gosu', 'concurrency.24.1.html#1441309', '');" title="Concurrency">“Concurrency”</a>, including other concurrency APIs.</div>
+      <div class="B_-_Body"><a name="1474774">The profiler tag class (</a><span class="cv_-_computer_voice">gw.api.profiler.ProfilerTag</span>) implements the <span class="cv_-_computer_voice">IReentrant</span> interface. This class adds hints to the Gosu profiler which actions happen within a block of code. For details see <a href="javascript:WWHClickedPopup('gosu', 'exceptionhandling.07.5.html#1474779', '');" title="Object Lifecycle Management (‘using’ Clauses)">“Using Profiler Tags”</a>.</div>
+      <div class="H3_-_Heading_3"><a name="1474779">Using Profiler Tags</a></div>
+      <div class="B_-_Body"><a name="1474784">The profiler tag class (</a><span class="cv_-_computer_voice">gw.api.profiler.ProfilerTag</span>) hints to the Gosu profiler what actions happen within a block of code. To create a new profiler tag, pass two <span class="cv_-_computer_voice">String</span> values for the name and the description </div>
+      <div class="CS_-_Code_Single_Line"><a name="1474785">new ProfilerTag("EventPayloadXML", "Calculating the event message payload XML")</a></div>
+      <div class="B_-_Body"><a name="1474786">To use the profiler tag, pass it to a </a><span class="cv_-_computer_voice">using</span> clause, as follows:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1474787">using( new ProfilerTag("EventPayloadXML", "Calculating the event message payload XML") ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474788">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474789">&nbsp;</a>&nbsp;// do your main work here...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474790">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474791">&nbsp;</a>&nbsp;// use ProfilerTag methods if desired.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474792">&nbsp;</a>&nbsp;tag.setCounterValue( "test", 3 ) </PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1469151">}</a></PRE>
+      <div class="B_-_Body"><a name="1474800">For more information about the profiler, see </a><a href="javascript:WWHClickedPopup('admin', 'maintenance.14.07.html#1524446', '');" title="Guidewire Profiler">“Guidewire Profiler” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'maintenance.14.07.html#1524446', '');" title="Guidewire Profiler">System Administration Guide</a></span>.</div>
+      <div class="H2_-_Heading_2"><a name="1469250">Returning Values from ‘using’ Clauses</a></div>
+      <div class="B_-_Body"><a name="1469570">You can return values from within </a><span class="cv_-_computer_voice">uses</span> clauses using the standard <span class="cv_-_computer_voice">return</span> statement. If you return a value from within a using clause, Gosu considers the clause complete so it calls your object’s final lifecycle management method to clean up your resources. (Gosu calls the <span class="cv_-_computer_voice">dispose</span>, <span class="cv_-_computer_voice">close</span>, or <span class="cv_-_computer_voice">exit</span> method, depending on the type of object.)</div>
+      <div class="B_-_Body"><a name="1469551">The following Gosu example opens a file using the Java </a><span class="cv_-_computer_voice">BufferedReader</span> class and reads lines from the file until the line matches a regular expression. If code in the <span class="cv_-_computer_voice">while</span> loop finds a match, it immediately returns the value and skips the rest of the code within the <span class="cv_-_computer_voice">using</span> clause. </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1474307">uses java.io.File</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474308">uses java.io.BufferedReader</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474309">uses java.io.FileReader</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469594">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469605">function containsText( file : File, regExp : String ) : boolean {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469253">    using( var reader = new BufferedReader( new FileReader( file ) ) ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469255">      var line = reader.readLine()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469256">      while( line != null ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469258">        if( line.matches( regExp ) ) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469260">          return true</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474247">        }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474255">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line = reader.readLine() // read the next line</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474248">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1474249">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469264">    return false</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1469265">  }</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1469267">}</a></PRE>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

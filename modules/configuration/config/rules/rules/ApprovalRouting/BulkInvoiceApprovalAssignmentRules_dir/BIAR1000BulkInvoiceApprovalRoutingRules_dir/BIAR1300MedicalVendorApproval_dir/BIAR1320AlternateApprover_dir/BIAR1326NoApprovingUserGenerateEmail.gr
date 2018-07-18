@@ -1,0 +1,35 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1300MedicalVendorApproval_dir.BIAR1320AlternateApprover_dir
+
+@gw.rules.RuleName("BIAR1326 - No Approving User - Generate Email")
+internal class BIAR1326NoApprovingUserGenerateEmail {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.LastApprovingUser == util.user.SCOHelper.CorpClaimsOneUser/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+
+  var emailBody = templates.email.BINExceedsAuthorityLimit.renderToString(bulkInvoice)
+
+  if(java.lang.System.getProperty( "gw.cc.env" ) == "prod") {
+       gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          ScriptParameters.CorporateClaimsSecurity_Email, ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+          "Authority Exceeded Notification", emailBody)
+        gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          "kbirdseye@gaig.com", ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+          "Authority Exceeded Notification", emailBody)      
+        
+  } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          ScriptParameters.ClaimCenterDevEmail, ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", environmentInformation, 
+          "Authority Exceeded Notification", emailBody)   
+  }
+  
+}catch(e) {
+}/*end00rule*/
+  }
+}

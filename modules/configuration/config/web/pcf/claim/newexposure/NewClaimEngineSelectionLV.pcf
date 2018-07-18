@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="NewClaimEngineSelectionLV">
+    <Require
+      name="Engines"
+      type="EngineExt[]"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="false"
+      elementName="Engine"
+      pageSize="10"
+      pickValue="Engine"
+      value="Engines">
+      <Row>
+        <ContentCell
+          id="Select">
+          <Link
+            action="NewClaimNewExposureCoverageSelectPopup.push(Claim, Wizard, getWatercraftEngCvgList(Claim, Engine))"
+            id="SelectLink"
+            label="&quot;Select&quot;"
+            styleClass="miniButton"
+            visible="getWatercraftEngCvgList(Claim, Engine).length&gt;0"/>
+        </ContentCell>
+        <Cell
+          align="left"
+          id="Number"
+          label="displaykey.GAIC.NVV.Policy.PolicyVehicleDetail.Vehicle.Engine.EngineNo"
+          printWidth="0.05"
+          sortOrder="1"
+          value="Engine.EngineNumber"/>
+        <Cell
+          align="left"
+          id="year"
+          label="displaykey.GAIC.NVV.Policy.PolicyVehicleDetail.Vehicle.Engine.Year"
+          printWidth="0.10"
+          sortOrder="1"
+          value="Engine.Year"/>
+        <Cell
+          id="Model"
+          label="displaykey.GAIC.NVV.Policy.PolicyVehicleDetail.Vehicle.Engine.Model"
+          printWidth="0.08"
+          value="Engine.Model"/>
+        <Cell
+          id="manufa"
+          label="displaykey.GAIC.NVV.Policy.PolicyVehicleDetail.Vehicle.Engine.Manufacturer"
+          printWidth="0.11"
+          value="Engine.Manufacturer"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getWatercraftEngCvgList(c:Claim, eng : EngineExt) : Coverage[] {
+ var engList : List = new java.util.ArrayList()
+ for(vehRU in c.Policy.Vehicles){
+   if(vehRU.Vehicle==eng.Vehicle){
+     for(cov in vehRU.Coverages){
+       if((cov as VehicleCoverage).EngineExt!=null and (cov as VehicleCoverage).EngineExt==eng){
+         engList.add(cov)
+       }
+     }
+   }
+ }
+ return engList as Coverage[];
+}]]></Code>
+  </ListViewPanel>
+</PCF>

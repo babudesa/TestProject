@@ -1,0 +1,1850 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ClaimPrintout.pcf
+
+    This special PCF allows configuration of the "Print Claim File" operation, which generates PDFs containing
+    aggregated claim data.
+
+    ******************************************************************************************************************
+    This PCF is not meant for customer customization directly; it is recommended that only Guidewire personnel
+    (be it through Services/Support/Development) edit this file.
+    ******************************************************************************************************************
+
+      The Print Claim File OOTB configuration options consist of the following:
+
+        - All Pages Without Details
+        - All Pages With Details and FNOL Snapshot
+        - Current claim file page without details
+        - Current claim file page with details
+        - Custom
+
+    Each of those sections is defined below as PrintGroups or PrintLocations (discussed later). Within each PrintGroup
+    are PrintSections, which basically define sets of pages to print together. PrintSection groupings may be toggled in
+    the "Custom" option to be included/excluded from output. (In normal output, all PrintSections are output if the
+    conditions of the printable attribute are met)
+
+    Within each PrintSection are PrintOptions, which represent subgroupings of pages to output together. During "Custom"
+    printing, each PrintOption is represented by a subchoice users can choose from (thus in custom prints, each option
+    per PrintSection is mutually exclusive; however in normal printing all PrintOptions will be output if the conditions
+    of its printable attribute is met)
+
+    Within each PrintOption are one or more PrintOptionLocations, which specify PCF pages (locations) to print. All
+    PrintOptionLocations within a PrintOption are printed or excluded together (though again individual elements may
+    be excluded based on the printable attribute)
+
+    **ADVANCED**
+
+    Each PrintOptionLocation may optionally contain a PrintDetail element, which describes what PCF
+    Location to use to direct "Detailed Mode" output. Detail mode describes a special type of output where the content
+    of a given ListView contained in a page is iterated through and each item in the ListView is directed to a DetailView,
+    which is then output. For example, suppose we have a ListView of activities - detail mode output of this would
+    output the ListView, followed by a detailed output of each activity that was contained in the ListView.
+
+    The top-level PrintLocation is used to represent the special "print current page" operation.  The PrintLocation
+    can contain PrintLocationDetail elements which are used to handle "Detail Mode" output of Pages that might be
+    encountered. For example, if the user was on ClaimMatters page and the "print current page with details" was chosen,
+    then ClaimMatters and its ListView would be output, then each element in the ListView would be sent to a specified
+    Page with a DetailView for detailed mode output. In general, PrintOptionLocation sections do not require editing. -->
+  <PrintOut
+    canVisit="perm.Claim.view(Claim) and perm.Claim.print(Claim)"
+    id="ClaimPrintout"
+    title="displaykey.Java.PrintClaimOptions.Label.SelectPrintOptions">
+    <!-- Entry Point signature -->
+    <LocationEntryPoint
+      signature="ClaimPrintout(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new print.ClaimPrintoutHelper(Claim)"
+      name="helper"/>
+    <Variable
+      initialValue="new claim.HistoryListFilterSet()"
+      name="FilterSet"/>
+    <Variable
+      initialValue="helper.createPrintSettings()"
+      name="printSettings"
+      type="print.PrintSettings"/>
+    <Variable
+      initialValue="helper.getMedicalDetails()"
+      name="medicalDetails"
+      type="Exposure"/>
+    <Variable
+      initialValue="helper.getIndemityTimeLoss()"
+      name="indemityTimeLoss"
+      type="Exposure"/>
+    <Variable
+      initialValue="helper.getEmployerLiability()"
+      name="employerLiability"
+      type="Exposure"/>
+    <Variable
+      initialValue="(helper.isWorkersCompClaim() or helper.isHomeownersClaim()) and (gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Properties&quot;) or gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Classcodes&quot;))"
+      name="canShowClaimPolicyLocations"
+      type="boolean"/>
+    <Variable
+      initialValue="helper.isTravelClaim() and (gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Trips&quot;) or gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Classcodes&quot;))"
+      name="canShowClaimPolicyTrips"
+      type="boolean"/>
+    <Variable
+      initialValue="(helper.isWorkersCompClaim() or helper.isHomeownersClaim()) and gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;Statcodes&quot;)"
+      name="canShowPolicyStatCodes"
+      type="boolean"/>
+    <!-- Toolbar buttons for controlling print out functionality. Labels and shortcuts are safe to configure
+         but do not modify actions. -->
+    <PrintOutButton
+      action="gw.api.print.PrintOutAction.printPrintOut(printSettings)"
+      id="ClaimPrint"
+      label="displaykey.Button.Print"
+      shortcut="P"/>
+    <PrintOutButton
+      action="CurrentLocation.cancel()"
+      label="displaykey.Button.Done"/>
+    <Verbatim
+      label="displaykey.web.PrintClaimOptions.Label.PdfMessage"/>
+    <!-- ==============================================================================================================
+     All Pages Without Details
+     ============================================================================================================== -->
+    <PrintGroup
+      id="AllClaimPagesWithoutDetails"
+      label="displaykey.Java.PrintClaimOptionsForm.Label.AllClaimPagesWithoutDetails">
+      <!-- Claim Summary -->
+      <PrintSection
+        id="Summary1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Summary"
+        printable="perm.System.viewclaimsummary">
+        <PrintOption
+          id="SummaryAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.All">
+          <PrintOptionLocation
+            locationRef="ClaimSummary(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimStatus(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimKeyMetrics(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Workplan -->
+      <PrintSection
+        id="Workplan1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Workplan"
+        printable="perm.System.viewworkplan">
+        <PrintOption
+          id="WorkplanSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Workplan.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimWorkplan(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details -->
+      <PrintSection
+        id="LossDetails1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="LossDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails">
+          <PrintOptionLocation
+            locationRef="ClaimLossDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Associations -->
+      <PrintSection
+        id="Associations1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimAssociations"
+        printable="perm.ClaimAssociation.view">
+        <PrintOption
+          id="ClaimAssociationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimAssociations.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimAssociations(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Special Investigations -->
+      <PrintSection
+        id="SpecialInvestigations1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimSpecialInvestigations"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="ClaimSpecialInvestigationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimSpecialInvestigations.Summary">
+          <PrintOptionLocation
+            locationRef="SIDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Medical Details (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossMedicalDetail1Section"
+        label="CoverageSubtype.TC_WM_WCID.Description"
+        printable="helper.isWorkersCompClaim() and medicalDetails != null and perm.Exposure.view(medicalDetails)">
+        <PrintOption
+          id="MedicalDetailsSummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(medicalDetails)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Indemity/Time Loss (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossIndemityTimeLoss1Section"
+        label="CoverageSubtype.TC_WI_LW.Description"
+        printable="helper.isWorkersCompClaim() and indemityTimeLoss != null and perm.Exposure.view(indemityTimeLoss)">
+        <PrintOption
+          id="IndemityTimeLossummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(indemityTimeLoss)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Employer Liability (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossEmployerLiability1Section"
+        label="CoverageSubtype.TC_WL_EL.Description"
+        printable="helper.isWorkersCompClaim() and employerLiability != null and perm.Exposure.view(employerLiability)">
+        <PrintOption
+          id="EmployerLiabilitySummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(employerLiability)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Exposures
+        (Note: Only visible for NON-WC Claims) -->
+      <PrintSection
+        id="Exposures1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Exposures"
+        printable="!helper.isWorkersCompClaim() and perm.System.viewexposures">
+        <PrintOption
+          id="ExposureSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Exposures.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimExposures(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Parties Involved -->
+      <PrintSection
+        id="PartiesInvolved1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.PartiesInvolved"
+        printable="perm.System.viewclaimparties">
+        <PrintOption
+          id="PartiesInvolvedSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.PartiesInvolved.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimContacts(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Policy -->
+      <PrintSection
+        id="Policy1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Policy"
+        printable="perm.System.viewpolicy">
+        <!-- Basics -->
+        <PrintOption
+          id="PolicyBasicOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Basic">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyGeneral(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Summary -->
+      <PrintSection
+        id="FinancialsSummary1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsSummary"
+        printable="perm.System.viewfinsum">
+        <PrintOption
+          id="FinancialsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.All">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposurePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposureOnlyPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimantPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryCoveragePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimCostOnlyPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Transactions -->
+      <PrintSection
+        id="FinancialsTransaction1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsTransactions"
+        printable="perm.Claim.viewtransactiondetails(Claim)">
+        <!-- All Financial Transactions -->
+        <PrintOption
+          id="FinancialsTransactionsAllWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.AllWithoutDetails">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.ALL)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Checks -->
+      <PrintSection
+        id="Checks1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Checks"
+        printable="perm.Claim.viewpayments(Claim)">
+        <PrintOption
+          id="CheckSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Checks.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsChecks(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Notes -->
+      <PrintSection
+        id="Notes1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Notes"
+        printable="perm.System.viewclaimnotes">
+        <PrintOption
+          id="NotesAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.All">
+          <PrintOptionLocation
+            locationRef="ClaimAllNotesPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Documents -->
+      <PrintSection
+        id="Documents1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Documents"
+        printable="perm.System.viewdocs">
+        <PrintOption
+          id="DocumentsAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Documents.All">
+          <PrintOptionLocation
+            locationRef="ClaimDocumentsPrint(Claim, true)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Evaluation -->
+      <PrintSection
+        id="Evaluations1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Evaluations"
+        printable="perm.System.viewclaimevals">
+        <PrintOption
+          id="EvaluationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Evaluations.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimEvaluations(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Negotiation -->
+      <PrintSection
+        id="Negotiations1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Negotiations"
+        printable="perm.System.viewclaimngtns">
+        <PrintOption
+          id="NegotiationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Negotiations.Summary">
+          <PrintOptionLocation
+            listViewRef="EditableNegotiationsLV"
+            locationRef="ClaimNegotiations(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Subrogation - General -->
+      <PrintSection
+        id="Subrogation1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Subrogation.General"
+        printable="perm.System.viewsubrodetails and claim.ActivateSubroModule()">
+        <PrintOption
+          id="SubrogationSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Subrogation.General">
+          <PrintOptionLocation
+            locationRef="SubrogationGeneral(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Matters -->
+      <PrintSection
+        id="Litigation1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Litigation"
+        printable="perm.System.viewmatters">
+        <PrintOption
+          id="LitigationSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Litigation.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimMatters(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim History
+        Don't touch unless you know what you are doing. -->
+      <PrintSection
+        id="History1Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.History"
+        printable="perm.System.viewclaimhistory">
+        <PrintOption
+          id="HistoryAllOption"
+          label="displaykey.Java.HistoryFilter.All">
+          <PrintOptionLocation
+            filter="FilterSet.AllFilter"
+            listViewRef="HistoryLV"
+            locationRef="ClaimHistory(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+    </PrintGroup>
+    <!-- ==============================================================================================================
+      All Pages With Details and FNOL Snapshot
+      ============================================================================================================== -->
+    <PrintGroup
+      id="AllClaimPagesWithDetails"
+      label="displaykey.Java.PrintClaimOptionsForm.Label.AllClaimPagesWithDetails">
+      <!-- Claim Summary -->
+      <PrintSection
+        id="Summary2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Summary"
+        printable="perm.System.viewclaimsummary">
+        <PrintOption
+          id="SummaryAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.All">
+          <PrintOptionLocation
+            locationRef="ClaimSummary(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimStatus(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimKeyMetrics(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Workplan -->
+      <PrintSection
+        id="Workplan2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Workplan"
+        printable="perm.System.viewworkplan">
+        <PrintOption
+          id="WorkplanDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Workplan.Details">
+          <PrintOptionLocation
+            locationRef="ClaimWorkplan(Claim)">
+            <PrintDetail
+              locationRef="ActivityDetailPrint(Activity)"
+              symbolName="Activity"
+              symbolType="Activity"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details -->
+      <PrintSection
+        id="LossDetails2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="LossDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails">
+          <PrintOptionLocation
+            locationRef="ClaimLossDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Vehicle Incident/Assessment (Auto only) -->
+      <PrintSection
+        id="VehicleIncident2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.VehicleIncidents"
+        printable="helper.isAutoClaim() and perm.System.viewclaimbasics">
+        <PrintOption
+          id="VehicleIncidentDetailsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="VehicleIncidentPrint(Claim)">
+            <PrintDetail
+              locationRef="VehicleIncidentDetailPrint(vehicleIncident)"
+              symbolName="vehicleIncident"
+              symbolType="VehicleIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Property Incident/Assessment
+           Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="PropertyIncident2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.FixedPropertyIncidents"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="PropertyIncidentDetailOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="FixedPropertyIncidentPrint(Claim)"
+            printable="!helper.FixedPropertyIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="FixedPropertyIncidentDetailPrint(fixedPropertyIncident)"
+              symbolName="fixedPropertyIncident"
+              symbolType="FixedPropertyIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Injury Incidents
+               Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="InjuryIncident2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.InjuryIncidents">
+        <PrintOption
+          id="InjuryIncidentDetailsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="InjuryIncidentsPrint(claim)"
+            printable="!helper.InjuryIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="InjuryIncidentDetailPrint(InjuryIncident)"
+              symbolName="InjuryIncident"
+              symbolType="InjuryIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Homeowners Incidents/Assessments (HO only)
+               Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="HomeownerPropertyIncident2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.HomeownersIncidents"
+        printable="helper.isHomeownersClaim()">
+        <PrintOption
+          id="HomeownerIncidentOption"
+          label="&quot;&quot;"
+          printable="helper.isHomeownersClaim()">
+          <!-- Dwelling Incident -->
+          <PrintOptionLocation
+            locationRef="DwellingIncidentPrint(Claim, helper.DwellingIncident)"
+            printable="helper.DwellingIncident != null and perm.Incident.view(helper.DwellingIncident)"/>
+          <!-- Personal Property Incident -->
+          <PrintOptionLocation
+            locationRef="PropertyContentsIncidentPrint(Claim, helper.PersonalPropertyIncident)"
+            printable="helper.PersonalPropertyIncident != null and perm.Incident.view(helper.PersonalPropertyIncident)"/>
+          <!-- Other Structures Incident -->
+          <PrintOptionLocation
+            locationRef="OtherStructureIncidentPrint(Claim, helper.OtherStructureIncident)"
+            printable="helper.OtherStructureIncident != null and perm.Incident.view(helper.OtherStructureIncident)"/>
+          <!-- Living Expenses Incident -->
+          <PrintOptionLocation
+            locationRef="LivingExpensesIncidentPrint(Claim, helper.LivingExpensesIncident)"
+            printable="helper.LivingExpensesIncident != null and perm.Incident.view(helper.LivingExpensesIncident)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Travel Incident Details (Travel Only) -->
+      <PrintSection
+        id="TravelIncident2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.TravelIncidents"
+        printable="helper.isTravelClaim()">
+        <PrintOption
+          id="TravelIncidentsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="TripIncidentsPrint(claim)"
+            printable="!helper.TripIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="TripIncidentDetailPrint(claim, TripIncident)"
+              symbolName="TripIncident"
+              symbolType="TripIncident"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            locationRef="BaggageIncidentsPrint(claim)"
+            printable="!helper.BaggageIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="BaggageIncidentDetailPrint(claim, BaggageIncident)"
+              symbolName="BaggageIncident"
+              symbolType="BaggageIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Associations -->
+      <PrintSection
+        id="Associations2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimAssociations"
+        printable="perm.ClaimAssociation.view">
+        <PrintOption
+          id="ClaimAssociationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimAssociations.Details">
+          <PrintOptionLocation
+            locationRef="ClaimAssociations(Claim)">
+            <PrintDetail
+              locationRef="ClaimAssociationDetail(Claim, ClaimAssociation)"
+              symbolName="ClaimAssociation"
+              symbolType="ClaimAssociation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Special Investigations -->
+      <PrintSection
+        id="SpecialInvestigations2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimSpecialInvestigations"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="ClaimSpecialInvestigationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimSpecialInvestigations.Summary">
+          <PrintOptionLocation
+            locationRef="SIDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Medical Details (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossMedicalDetail2Section"
+        label="CoverageSubtype.TC_WM_WCID.Description"
+        printable="helper.isWorkersCompClaim() and medicalDetails != null and perm.Exposure.view(medicalDetails)">
+        <PrintOption
+          id="MedicalDetailsSummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(medicalDetails)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Indemity/Time Loss (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossIndemityTimeLoss2Section"
+        label="CoverageSubtype.TC_WI_LW.Description"
+        printable="helper.isWorkersCompClaim() and indemityTimeLoss != null and perm.Exposure.view(indemityTimeLoss)">
+        <PrintOption
+          id="IndemityTimeLossummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(indemityTimeLoss)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Employer Liability  (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossEmployerLiability2Section"
+        label="CoverageSubtype.TC_WL_EL.Description"
+        printable="helper.isWorkersCompClaim() and employerLiability != null and perm.Exposure.view(employerLiability)">
+        <PrintOption
+          id="EmployerLiabilitySummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(employerLiability)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Exposures
+        (Note: Only visible for NON-WC Claims) -->
+      <PrintSection
+        id="Exposures2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Exposures"
+        printable="!helper.isWorkersCompClaim() and perm.System.viewexposures">
+        <PrintOption
+          id="ExposureDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Exposures.Details">
+          <PrintOptionLocation
+            locationRef="ClaimExposures(Claim)">
+            <PrintDetail
+              locationRef="ExposureDetail(Exposure)"
+              symbolName="Exposure"
+              symbolType="Exposure"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Parties Involved -->
+      <PrintSection
+        id="PartiesInvolved2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.PartiesInvolved"
+        printable="perm.System.viewclaimparties">
+        <PrintOption
+          id="PartiesInvolvedDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.PartiesInvolved.Details">
+          <PrintOptionLocation
+            listViewRef="PeopleInvolvedDetailedLV"
+            locationRef="ClaimContacts(Claim)">
+            <PrintDetail
+              locationRef="ClaimContactPrintDetails(Claim, selectedClaimContact)"
+              symbolName="selectedClaimContact"
+              symbolType="ClaimContact"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Policy -->
+      <PrintSection
+        id="Policy2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Policy"
+        printable="perm.System.viewpolicy">
+        <!-- All Coverage Details -->
+        <PrintOption
+          id="PolicyDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Details">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyGeneral(Claim)"/>
+          <PrintOptionLocation
+            listViewRef="VehiclesLV"
+            locationRef="ClaimPolicyVehicles(Claim)"
+            printable="helper.isAutoClaim()">
+            <PrintDetail
+              locationRef="ClaimPolicyVehicleDetail(Claim, VehicleRU)"
+              symbolName="VehicleRU"
+              symbolType="VehicleRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="LocationsLV"
+            locationRef="ClaimPolicyLocations(Claim)"
+            printable="canShowClaimPolicyLocations">
+            <PrintDetail
+              locationRef="ClaimPolicyLocationDetail(Claim, LocationBasedRU)"
+              symbolName="LocationBasedRU"
+              symbolType="LocationBasedRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="TripRULV"
+            locationRef="ClaimPolicyTrips(Claim)"
+            printable="canShowClaimPolicyTrips">
+            <PrintDetail
+              locationRef="TripRUPrint(Claim, aTripRU)"
+              symbolName="aTripRU"
+              symbolType="TripRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="EndorsementsLV"
+            locationRef="ClaimPolicyEndorsements(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyEndorsementDetail(Claim, Endorsement)"
+              symbolName="Endorsement"
+              symbolType="Endorsement"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="StatCodesLV"
+            locationRef="ClaimPolicyStatCodes(Claim)"
+            printable="canShowPolicyStatCodes">
+            <PrintDetail
+              locationRef="ClaimPolicyStatCodeDetail(Claim, StatCode)"
+              symbolName="StatCode"
+              symbolType="StatCode"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="AggregateLimitsLV"
+            locationRef="ClaimPolicyAggregateLimits(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyAggregateLimitDetail(Claim, AggregateLimit)"
+              symbolName="AggregateLimit"
+              symbolType="AggregateLimit"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Summary -->
+      <PrintSection
+        id="FinancialsSummary2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsSummary"
+        printable="perm.System.viewfinsum">
+        <PrintOption
+          id="FinancialsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.All">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposurePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposureOnlyPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimantPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryCoveragePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimCostOnlyPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Transactions -->
+      <PrintSection
+        id="FinancialsTransaction2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsTransactions"
+        printable="perm.Claim.viewtransactiondetails(Claim)">
+        <PrintOption
+          id="FinancialsTransactionsAllWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.AllWithDetails">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.ALL)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Checks -->
+      <PrintSection
+        id="Checks2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Checks"
+        printable="perm.Claim.viewpayments(Claim)">
+        <PrintOption
+          id="CheckDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Checks.Details">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsChecks(Claim)">
+            <PrintDetail
+              locationRef="ClaimFinancialsChecksDetailPrint(Claim, CheckView)"
+              symbolName="CheckView"
+              symbolType="CheckView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Notes -->
+      <PrintSection
+        id="Notes2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Notes"
+        printable="perm.System.viewclaimnotes">
+        <PrintOption
+          id="NotesAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.All">
+          <PrintOptionLocation
+            locationRef="ClaimAllNotesPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Documents -->
+      <PrintSection
+        id="Documents2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Documents"
+        printable="perm.System.viewdocs">
+        <PrintOption
+          id="DocumentsAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Documents.All">
+          <PrintOptionLocation
+            locationRef="ClaimDocumentsPrint(Claim, true)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Evaluation -->
+      <PrintSection
+        id="Evaluations2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Evaluations"
+        printable="perm.System.viewclaimevals">
+        <PrintOption
+          id="EvaluationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Evaluations.Details">
+          <PrintOptionLocation
+            listViewRef="EditableEvaluationsLV"
+            locationRef="ClaimEvaluations(Claim)">
+            <PrintDetail
+              locationRef="ClaimEvaluationPrintDetail(Evaluation)"
+              symbolName="Evaluation"
+              symbolType="Evaluation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Negotiation -->
+      <PrintSection
+        id="Negotiations2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Negotiations"
+        printable="perm.System.viewclaimngtns">
+        <PrintOption
+          id="NegotiationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Negotiations.Details">
+          <PrintOptionLocation
+            listViewRef="EditableNegotiationsLV"
+            locationRef="ClaimNegotiations(Claim)">
+            <PrintDetail
+              locationRef="ClaimNegotiationPrintDetail(Negotiation)"
+              symbolName="Negotiation"
+              symbolType="Negotiation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Subrogation - General -->
+      <PrintSection
+        id="Subrogation2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Subrogation.General"
+        printable="perm.System.viewsubrodetails and claim.ActivateSubroModule()">
+        <PrintOption
+          id="SubrogationSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Subrogation.General">
+          <PrintOptionLocation
+            locationRef="SubrogationGeneral(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Matters -->
+      <PrintSection
+        id="Litigation2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Litigation"
+        printable="perm.System.viewmatters">
+        <PrintOption
+          id="LitigationDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Litigation.Details">
+          <PrintOptionLocation
+            locationRef="ClaimMatters(Claim)">
+            <PrintDetail
+              locationRef="MatterDetailPage(Claim, Matter)"
+              symbolName="Matter"
+              symbolType="Matter"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Snapshot -->
+      <PrintSection
+        id="ClaimSnapshot2Section"
+        label="displaykey.JSP.ClaimPageLinks.PageLink.Snapshot"
+        printable="helper.canPrintClaimSnapshot()">
+        <PrintOption
+          id="ClaimSnapshotOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotLossDetails(Claim)"
+            printable="perm.System.viewclaimbasics"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotPartiesInvolved(Claim)"
+            printable="perm.System.viewclaimparties"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotPolicy(Claim)"
+            printable="perm.Policy.view(Claim.Policy) and perm.System.viewpolicy"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotExposures(Claim)"
+            printable="!helper.isWorkersCompClaim() and perm.System.viewexposures"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotNotes(Claim)"
+            printable="perm.System.viewclaimnotes"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotDocuments(Claim)"
+            printable="perm.System.viewdocs"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotExtraFields(Claim)"
+            printable="perm.System.viewclaimbasics"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim History
+        Don't touch unless you know what you are doing. -->
+      <PrintSection
+        id="History2Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.History"
+        printable="perm.System.viewclaimhistory">
+        <PrintOption
+          id="HistoryAllOption"
+          label="displaykey.Java.HistoryFilter.All">
+          <PrintOptionLocation
+            filter="FilterSet.AllFilter"
+            listViewRef="HistoryLV"
+            locationRef="ClaimHistory(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+    </PrintGroup>
+    <!-- ==============================================================================================================
+      Current claim file page without details
+      ============================================================================================================== -->
+    <PrintLocation
+      id="CurrentClaimFilePagePrint"
+      label="displaykey.Java.PrintClaimOptionsForm.Label.ThisPageWithoutDetails"/>
+    <!-- ==============================================================================================================
+      Current claim file page with details
+      ============================================================================================================== -->
+    <PrintLocation
+      id="CurrentClaimFilePagePrintWithDetails"
+      label="displaykey.Java.PrintClaimOptionsForm.Label.ThisPageWithDetails">
+      <PrintLocationDetail
+        baseLocation="ClaimWorkplan"
+        locationRef="ActivityDetailPrint(Activity)"
+        symbolName="Activity"
+        symbolType="Activity"/>
+      <PrintLocationDetail
+        baseLocation="ClaimAssociations"
+        locationRef="ClaimAssociationDetail(Claim, ClaimAssociation)"
+        symbolName="ClaimAssociation"
+        symbolType="ClaimAssociation"/>
+      <PrintLocationDetail
+        baseLocation="ClaimExposures"
+        locationRef="ExposureDetail(Exposure)"
+        symbolName="Exposure"
+        symbolType="Exposure"/>
+      <PrintLocationDetail
+        baseLocation="ClaimContacts"
+        listViewRef="PeopleInvolvedDetailedLV"
+        locationRef="ClaimContactPrintDetails(Claim, selectedClaimContact)"
+        symbolName="selectedClaimContact"
+        symbolType="ClaimContact"/>
+      <PrintLocationDetail
+        baseLocation="ClaimUsers"
+        locationRef="ClaimUserPrintDetails(Claim, ClaimUserModel)"
+        symbolName="ClaimUserModel"
+        symbolType="ClaimUserModel"/>
+      <PrintLocationDetail
+        baseLocation="ClaimPolicyVehicles"
+        listViewRef="VehiclesLV"
+        locationRef="ClaimPolicyVehicleDetail(Claim, VehicleRU)"
+        printable="helper.isAutoClaim()"
+        symbolName="VehicleRU"
+        symbolType="VehicleRU"/>
+      <PrintLocationDetail
+        baseLocation="ClaimPolicyLocations"
+        listViewRef="LocationsLV"
+        locationRef="ClaimPolicyLocationDetail(Claim, LocationBasedRU)"
+        printable="canShowClaimPolicyLocations"
+        symbolName="LocationBasedRU"
+        symbolType="LocationBasedRU"/>
+      <PrintLocationDetail
+        baseLocation="ClaimPolicyEndorsements"
+        listViewRef="EndorsementsLV"
+        locationRef="ClaimPolicyEndorsementDetail(Claim, Endorsement)"
+        symbolName="Endorsement"
+        symbolType="Endorsement"/>
+      <PrintLocationDetail
+        baseLocation="ClaimPolicyStatCodes"
+        listViewRef="StatCodesLV"
+        locationRef="ClaimPolicyStatCodeDetail(Claim, StatCode)"
+        symbolName="StatCode"
+        symbolType="StatCode"/>
+      <PrintLocationDetail
+        baseLocation="ClaimPolicyAggregateLimits"
+        listViewRef="AggregateLimitsLV"
+        locationRef="ClaimPolicyAggregateLimitDetail(Claim, AggregateLimit)"
+        symbolName="AggregateLimit"
+        symbolType="AggregateLimit"/>
+      <PrintLocationDetail
+        baseLocation="ClaimFinancialsTransactions"
+        locationRef="TransactionDetailPrint(Claim, TransactionView)"
+        symbolName="TransactionView"
+        symbolType="TransactionView"/>
+      <PrintLocationDetail
+        baseLocation="ClaimFinancialsChecks"
+        locationRef="ClaimFinancialsChecksDetailPrint(Claim, CheckView)"
+        symbolName="CheckView"
+        symbolType="CheckView"/>
+      <PrintLocationDetail
+        baseLocation="ClaimDocuments"
+        locationRef="DocumentDetailsPrint(Claim, DocumentParam)"
+        symbolName="DocumentParam"
+        symbolType="Document"/>
+      <PrintLocationDetail
+        baseLocation="ClaimEvaluations"
+        listViewRef="EditableEvaluationsLV"
+        locationRef="ClaimEvaluationPrintDetail(Evaluation)"
+        symbolName="Evaluation"
+        symbolType="Evaluation"/>
+      <PrintLocationDetail
+        baseLocation="ClaimNegotiations"
+        listViewRef="EditableNegotiationsLV"
+        locationRef="ClaimNegotiationPrintDetail(Negotiation)"
+        symbolName="Negotiation"
+        symbolType="Negotiation"/>
+      <PrintLocationDetail
+        baseLocation="ClaimMatters"
+        locationRef="MatterDetailPage(Claim, Matter)"
+        symbolName="Matter"
+        symbolType="Matter"/>
+    </PrintLocation>
+    <!-- ==============================================================================================================
+      Custom
+      ============================================================================================================== -->
+    <PrintGroup
+      customizable="true"
+      id="Custom"
+      label="displaykey.Java.Printout.Custom">
+      <!-- Claim Summary -->
+      <PrintSection
+        id="Summary3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Summary"
+        printable="perm.System.viewclaimsummary">
+        <PrintOption
+          id="SummaryAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Summary.All">
+          <PrintOptionLocation
+            locationRef="ClaimSummary(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimStatus(Claim)"/>
+          <PrintOptionLocation
+            locationRef="ClaimKeyMetrics(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="ClaimSuummaryOnlyOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Summary.ClaimSummary">
+          <PrintOptionLocation
+            locationRef="ClaimSummary(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="ClaimSummaryExcludingConfidentialNotesOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Summary.SummaryWithoutConfidentialNotes">
+          <PrintOptionLocation
+            locationRef="ClaimSummary(Claim, true)"/>
+        </PrintOption>
+        <PrintOption
+          id="ClaimStatusOnlyOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Summary.ClaimStatus">
+          <PrintOptionLocation
+            locationRef="ClaimStatus(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="ClaimHealthMetricsOnlyOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Summary.ClaimHealthMetrics">
+          <PrintOptionLocation
+            locationRef="ClaimKeyMetrics(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Workplan -->
+      <PrintSection
+        id="Workplan3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Workplan"
+        printable="perm.System.viewworkplan">
+        <PrintOption
+          id="WorkplanSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Workplan.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimWorkplan(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="WorkplanDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Workplan.Details">
+          <PrintOptionLocation
+            locationRef="ClaimWorkplan(Claim)">
+            <PrintDetail
+              locationRef="ActivityDetailPrint(Activity)"
+              symbolName="Activity"
+              symbolType="Activity"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details -->
+      <PrintSection
+        id="LossDetails3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="LossDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails">
+          <PrintOptionLocation
+            locationRef="ClaimLossDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Vehicle Incident/Assessment (Auto only)
+        Detailed print option only (the summary list of Vehicles is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="VehicleIncident3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.VehicleIncidents"
+        printable="helper.isAutoClaim() and perm.System.viewclaimbasics">
+        <PrintOption
+          id="VehicleIncidentDetailsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="VehicleIncidentPrint(Claim)">
+            <PrintDetail
+              locationRef="VehicleIncidentDetailPrint(vehicleIncident)"
+              symbolName="vehicleIncident"
+              symbolType="VehicleIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Property Incident/Assessment
+        Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="PropertyIncident3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.FixedPropertyIncidents"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="PropertyIncidentDetailOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="FixedPropertyIncidentPrint(Claim)"
+            printable="!helper.FixedPropertyIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="FixedPropertyIncidentDetailPrint(fixedPropertyIncident)"
+              symbolName="fixedPropertyIncident"
+              symbolType="FixedPropertyIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Injury Incidents
+            Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="InjuryIncident3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.InjuryIncidents">
+        <PrintOption
+          id="InjuryIncidentDetailsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="InjuryIncidentsPrint(claim)"
+            printable="!helper.InjuryIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="InjuryIncidentDetailPrint(InjuryIncident)"
+              symbolName="InjuryIncident"
+              symbolType="InjuryIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Homeowners Incidents/Assessments (HO only)
+            Detailed print option only (the summary list of these incidents is already a part of the general Claim Loss Details output -->
+      <PrintSection
+        id="HomeownerPropertyIncident3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.HomeownersIncidents"
+        printable="helper.isHomeownersClaim()">
+        <PrintOption
+          id="HomeownerIncidentOption"
+          label="&quot;&quot;"
+          printable="helper.isHomeownersClaim()">
+          <!-- Dwelling Incident -->
+          <PrintOptionLocation
+            locationRef="DwellingIncidentPrint(Claim, helper.DwellingIncident)"
+            printable="helper.DwellingIncident != null and perm.Incident.view(helper.DwellingIncident)"/>
+          <!-- Personal Property Incident -->
+          <PrintOptionLocation
+            locationRef="PropertyContentsIncidentPrint(Claim, helper.PersonalPropertyIncident)"
+            printable="helper.PersonalPropertyIncident != null and perm.Incident.view(helper.PersonalPropertyIncident)"/>
+          <!-- Other Structures Incident -->
+          <PrintOptionLocation
+            locationRef="OtherStructureIncidentPrint(Claim, helper.OtherStructureIncident)"
+            printable="helper.OtherStructureIncident != null and perm.Incident.view(helper.OtherStructureIncident)"/>
+          <!-- Living Expenses Incident -->
+          <PrintOptionLocation
+            locationRef="LivingExpensesIncidentPrint(Claim, helper.LivingExpensesIncident)"
+            printable="helper.LivingExpensesIncident != null and perm.Incident.view(helper.LivingExpensesIncident)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Loss Details - Travel Incident Details (Travel Only) -->
+      <PrintSection
+        id="TravelIncident3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.LossDetails.TravelIncidents"
+        printable="helper.isTravelClaim()">
+        <PrintOption
+          id="TravelIncidentsOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="TripIncidentsPrint(claim)"
+            printable="!helper.TripIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="TripIncidentDetailPrint(claim, TripIncident)"
+              symbolName="TripIncident"
+              symbolType="TripIncident"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            locationRef="BaggageIncidentsPrint(claim)"
+            printable="!helper.BaggageIncidents.IsEmpty">
+            <PrintDetail
+              locationRef="BaggageIncidentDetailPrint(claim, BaggageIncident)"
+              symbolName="BaggageIncident"
+              symbolType="BaggageIncident"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Associations -->
+      <PrintSection
+        id="Associations3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimAssociations"
+        printable="perm.ClaimAssociation.view">
+        <PrintOption
+          id="ClaimAssociationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimAssociations.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimAssociations(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="ClaimAssociationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimAssociations.Details">
+          <PrintOptionLocation
+            locationRef="ClaimAssociations(Claim)">
+            <PrintDetail
+              locationRef="ClaimAssociationDetail(Claim, ClaimAssociation)"
+              symbolName="ClaimAssociation"
+              symbolType="ClaimAssociation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Special Investigations (WC Claims Only) -->
+      <PrintSection
+        id="SpecialInvestigations3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.ClaimSpecialInvestigations"
+        printable="perm.System.viewclaimbasics">
+        <PrintOption
+          id="ClaimSpecialInvestigationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.ClaimSpecialInvestigations.Summary">
+          <PrintOptionLocation
+            locationRef="SIDetails(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Medical Details (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossMedicalDetail3Section"
+        label="CoverageSubtype.TC_WM_WCID.Description"
+        printable="helper.isWorkersCompClaim() and medicalDetails != null and perm.Exposure.view(medicalDetails)">
+        <PrintOption
+          id="MedicalDetailsSummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(medicalDetails)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Indemity/Time Loss (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossIndemityTimeLoss3Section"
+        label="CoverageSubtype.TC_WI_LW.Description"
+        printable="helper.isWorkersCompClaim() and indemityTimeLoss != null and perm.Exposure.view(indemityTimeLoss)">
+        <PrintOption
+          id="IndemityTimeLossummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(indemityTimeLoss)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Loss - Employer Liability  (WC Claims Only) -->
+      <PrintSection
+        id="ClaimLossEmployerLiabilitySection"
+        label="CoverageSubtype.TC_WL_EL.Description"
+        printable="helper.isWorkersCompClaim() and employerLiability != null and perm.Exposure.view(employerLiability)">
+        <PrintOption
+          id="EmployerLiabilitySummaryOption"
+          label="displayKey.Java.PrintClaimOptionsForm.Options.LossDetailsExposureDetail.Details">
+          <PrintOptionLocation
+            locationRef="TopLevelExposureDetail(employerLiability)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Exposures
+        (Note: Only visible for NON-WC Claims) -->
+      <PrintSection
+        id="Exposures3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Exposures"
+        printable="!helper.isWorkersCompClaim() and perm.System.viewexposures">
+        <PrintOption
+          id="ExposureSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Exposures.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimExposures(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="ExposureDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Exposures.Details">
+          <PrintOptionLocation
+            locationRef="ClaimExposures(Claim)">
+            <PrintDetail
+              locationRef="ExposureDetail(Exposure)"
+              symbolName="Exposure"
+              symbolType="Exposure"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Parties Involved -->
+      <PrintSection
+        id="PartiesInvolved3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.PartiesInvolved"
+        printable="perm.System.viewclaimparties">
+        <PrintOption
+          id="PartiesInvolvedSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.PartiesInvolved.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimContacts(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="PartiesInvolvedDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.PartiesInvolved.Details">
+          <PrintOptionLocation
+            listViewRef="PeopleInvolvedDetailedLV"
+            locationRef="ClaimContacts(Claim)">
+            <PrintDetail
+              locationRef="ClaimContactPrintDetails(Claim, selectedClaimContact)"
+              symbolName="selectedClaimContact"
+              symbolType="ClaimContact"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Policy -->
+      <PrintSection
+        id="Policy3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Policy"
+        printable="perm.System.viewpolicy">
+        <!-- Basics -->
+        <PrintOption
+          id="PolicyBasicOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Basic">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyGeneral(Claim)"/>
+        </PrintOption>
+        <!-- Vehicles and Locations
+          (for Auto Claims ONLY) -->
+        <PrintOption
+          id="PolicyVehiclesLocationsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.VehiclesLocations"
+          printable="helper.isAutoClaim()">
+          <PrintOptionLocation
+            listViewRef="VehiclesLV"
+            locationRef="ClaimPolicyVehicles(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyVehicleDetail(Claim, VehicleRU)"
+              symbolName="VehicleRU"
+              symbolType="VehicleRU"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Policy Locations -->
+        <PrintOption
+          id="PolicyLocations"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.WCLocations"
+          printable="canShowClaimPolicyLocations">
+          <PrintOptionLocation
+            listViewRef="LocationsLV"
+            locationRef="ClaimPolicyLocations(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyLocationDetail(Claim, LocationBasedRU)"
+              symbolName="LocationBasedRU"
+              symbolType="LocationBasedRU"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Trips (Travel Only) -->
+        <PrintOption
+          id="PolicyTrips"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Trips"
+          printable="canShowClaimPolicyTrips">
+          <PrintOptionLocation
+            listViewRef="TripRULV"
+            locationRef="ClaimPolicyTrips(Claim)">
+            <PrintDetail
+              locationRef="TripRUPrint(Claim, aTripRU)"
+              symbolName="aTripRU"
+              symbolType="TripRU"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Endorsements -->
+        <PrintOption
+          id="PolicyEndorsementsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Endorsements">
+          <PrintOptionLocation
+            listViewRef="EndorsementsLV"
+            locationRef="ClaimPolicyEndorsements(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyEndorsementDetail(Claim, Endorsement)"
+              symbolName="Endorsement"
+              symbolType="Endorsement"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Stats -->
+        <PrintOption
+          id="PolicyStatCodesOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.StatCodes"
+          printable="canShowPolicyStatCodes">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyStatCodesPrint(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyStatCodeDetail(Claim, StatCode)"
+              symbolName="StatCode"
+              symbolType="StatCode"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Aggregate Limits -->
+        <PrintOption
+          id="PolicyAggregateLimitsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.AggregateLimits">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyAggregateLimits(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyAggregateLimitDetail(Claim, AggregateLimit)"
+              symbolName="AggregateLimit"
+              symbolType="AggregateLimit"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Basic + Vehicles and Locations (for Auto Claims ONLY) -->
+        <PrintOption
+          id="PolicyBasicAndVehiclesLocationsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.BasicAndVehiclesLocations"
+          printable="helper.isAutoClaim()">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyGeneral(Claim)"/>
+          <PrintOptionLocation
+            listViewRef="VehiclesLV"
+            locationRef="ClaimPolicyVehicles(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyVehicleDetail(Claim, VehicleRU)"
+              symbolName="VehicleRU"
+              symbolType="VehicleRU"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- All Coverage Details -->
+        <PrintOption
+          id="PolicyDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Policy.Details">
+          <PrintOptionLocation
+            locationRef="ClaimPolicyGeneral(Claim)"/>
+          <PrintOptionLocation
+            listViewRef="VehiclesLV"
+            locationRef="ClaimPolicyVehicles(Claim)"
+            printable="helper.isAutoClaim()">
+            <PrintDetail
+              locationRef="ClaimPolicyVehicleDetail(Claim, VehicleRU)"
+              symbolName="VehicleRU"
+              symbolType="VehicleRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="LocationsLV"
+            locationRef="ClaimPolicyLocations(Claim)"
+            printable="canShowClaimPolicyLocations">
+            <PrintDetail
+              locationRef="ClaimPolicyLocationDetail(Claim, LocationBasedRU)"
+              symbolName="LocationBasedRU"
+              symbolType="LocationBasedRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="TripRULV"
+            locationRef="ClaimPolicyTrips(Claim)"
+            printable="canShowClaimPolicyTrips">
+            <PrintDetail
+              locationRef="TripRUPrint(Claim, aTripRU)"
+              symbolName="aTripRU"
+              symbolType="TripRU"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="EndorsementsLV"
+            locationRef="ClaimPolicyEndorsements(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyEndorsementDetail(Claim, Endorsement)"
+              symbolName="Endorsement"
+              symbolType="Endorsement"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="StatCodesLV"
+            locationRef="ClaimPolicyStatCodes(Claim)"
+            printable="canShowPolicyStatCodes">
+            <PrintDetail
+              locationRef="ClaimPolicyStatCodeDetail(Claim, StatCode)"
+              symbolName="StatCode"
+              symbolType="StatCode"/>
+          </PrintOptionLocation>
+          <PrintOptionLocation
+            listViewRef="AggregateLimitsLV"
+            locationRef="ClaimPolicyAggregateLimits(Claim)">
+            <PrintDetail
+              locationRef="ClaimPolicyAggregateLimitDetail(Claim, AggregateLimit)"
+              symbolName="AggregateLimit"
+              symbolType="AggregateLimit"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Summary -->
+      <PrintSection
+        id="FinancialsSummary3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsSummary"
+        printable="perm.System.viewfinsum">
+        <PrintOption
+          id="FinancialsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.All">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposurePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposureOnlyPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimantPrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryCoveragePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimCostOnlyPrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsSummaryExposureOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.Exposure">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposurePrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsSummaryExposureOnlyOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.ExposureOnly">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryExposureOnlyPrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsSummaryClaimantOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.Claimant">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimantPrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsSummaryCoverageOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.Coverage">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryCoveragePrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsSummaryClaimCostOnlyOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsSummary.ClaimCostOnly">
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryTitlePrint(Claim)"/>
+          <PrintOptionLocation
+            locationRef="FinancialsSummaryClaimCostOnlyPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Transactions -->
+      <PrintSection
+        id="FinancialsTransactionSection"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.FinancialsTransactions"
+        printable="perm.Claim.viewtransactiondetails(Claim)">
+        <!-- All Financial Transactions -->
+        <PrintOption
+          id="FinancialsTransactionsAllWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.AllWithoutDetails">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.ALL)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsTransactionsAllWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.AllWithDetails">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.ALL)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Reserves -->
+        <PrintOption
+          id="FinancialsTransactionReservesWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.ReservesWithoutDetails"
+          printable="perm.Claim.viewreserves(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RESERVE)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsTransactionReservesWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.ReservesWithDetails"
+          printable="perm.Claim.viewreserves(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RESERVE)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Payments -->
+        <PrintOption
+          id="FinancialsTransactionPaymentsWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.PaymentsWithoutDetails"
+          printable="perm.Claim.viewpayments(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.PAYMENT)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsTransactionPaymentsWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.PaymentsWithDetails"
+          printable="perm.Claim.viewpayments(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.PAYMENT)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Recoveries -->
+        <PrintOption
+          id="FinancialsTransactionRecoveriesWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.RecoveriesWithoutDetails"
+          printable="perm.Claim.viewrecoveries(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsTransactionRecoveriesWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.RecoveriesWithDetails"
+          printable="perm.Claim.viewrecoveries(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+        <!-- Recovery Reserves -->
+        <PrintOption
+          id="FinancialsTransactionRecoveryReservesWithoutDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.RecoveryReservesWithoutDetails"
+          printable="perm.Claim.viewrecoveryreserves(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY_RESERVE)"/>
+        </PrintOption>
+        <PrintOption
+          id="FinancialsTransactionRecoveryReservesWithDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.FinancialsTransactions.RecoveryReservesWithDetails"
+          printable="perm.Claim.viewrecoveryreserves(Claim)">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsTransactionsPrint(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY_RESERVE)">
+            <PrintDetail
+              locationRef="TransactionDetailPrint(Claim, TransactionView)"
+              symbolName="TransactionView"
+              symbolType="TransactionView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Financials Checks -->
+      <PrintSection
+        id="Checks3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Checks"
+        printable="perm.Claim.viewpayments(Claim)">
+        <PrintOption
+          id="CheckSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Checks.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsChecks(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="CheckDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Checks.Details">
+          <PrintOptionLocation
+            locationRef="ClaimFinancialsChecks(Claim)">
+            <PrintDetail
+              locationRef="ClaimFinancialsChecksDetailPrint(Claim, CheckView)"
+              symbolName="CheckView"
+              symbolType="CheckView"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Notes -->
+      <PrintSection
+        id="Notes3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Notes"
+        printable="perm.System.viewclaimnotes">
+        <PrintOption
+          id="NotesAllExcludingConfidentialOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.AllExcludingConfidential">
+          <PrintOptionLocation
+            locationRef="ClaimNoConfidentialNotesPrint(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="NotesAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Notes.All">
+          <PrintOptionLocation
+            locationRef="ClaimAllNotesPrint(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Documents -->
+      <PrintSection
+        id="Documents3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Documents"
+        printable="perm.System.viewdocs">
+        <PrintOption
+          id="DocumentsAllOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Documents.All">
+          <PrintOptionLocation
+            locationRef="ClaimDocumentsPrint(Claim, true)"/>
+        </PrintOption>
+        <PrintOption
+          id="DocumentsAllExcludingHiddenOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Documents.AllExcludingHidden">
+          <PrintOptionLocation
+            locationRef="ClaimDocumentsPrint(Claim, false)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Evaluation -->
+      <PrintSection
+        id="Evaluations3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Evaluations"
+        printable="perm.System.viewclaimevals">
+        <PrintOption
+          id="EvaluationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Evaluations.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimEvaluations(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="EvaluationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Evaluations.Details">
+          <PrintOptionLocation
+            listViewRef="EditableEvaluationsLV"
+            locationRef="ClaimEvaluations(Claim)">
+            <PrintDetail
+              locationRef="ClaimEvaluationPrintDetail(Evaluation)"
+              symbolName="Evaluation"
+              symbolType="Evaluation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Plan of Action - Negotiation -->
+      <PrintSection
+        id="Negotiations3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Negotiations"
+        printable="perm.System.viewclaimngtns">
+        <PrintOption
+          id="NegotiationsSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Negotiations.Summary">
+          <PrintOptionLocation
+            listViewRef="EditableNegotiationsLV"
+            locationRef="ClaimNegotiations(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="NegotiationsDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Negotiations.Details">
+          <PrintOptionLocation
+            listViewRef="EditableNegotiationsLV"
+            locationRef="ClaimNegotiations(Claim)">
+            <PrintDetail
+              locationRef="ClaimNegotiationPrintDetail(Negotiation)"
+              symbolName="Negotiation"
+              symbolType="Negotiation"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Subrogation - General -->
+      <PrintSection
+        id="Subrogation3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Subrogation.General"
+        printable="perm.System.viewsubrodetails and claim.ActivateSubroModule()">
+        <PrintOption
+          id="SubrogationSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Subrogation.General">
+          <PrintOptionLocation
+            locationRef="SubrogationGeneral(Claim)"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Litigation - Matters -->
+      <PrintSection
+        id="Litigation3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.Litigation"
+        printable="perm.System.viewmatters">
+        <PrintOption
+          id="LitigationSummaryOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Litigation.Summary">
+          <PrintOptionLocation
+            locationRef="ClaimMatters(Claim)"/>
+        </PrintOption>
+        <PrintOption
+          id="LitigationDetailsOption"
+          label="displaykey.Java.PrintClaimOptionsForm.Options.Litigation.Details">
+          <PrintOptionLocation
+            locationRef="ClaimMatters(Claim)">
+            <PrintDetail
+              locationRef="MatterDetailPage(Claim, Matter)"
+              symbolName="Matter"
+              symbolType="Matter"/>
+          </PrintOptionLocation>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim Snapshot -->
+      <PrintSection
+        id="ClaimSnapshot3Section"
+        label="displaykey.JSP.ClaimPageLinks.PageLink.Snapshot"
+        printable="helper.canPrintClaimSnapshot()">
+        <PrintOption
+          id="ClaimSnapshotOption"
+          label="&quot;&quot;">
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotLossDetails(Claim)"
+            printable="perm.System.viewclaimbasics"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotPartiesInvolved(Claim)"
+            printable="perm.System.viewclaimparties"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotPolicy(Claim)"
+            printable="perm.Policy.view(Claim.Policy) and perm.System.viewpolicy"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotExposures(Claim)"
+            printable="!helper.isWorkersCompClaim() and perm.System.viewexposures"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotNotes(Claim)"
+            printable="perm.System.viewclaimnotes"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotDocuments(Claim)"
+            printable="perm.System.viewdocs"/>
+          <PrintOptionLocation
+            locationRef="ClaimSnapshotExtraFields(Claim)"
+            printable="perm.System.viewclaimbasics"/>
+        </PrintOption>
+      </PrintSection>
+      <!-- Claim History
+        Don't touch unless you know what you are doing. -->
+      <PrintSection
+        id="History3Section"
+        label="displaykey.Java.PrintClaimOptionsForm.Label.History"
+        printable="perm.System.viewclaimhistory">
+        <PrintOption
+          id="HistoryAllOption"
+          label="displaykey.Java.HistoryFilter.All">
+          <PrintOptionLocation
+            filter="FilterSet.AllFilter"
+            listViewRef="HistoryLV"
+            locationRef="ClaimHistory(Claim)"/>
+        </PrintOption>
+        <PrintOptionGroup
+          id="HistoryOption"
+          typelist="HistoryType">
+          <PrintOptionLocation
+            filter="FilterSet.getHistoryFilter(VALUE)"
+            listViewRef="HistoryLV"
+            locationRef="ClaimHistory(Claim)"/>
+        </PrintOptionGroup>
+      </PrintSection>
+    </PrintGroup>
+  </PrintOut>
+</PCF>

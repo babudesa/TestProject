@@ -1,0 +1,20 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1N00ClaimonPolicyRefresh_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUXX1N40 - Set Related MNI Doing Business As Relationship")
+internal class CPUXX1N40SetRelatedMNIDoingBusinessAsRelationship {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(clmCont in claim.Contacts where (exists(role in clmCont.Roles where role.Role == "coveredparty" and 
+  role.CoveredPartyType == "addnlnameinsured")))==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  claim.setRelatedMNIDBARelationship();
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

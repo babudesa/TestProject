@@ -1,0 +1,257 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_admin.xml -->
+  <DetailViewPanel
+    id="AdminCatastropheDV">
+    <Require
+      name="Catastrophe"
+      type="Catastrophe"/>
+    <Variable
+      initialValue="Catastrophe.setDefaultValue()"
+      name="defaultValue"/>
+    <Variable
+      initialValue="Catastrophe.manageOccurrences()"
+      name="isoForeignCountry"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Variable
+      initialValue="isoForeignCountry ? GeneralErrorWorksheet.goInWorkspace(displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Type.CatTypeWarning) : null"
+      name="displayCatTypeWarning"
+      recalculateOnRefresh="true"/>
+    <Variable
+      name="zoneType"
+      type="ZoneType"/>
+    <Variable
+      name="linkedZone"
+      type="Zone"/>
+    <Variable
+      initialValue="gw.api.admin.BaseAdminUtil.getDefaultCountry()"
+      name="country"
+      type="Country"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Admin.AdminCatastrophe.Catastrophe"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Name"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Name"
+        postOnChange="true"
+        required="true"
+        value="Catastrophe.Ex_Name"/>
+      <!-- GW ADDED
+      value="Catastrophe[&quot;Name_&quot; + util.LocaleUtil.getDefaultLanguage().Code]"/> -->
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Description"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Description"
+        postOnChange="true"
+        required="true"
+        value="Catastrophe.Description"/>
+      <!-- GW ADDED
+        value="Catastrophe[&quot;Description_&quot; + util.LocaleUtil.getDefaultLanguage().Code]"/> -->
+      <Input
+        editable="true"
+        id="CatastropheAdmin_ID"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.ID"
+        required="true"
+        validationExpression="util.catastrophes.GAICCatastrophes.validatecode(Catastrophe)"
+        value="Catastrophe.Ex_ISOCatNumber"/>
+      <!-- <TypeKeyInput
+        editable="true"
+        filter="perm.System.catisooveride == true ?  VALUE.Name == &quot;ISO&quot; :VALUE.Name == &quot;Internal&quot; "
+        id="CatastropheAdmin_Type"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Type"
+        required="true"
+        value="Catastrophe.Type"/> -->
+      <!-- <Input
+        editable="true"
+        id="CatastrophePCSNo"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastrophePCS.ID"
+        value="Catastrophe.PCSCatastropheNumber"/> -->
+      <TypeKeyInput
+        editable="true"
+        filter="Catastrophe.canManageISOCatastrophe(VALUE as java.lang.String)"
+        id="CatastropheAdmin_Type"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Type"
+        onChange="Catastrophe.setDefaultValue(); Catastrophe.manageType()"
+        postOnChange="true"
+        required="true"
+        validationExpression="util.catastrophes.GAICCatastrophes.validateOccurrences(Catastrophe)"
+        value="Catastrophe.Type"/>
+      <RangeInput
+        editable="true"
+        id="CatastropheAdmin_Business"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Business"
+        required="true"
+        value="Catastrophe.BusinessCatNameExt"
+        valueRange="Catastrophe.visiblebusinesscat()"
+        visible="Catastrophe.Type==&quot;businesscat&quot;"/>
+      <!-- Sprint 11 ER, add Business Cat -->
+      <Input
+        id="CatastropheAdmin_EarliestStartDate"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.EarliestStartDate"
+        required="false"
+        value="Catastrophe.Ex_EarliestStartDate"/>
+      <Input
+        id="CatastropheAdmin_LatestEndDate"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.LatestEndDate"
+        required="false"
+        value="Catastrophe.Ex_LatestEndDate"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Year"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Year"
+        required="true"
+        validationExpression="util.catastrophes.GAICCatastrophes.validateyear(Catastrophe)"
+        value="Catastrophe.Ex_Year"/>
+      <!-- Defect 1352 erawe, 2/17/09  Added country to be able to filter states in the occurance by the country selected in the Catastrophe -->
+      <TypeKeyInput
+        available="Catastrophe.Type!=&quot;iso&quot;"
+        editable="Catastrophe.Ex_CatOccurances.length==0"
+        id="Country"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Country"
+        required="false"
+        showNoneSelected="false"
+        value="Catastrophe.CountryExt"/>
+      <!-- editable="Catastrophe.Type!=&quot;iso&quot;"/>  available="Catastrophe.Ex_CatOccurances.length==0"/> -->
+      <ListViewInput
+        boldLabel="true"
+        editable="true"
+        id="CatOccurances"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.CatOccurances"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          id="CatOccurancesLV"
+          validationExpression="util.catastrophes.GAICCatastrophes.validate(Catastrophe)">
+          <!-- defect 1352 erawe Added to the toAdd Ex_CatOccurance.CatCountryExt=Catastrophe.CountryExt -->
+          <RowIterator
+            editable="true"
+            elementName="Ex_CatOccurance"
+            hideCheckBoxesIfReadOnly="true"
+            pageSize="10"
+            toAdd="Catastrophe.addToEx_CatOccurances(Ex_CatOccurance);Ex_CatOccurance.CatCountryExt=Catastrophe.CountryExt"
+            toRemove="Catastrophe.removeFromEx_CatOccurances(Ex_CatOccurance)"
+            value="Catastrophe.Ex_CatOccurances">
+            <Row>
+              <Cell
+                editable="true"
+                id="State"
+                label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.CatOccurance.State"
+                required="Catastrophe.CountryExt==&quot;US&quot; or Catastrophe.CountryExt==&quot;CA&quot;"
+                value="Ex_CatOccurance.State"
+                visible="Catastrophe.CountryExt==&quot;US&quot; or Catastrophe.CountryExt==&quot;CA&quot;"/>
+              <Cell
+                editable="true"
+                id="StartDate"
+                label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.CatOccurance.StartDate"
+                required="true"
+                value="Ex_CatOccurance.StartDate"/>
+              <Cell
+                editable="true"
+                id="EndDate"
+                label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.CatOccurance.EndDate"
+                required="true"
+                value="Ex_CatOccurance.EndDate"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <!-- <DateInput
+        dateFormat="short"
+        editable="true"
+        id="CatastropheValidFrom"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheValidFrom"
+        required="true"
+        timeFormat="short"
+        value="Catastrophe.CatastropheValidFrom"/> -->
+      <!-- <DateInput
+        dateFormat="short"
+        editable="true"
+        id="CatastropheValidTo"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheValidTo"
+        required="true"
+        timeFormat="short"
+        validationExpression="Catastrophe.CatastropheValidFrom &gt; Catastrophe.CatastropheValidTo ? displaykey.Java.Validation.AdminCatastrophe.Date.ForbidValidReverse : null"
+        value="Catastrophe.CatastropheValidTo"/> -->
+      <!-- <TextAreaInput
+        id="Zones"
+        label="displaykey.Web.Admin.AdminCatastropheDV.AreasCovered"
+        numCols="50"
+        numRows="5"
+        value="Catastrophe.Zones"/> -->
+      <!-- <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="Country"
+        label="displaykey.Web.Admin.AdminCatastropheDV.Country"
+        postOnChange="true"
+        required="true"
+        value="country"
+        valueRange="getPossibleCountries()"/> -->
+      <!-- <InputSetRef
+        def="CatastropheZonesInputSet(Catastrophe)"
+        mode="country"/> -->
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="CatastrophePerilsLV(Catastrophe)"
+        editable="true"
+        label="displaykey.NVV.Admin.AdminCatastrophe.Peril.Title"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput> -->
+      <!-- <TextInput
+        id="empty1"
+        value="&quot;&quot;"/> -->
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="CatastropheLocalizedLV(Catastrophe)"
+        editable="true"
+        label="displaykey.Web.Admin.AdminCatastropheDV.Localization"
+        labelAbove="true">
+        <Toolbar
+          visible="false">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput> -->
+      <!-- <TextInput
+        id="empty2"
+        value="&quot;&quot;"/> -->
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="CatastropheClaimsHistoryLV(Catastrophe)"
+        label="displaykey.Web.Admin.AdminCatastropheDV.HistoryOfMatchedClaims"
+        labelAbove="true">
+        <Toolbar
+          visible="false">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput> -->
+    </InputColumn>
+    <Code><![CDATA[function getZoneInputValueRange(first : String[], second : String[]) : String[] {
+  var both = new java.util.ArrayList<String>();
+  java.util.Collections.addAll(both, first);
+  java.util.Collections.addAll(both, second);
+
+  var h = new java.util.HashSet<String>(both);
+  both.clear();
+  both.addAll(h);
+
+  return both.toArray(new String[] {});
+}
+
+function getPossibleCountries() : List<Country> {
+  var org = User.util.CurrentUser.Organization
+  if (org == null) {
+    org = User.util.UnrestrictedUser.Organization
+  }
+  return org.Countries
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

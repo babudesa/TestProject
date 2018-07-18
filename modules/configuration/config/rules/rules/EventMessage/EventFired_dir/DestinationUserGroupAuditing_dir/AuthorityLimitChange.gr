@@ -1,0 +1,42 @@
+package rules.EventMessage.EventFired_dir.DestinationUserGroupAuditing_dir
+
+@gw.rules.RuleName("AuthorityLimitChange")
+internal class AuthorityLimitChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis AuthorityLimitProfile == true && 
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.LoadCommandID) /*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.database.Query;
+try{
+  var a:AuthorityLimitProfile=messageContext.Root as AuthorityLimitProfile;
+  
+  var q=  Query.make(User);
+  q.compare("AuthorityProfile", Equals, a)
+  var u:User = q.select().AtMostOneRow;
+  
+  if(u != null){
+    var body = templates.email.AuthorityLimitChanged.renderToString(a,u);
+
+
+    var emailAddy:String="";
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+      emailAddy=ScriptParameters.ClaimCenterProdEmail;
+    }
+    else{
+      emailAddy=ScriptParameters.ClaimCenterDevEmail;
+    }
+    util.Email.sendMail(emailAddy, "Authority Limit Change to " + u + " - ENV: " +gw.api.system.server.ServerUtil.getEnv(), body)
+  }
+}
+catch(e){
+  //Eat the exception, if this fails we don't want to limit functionality
+  //as this is just for root cause analysis
+  gw.api.util.Logger.logError("Authority Limit Change Auditing Failed") 
+  var emailAddy = (java.lang.System.getProperty("gw.cc.env") == "prod" ? ScriptParameters.ClaimCenterProdEmail : ScriptParameters.ClaimCenterDevEmail)
+  util.Email.sendMail(emailAddy, "User Auditing Failed", e.StackTraceAsString)
+  e.printStackTrace()
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,31 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir
+
+@gw.rules.RuleName("TPOXX1513 - Backup Withholding / Tax Levy Email")
+internal class TPOXX1513BackupWithholdingTaxLevyEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet as CheckSet).PrimaryCheck.Bulked
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/if(exists(pymt in (transactionSet as CheckSet).PrimaryCheck.Payments where pymt.PaymentType=="final")){
+  var checks = transactionSet.Claim.Checks
+  checks = checks.where(\ c -> c.Status == "requesting")  
+  for(ch in checks){
+    ch.sendBackupWithholdingTaxLevyEmail()
+  }
+}else{
+  if((transactionSet as CheckSet).PrimaryCheck.Status == "requesting"){
+    (transactionSet as CheckSet).PrimaryCheck.sendBackupWithholdingTaxLevyEmail()
+  }
+}
+ 
+  
+
+
+
+
+
+/*end00rule*/
+  }
+}

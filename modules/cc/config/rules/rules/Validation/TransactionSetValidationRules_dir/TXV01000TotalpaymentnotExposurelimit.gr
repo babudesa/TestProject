@@ -1,0 +1,76 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleName("TXV01000 - Total payment not > Exposure limit")
+internal class TXV01000TotalpaymentnotExposurelimit {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype ==  "CheckSet"
+&& transactionSet.New
+&& transactionSet.ApprovalStatus == "unapproved"
+//The transactionset.new condition disallows the rule from executing for all transactions associated
+//with the claim (because we want the rule to execute only for the new transactions that we are trying to add)./*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.financials.CurrencyAmount
+uses java.math.BigDecimal
+uses gw.api.financials.FinancialsCalculationUtil
+uses org.apache.commons.lang.ObjectUtils
+uses gw.api.util.CurrencyUtil
+
+var totalPaymentsIncludingPendingExp = FinancialsCalculationUtil.getTotalPaymentsIncludingPendingExpression()
+var availableReservesExp = FinancialsCalculationUtil.getAvailableReservesExpression()
+var pendingApprovalReservesExp = FinancialsCalculationUtil.getPendingApprovalReservesExpression()
+var committedAndFutureAndPendingApprovalPaymentsAndReservesExpression = totalPaymentsIncludingPendingExp.plus( availableReservesExp ).plus( pendingApprovalReservesExp )
+
+//Set the following warning parameters (warning1 & warning2) to true if you want to throw a warning, but still permit the end-user to continue with the transaction if he/she desires
+//Set to false if you want to block this transaction
+var warning1 = false 
+var warning2 = true 
+var currency = transactionSet.Claim.Currency
+var exposureSet = new java.util.HashSet<Exposure>()
+var costType = CostType.TC_CLAIMCOST
+
+for (transaction in transactionSet.Transactions) {
+  exposureSet.add(transaction.Exposure)
+}
+
+for (exposure in exposureSet) {
+  //only if the exposure has a coverage with an exposure limit defined
+  var exposureLimit = exposure.Coverage.ExposureLimit
+  if (exposureLimit != null) { 
+    var totalPayments =  transactionSet.evaluateExpressionByExposureAsIfSubmitted(totalPaymentsIncludingPendingExp, exposure, costType, null)
+    totalPayments = ObjectUtils.defaultIfNull(totalPayments, CurrencyAmount.getStrict(BigDecimal.ZERO, currency )) as CurrencyAmount 
+    var combined = transactionSet.evaluateExpressionByExposureAsIfSubmitted(committedAndFutureAndPendingApprovalPaymentsAndReservesExpression, exposure, costType, null )
+    combined = ObjectUtils.defaultIfNull( combined, CurrencyAmount.getStrict(BigDecimal.ZERO, currency )) as CurrencyAmount 
+    
+    //If this new amount when added to the total payments already made for this exposure exceeds the exposure limit
+    if (totalPayments > exposureLimit) {
+      //If Warning1 is set to TRUE, throw a warning, but permit the transaction to go through if the user desires so
+      if (warning1 == true) {
+        transactionSet.reject(null, null, "payment", displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingOnExposureExceedsExposureLimitWarning(exposure, CurrencyUtil.renderAsCurrency(totalPayments), CurrencyUtil.renderAsCurrency(exposure.Coverage.ExposureLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+
+      } else {
+	//If Warning1 is set to FALSE, BLOCK THE TRANSACTION FROM GOING THROUGH
+        transactionSet.reject("payment", 
+	  displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingOnExposureExceedsExposureLimitError(exposure, CurrencyUtil.renderAsCurrency(totalPayments), CurrencyUtil.renderAsCurrency(exposure.Coverage.ExposureLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)), 
+	  null, null)
+      }
+    }
+    //If this new amount when added to the total payments already made for this exposure and the remaining reserves for this exposure exceeds the exposure limit, 
+    if (combined > exposureLimit && not (totalPayments > exposureLimit)) {
+      //If Warning2 is set to TRUE, throw a warning, but permit the transaction to go through if the user desires so 
+      if (warning2 == true) {
+        transactionSet.reject(null, null, "payment",
+          displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingPlusAvailableAndPendingReservesOnExposureExceedsExposureLimitWarning(exposure, CurrencyUtil.renderAsCurrency(combined), CurrencyUtil.renderAsCurrency(exposure.Coverage.ExposureLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+      } else {
+        //If Warning2 is set to FALSE, BLOCK THE TRANSACTION FROM GOING THROUGH
+        transactionSet.reject("payment", 
+          displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingPlusAvailableAndPendingReservesOnExposureExceedsExposureLimitError(exposure, CurrencyUtil.renderAsCurrency(combined), CurrencyUtil.renderAsCurrency(exposure.Coverage.ExposureLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)),
+          null, null)
+
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

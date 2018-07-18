@@ -1,0 +1,20 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXX1400 - Set RptCreateDateExt to CurrentDate")
+internal class TPUXX1400SetRptCreateDateExttoCurrentDate {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.AllTransactions where trans.RptCreateDateExt == null or trans.New)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(trans in transactionSet.AllTransactions)
+{
+     if((trans.RptCreateDateExt == null or trans.New) and 
+        (trans.LoadCommandID == null and
+	    !gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(trans.LoadCommandID)))
+	 {
+	   trans.RptCreateDateExt = gw.api.util.DateUtil.currentDate()
+     }
+}/*end00rule*/
+  }
+}

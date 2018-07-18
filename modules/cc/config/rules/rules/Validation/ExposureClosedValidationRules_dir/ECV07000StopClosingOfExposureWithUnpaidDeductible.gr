@@ -1,0 +1,24 @@
+package rules.Validation.ExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECV07000 - Stop Closing Of Exposure With Unpaid Deductible")
+internal class ECV07000StopClosingOfExposureWithUnpaidDeductible {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/// This rule triggers when an exposure is closed,
+// i.e. when its ExpsoureState changes to Closed
+gw.api.financials.FinancialsUtil.isUseDeductibleHandling()
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// If this exposure's coverage has an unpaid deductible, and this exposure has
+// at least one payment, then it cannot be closed until the deductible is waived
+var deductible = exposure.Coverage.ClaimDeductible
+if (deductible != null) {
+  if (!deductible.Paid && !deductible.Waived) {
+    if (exposure.getPaymentsIterator(false).hasNext()) {
+      exposure.reject( "newloss", displaykey.Deductible.CannotCloseExposure, null, null )
+    }
+  }
+}/*end00rule*/
+  }
+}

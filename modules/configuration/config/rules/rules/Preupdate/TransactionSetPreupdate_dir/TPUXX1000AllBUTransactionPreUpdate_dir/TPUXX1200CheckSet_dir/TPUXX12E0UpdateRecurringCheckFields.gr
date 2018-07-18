@@ -1,0 +1,52 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX12E0 - Update Recurring Check Fields")
+internal class TPUXX12E0UpdateRecurringCheckFields {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).Recurrence != null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkset = transactionSet as CheckSet
+var first = checkset.RecurringChecks.first().Checks.first()
+
+if (first.New){
+  // Update Recurring Pay Period End & update check Memo
+   checkset.Checks.first().ServicePdEnd = (transactionSet as CheckSet).Checks.first().recurringEndDate;
+   checkset.Checks.first().Memo = (transactionSet as CheckSet).Checks.first().getInitialRecurringMemo()
+  // Update Issued Pay To and Mail To Address
+  // Update mail to address
+  first.updateRecurringFields()
+}
+
+var chkremain : int = 0;
+
+for (each in checkset.RecurringChecks.first().Checks){
+  if (each != null && (each.Status.Code != "requesting" && each.IssueDate == null)){
+    chkremain = chkremain + 1;
+  }
+  if (each != null && each.CheckNumber == null && !each.ManualCheck && 
+   (each.Status == "requesting" || each.Status == "notifying")) { 
+    //Assign check numbers to recurring checks - COPIED FROM ASSIGN CHECK NUMBER
+    // Generating Check Numbers for NationalBank (check number start with 3) and RBC (check number start with 1) -dpenmetsa
+    if(each.BankAccount == "national_city"){
+      each.CheckNumber = util.UniqueNumberGenerators.generateNationalBankCheckNumber() ;
+    }
+    else if(each.BankAccount =="royal_bank_of_canada"){
+      each.CheckNumber = util.UniqueNumberGenerators.genetateRBCCheckNumber()
+    }
+  }
+}
+
+if (checkset.Recurrence.ChecksRemainingExt != chkremain){
+  checkset.Recurrence.ChecksRemainingExt = chkremain
+}
+if (checkset.Recurrence.New){
+  checkset.PrimaryCheck.addEvent("CheckRecurrence_Added")
+} else
+  if (checkset.Recurrence.Changed){
+    checkset.PrimaryCheck.addEvent("CheckRecurrence_Changed")
+  }
+/*end00rule*/
+  }
+}

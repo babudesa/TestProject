@@ -1,0 +1,26 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EXPUXX2200MedicareExposures_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUXX2210 - Manage ORM Value for Medicare")
+internal class EPUXX2210ManageORMValueforMedicare {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/typeof exposure.Claimant == Person
+
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.CMS.*
+var contactISO = exposure.Claimant.ContactISOMedicareExt
+var calculatedValue : boolean
+if(contactISO != null and (contactISO.Contact as Person).MedicareEligibleExt){
+  calculatedValue = (exposure.IsORMExposure ||
+    exposure.Claim.Exposures.hasMatch(\ e -> (e.MedicareExposureExt || e.IsMedicareExposureExt) && e.IsORMExposure && e.Claimant == contactISO.Contact))
+  
+  if(calculatedValue != contactISO.ORMIndExt){
+    gw.api.util.Logger.logDebug(actions.Rule.DisplayName + ": ORM out of sync condition detected for " + exposure.Claim + " - " + exposure + ". Re-assigning to calculated value...")
+    contactISO.ORMIndExt = calculatedValue 
+  }
+}/*end00rule*/
+  }
+}

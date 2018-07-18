@@ -1,0 +1,108 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir.CEXX1510CMSMedicare_dir
+
+@gw.rules.RuleName("CEXX1514 - Medicare ORM Info Required Reminder")
+internal class CEXX1514MedicareORMInfoRequiredReminder {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 4/18/13 - kniese - This activity will generate 20 days from when the Medicare
+// Eligible flag is set to Yes and the ORM required data does not exist. Due date
+// is 10 days. This is a recurring activity.
+// 7/28/15 - cmullin - added InjuredWorkerExt Subtype and added 4 additional 
+// ExposureTypes to condition statements to account for WC Claims.
+//1/14/2016 - cprakash - Modified the missing ORM information check logic
+claim.isConvertedExt()==false &&
+exists(exp in claim.Exposures where 
+(typeof exp.Claimant == Person or typeof exp.Claimant == InjuredWorkerExt) and 
+(exp.Claimant as Person).DateOfMedicareEligibleExt != null and (
+(exp.ExposureType == "ab_PIP" || 
+ exp.ExposureType == "ab_MedPay" || 
+ exp.ExposureType == "sp_medical_payment" ||  //Added new exposure type
+(exp.ExposureType == "wc_medical_details")) and //refer to ICD 10 code on feature screen
+(exp.Claimant as Person).MedicareEligibleExt and
+ exp.Claimant.getMissingORMInfo(exp).length>0 and 
+(exp.Claimant as Person).RefuseProvideExt != true and
+(exp.Claimant as Person).BelowThresholdExt != true))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///1/14/2016 - cprakash - this activity has modified to fix the issues related to Missing ORM information 
+//and recurring issues
+
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var today = gw.api.util.DateUtil.currentDate()
+
+var pattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "cms_med_ORMreminder" )
+//changed to logging in Debug - SR
+Logger.logInfo("CEXX1514 - Medicare ORM Rule executing.")
+
+claim.Exposures.each(\ exp ->
+  {
+    var createActivity : boolean = false
+    var validExp : boolean = false
+    var missingORMInfo : boolean = false
+   //this condition checks for applicable exposure types, will set to validExp to true if condition satisfies
+   if(exp.ExposureType == "ab_PIP" || 
+     exp.ExposureType == "ab_MedPay" || 
+     exp.ExposureType == "sp_medical_payment" ||  //Added new exposure type
+     (exp.ExposureType == "wc_medical_details"))
+    {
+      validExp = true
+      Logger.logDebug("Valid Exposure avaialable")
+    }
+    
+   //this condition checks for Claimant of type Person or Injured Worker and checks for Date of Medicare
+   //Eligible, RefuseProvide and checks for 20 days after Date of Medicare Eligible is set to yes
+   //Checks for Required Medicare Information
+   if(validExp)
+   {
+    if((typeof exp.Claimant  == Person  or typeof exp.Claimant == InjuredWorkerExt) && 
+       (exp.Claimant as Person).DateOfMedicareEligibleExt != null &&
+       (exp.Claimant as Person).MedicareEligibleExt && (
+        gw.api.util.DateUtil.daysBetween( (exp.Claimant as Person).DateOfMedicareEligibleExt, today ) >= 0 &&
+        (exp.Claimant as Person).BelowThresholdExt != true  and (exp.Claimant as Person).RefuseProvideExt != true &&
+        exp.Claimant.getMissingORMInfo(exp).length > 0))
+       {
+        
+         missingORMInfo = true
+         Logger.logDebug("Missing ORM Information")
+       }
+   }
+  
+   //this condition checks for Existing ORM Information Activities 
+   if(missingORMInfo)
+   {
+     if( exists (act in claim.Activities where act.ActivityPattern == pattern and act.Claimant == exp.Claimant))
+     {
+       Logger.logDebug("ORM Information Needed Activities already exists...Check for Valid Dates and Activity Status")
+       var lastCreatedActivity = claim.Activities.where(\ act -> act.ActivityPattern == pattern and act.Claimant == exp.Claimant ).maxBy(\ a -> a.CreateTime)
+       var daysSinceLastCreatedActivity = gw.api.util.DateUtil.daysSince(lastCreatedActivity.CreateTime)
+       if(lastCreatedActivity.Status!=typekey.ActivityStatus.TC_OPEN and daysSinceLastCreatedActivity >= 30 and daysSinceLastCreatedActivity%30 >= 0 and daysSinceLastCreatedActivity%30 <= 3 )
+       {
+         createActivity = true
+         Logger.logDebug("Last created activity is created 30 days ago and is in complete status, Need to create one again ")
+       }
+     }
+     else
+     {
+       var daysSinceMedicareEligibleisYes = gw.api.util.DateUtil.daysSince((exp.Claimant as Person).DateOfMedicareEligibleExt)
+       if(daysSinceMedicareEligibleisYes >= 20) {
+        createActivity = true
+        Logger.logDebug("No ORM activity exists for the given exposure and claimant combination, creating activity for the very first time")
+     }
+     }
+  }
+    
+  //this logic creates a new Medicare ORM information Needed activity and set the ORM missing information as description 
+  if(createActivity)
+  {  
+     var missingInfo = ""
+     var act = claim.createActivityFromPattern( exp, pattern )
+     missingInfo = exp.Claimant.getMissingORMInfo(exp)
+     act.Description = displaykey.Rules.Activities.ISO.CMS.MedicareInformationMissing(exp.Claimant, missingInfo)
+     //Defect: 8350 - schandanam - Removed Mapping between Activity and Claimant
+     //act.Claimant = exp.Claimant
+      Logger.logDebug("ORM information needed Activity created successfully")
+  }
+  
+  })/*end00rule*/
+  }
+}

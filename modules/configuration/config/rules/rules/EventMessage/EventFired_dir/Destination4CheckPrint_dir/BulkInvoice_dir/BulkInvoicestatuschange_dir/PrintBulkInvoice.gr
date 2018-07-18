@@ -1,0 +1,42 @@
+package rules.EventMessage.EventFired_dir.Destination4CheckPrint_dir.BulkInvoice_dir.BulkInvoicestatuschange_dir
+
+@gw.rules.RuleName("Print BulkInvoice")
+internal class PrintBulkInvoice {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.Root as BulkInvoice).Status == BulkInvoiceStatus.TC_DRAFT || 
+(messageContext.Root as BulkInvoice).Status == BulkInvoiceStatus.TC_REQUESTING /*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var blkinvoice : BulkInvoice = messageContext.Root as BulkInvoice;
+var env:String = gw.api.system.server.ServerUtil.getEnv();
+try {
+
+if (blkinvoice.Status == BulkInvoiceStatus.TC_DRAFT &&
+    (blkinvoice.CheckNumber == null)) {
+
+
+    if(blkinvoice.BankAccountExt == BankAccount.TC_NATIONAL_CITY){
+      blkinvoice.CheckNumber = util.UniqueNumberGenerators.generateNationalBankCheckNumber(); 
+    }
+    else if(blkinvoice.BankAccountExt ==  BankAccount.TC_ROYAL_BANK_OF_CANADA){
+      blkinvoice.CheckNumber = util.UniqueNumberGenerators.genetateRBCCheckNumber();
+    }
+    
+
+  gw.api.util.Logger.logDebug("New bulk check number generated: " + blkinvoice.CheckNumber);
+  
+} else if (blkinvoice.Status == BulkInvoiceStatus.TC_REQUESTING) {
+  
+  
+  var messageContent = templates.messaging.checkwriter.BulkCheckData.renderToString(blkinvoice)
+  var message = messageContext.createMessage(messageContent)
+
+  message.putEntityByName("theBulkInvoice", blkinvoice)
+}
+
+} catch (e) {
+  gw.api.util.Logger.logDebug("BulkInvoice - BulkInvoice Status Change: " + e.Message);
+}/*end00rule*/
+  }
+}

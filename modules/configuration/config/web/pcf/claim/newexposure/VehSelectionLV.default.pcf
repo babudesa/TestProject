@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="VehSelectionLV"
+    mode="default">
+    <Require
+      name="PolicyVehicles"
+      type="VehicleRU[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="false"
+      elementName="PolicyVehicle"
+      pageSize="10"
+      value="PolicyVehicles">
+      <Row>
+        <ContentCell
+          id="Select">
+          <Link
+            action="selectRisk(PolicyVehicle)"
+            id="SelectRU"
+            label="&quot;Select&quot;"
+            styleClass="miniButton"/>
+        </ContentCell>
+        <Cell
+          align="left"
+          id="Number"
+          label="displaykey.LV.Policy.Vehicles.Number"
+          printWidth="0.05"
+          sortOrder="1"
+          value="PolicyVehicle.RUNumber"/>
+        <Cell
+          align="left"
+          id="Year"
+          label="displaykey.LV.Policy.Vehicles.Year"
+          printWidth="0.08"
+          value="PolicyVehicle.Vehicle.Year"/>
+        <Cell
+          id="Make"
+          label="displaykey.LV.Policy.Vehicles.Make"
+          printWidth="0.11"
+          value="PolicyVehicle.Vehicle.Make"/>
+        <Cell
+          id="Model"
+          label="displaykey.LV.Policy.Vehicles.Model"
+          printWidth="0.11"
+          value="PolicyVehicle.Vehicle.Model"/>
+        <Cell
+          id="V_VIN"
+          label="displaykey.LV.Policy.Vehicles.VIN"
+          printWidth="0.22"
+          validationExpression="Claim.validateVin(PolicyVehicle.Vehicle.Vin)"
+          value="PolicyVehicle.Vehicle.Vin"/>
+        <Cell
+          align="left"
+          id="VehicleWeight"
+          label="displaykey.LV.Policy.Vehicles.Weight"
+          printWidth="0.11"
+          value="PolicyVehicle.Vehicle.VehicleWeightExt"/>
+        <Cell
+          align="left"
+          formatType="exactNumber"
+          id="V_CostNew"
+          label="displaykey.LV.Policy.Vehicles.CostNew"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          value="PolicyVehicle.Vehicle.VehicleNewValueExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function selectRisk(polVehicle:VehicleRU){
+  gw.api.util.CCLocationUtil.runAndCommit(\ -> NewExposureCoverageSelect.go(Claim, polVehicle.Coverages), CurrentLocation)
+}]]></Code>
+  </ListViewPanel>
+</PCF>

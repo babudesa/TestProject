@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    id="ReinsuranceInputSet">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.ReinsuranceReportable"
+      name="originalReinsReportable"
+      type="boolean"/>
+    <Variable
+      initialValue="Claim.ReinsuranceReason"
+      name="originalReinsReason"
+      type="String"/>
+    <Variable
+      initialValue="false"
+      name="editReasonRequired"
+      type="boolean"/>
+    <Input
+      editable="perm.System.reinsuranceedit"
+      id="ReinsuranceReportable"
+      label="displaykey.Web.Claim.ClaimStatus.ReinsuranceReportable"
+      onChange="setReinsuranceReason()"
+      postOnChange="true"
+      value="claim.ReinsuranceReportable"/>
+    <TextAreaInput
+      editable="true"
+      id="ReinsuranceReason"
+      label="displaykey.Web.Claim.ClaimStatus.ReinsuranceEditReason"
+      numCols="30"
+      numRows="3"
+      required="editReasonRequired"
+      value="claim.ReinsuranceReason"/>
+    <Input
+      id="ReinsuranceFlagged"
+      label="displaykey.Web.Claim.ClaimStatus.ReinsuranceFlaggedStatus"
+      value="claim.ReinsuranceFlaggedStatus"
+      visible="claim.ReinsuranceReportable!=null &amp;&amp; !CurrentLocation.InEditMode"/>
+    <Code><![CDATA[
+function setReinsuranceReason() {
+  if(originalReinsReportable != claim.ReinsuranceReportable || (claim.ReinsuranceFlaggedStatus == null && claim.ReinsuranceReportable == false)) {
+    editReasonRequired = true
+    claim.ReinsuranceReason = org.apache.commons.lang.StringUtils.EMPTY 
+  } else {
+    claim.ReinsuranceReason = originalReinsReason
+  }  
+}
+    ]]></Code>
+  </InputSet>
+</PCF>

@@ -1,0 +1,77 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1900 - Merge Roles on Policy Refresh")
+internal class CPUXX1900MergeRolesonPolicyRefresh {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(contact in claim.Contacts where exists(role in contact.Roles where 
+  role.Role.Code.indexOf( "former" ) != 0)) and
+claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+  Loops through the contacts on a claim when the policy is being refreshed
+  and merges all former contacts into their non-former matching counterparts.  
+  A contact is considered to be matching when the TaxIDs and names match or 
+  if both contact's TaxIDs are null and the names match.  Any addresses on the former
+  contact that does not exist on the non-former contact are copied into the non-former contact. 
+  Sprint/Maintenance Release: EM 12 - Defect 465
+  Author: Zach Thomas
+  Date: 01/09/2009
+  Updated : 1/12/2011 to change the method for removing contacts from the claim.
+*/
+try{
+  var foundFlag:boolean = false
+
+  for(contact in claim.Contacts){
+    var contactHasFormer:boolean = false
+    if(contact.hasFormerRole() and contact.Contact.FormerVerifiedContactExt){
+      for(contact2 in claim.Contacts){
+        if(!contact2.hasFormerRole() and !contact.Contact.ObsoletePolicyContactExt and util.custom_Ext.PolicyRefreshFunctions.isMatchingContact( contact, contact2 )){
+          contactHasFormer = true
+          foundFlag = true;
+          contact.Contact.ObsoletePolicyContactExt = true;
+          util.custom_Ext.PolicyRefreshFunctions.mergeContacts( contact, contact2 );         
+        }
+      }
+      if(foundFlag){
+        if(!contact.hasRestrictedRole()){
+          claim.removeFromContacts(contact);
+        } else {
+          contact.Contact.ObsoletePolicyContactExt = true
+        }
+        foundFlag = false;
+      }
+    }
+    // 7/18/13 - kniese - Added to loop through the contacts that 
+    // don't have a former role and merge the related contacts
+    if(!contact.hasFormerRole() and contactHasFormer == false){
+      if(contact.Contact.TargetRelatedContacts.Count != 0){
+       for(contCont in contact.Contact.TargetRelatedContacts){
+         for(cont2 in claim.Contacts){
+          if(!cont2.hasFormerRole() and util.custom_Ext.PolicyRefreshFunctions.isMatchingRelatedContact(contCont.RelatedContact, cont2.Contact)){
+
+           var newContCont = new ContactContact()
+           newContCont.Relationship = contCont.Relationship
+           newContCont.RelatedContact = cont2.Contact
+           if(contCont.ClaimantAddRepFlagExt)
+               newContCont.ClaimantAddRepFlagExt = true
+            if(contCont.ClaimantFlagExt)
+              newContCont.ClaimantFlagExt = true
+            if(contCont.InjuredPartyFlagExt){
+              newContCont.InjuredPartyFlagExt = true
+            }
+           contact.Contact.removeFromTargetRelatedContacts(contCont)
+           contact.Contact.addToTargetRelatedContacts(newContCont)
+         }
+        }
+       }
+      }
+    }
+  }
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

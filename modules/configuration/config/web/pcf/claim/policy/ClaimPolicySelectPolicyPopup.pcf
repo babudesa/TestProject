@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    id="ClaimPolicySelectPolicyPopup"
+    parent="ClaimPolicyGeneral(Claim)"
+    returnType="PolicySummary"
+    title="displaykey.Web.ClaimPolicy.SelectPolicy">
+    <LocationEntryPoint
+      signature="ClaimPolicySelectPolicyPopup(Claim : Claim, verifiedPolicyInfo : util.custom_Ext.VerifiedPolicyInfo)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="polSum"
+      type="PolicySummaryQuery"/>
+    <Variable
+      name="verifiedPolicyInfo"
+      type="util.custom_Ext.VerifiedPolicyInfo"/>
+    <Screen
+      id="ClaimPolicySelectPolicyScreen">
+      <Variable
+        initialValue="new pcf_gs.ClaimsMadeVisible_PageProc()"
+        name="lossdate"
+        type="pcf_gs.ClaimsMadeVisible_PageProc"/>
+      <SearchPanel
+        cachingEnabled="false"
+        criteriaName="PolicySearchCriteria"
+        resultsName="PolicySummaryList"
+        search="search(PolicySearchCriteria)"
+        searchCriteria="var c = new PolicySearchCriteria(); c.initialize(Claim); initPolicySearchCriteria(c) return c;"
+        searchResultsType="PolicySummaryQuery">
+        <PanelRef
+          def="PolicySearchDV(PolicySearchCriteria, lossdate, verifiedPolicyInfo)"/>
+        <PanelRef
+          def="PolicySearchButtonsDV(PolicySearchCriteria, polSum, Claim, lossdate, verifiedPolicyInfo)"/>
+        <ListDetailPanel
+          selectionName="policySummary"
+          selectionType="PolicySummary">
+          <PanelRef
+            def="PolicySearchResultLV(PolicySummaryList, Claim)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="PolicySummaryDetails"
+              title="displaykey.JSP.PolicyDetail.Policy">
+              <PanelRef
+                def="PolicySummaryGeneralDV(PolicySummary)"
+                mode="gw.api.policy.PolicyTypeUtil.getLossTypeForPolicyType(PolicySummary.PolicyType)"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </SearchPanel>
+    </Screen>
+    <Code><![CDATA[function search(polCrit : PolicySearchCriteria) : PolicySummaryQuery{
+  var polSumQuery : PolicySummaryQuery = util.custom_Ext.PolicySearchValidationWrapper.validate(polCrit, verifiedPolicyInfo)
+  polSum = polSumQuery;
+  polCrit.NewSearchExt = true
+  verifiedPolicyInfo.PreviousLossDate = Claim.LossDate
+  verifiedPolicyInfo.SelectedVerifiedPolicyNumber = polCrit.PolicyNumber
+  verifiedPolicyInfo.SearchLossDate = polCrit.LossDate
+  return polSumQuery;
+}
+
+function initPolicySearchCriteria(crit:PolicySearchCriteria) {
+  var user:User = User.util.getCurrentUser();
+  util.admin.SecurityUtil.initPolicySearchCriteria(crit, user)
+}]]></Code>
+  </Popup>
+</PCF>

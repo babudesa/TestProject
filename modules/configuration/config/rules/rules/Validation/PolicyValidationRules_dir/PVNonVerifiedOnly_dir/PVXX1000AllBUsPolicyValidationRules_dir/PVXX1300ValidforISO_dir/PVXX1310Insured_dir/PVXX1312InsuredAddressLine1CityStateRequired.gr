@@ -1,0 +1,78 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1300ValidforISO_dir.PVXX1310Insured_dir
+
+@gw.rules.RuleName("PVXX1312 - Insured AddressLine1, City, State Required")
+internal class PVXX1312InsuredAddressLine1CityStateRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*///Defect 1369 - erawe 2/11/09 changed from rejectField to reject
+try
+{
+  var address = policy.insured.PrimaryAddress;
+  //checking Address line 1
+  var msg = policy.Claim.performAddressValidation(address.AddressLine1)
+
+  if(msg == "1")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.AddressLine1", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "Address Line 1"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "Address Line 1"), null, null )
+  }
+  if(msg == "2")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.AddressLine1", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "Address Line 1"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "Address Line 1"), null, null  )
+  }    
+  if(msg == "3")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.AddressLine1", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "Address Line 1"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "Address Line 1"), null, null )
+  }
+
+  //checking City
+  msg = policy.Claim.performAddressValidation(address.City)
+
+  if(msg == "1")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.City", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "City"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "City"), null, null )
+  }
+  if(msg == "2")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.City", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "City"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "City"), null, null )
+  }
+  if(msg == "3")
+  {    
+    //Policy.rejectField( "Insured.PrimaryAddress.City", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "City"), null, null )
+    policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "City"), null, null )
+  }
+    
+  //checking State
+  //sprzygocki 3-5-09 only requiring state if US or Canada
+  if(address.Country=="US"){
+    msg = policy.Claim.performAddressValidation(address.State.toString())
+
+    if(msg == "1")
+    {
+      //Policy.rejectField( "Insured.PrimaryAddress.State", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "State"), null, null )
+      policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "State"), null, null  )
+    }
+    if(msg == "2")
+    {
+      //Policy.rejectField( "Insured.PrimaryAddress.State", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "State"), null, null )
+      policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "State"), null, null )
+    }
+    if(msg == "3")
+    {    
+      //Policy.rejectField( "Insured.PrimaryAddress.State", "iso", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "State"), null, null )
+      policy.reject( "iso", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "State"), null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+  //Exposure.reject( null, null, "newloss", "Unknown Error Occurred in Exposure Validation Rule "+actions.getRule().displayName )
+}/*end00rule*/
+  }
+}

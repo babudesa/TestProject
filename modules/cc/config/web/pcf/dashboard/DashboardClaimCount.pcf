@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewedbclaimcounts"
+    id="DashboardClaimCount"
+    title="displaykey.Java.Dashboard.Title(displaykey.Java.Dashboard.ClaimCount.Title)">
+    <LocationEntryPoint
+      signature="DashboardClaimCount(GroupInfo : dashboard.DashboardTreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="dashboard.DashboardTreeGroupInfo"/>
+    <Variable
+      initialValue="dashboard.DashboardUtil.getHelper()"
+      name="Stats"
+      type="dashboard.DashboardStatsHelper"/>
+    <Variable
+      initialValue="dashboard.DashboardUtil.getMode()"
+      name="ModeSource"
+      type="String"/>
+    <Screen
+      id="DashboardClaimCountScreen">
+      <Toolbar>
+        <PrintToolbarButton
+          available="perm.User.printlistviews"
+          id="PrintButton"
+          label="displaykey.Button.Print"/>
+        <ToolbarDivider/>
+        <ToolbarInput
+          boldLabel="true"
+          editable="false"
+          id="label"
+          label="displaykey.Java.Dashboard.AsOf"
+          value="Stats.WhenLastCalculatedString"/>
+      </Toolbar>
+      <PanelRef
+        def="ClaimCountByOrgLevelLV(Stats.getOrgStatsAsArray(GroupInfo.AllGroups as entity.Group[]))"
+        mode="ModeSource"/>
+      <PanelRef
+        def="ClaimCountByLOBLV(Stats.LOBStats as entity.DashboardStats[])"
+        mode="ModeSource"
+        visible="GroupInfo.isRoot() &amp;&amp; dashboard.DashboardUtil.isShowByLineOrLoss()">
+        <Toolbar/>
+      </PanelRef>
+      <PanelRef
+        def="ClaimCountByLossTypeLV(Stats.LossTypeStats as entity.DashboardStats[])"
+        mode="ModeSource"
+        visible="GroupInfo.isRoot() &amp;&amp; dashboard.DashboardUtil.isShowByLineOrLoss()">
+        <Toolbar/>
+      </PanelRef>
+      <PanelRef>
+        <Verbatim
+          label="Stats.getIncurredLimitTip()"
+          visible="ModeSource == &quot;default&quot;"/>
+        <DetailViewPanel
+          id="DummyDV"/>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

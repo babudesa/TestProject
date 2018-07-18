@@ -1,0 +1,52 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUAG1210 - Independent Adjusters Document Creation")
+internal class CPUAG1210IndependentAdjustersDocumentCreation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(ia in claim.IndepAdjustersExt where ia.ReadyToSend and !ia.SentToECF)==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var values = new HashMap();
+var doc : Document;
+//def 5102 create claim note here in all cases
+for(ia in claim.IndepAdjustersExt){
+  if(ia.ReadyToSend and !ia.SentToECF){
+    values.put( "IAString", claim.getAsAdjusterString( ia.AdjusterName.DisplayName, true ) );
+//    ia.SentToECF = true;
+    ia.addIAClaimNote();
+    if(ia.Subtype == "IAOtherExt"){
+       ia.SentToECF = true;
+       }
+    else {
+       claim.addEvent( "send_to_ia" );
+    }
+  }
+}
+
+if(!values.Empty){
+  doc = new Document(claim);
+  doc.Claim = claim;
+  doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+  doc.Name = "Independent Adjuster Request";
+  doc.MimeType = "text/html";
+  doc.Status = "approved";
+  doc.ex_SubType = "Adjuster Report"
+  doc.ex_Type = "Investigation"
+  doc.ProcessMethod = "Sent_to_File"
+  doc.Description = "Independent Adjuster Request"
+  doc.Privileged = "No"
+  if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "independentadjusterrequest.htm" )) {
+    util.document.DocumentProduction.createAndStoreDocumentSynchronously( "independentadjusterrequest.htm", values, doc );
+  }
+  else {
+    //changed to logging in Debug - SR
+	Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+  }
+  values.clear();  
+}/*end00rule*/
+  }
+}

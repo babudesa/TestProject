@@ -1,0 +1,19 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Policy_dir
+
+@gw.rules.RuleName("PolicyChanged")
+internal class PolicyChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Policy
+&& messageContext.EventName == "PolicyChanged"
+&& messageContext.Root.Claim != null
+&& messageContext.Root.Claim.State != "draft"
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var policy = messageContext.Root as Policy;
+var f = util.gaic.EDW.EDWFunctionsFactory.getClaimFunctions();
+f.sendClaimChanges( messageContext, policy.Claim );
+/*end00rule*/
+  }
+}

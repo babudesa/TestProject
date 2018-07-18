@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    editable="true"
+    id="TripIncidentSegmentsLV">
+    <Require
+      name="aTripIncident"
+      type="TripIncident"/>
+    <RowIterator
+      checkBoxVisible="true"
+      editable="true"
+      elementName="aTripSegment"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="TripSegmentIterator"
+      pickLocation="TripSegmentPopup.push( null, aTripIncident, CurrentLocation.InEditMode )"
+      toRemove="aTripIncident.removeFromTripSegments( aTripSegment )"
+      value="aTripIncident.TripSegments">
+      <IteratorSort
+        sortBy="aTripSegment.StartDate"
+        sortOrder="1"/>
+      <ToolbarFlag
+        condition="aTripSegment.Assessment == &quot;approve&quot;"
+        name="approve_trav"/>
+      <ToolbarFlag
+        condition="aTripSegment.Assessment == &quot;Deny&quot; "
+        name="deny_trav"/>
+      <ToolbarFlag
+        condition="aTripSegment.Assessment == &quot;Review&quot; "
+        name="review_trav"/>
+      <ToolbarFlag
+        name="row_trav"/>
+      <ToolbarFlag
+        condition="aTripSegment.Assessment == null"
+        name="clear_trav"/>
+      <Row
+        editable="true">
+        <Cell
+          action="TripSegmentPopup.push( aTripSegment, aTripIncident, CurrentLocation.InEditMode )"
+          hasCheckBox="true"
+          id="CarrierType"
+          label="displaykey.Web.TripIncidentSegmentLV.CarrierType"
+          value="aTripSegment.TransportType"/>
+        <Cell
+          action="TripSegmentPopup.push( aTripSegment, aTripIncident, CurrentLocation.InEditMode )"
+          hasCheckBox="true"
+          id="AffectedSegmentName"
+          label="displaykey.Web.TripIncidentSegmentLV.PolicyTrip.DisplayName"
+          value="aTripSegment"/>
+        <Cell
+          hasCheckBox="true"
+          id="SegmentStatus"
+          label="displaykey.Web.TripIncidentSegmentLV.SegmentStatus"
+          value="aTripSegment.CancelOnly ? &quot;Cancelled&quot; : &quot;Rebooked&quot;"/>
+        <Cell
+          hasCheckBox="true"
+          id="Assessment"
+          label="displaykey.Web.TripIncidentSegmentLV.Approval"
+          value="aTripSegment.Assessment"/>
+        <Cell
+          formatType="currency"
+          id="SegmentCostIncurred"
+          label="displaykey.Web.TripIncidentSegmentLV.ApprovedAmt"
+          value="aTripSegment.getFinancialImpact(AssessmentAction.TC_APPROVE)"/>
+        <Cell
+          available="aTripSegment.ReasonForDenial == null or aTripSegment.ReasonForDenial.length == 0"
+          editable="aTripSegment.Assessment == &quot;Deny&quot; ? true : false"
+          id="ReasonForDenial"
+          label="displaykey.Web.TripIncidentSegmentLV.ReasonForDenial"
+          required="true"
+          value="aTripSegment.ReasonForDenial"
+          valueVisible="aTripSegment.Assessment == &quot;Deny&quot; ? true : false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

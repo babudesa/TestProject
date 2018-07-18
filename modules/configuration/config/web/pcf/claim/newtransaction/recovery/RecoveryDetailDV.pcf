@@ -1,0 +1,425 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="RecoveryDetailDV">
+    <Require
+      name="Recovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="Recovery.ReserveLine"
+      name="reserveLine"
+      type="ReserveLine"/>
+    <Require
+      name="helper"
+      type="financials.NewRecoverySetHelper"/>
+    <Variable
+      initialValue="false"
+      name="keepEditable"
+      type="boolean"/>
+    <Variable
+      initialValue="null"
+      name="recoveryContact"
+      type="Contact"/>
+    <InputColumn>
+      <!-- <ClaimContactInput
+        claim="Recovery.Claim"
+        editable="true"
+        id="RecoveryPayer"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Payer"
+        onChange="reflectCurrency()"
+        onPick="reflectCurrency()"
+        required="true"
+        value="Recovery.Payer"
+        valueRange="Recovery.Claim.relatedContacts"/> -->
+      <!-- 12/05/2006 djohnson -->
+      <Input
+        editable="true"
+        id="IsRecode"
+        label="displaykey.Financials.Recovery.Recovery.Recode"
+        postOnChange="true"
+        value="Recovery.RecodeExt"
+        visible="true"/>
+      <!-- onChange="(Recovery as Transaction).setCashReceiptNumber(Recovery)" /> -->
+      <Input
+        editable="true"
+        id="IsBulked"
+        label="displaykey.NVV.Financials.Recovery.IsBulked"
+        onChange="(Recovery as Transaction).setCashReceiptNumber(Recovery)"
+        postOnChange="true"
+        value="Recovery.IsBulkedExt"
+        visible="true"/>
+      <Input
+        editable="true"
+        id="CashReceiptNumber"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CashReceiptNumber"
+        onChange="Recovery.Payer=null;associateBulkRecovery();checkForExistingContacts()"
+        postOnChange="true"
+        required="true"
+        value="Recovery.ex_CashReceiptNumber"
+        visible="Recovery.RecodeExt==true || (Recovery.IsBulkedExt==true and Recovery.FirstBulkExt==false)"/>
+      <Input
+        editable="true"
+        id="FirstRecovery"
+        label="displaykey.NVV.Financials.Recovery.First"
+        onChange="clearFields(Recovery)"
+        postOnChange="true"
+        required="true"
+        value="Recovery.FirstBulkExt"
+        visible="Recovery.IsBulkedExt==true and Recovery.RecodeExt==false"/>
+      <Input
+        editable="true"
+        id="LastRecovery"
+        label="displaykey.NVV.Financials.Recovery.Last"
+        required="true"
+        value="Recovery.LastBulkExt"
+        visible="Recovery.IsBulkedExt==true"/>
+      <Input
+        editable="Recovery.RecodeExt==false"
+        id="TotalRecoveryAmount"
+        label="displaykey.Financials.RecoveryDetail.Recovery.Total"
+        postOnChange="true"
+        required="true"
+        value="Recovery.BulkRecoveryExt.TotalAmountExt"
+        visible="Recovery.IsBulkedExt==true"/>
+      <InputDivider/>
+      <ClaimContactInput
+        claim="Recovery.Claim"
+        editable="getPayerEditability() || keepEditable"
+        id="Payer"
+        label="displaykey.NVV.Financials.RecoveryDetail.RecoveredFrom"
+        required="true"
+        value="Recovery.Payer"
+        valueRange="Recovery.Claim.RelatedContacts"
+        visible="Recovery.IsBulkedExt"/>
+      <ClaimContactInput
+        claim="Recovery.Claim"
+        editable="true"
+        id="Payer"
+        label="displaykey.NVV.Financials.RecoveryDetail.RecoveredFrom"
+        required="true"
+        value="Recovery.Payer"
+        valueRange="getRecoveryContacts()"
+        visible="!Recovery.IsBulkedExt"/>
+      <!-- 1/5/2007 - rhathaway...adding check or money order number and date -->
+      <Input
+        editable="(Recovery.IsBulkedExt==true and Recovery.FirstBulkExt==true) || Recovery.IsBulkedExt==false"
+        id="RecoveryCheckNumber"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.recoverychecknumber"
+        value="Recovery.ex_recoveryCheckNumber"
+        visible="true"/>
+      <!-- Defect 1300 Added validation expression on recoverycheckDate if date is greater than today's date than an error will appear on the Recovery screen -->
+      <DateInput
+        editable="(Recovery.IsBulkedExt==true and Recovery.FirstBulkExt==true) || Recovery.IsBulkedExt==false"
+        id="RecoveryDate"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.recoverycheckdate"
+        validationExpression="Recovery.checkDateRecovery()"
+        value="Recovery.ex_recoverycheckdate"
+        visible="true"/>
+      <TypeKeyInput
+        editable="true"
+        id="RecoveryFor"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.RecoveryFor"
+        postOnChange="true"
+        required="true"
+        value="Recovery.TransactionForExt"/>
+      <Input
+        editable="true"
+        id="OtherDescription"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.OtherDesc"
+        required="true"
+        value="Recovery.TransctionDescExt"
+        visible="(Recovery.TransactionForExt == typekey.TransactionForExt.TC_OTHER) ? true : false"/>
+      <!-- 12/05/2006 djohnson -->
+      <RangeInput
+        editable="true"
+        filter="(Recovery as Transaction).filterRecoveryLine(VALUE)"
+        id="ReserveLine"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.ReserveLine"
+        onChange="Recovery.setReserveLine(ReserveLine); financials.FinancialsUtil.ensureRecoveryHasOneLineItem(Recovery)"
+        optionLabel="helper.getReserveLinePickerOptionLabel(VALUE)"
+        postOnChange="true"
+        required="true"
+        validationExpression="Recovery.validateForRecovery(Recovery.LineItems[0].LineCategory, Recovery.CostType)"
+        value="reserveLine"
+        valueRange="Recovery.filterReserveLines(helper.getPossibleReserveLines(Recovery))"/>
+      <RangeInput
+        editable="true"
+        id="Exposure"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Exposure"
+        postOnChange="true"
+        required="true"
+        validationExpression="Recovery.validateForRecovery(Recovery.LineItems[0].LineCategory, Recovery.CostType)"
+        value="Recovery.Exposure"
+        valueRange="helper.getPossibleExposures(Recovery)"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <Input
+        id="Transaction_CurrentInjuryType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.InjuryType"
+        value="getCurrentInjuryType(reserveLine)"
+        visible="util.WCHelper.isWCorELLossType(Recovery.Claim)"/>
+      <RangeInput
+        id="CoverageType"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CoverageType"
+        optionLabel="Recovery.Exposure.Coverage.covTypeDisplayName()"
+        value="Recovery.Exposure.PrimaryCoverage"
+        valueRange="getCoverages(Recovery.Exposure.Coverage)"/>
+      <!-- <Reflect
+        triggerIds="Exposure"
+        value="VALUE.PrimaryCoverage"/> -->
+      <RangeInput
+        editable="true"
+        filter="VALUE!=&quot;unspecified&quot;"
+        id="CostType"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CostType"
+        postOnChange="true"
+        required="true"
+        value="Recovery.CostType"
+        valueRange="Recovery.getValidCostTypeValues()"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <!-- This points to CostCategory due to an internal problem with Guidewire for defect 13
+				Uses CostCategory instead of RecoveryCategory now to fix this.
+				Makes user believe its still Recovery Category by filtering only
+				the categories that are meant to be Recovery Categories out of the
+				Cost Category type list. There are many other changes through out
+				Claim Center that reflect this - See Defect 13 comments for more information -->
+      <RangeInput
+        editable="true"
+        filter="Recovery.filterRecoveryCostCategory(VALUE as java.lang.String)"
+        id="CostCategory"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.RecoveryCategory"
+        postOnChange="true"
+        required="true"
+        value="Recovery.CostCategory"
+        valueRange="helper.getPossibleCostCategories(Recovery)"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <RangeInput
+        editable="true"
+        id="InjuryTypeExt"
+        label="displaykey.LV.Financials.ReserveSet.Reserves.InjuryType"
+        required="true"
+        value="Recovery.WCInjuryTypeExt"
+        valueRange="util.WCHelper.getWCInjuryTypeExtList(Recovery.Claim)"
+        valueWidth="300"
+        visible="util.WCHelper.isWCorELLossType(Recovery.Claim)"/>
+      <!-- <Input
+        editable="true"
+        id="Currency"
+        label="displaykey.Financials.Multicurrency.Currency"
+        postOnChange="true"
+        value="Recovery.Currency"
+        visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode()"/> -->
+      <!-- <InputSetRef
+        def="TransactionExchangeRateInputSet(Recovery)"/> -->
+      <!-- GW ADDED -->
+      <TypeKeyInput
+        editable="true"
+        filter="Recovery.filterBondsExpenseCodes(VALUE as java.lang.String)"
+        id="LineCategory"
+        label="Recovery.CostType == CostType.TC_CLAIMCOST || Recovery.CostType == CostType.TC_GAIASTPALOSS ? displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ClaimcostCategory : displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseCategory"
+        required="true"
+        value="Recovery.LineItems[0].LineCategory"
+        visible="Recovery.Exposure.IsMedicalPaymentExt || Recovery.CostType == CostType.TC_GAIASTPAEXPENSE || Recovery.CostType == CostType.TC_EXPENSE"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="LineItem"
+        label="displaykey.LV.Financials.EditableRecoveryLineItems.RecoveryLineItem.Amount"
+        value="Recovery.LineItems[0].TransactionAmountComponent"
+        visible="true"/>
+      <Input
+        editable="true"
+        id="SalvagedItem"
+        label="displaykey.NVV.Financials.SubView.RecoveryBasics.SalvageItem"
+        value="Recovery.RecoverySalvagedItemExt"
+        visible="Recovery.CostCategory==&quot;salvage&quot;"/>
+    </InputColumn>
+    <InputFooterSection>
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="EditableRecoveryLineItemsLV(Recovery)"
+        editable="Recovery.ReserveLine != null"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.LineItems"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            addLabel="displaykey.Java.Financials.TransactionLineItem.AddItem"
+            addShortcut="I"
+            addVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"
+            removeVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"/>
+        </Toolbar>
+      </ListViewInput> -->
+      <!-- GW ADDED -->
+      <ListViewInput
+        boldLabel="true"
+        def="DisplayRecoveryDetailLV(Recovery)"
+        editable="Recovery.ReserveLine != null"
+        id="DisplayRecovery"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.RecoverySummary"
+        labelAbove="true">
+        <Toolbar/>
+      </ListViewInput>
+      <ListViewInput
+        boldLabel="true"
+        def="BulkRecoveriesLV(Recovery)"
+        id="BulkRecoveryLV"
+        label="displaykey.LV.Financials.Recovery.History"
+        visible="bulkRecoveryVisibility(Recovery)">
+        <Toolbar/>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[function reflectCurrency() {
+  var currency = Recovery.Payer.PreferredCurrency;
+  if (currency != null) {
+    Recovery.Currency = currency;
+  }
+}
+
+function bulkRecoveryVisibility(rec : Recovery) : boolean {
+  var query = find(x in Recovery where 
+  (x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber)) 
+  if(rec.IsBulkedExt){ 
+    return true 
+  } else if(rec.RecodeExt and query.getCount()>0 and rec.IsBulkedExt){ 
+  return true 
+  } else { 
+    return false 
+    } 
+}
+
+function clearFields(rec : Recovery) {
+  if(rec.FirstBulkExt==true){ 
+    rec.LastBulkExt = false 
+  } 
+}
+
+function associateBulkRecovery() { 
+  var recov : BulkRecoveryExt = gw.api.database.Query.make(BulkRecoveryExt).compare("CashReceiptNumberExt", Equals, Recovery.ex_CashReceiptNumber).select().FirstResult
+  // Replaced find with a query as find will be deprecated in v9 
+  // var recov : BulkRecoveryExt = find(x in BulkRecoveryExt where x.CashReceiptNumberExt == Recovery.ex_CashReceiptNumber).getAtMostOneRow() 
+  if(recov != null){ 
+    Recovery.BulkRecoveryExt = recov 
+    Recovery.ex_recoveryCheckNumber = recov.RecoveryCheckNumberExt
+    Recovery.ex_recoverycheckdate = recov.RecoveryCheckDateExt
+    //Recovery.Payer = recov.PayerExt
+    /* the shallowCopy() are to prevent shared contacts, shared addresses,etc
+    we could find more foregin keys that need shallowCopy but not sure 
+    where/how to test at this time. 4/20/15 - it replaces setting Recovery.Payer = recov.PayerExt */
+    
+    /** ivorobyeva, 03/01/17: First, checking if the contact is in AB and is already on the claim.
+     *  Don't use ShallowCopy when the contact is already on a new claim and in AB.
+     *  Use ShallowCopy in all other cases (contact not in AB or not on a claim) 
+     *  This would prevent generating of new shared primary addresses DB inconsistencies.
+     */
+    var abcontactExistsOnClaim:boolean = false
+    for(cont in Recovery.Claim.RelatedContacts){
+      if(cont.AddressBookUID!=null and cont.AddressBookUID == recov.PayerExt.AddressBookUID){
+        abcontactExistsOnClaim = true
+        break;
+      }
+    }
+    if(abcontactExistsOnClaim==true){
+      Recovery.Payer = recov.PayerExt // condition for AB contacts when they already exist on a new claim
+    }
+    else{
+      Recovery.Payer = recov.PayerExt.shallowCopy() as Contact
+    
+      /*Copy any arrays that you care about*/ 
+      /*copy contact addresses */
+      if(Recovery.Payer !=null and Recovery.Payer.AllAddresses!=null and recov.PayerExt.AllAddresses.Count>0){
+        if(Recovery.Payer.AllAddresses.length <= recov.PayerExt.AllAddresses.length){
+        var contactAddys = recov.PayerExt.AllAddresses
+          for(addy in contactAddys){
+            // replaced exists with where
+            if(Recovery.Payer.AllAddresses.where(\ad -> ad.AddressType==addy.AddressType and 
+              (ad.AddressLine1==addy.AddressLine1 and ad.City==addy.City and ad.State==addy.State)).IsEmpty){
+              Recovery.Payer.addAddress(addy.shallowCopy() as Address)
+            }
+          }
+
+          /** Copy any foreign keys that you care about **/
+          var copiedPrimaryAddy = recov.PayerExt.PrimaryAddress.shallowCopy() as Address
+          Recovery.Payer.PrimaryAddress = copiedPrimaryAddy 
+        }
+        /*copy contactISOMedicare (this one is different because one-to-one foreign key) */
+        if(Recovery.Payer.ContactISOMedicareExt!=null){
+          var copiedMedicare = recov.PayerExt.ContactISOMedicareExt.shallowCopy() as ContactISOMedicareExt
+          copiedMedicare.Contact = Recovery.Payer
+        }
+      }
+    }
+  }
+} 					
+			
+function getPayerEditability() : boolean {
+  var recoveryEditable : boolean = false
+  if(Recovery.IsBulkedExt and !Recovery.FirstBulkExt and Recovery.ex_CashReceiptNumber!=null and Recovery.Payer!=null){
+    var payer = Recovery.Payer
+    for(cont in Recovery.Claim.RelatedContacts){
+      if(cont.DisplayName.toUpperCase() == payer.DisplayName.toUpperCase() and cont.PublicID != payer.PublicID){
+	recoveryEditable = true
+      }
+    }
+  }
+  if((Recovery.IsBulkedExt and Recovery.FirstBulkExt)){
+    recoveryEditable = true
+  }
+  return recoveryEditable
+}
+			
+function checkForExistingContacts() {
+  var foundDisconnectedContact : boolean = false
+  if(Recovery.IsBulkedExt and !Recovery.FirstBulkExt and Recovery.ex_CashReceiptNumber!=null and Recovery.Payer!=null){
+    var payer = Recovery.Payer
+    for(cont in Recovery.Claim.RelatedContacts){
+      if(cont.DisplayName.toUpperCase() == payer.DisplayName.toUpperCase() and cont.PublicID != payer.PublicID){
+	foundDisconnectedContact = true
+	recoveryContact = payer
+      }
+    }
+  }
+  if(foundDisconnectedContact){
+    GeneralErrorWorksheet.goInWorkspace("The 'Received From' party may already exist on this claim. Review the contact details to select the correct party.");
+    keepEditable = true
+  } else {
+  recoveryContact = null
+  }
+}
+			
+function getRecoveryContacts() : List {
+  var conts : List = new List()
+  for(cont in Recovery.Claim.RelatedContacts){
+    conts.add(cont)
+  }
+  if(!Recovery.FirstBulkExt and recoveryContact!=null and !exists(x in conts where x==recoveryContact)){
+    conts.add(recoveryContact)
+  }
+    return conts
+}
+			
+function getCoverages(cov:Coverage):List{
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+}
+
+// WC Defect 8208 3/4/16 - current injury didn't work for when reserveline was null
+function getCurrentInjuryType(currentReserveLine : ReserveLine) : String {
+  var injuryType = currentReserveLine.CostType == CostType.TC_CLAIMCOST
+    ? currentReserveLine.Exposure.WCLossInjuryTypeExt.DisplayName
+    : currentReserveLine.Exposure.WCExpenseInjuryTypeExt.DisplayName
+
+  // Grab the current injury type when the reserve line is new
+  if ((injuryType == null or injuryType=="") and Recovery.CostType != null and Recovery.Exposure != null){
+    injuryType = Recovery.CostType == CostType.TC_CLAIMCOST
+      ? Recovery.Exposure.WCLossInjuryTypeExt.DisplayName
+      : Recovery.Exposure.WCExpenseInjuryTypeExt.DisplayName
+  }
+  return injuryType
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

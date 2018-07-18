@@ -1,0 +1,29 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABEN1000EnvironmentalActivityBatchRules_dir
+
+@gw.rules.RuleName("ABEN1100 - Initial File Note Needed")
+internal class ABEN1100InitialFileNoteNeeded {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Notes.IsEmpty &&
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="initial_file_note"))
+//&& !exists (act in claim.Activities where act.ActivityPattern.Code == "manager_reserve_review")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///if no note in claim within 10 days of claim open date activity generates
+try{
+  if (gw.api.util.DateUtil.daysBetween(claim.CreateTime, gw.api.util.DateUtil.currentDate().trimToMidnight())>= ScriptParameters.Activity_InitialFileNote){
+    var nn = util.custom_Ext.finders.findActivityPattern("initial_file_note")
+    claim.createActivity(null, nn, "Initial File Note", "A File Note must exist within 10 days.", null, null, claim.CreateTime, null)}
+}
+catch(e){  
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+ // if (!exists (act in claim.Activities where act.ActivityPattern.Code == "manager_reserve_review")){
+    /*if (gw.api.util.DateUtil.daysBetween(reportedDate, today) >= 
+        ScriptParameters.Activity_ExcessManagerReserveReviewShort == true){
+          claim.createActivityFromPattern(null, pattern)
+    }
+    
+// prior if ( gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays (claim.CreateTime,10))*//*end00rule*/
+  }
+}

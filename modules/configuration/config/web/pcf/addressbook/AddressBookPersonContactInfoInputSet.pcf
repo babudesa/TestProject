@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressBookPersonContactInfoInputSet">
+    <Require
+      name="person"
+      type="Person"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Phone"/>
+    <InputSet
+      visible="claimContact != null">
+      <Input
+        editable="true"
+        id="ContactProhibited"
+        label="displaykey.Web.ContactDetail.ContactProhibited"
+        value="claimContact.ContactProhibited"
+        visible="claimContact.isClaimant()"/>
+    </InputSet>
+    <TextInput
+      editable="true"
+      id="Work"
+      inputMask="person.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Work"
+      validationExpression="person.isIntlPhoneValid(person.WorkPhone) ? (person.isPhoneValid(person.WorkPhone) ? null : displaykey.Validator.Phone(&quot;Business&quot;)) : displaykey.Validator.IntlPhone(&quot;Business&quot;)"
+      value="person.WorkPhone"/>
+    <TextInput
+      editable="true"
+      id="Home"
+      inputMask="person.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Home"
+      validationExpression="person.isIntlPhoneValid(person.HomePhone) ? (person.isPhoneValid(person.HomePhone) ? null : displaykey.Validator.Phone(&quot;Home&quot;)) : displaykey.Validator.IntlPhone(&quot;Home&quot;)"
+      value="person.HomePhone"/>
+    <TextInput
+      editable="true"
+      id="Cell"
+      inputMask="person.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Cell"
+      validationExpression="person.isIntlPhoneValid(person.CellPhoneExt) ? (person.isPhoneValid(person.CellPhoneExt) ? null : displaykey.Validator.Phone(&quot;Mobile&quot;)) : displaykey.Validator.IntlPhone(&quot;Mobile&quot;)"
+      value="person.CellPhoneExt"/>
+    <TextInput
+      editable="true"
+      id="Fax"
+      inputMask="person.getFaxPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Fax"
+      validationExpression="person.isIntlPhoneValid(person.FaxPhone) ? (person.isPhoneValid(person.FaxPhone) ? null : displaykey.Validator.Phone(&quot;Fax Number&quot;)) : displaykey.Validator.IntlFaxPhone(&quot;Fax Number&quot;)"
+      value="person.FaxPhone"/>
+    <Input
+      editable="true"
+      id="PrimaryPhone"
+      label="displaykey.Web.ContactDetail.Phone.PrimaryPhone"
+      validationExpression="  if (person.PrimaryPhone == null or (person.PrimaryPhone == &quot;work&quot; and person.WorkPhone != null) or (person.PrimaryPhone == &quot;home&quot; and person.HomePhone != null) or  (person.PrimaryPhone == &quot;mobile&quot; and person.CellPhoneExt != null)) {   return null; } else {  return displaykey.Web.ContactDetail.Phone.PrimaryPhone.Error;   }; "
+      value="person.PrimaryPhone">
+      <Reflect
+        triggerIds="Work,Home,Cell"
+        value="javascript:getNewPrimaryPhoneValue(REFLECTOR.value, [VALUE1, VALUE2, VALUE3], ['work', 'home', 'mobile'])"/>
+    </Input>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Email"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Primary"
+      label="displaykey.Web.ContactDetail.Email.Primary"
+      value="person.EmailAddress1"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Secondary"
+      label="displaykey.Web.ContactDetail.Email.Secondary"
+      value="person.EmailAddress2"/>
+  </InputSet>
+</PCF>

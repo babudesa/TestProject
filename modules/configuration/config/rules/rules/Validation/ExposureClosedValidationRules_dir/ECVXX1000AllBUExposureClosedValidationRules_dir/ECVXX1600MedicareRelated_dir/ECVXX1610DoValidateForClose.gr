@@ -1,0 +1,27 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir.ECVXX1600MedicareRelated_dir
+
+@gw.rules.RuleName("ECVXX1610 - Do Validate For Close")
+internal class ECVXX1610DoValidateForClose {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.Claimant as Person).MedicareEligibleExt != false &&
+exposure.ClosedOutcome != ExposureClosedOutcomeType.TC_CLAIMDENIED
+
+/**
+ * It is safe to cast Claimant as Person here because the precondition
+ * check in parent rule.
+ *//*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.CMS.validation.*
+
+var cmsVal = new FeatureCloseValidation(exposure)
+CMSValidationUtil.validate(cmsVal)
+
+var rejectionReason = cmsVal.ValidationMessage
+
+if(rejectionReason != ""){
+  exposure.reject("newloss", rejectionReason, null, null) 
+}/*end00rule*/
+  }
+}

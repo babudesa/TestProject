@@ -1,0 +1,51 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1400BulkRecoveries_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX1420 - Future Activity Generation - BR Not Complete")
+internal class CEXX1420FutureActivityGenerationBRNotComplete {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Author: Stephanie Przygocki
+//EM: 14.1
+//date: 3-31-09
+
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(trans in claim.RecoveriesQuery.iterator()){
+  var rec = ((trans as RecoveryView).Transaction as Recovery)
+    //checks if the recovery is bulked, it is the first bulk (so the activity is only created on this first recovery claim),
+    //and if the recovery is not complete
+  if(rec.IsBulkedExt and rec.FirstBulkExt and rec.Status!= "voided"){
+    if(rec.BulkRecoveryExt.RecoveryIsCompleteExt==false){
+      /*
+      Checks to see if an activity exists on the claim that...
+        --is for an incomplete bulk recovery
+        --is complete
+        --has the same cash ticket number as the recovery we're looping through
+        --was not completed today (we want the new activity to appear the next day)
+      and checks to make sure an activity does NOT exist on the claim that...
+        --is for an incomplete bulk recovery
+        --is open
+        --has the same cash ticket number as the recovery we're looping through
+       If these conditions are met, create a new activity to remind the user that a problem still exists
+      */
+      if(exists(act in (claim.Activities) where 
+          act.ActivityPattern==util.custom_Ext.finders.findActivityPattern( "bulk_recov_not_comp_ext" ) and
+          act.Status=="complete" and 
+          act.Description.substring( 41, 50 )==rec.BulkRecoveryExt.CashReceiptNumberExt 
+          and gw.api.util.DateUtil.compareIgnoreTime( act.UpdateTime,gw.api.util.DateUtil.currentDate() )!=0
+          ) and
+         !exists(act in (claim.Activities) where
+          act.ActivityPattern==util.custom_Ext.finders.findActivityPattern( "bulk_recov_not_comp_ext" ) and
+          act.Status=="open" and
+          act.Description.substring( 41, 50 )==rec.BulkRecoveryExt.CashReceiptNumberExt)){
+        var act : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "bulk_recov_not_comp_ext" )
+        var desc = "A bulk recovery with cash receipt number " + rec.BulkRecoveryExt.CashReceiptNumberExt + " was started and not completed by " + rec.BulkRecoveryExt.CreateUser.DisplayName + ". The bulk recovery cannot be sent to Accounting until it is completed." 
+        var act2 = claim.createActivity( null, act, null, desc, null, null, null, null )
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="IncidentExposuresLV">
+    <Require
+      name="incident"
+      type="Incident"/>
+    <RowIterator
+      editable="false"
+      elementName="exposure"
+      value="incident.Claim.OrderedExposures.where(\ e -&gt; e.Incident == incident and !e.New)">
+      <Row>
+        <Cell
+          action="ExposureDetailForward.go(exposure.Claim, exposure)"
+          id="ClaimOrder"
+          label="displaykey.Web.IncidentExposures.ClaimOrder"
+          sortOrder="1"
+          value="exposure.ClaimOrder"/>
+        <ContentCell
+          id="Overview"
+          label="displaykey.Web.IncidentExposures.Overview">
+          <DetailViewPanel>
+            <InputColumn>
+              <ContentInput
+                id="Coverage">
+                <Link
+                  action="ExposureDetailForward.go(exposure.Claim, exposure)"
+                  id="CoverageLink"
+                  label="exposure.PrimaryCoverage"/>
+              </ContentInput>
+              <TextInput
+                id="Assignee"
+                value="exposure.AssigneeDisplayString"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </ContentCell>
+        <ContentCell
+          id="Financials"
+          label="displaykey.Web.IncidentExposures.Financials">
+          <DetailViewPanel>
+            <InputColumn>
+              <TextInput
+                id="Paid"
+                label="displaykey.Web.IncidentExposures.Paid"
+                value="exposure.ExposureRpt.TotalPayments"
+                visible="perm.Claim.viewpayments(exposure.Claim)"/>
+              <TextInput
+                id="RemainingReserves"
+                label="displaykey.Web.IncidentExposures.RemainingReserves"
+                value="exposure.ExposureRpt.RemainingReserves"
+                visible="perm.Claim.viewreserves(exposure.Claim)"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </ContentCell>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

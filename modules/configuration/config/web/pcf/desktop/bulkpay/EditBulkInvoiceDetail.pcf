@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="helper.flushCache(); ViewBulkInvoiceDetail.go(bulkInvoice)"
+    afterCommit="helper.flushCache(); ViewBulkInvoiceDetail.go(bulkInvoice)"
+    beforeCommit="bulkInvoice.verifyChangesAllowed()"
+    beforeValidate="helper.prepBulkInvoiceForSave(bulkInvoice, CostType.TC_UNSPECIFIED, CostCategory.TC_UNSPECIFIED)"
+    canEdit="perm.BulkInvoice.edit"
+    canVisit="perm.BulkInvoice.view"
+    id="EditBulkInvoiceDetail"
+    parent="BulkPay()"
+    showUpLink="true"
+    startInEditMode="true"
+    title="displaykey.Web.Financials.BulkPay.Invoice.BulkInvoiceDetail">
+    <LocationEntryPoint
+      signature="EditBulkInvoiceDetail(bulkInvoice : BulkInvoice)"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Variable
+      initialValue="BulkInvoice.Payee!=null ? BulkInvoice.Payee.generateLinkStatus() : null"
+      name="payeeLinkStatus"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalContactSource"/>
+    <Screen
+      editable="true"
+      id="EditBulkInvoiceScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <ToolbarButton
+          action="bulkInvoice.BulkInvoice_OnUpdate();CurrentLocation.commit();"
+          id="UpdateButton"
+          label="&quot;Update&quot;"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="CancelButton"
+          label="&quot;Cancel&quot;"/>
+        <ToolbarButton
+          action="helper.validateBulkInvoice(bulkInvoice)"
+          available="bulkInvoice.Validateable and perm.BulkInvoice.edit"
+          hideIfEditable="true"
+          id="ValidateButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Validate"/>
+        <ToolbarButton
+          action="helper.submitBulkInvoiceForApprovalAndCommit(bulkInvoice)"
+          available="bulkInvoice.Submittable and perm.BulkInvoice.edit"
+          hideIfEditable="true"
+          id="SubmitButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Submit"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="null"
+          hideIfEditable="true"
+          id="RefreshButton"
+          label="displaykey.Web.Financials.BulkPay.Button.UpdateStatus"/>
+        <ToolbarDivider/>
+        <!-- "Copy from Address Book" (i.e. Sync) -->
+        <ToolbarButton
+          action="bulkInvoice.Payee.syncToAB()"
+          available="bulkInvoice.Editable and perm.BulkInvoice.edit"
+          id="LinkContactToolbarButtons_SyncFromAddressBookButton"
+          label="displaykey.Button.BulkInvoice.SyncFromAddressBook"
+          shortcut="Y"
+          visible="( payeeLinkStatus.Known and payeeLinkStatus.Linked and !payeeLinkStatus.Broken and (!payeeLinkStatus.Synced or payeeLinkStatus.DifferentRelationshipsMessage != null))"/>
+      </Toolbar>
+      <PanelRef
+        def="EditBulkInvoiceDetailDV(bulkInvoice, externalContactSource, payeeLinkStatus)"/>
+      <PanelRef
+        def="BulkInvoiceItemsLV(bulkInvoice, helper)">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[function submitBulkInvoice(invoice : BulkInvoice) {
+        CurrentLocation.startEditing();
+
+        var success =  false;
+        try {
+          invoice.submitForApproval();
+          CurrentLocation.commit();
+          success = true;
+        } finally {
+          if (!success) {
+            CurrentLocation.cancel();
+          }
+        }
+      }
+
+      function validateBulkInvoice(invoice : BulkInvoice) {
+        CurrentLocation.startEditing();
+
+        var success =  false;
+        try {
+          invoice.validate();
+          CurrentLocation.commit();
+          success = true;
+        } finally {
+          if (!success) {
+            CurrentLocation.cancel();
+          }
+        }
+      }]]></Code>
+  </Page>
+</PCF>

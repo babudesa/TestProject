@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Java Class Loading, Delegation, and Package Naming</title>
+    <link rel="StyleSheet" href="css/java-gosu.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="java-gosu.08.01.html#2031879">Java and Gosu</a> : Java Class Loading, Delegation, and Package Naming</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="2031879">Java Class Loading, Delegation, and Package Naming</a></div>
+      <div class="H2_-_Heading_2"><a name="2031881">Java Class Loading Rules</a></div>
+      <div class="B_-_Body"><a name="2031883">If loading custom Java code into Gosu or if accessing Java classes from Java code, the Java virtual machine must </a>locate the class file with a <span class="e_-_emphasis">class</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">loader</span>. Class loaders use the fully-qualified package name of the Java class to determine how to access the class.</div>
+      <div class="B_-_Body"><a name="2031889">ClaimCenter follows the rules in the following list to load Java classes, choosing the first rule that matches and </a>then skipping the rules listed after it:</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; margin-top: 5.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none"><span class="ri_-_run_in_header"><a name="2031890">General delegation classes.</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2031892">The following classes </a><span class="e_-_emphasis">delegate load</span>:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031895">javax.* - </a></span>Java extension classes</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031897">org.xml.sax.*</a></span> - SAX 1 &amp; 2 classes</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031899">org.w3c.dom.*</a></span> - DOM 1 &amp; 2 classes</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031901">org.apache.xerces.*</a></span> - Xerces 1 &amp; 2 classes</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031903">org.apache.xalan.*</a></span> - Xalan classes</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2031906">org.apache.commons.logging.*</a></span> - Logging classes used by WebSphere</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073345">For more information about delegate loading see, </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073481', '');" title="Java Class Loading, Delegation, and Package Naming">“Delegate Loading”</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2073346">Guidewire full Java entities, plugin classes, and utility classes.</a></span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073348">Classes in the following JAR files </a><span class="e_-_emphasis">delegate load</span>:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="2073349">gw-plugin.jar</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="2073353">gw-plugin-cc.jar</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="2073357">gw-entity-cc.jar</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2073358">gw-util.jar</a></span>, except for classes in <span class="cv_-_computer_voice">com.guidewire.util.webservices.*</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073362">For more information about delegate loading see, </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073481', '');" title="Java Class Loading, Delegation, and Package Naming">“Delegate Loading”</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2073364">Guidewire SOAP entities, plugin classes, and utility classes.</a></span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073366">Classes in the following JAR files </a><span class="e_-_emphasis">locally load</span>:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="2073370">gw-soap-cc.jar</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="2073371">gw-util.jar</a></span>, including all the classes in <span class="cv_-_computer_voice">com.guidewire.util.webservices.*</span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073374">For more information about local loading see, </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073391', '');" title="Java Class Loading, Delegation, and Package Naming">“Local Loading of Your Classes”</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; margin-top: 5.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none"><span class="ri_-_run_in_header"><a name="2031941">All your classes.</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2031942">If the package does </a><span class="s_-_strong">not</span> begin with <span class="cv_-_computer_voice">com.guidewire.*</span>, then <span class="e_-_emphasis">load</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">locally</span>. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2031943">Java classes you deploy must </a><span class="s_-_strong">never</span> have a fully-qualified package name that starts with <span class="cv_-_computer_voice">"com.guidewire."</span> because that interferes with class loading behavior.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; margin-top: 5.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none"><span class="ri_-_run_in_header"><a name="2031944">Internal classes.</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2031947">If the class is an internal class, then the class </a><span class="e_-_emphasis">delegate loads</span>. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2031951">Java code you deploy must </a><span class="s_-_strong">never</span> access any internal classes other than supported classes and documented APIs. Using internal classes is dangerous and unsupported. If in doubt about whether a class is supported, immediately ask Customer Support.</div>
+      <div class="LP_-_List_Para"><a name="2073385">If you need to access entities and supported domain methods on those entities, use the generated </a><span class="e_-_emphasis">entity librar</span><span class="e_-_emphasis">ies</span>. For more information, see <a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.06.html#2073753', '');" title="Java Entity Libraries Overview">“Java Entity Libraries Overview”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="2073391">Local Loading of Your Classes</a></div>
+      <div class="HS_-_Head_Sub"><a name="2073392">For Java plugins</a></div>
+      <div class="B_-_Body"><a name="2073396">ClaimCenter Java plugin class loader follows these rules for loading a class locally from the deployed web appli</a>cation in <span class="ps_-_parameter_in_code_snippets">SERVER</span><span class="cv_-_computer_voice">/webapps/cc/...</span>.</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2073400">The Java plugin class loader looks for the class in the plugin directory you define in the plugin registry in </a>Studio. Given the plugin directory name <span class="p_-_parameter">plugindir</span>, the server looks in the directories:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="ps_-_parameter_in_code_snippets"><a name="2073404">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/</span><span class="ps_-_parameter_in_code_snippets">plugindir</span><span class="cv_-_computer_voice">/classes</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="ps_-_parameter_in_code_snippets"><a name="2073408">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/</span><span class="ps_-_parameter_in_code_snippets">plugindir</span><span class="cv_-_computer_voice">/lib</span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073409">If the class was not found in the plugin’s local repository, or the plugin did not define a </a><span class="cv_-_computer_voice">plugindir</span> repository, the class loader looks in the shared repository directories:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="ps_-_parameter_in_code_snippets"><a name="2073413">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/shared/classes</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="ps_-_parameter_in_code_snippets"><a name="2073417">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/shared/lib</span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073418">If the class was not found in the shared repository, then the class </a><span class="e_-_emphasis">delegate loads</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2073419">Be sure to read the following topics if you are deploying a Java plugin:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.01.html#2013370', '');" title="Plugin Overview" name="2073423">“Plugin Overview” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.01.html#2013370', '');" title="Plugin Overview">Integration Guide</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.06.html#2445041', '');" title="Deploying Java Plugins" name="2073427">“Deploying Java Plugins” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.06.html#2445041', '');" title="Deploying Java Plugins">Integration Guide</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2073430">If you are writing a Java plugin, read </a><a href="javascript:WWHClickedPopup('integration', 'plugins.09.01.html#2013370', '');" title="Plugin Overview">“Plugin Overview” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.01.html#2013370', '');" title="Plugin Overview">Integration Guide</a></span> and <a href="javascript:WWHClickedPopup('integration', 'plugins.09.06.html#2445041', '');" title="Deploying Java Plugins">“Deploying Java Plugins” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'plugins.09.06.html#2445041', '');" title="Deploying Java Plugins">Integration Guide</a></span>.</div>
+      <div class="HS_-_Head_Sub"><a name="2073436">Class Loading for Java Classes Called from Gosu (not Java plugins)</a></div>
+      <div class="B_-_Body"><a name="2073437">Java classes called from Gosu also use a plugin class loader to load Java classes. The name of its local repository </a>within the plugins directory is <span class="cv_-_computer_voice">Gosu</span>. </div>
+      <div class="B_-_Body"><a name="2073438">For example, Gosu loads Java classes in the following order:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2073442">Attempt to load from </a><span class="cv_-_computer_voice">ClaimCenter/modules/configuration/plugins/Gosu/classes </span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073446">If not found yet, load from </a><span class="cv_-_computer_voice">ClaimCenter/modules/configuration/plugins/Gosu/lib</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073450">If not found yet, load from </a><span class="cv_-_computer_voice">ClaimCenter/modules/configuration/plugins/shared/classes</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073454">If not found yet, load from </a><span class="cv_-_computer_voice">ClaimCenter/modules/configuration/plugins/shared/lib</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073458">If the class is in the </a><span class="cv_-_computer_voice">shared/basic</span> folder, ClaimCenter loads the class and disables the special collection conversion behavior. In other words, these two directories suppress the conversion behavior:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="ps_-_parameter_in_code_snippets"><a name="2073462">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/</span><span class="s_-_strong" style="color: #000000; font-family: &quot;Times New Roman&quot;; font-size: 10.0pt; font-style: normal">shared/basic</span><span class="cv_-_computer_voice">/classes</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="ps_-_parameter_in_code_snippets"><a name="2073466">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/plugins/</span><span class="s_-_strong" style="color: #000000; font-family: &quot;Times New Roman&quot;; font-size: 10.0pt; font-style: normal">shared/basic</span><span class="cv_-_computer_voice">/lib</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2073467">The collection conversion suppression feature is not available for all situations. For </a>important details about this API, see <a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.05.html#2073608', '');" title="Special Handling of Collections, Arrays, Maps">“Disable Container Conversion In Some Cases”</a>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073471">If not found, the class </a><span class="e_-_emphasis">delegate loads.</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2073475">See </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073515', '');" title="Java Class Loading, Delegation, and Package Naming">“Java Class Repository Listing”</a> for a full list of Java class repositories.</div>
+      <div class="B_-_Body"><a name="2073478">For more information about calling Java classes from Gosu, see </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.02.html#1797700', '');" title="Overview of Calling Java from Gosu">“Overview of Calling Java from Gosu”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="2073481">Delegate Loading </a></div>
+      <div class="B_-_Body"><a name="2073488">If the ClaimCenter plugin class loader </a><span class="e_-_emphasis">delegates</span> Java class loading, ClaimCenter requests the application server class loader to load the class. Each application server (such as Tomcat, WebSphere, Weblogic) has its own class loader rules. In general, an application server tries to load classes in the following order:</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2073489">Attempt to load the classes from the application’s local repository directories:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt; margin-bottom: 2.0pt; margin-top: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="ps_-_parameter_in_code_snippets"><a name="2073493">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/WEB-INF/classes</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="ps_-_parameter_in_code_snippets"><a name="2073497">SERVER</a></span><span class="cv_-_computer_voice">/webapps/cc/WEB-INF/lib</span> </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2073498">However, typically there are classes that the application server class loader does </a><span class="s_-_strong">not</span> attempt to load from the application’s local repository and instead skip to the next step. Most containers, including Tomcat, do not load Java extension classes or other classes listed as “General delegation classes” in <a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2031881', '');" title="Java Class Loading, Delegation, and Package Naming">“Java Class Loading Rules”</a> in this way.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073502">If not found yet, load from bootstrap classes of the Java virtual machine.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073503">If not found yet, load from system class loader classes</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2073504">If not found yet, load from the shared </a><span class="e_-_emphasis">application server</span>’s repositories, the exact locations of which can vary by web application server.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="2073505">For Detailed Application-Server-specific Behavior</a></div>
+      <div class="B_-_Body"><a name="2073506">For more details about your web application server’s class loading behavior, refer to the following web pages:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2073507">For WebSphere version 6, and also version 5 since it has similar behavior:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a href="http://publib.boulder.ibm.com/infocenter/ieduasst/v1r1m0/topic/com.ibm.iea.was_v6/was/6.0/Runtime/WASv6_ClassLoader_Overview.pdf" target="external_window" name="2073509">http://publib.boulder.ibm.com/infocenter/ieduasst/v1r1m0/topic/com.ibm.iea.was_v6/was/6.0/</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2073510">&nbsp;</a>&nbsp;Runtime/WASv6_ClassLoader_Overview.pdf	</PRE>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2073511">For Tomcat 6:</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a href="http://tomcat.apache.org/tomcat-6.0-doc/class-loader-howto.html" target="external_window" name="2073513">http://tomcat.apache.org/tomcat-6.0-doc/class-loader-howto.html </a></div>
+      <div class="H2_-_Heading_2"><a name="2073515">Java Class Repository Listing</a></div>
+      <div class="B_-_Body"><a name="2073516">Java classes loads from various locations depending on the fully-qualified package symbol. </a></div>
+      <div class="B_-_Body"><a name="2073520">The following files within </a><span class="ps_-_parameter_in_code_snippets">SERVER</span><span class="cv_-_computer_voice">/webapps/cc/modules/configuration/config/</span>... exactly mirror the structure of files within your configuration environment <span class="cv_-_computer_voice">ClaimCenter/modules/configuration/config/</span>...<span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">.</span> </div>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073527">SERVER</a></span>/webapps/cc/config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Root of your configuration dir</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073531">SERVER</a></span>/webapps/cc/modules/configuration/plugins&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073535">SERVER</a></span>/webapps/cc/modules/configuration/plugins/Gosu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Java classes from Gosu</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073539">SERVER</a></span>/webapps/cc/modules/configuration/plugins/Gosu/lib&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Java classes from Gosu libs</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073543">SERVER</a></span>/webapps/cc/modules/configuration/plugins/Gosu/classes&nbsp;&nbsp;&nbsp;Java classes from Gosu classes</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073547">SERVER</a></span>/webapps/cc/modules/configuration/plugins/shared&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073551">SERVER</a></span>/webapps/cc/modules/configuration/plugins/shared/classes&nbsp;&nbsp;&nbsp;&nbsp;Local load - shared directory classes</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073555">SERVER</a></span>/webapps/cc/modules/configuration/plugins/shared/lib&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Local load - shared directory libs</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073559">SERVER</a></span>/webapps/cc/modules/configuration/plugins/<span class="pc_-_parameter_in_code">plugindir</span>&nbsp;&nbsp;&nbsp;&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073563">SERVER</a></span>/webapps/cc/modules/configuration/plugins/<span class="pc_-_parameter_in_code">plugindir</span>/classes&nbsp;Local load - explicit dir classes</PRE>
+      <PRE class="CL_-_Code_Last_Line"><span class="pc_-_parameter_in_code"><a name="2073567">SERVER</a></span>/webapps/cc/modules/configuration/plugins/<span class="pc_-_parameter_in_code">plugindir</span>/lib&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Local load - explicit dir libs</PRE>
+      <div class="B_-_Body"><a name="2073568">The following lines indicate directories within the web application, and their role in Java class loading:</a></div>
+      <PRE class="CF_-_Code_First_Line"><span class="pc_-_parameter_in_code"><a name="2073569">SERVER</a></span>/&lt;web app container shared+internal JARs&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delegate load - shared web app container repository</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073576">SERVER</a></span>/webapps/cc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Root of ClaimCenter web application</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073580">SERVER</a></span>/webapps/cc/WEB-INF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073584">SERVER</a></span>/webapps/cc/WEB-INF/classes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delegate load - app local repository classes</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="pc_-_parameter_in_code"><a name="2073588">SERVER</a></span>/webapps/cc/WEB-INF/lib&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delegate load - app local repository libs</PRE>
+      <div class="B_-_Body"><a name="2073592">For more information about delegate loading, see </a><a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073481', '');" title="Java Class Loading, Delegation, and Package Naming">“Delegate Loading”</a>. For more information about local loading, see <a href="javascript:WWHClickedPopup('gosu', 'java-gosu.08.04.html#2073391', '');" title="Java Class Loading, Delegation, and Package Naming">“Local Loading of Your Classes”</a>. </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

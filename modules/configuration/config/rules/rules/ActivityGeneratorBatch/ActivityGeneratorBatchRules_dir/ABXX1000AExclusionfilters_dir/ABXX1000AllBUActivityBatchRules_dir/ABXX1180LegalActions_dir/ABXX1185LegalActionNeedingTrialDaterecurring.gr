@@ -1,0 +1,66 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir.ABXX1180LegalActions_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("ABXX1185 - Legal Action Needing Trial Date recurring")
+internal class ABXX1185LegalActionNeedingTrialDaterecurring {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Matters.IsEmpty &&
+exists(mat in claim.Matters where
+        mat.TrialDate == null
+        and mat.StatusExt != MatterStatus.TC_CLOSED 
+        and exists(act in claim.Activities where 
+                   act.ActivityPattern.Code == "no_trial_date_exists"))
+               /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var pattern = util.custom_Ext.finders.findActivityPattern( "no_trial_date_exists" )
+    var today = gw.api.util.DateUtil.currentDate().trimToMidnight()
+
+    //get all valid matters for activity
+    var matters = claim.Matters.where(\ m -> m.TrialDate == null
+                    and m.StatusExt != MatterStatus.TC_CLOSED
+                    and exists(act in claim.Activities where act.ActivityPattern.Code == "no_trial_date_exists"
+                    and act.Subject.contains(m.DisplayName)
+                    and gw.api.util.DateUtil.daysBetween(act.CreateTime.trimToMidnight(), today) >=90))  
+                  
+
+
+    for(matter in matters){     
+  
+      var act_inact_last : Activity = null;
+      for(act in claim.Activities.where(\ a -> a.Subject.contains(matter.DisplayName))){
+        if(act.ActivityPattern.Code=="no_trial_date_exists" && (act_inact_last == null || 
+          act_inact_last.CreateTime.trimToMidnight() < act.CreateTime.trimToMidnight()) && act.Subject.contains(matter.DisplayName)){
+             act_inact_last = act;         
+        }
+      }
+  
+      if(act_inact_last != null and act_inact_last.CreateTime!=null){
+    
+        if(gw.api.util.DateUtil.currentDate().trimToMidnight() >= gw.api.util.DateUtil.addDays(act_inact_last.CreateTime.trimToMidnight(), 90)) {
+          //Create new activity from existing pattern and add the matter name to the pattern
+          //subject and description  
+          var newAct = claim.createActivity(null,
+                       pattern, pattern.Subject + " (" + matter.DisplayName +")",
+                       pattern.Description + " (" + matter.DisplayName +")", pattern.Priority, pattern.Mandatory,
+                       null, null)
+
+           //associate matter
+            newAct.Matter = matter
+           //assign user
+            newAct.AssignedUser = claim.AssignedUser
+            //set custom target date 
+            newAct.TargetDate = act_inact_last.CreateTime.trimToMidnight().addDays(90)
+        }
+      }  
+    }
+
+ 
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

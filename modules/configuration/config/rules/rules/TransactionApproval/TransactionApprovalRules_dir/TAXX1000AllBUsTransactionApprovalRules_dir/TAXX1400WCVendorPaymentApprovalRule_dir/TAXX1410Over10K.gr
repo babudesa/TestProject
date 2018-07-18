@@ -1,0 +1,15 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir.TAXX1000AllBUsTransactionApprovalRules_dir.TAXX1400WCVendorPaymentApprovalRule_dir
+
+@gw.rules.RuleName("TAXX1410 - Over 10K")
+internal class TAXX1410Over10K {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.GrossAmountExt > 10000/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/transactionSet.requireApproval("Vendor payment over $10,000 requires approval.")
+transactionSet.RequestingUser = util.custom_Ext.finders.getUserOb("batchsu")
+actions.exit()
+/*end00rule*/
+  }
+}

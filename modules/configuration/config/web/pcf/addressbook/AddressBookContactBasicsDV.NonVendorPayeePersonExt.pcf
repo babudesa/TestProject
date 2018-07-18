@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookContactBasicsDV"
+    mode="NonVendorPayeePersonExt">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="contact.CategoryScores != null AND contact.CategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      type="Boolean"/>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookNonVendorPayeePersonNameInputSet(contact as Person, contact typeis NonVendorPayeePersonExt)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"/>
+      <InputSetRef
+        def="AddressBookPersonContactInfoInputSet(contact as Person, null)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="!(contact typeis PersonVendor)"/>
+      <!-- <InputSetRef
+        def="AddressBookNonVendorPayeeBusinessContactInfoInputSet((contact as Person), externalContactSource)"/> -->
+      <InputSetRef
+        def="AddressBookDriversLicenseInfoInputSet(contact as Person)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        visible="contact.Subtype==&quot;Person&quot;"/>
+      <!-- <InputDivider
+        visible="hasCategoryScores OR (contact.Score != null)"/> -->
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contact.AddressOwner)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contact.AddressOwner.InputSetMode"/>
+      <!-- following input set for tax info -->
+      <InputSet
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()">
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <!-- ssn for non-foreign -->
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="SSN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.SSN"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateNonVendorTaxID()"
+          value="contact.TaxID"
+          visible="!contact.isForeign()"/>
+        <!-- w-8 for foreign person -->
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo() and !contact.FormerVerifiedContactExt"
+          id="W8"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateForeignSSN()"
+          value="contact.TaxID"
+          visible="contact.isForeign()"/>
+        <Input
+          editable="!contact.VerifiedPolicyContactExt and contact.canEditTaxInfo()and !contact.FormerVerifiedContactExt"
+          id="TaxStatusCode"
+          label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+          postOnChange="true"
+          required="true"
+          validationExpression="(contact as Person).Ex_TaxStatusCode != null ? (contact as Person).checkContactTaxStatusUpdate(): (contact as Person).Ex_TaxStatusCode"
+          value="contact.Ex_TaxStatusCode"/>
+        <Input
+          editable="true"
+          id="TaxReportingName"
+          label="displaykey.Web.ContactDetail.TaxReportingName"
+          validationExpression="(contact.Preferred and contact.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+          value="contact.Ex_TaxReportingName"/>
+      </InputSet>
+    </InputColumn>
+    <!-- <InputFooterSection>
+      <InputDivider/>
+    </InputFooterSection> -->
+    <Code><![CDATA[function validateTaxID():String{
+  if((contact as Person).TaxID == null){ 
+    if((contact as Person).checkContactTaxStatus()){ 
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.Required
+    }else{
+      return null
+    }
+  }else{
+    if(!(contact as Person).TaxID.matches("[0-9]{9}") or ((contact as Person).TaxID.matches("[0]{9}") or (contact as Person).TaxID.matches("[1]{9}") or (contact as Person).TaxID.matches("[2]{9}")
+      or (contact as Person).TaxID.matches("[3]{9}") or (contact as Person).TaxID.matches("[4]{9}") or (contact as Person).TaxID.matches("[5]{9}") or (contact as Person).TaxID.matches("[6]{9}")
+       or (contact as Person).TaxID.matches("[7]{9}") or (contact as Person).TaxID.matches("[8]{9}") or (contact as Person).TaxID.matches("[9]{9}"))){
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.Invalid
+    }else if((contact as Person).HICNExt != null && (contact as Person).TaxID.toString().startsWith("9")){ 
+    return displaykey.Web.ContactDetail.Name.TaxID.MedEligible
+    }{
+      return null
+    }
+  }
+  }
+  
+// Defect 6791 - cmullin - 5.9.14 - added unique validation for NonVendorPayeeCompanyExt and NonVendorPayeePersonExt
+function validateNonVendorTaxID():String{ 
+  var str : String = null
+  if((contact as Person).TaxID == null)
+    return str; 
+  else { 
+    if(!((contact as Person).TaxID.matches("[a-zA-Z0-9]{9}"))){
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.NonVendorInvalid
+    }
+  return str;
+  }
+}
+
+  // C.McDonald EM55 9-24-13 : defect 6461 foreign entity should have ability for id with letters
+function validateForeignSSN(): String{    
+    if((contact as Person).TaxID == null )
+    return null 
+    else 
+    {
+      if( !(contact as Person).TaxID.matches("[a-zA-Z0-9]{9}") or ((contact as Person).TaxID.matches("[0]{9}") or (contact as Person).TaxID.matches("[1]{9}") or (contact as Person).TaxID.matches("[2]{9}")
+      or (contact as Person).TaxID.matches("[3]{9}") or (contact as Person).TaxID.matches("[4]{9}") or (contact as Person).TaxID.matches("[5]{9}") or (contact as Person).TaxID.matches("[6]{9}")
+       or (contact as Person).TaxID.matches("[7]{9}") or (contact as Person).TaxID.matches("[8]{9}") or (contact as Person).TaxID.matches("[9]{9}")))
+      return displaykey.Web.ContactDetail.Name.TaxID.EIN.W8Invalid
+      else return null
+    }
+}
+
+function validateSSN():String{
+  if((contact as Person).HICNExt != null && (contact as Person).TaxID.toString().startsWith("9")){ 
+    return displaykey.Web.ContactDetail.Name.TaxID.MedEligible
+    }else{
+      return null
+    }}]]></Code>
+  </DetailViewPanel>
+</PCF>

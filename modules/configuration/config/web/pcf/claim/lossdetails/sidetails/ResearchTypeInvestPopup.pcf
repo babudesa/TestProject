@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Popup
+    canEdit="perm.Claim.edit(Claim) and (perm.System.editSIUDataResearch||perm.System.editSIUInvestigation)"
+    id="ResearchTypeInvestPopup"
+    parent="SIDetails(Claim)"
+    startInEditMode="true"
+    title="displaykey.NVV.SIU.Investigation">
+    <LocationEntryPoint
+      signature="ResearchTypeInvestPopup(Claim : Claim, DataResearchParty : DataResearchPartyExt,ResearchType : String)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="DataResearchParty"
+      type="DataResearchPartyExt"/>
+    <Variable
+      name="ResearchType"
+      type="String"/>
+    <Variable
+      name="Invest"
+      type="SIUInvestigationExt"/>
+    <Screen
+      id="ResearchTypeInvestPopupScreen">
+      <Toolbar>
+        <EditButtons
+          cancelVisible="true"
+          updateVisible="true"/>
+      </Toolbar>
+      <PanelSet
+        id="ResearchTypePanelSet">
+        <DetailViewPanel
+          id="ResearchTypeDV">
+          <InputColumn>
+            <ListViewInput
+              editable="true">
+              <Toolbar>
+                <IteratorButtons/>
+              </Toolbar>
+              <ListViewPanel
+                id="ResearchTypeLV">
+                <RowIterator
+                  editable="true"
+                  elementName="Type"
+                  hideCheckBoxesIfReadOnly="true"
+                  toAdd="DataResearchParty.addToResearchTypes(Type)"
+                  toRemove="DataResearchParty.removeFromResearchTypes(Type)"
+                  value="DataResearchParty.ResearchTypes">
+                  <Row>
+                    <RangeCell
+                      editable="true"
+                      id="ResearchType"
+                      label="displaykey.NVV.SIU.Investigation"
+                      required="true"
+                      unique="true"
+                      value="Type.ResearchType"
+                      valueRange="getTFResearchType()"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </ListViewInput>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelSet>
+    </Screen>
+    <Code><![CDATA[function getTFResearchType() :List {
+  //var returnList : List<typekey.ResearchTypeExt> = null
+  var returnList: List<typekey.ResearchTypeExt> = typekey.ResearchTypeExt.TF_INVESTIGATIONDETAILS.TypeKeys
+  //if (ResearchType == "Investigation"){
+   //returnList = typekey.ResearchTypeExt.TF_INVESTIGATIONDETAILS.TypeKeys
+  //}else{
+    //returnList = typekey.ResearchTypeExt.TF_DATARESEARCH.TypeKeys
+  //}
+  return returnList.toList()
+}
+
+function setDefaults(Party:DataResearchPartyExt): DataResearchPartyExt{
+  if (Invest != null and (Invest.DataResearchParties == null or !Invest.DataResearchParties.HasElements)){
+    var drp : DataResearchPartyExt = new DataResearchPartyExt()
+    drp.Contact = Invest.Claim.claimant
+    Invest.addToDataResearchParties(drp)
+    return Invest.DataResearchParties[0]
+  }else {
+    return DataResearchParty
+  }
+}]]></Code>
+  </Popup>
+</PCF>

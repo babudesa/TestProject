@@ -1,0 +1,50 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1400BulkInvoiceRules_dir.TPOXX1410StatusChange_dir
+
+@gw.rules.RuleName("TPOXX1411 - Pending Stop/Void Email")
+internal class TPOXX1411PendingStopVoidEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype=="CheckSet" and 
+(transactionSet as CheckSet).PrimaryCheck.ex_ManualPaymentMethod == null and
+((transactionSet as CheckSet).PrimaryCheck.Status == TransactionStatus.TC_PENDINGVOID ||
+(transactionSet as CheckSet).PrimaryCheck.Status == TransactionStatus.TC_PENDINGSTOP)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+try{
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  var bulkInvoice = check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+  var body = templates.email.BulkInvoicePendingStopVoid.renderToString(bulkInvoice, User.util.getCurrentUser().getUserBusinessUnitAndGroup())
+  var emailHelper=new EmailHelper()
+
+  if(check.Status == TransactionStatus.TC_PENDINGVOID){
+     if(bulkInvoice.InvoiceItems[0].BulkInvoiceItemInfo.Check == check){
+      if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+       emailHelper.sendEmailWithBodyEcf(check.BulkInvoiceItemInfo.Claim, ScriptParameters.Divisional_Accounting_Email+","+ScriptParameters.Divisional_Accounting_Contact_Email+",kbirdseye@gaig.com",
+       ScriptParameters.Divisional_Accounting_Name + "; " + ScriptParameters.Divisional_Account_Contact + "; Birdseye, Karen", "ClaimCenterSupport@gaig.com",
+       "ClaimCenter Notification", "Claim Center Void Pay Notification", body)
+      } else {
+        emailHelper.sendEmailWithBodyEcf(check.BulkInvoiceItemInfo.Claim, ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Divisional_Accounting_Name + "; " + ScriptParameters.Divisional_Account_Contact + "; Birdseye, Karen", "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", "Claim Center Void Pay Notification", body)
+      }
+    }
+  }
+
+  if(check.Status == TransactionStatus.TC_PENDINGSTOP){
+    if(bulkInvoice.InvoiceItems[0].BulkInvoiceItemInfo.Check == check){
+      if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+        emailHelper.sendEmailWithBodyEcf(check.BulkInvoiceItemInfo.Claim, ScriptParameters.Divisional_Accounting_Email+","+ScriptParameters.Divisional_Accounting_Contact_Email+",kbirdseye@gaig.com",
+       ScriptParameters.Divisional_Accounting_Name + "; " + ScriptParameters.Divisional_Account_Contact + "; Birdseye, Karen", "ClaimCenterSupport@gaig.com",
+       "ClaimCenter Notification", "Claim Center Stop Pay Notification", body)
+      } else {
+        emailHelper.sendEmailWithBodyEcf(check.BulkInvoiceItemInfo.Claim, ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Divisional_Accounting_Name + "; " + ScriptParameters.Divisional_Account_Contact + "; Birdseye, Karen", "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", "Claim Center Stop Pay Notification", body)
+      }
+    }  
+  }
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

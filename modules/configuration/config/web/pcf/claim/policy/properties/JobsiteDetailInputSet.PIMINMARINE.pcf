@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    id="JobsiteDetailInputSet"
+    mode="PIMINMARINE">
+    <Require
+      name="aLocationBasedRU"
+      type="LocationBasedRU"/>
+    <Input
+      editable="true"
+      id="Number"
+      label="displaykey.NVV.Policy.LocationDetail.Property.JobsiteNum"
+      onChange="(aLocationBasedRU as JobsiteRUExt).updateLocationAddress()"
+      postOnChange="true"
+      required="true"
+      value="(aLocationBasedRU as JobsiteRUExt).JobsiteNumberExt"/>
+    <Input
+      available="aLocationBasedRU.Property.RiskTypeExt != EDWRiskType.TC_JOBSITE"
+      editable="true"
+      id="JobsiteRiskNumber"
+      label="displaykey.NVV.Policy.LocationDetail.Property.RiskNumber"
+      onChange="(aLocationBasedRU as JobsiteRUExt).checkRiskTypeUsingRiskNum()"
+      postOnChange="true"
+      required="true"
+      value="aLocationBasedRU.Property.RiskNumberExt"/>
+    <InputSet>
+      <Input
+        editable="true"
+        id="RiskNumber"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskNumber"
+        postOnChange="true"
+        value="aLocationBasedRU.Property.RiskNumberExt"
+        visible="false"/>
+      <TypeKeyInput
+        available="aLocationBasedRU.Coverages.length == 0"
+        editable="true"
+        filter="VALUE.hasCategory(LossType.TC_PIMINMARINE) and VALUE.hasCategory(RiskType.TC_PROPERTY) and VALUE.Code != &quot;PRM&quot; and VALUE.Code != &quot;PERSPROP&quot; and VALUE.Code != &quot;BLDG&quot;"
+        id="RiskType"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskType"
+        onChange="(aLocationBasedRU as JobsiteRUExt).checkRiskNumberForPIM()"
+        postOnChange="true"
+        required="true"
+        value="aLocationBasedRU.Property.RiskTypeExt"/>
+      <Input
+        editable="true"
+        id="RiskDescription"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskDescription"
+        required="false"
+        value="(aLocationBasedRU as JobsiteRUExt).JobsiteDescExt"/>
+    </InputSet>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskEffDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskEffectiveDate"
+      validationExpression="aLocationBasedRU.effDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropEffDateExt"/>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskExpDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskExpirationDate"
+      validationExpression="aLocationBasedRU.expDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropExpDateExt"/>
+  </InputSet>
+</PCF>

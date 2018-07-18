@@ -1,0 +1,18 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1100NewLossFieldRequirements_dir
+
+@gw.rules.RuleName("EVXX1180 - CMS Medicare - Gender Required")
+internal class EVXX1180CMSMedicareGenderRequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claimant typeis Person and
+exposure.isMedicareFeature(exposure) and
+exposure.Claimant.Gender==null and
+!exposure.ReconnectFailExt and
+exposure.Claim.Policy.isPolicyInRefresh( 0 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var msg = displaykey.NVV.Exposure.Claimant.CMS.Gender(exposure.Claimant)
+
+exposure.reject("newloss", msg, null, null )/*end00rule*/
+  }
+}

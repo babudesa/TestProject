@@ -1,0 +1,42 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEL1400 - New Claim Email")
+internal class CPUEL1400NewClaimEmail {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType != LossType.TC_MERGACQU and 
+claim.isFieldChanged("AssignedUser") &&
+claim.AssignmentStatus=="assigned" &&
+claim.IncidentReport==false &&
+claim.State!="closed" &&
+claim.State!="draft" &&
+exists(act in claim.Activities where act.ActivityPattern.Code == "eq_claim_assigned")
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+//ELD Email 1: Claim has been Assigned to Attorney
+uses util.custom_Ext.EmailHelper
+var recipient = claim.AssignedUser.DisplayName;
+var body : String = templates.email.ClaimAssigned.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var subject:String="New Claim "+claim.ClaimNumber
+var emailHelper=new EmailHelper()
+
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+         claim.AssignedUser.Contact.EmailAddress1, claim.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+} else {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, recipient, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+/*end00rule*/
+  }
+}

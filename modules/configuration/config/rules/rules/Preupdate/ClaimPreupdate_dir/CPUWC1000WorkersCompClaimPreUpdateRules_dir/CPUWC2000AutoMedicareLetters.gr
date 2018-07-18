@@ -1,0 +1,36 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUWC2000 - Auto Medicare Letters")
+internal class CPUWC2000AutoMedicareLetters {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// Disabled for Defect#8402. Auto Medicare generation was moved to Destination12 - Auto Generated Documents,
+// former AutoAck transport, to prevent generation of multiple letters when Validation on claim fails.
+
+!claim.isConvertedExt() && 
+claim.AssignmentStatus == AssignmentStatus.TC_ASSIGNED &&
+(claim.ExternalHandlingExt == null || 
+(claim.ExternalHandlingExt != null && claim.ExternalHandlingExt.MedLetterExt)) &&
+(!exists(doc in claim.Documents where doc.ex_SubType == "Correspondence" and doc.Description == "Automated Medicare Letter")) &&
+claim.claimant.PrimaryAddress != null &&
+util.admin.ExternalUserAdminUtil.createLetters(claim)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if (!claim.Policy.Verified){
+  if(!exists(var note in claim.Notes where note.Subject=="Medicare Letter Not Generated")){
+    var note : Note
+    note = claim.addNote ( "general", "This claim is on an unverified policy; no Automated Medicare Letter was generated.")
+    note.Subject = "Medicare Letter Not Generated"
+    note.Author = util.custom_Ext.finders.getUserOb("batchsu")
+    note.addEvent("NoteAdded")
+  }
+} else {
+  if (util.document.AutoMedLetter.autoMedLetterController(claim.LossType) && util.document.AutoMedLetter.createdAfterEffDate(claim)){
+    if (!claim.checkDisconnectedFeatures() && !claim.Policy.isPolicyInRefresh(1)){
+      util.document.AutoMedLetter.saveMedLetter(claim)
+    }
+  }
+}/*end00rule*/
+  }
+}

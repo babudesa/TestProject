@@ -1,0 +1,123 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1D00 - Update Covered Party Type for Policy Contacts")
+internal class CPUXX1D00UpdateCoveredPartyTypeforPolicyContacts {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.isPolicyInRefresh(1)
+and claim.State != "draft"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(veh in claim.Policy.Vehicles){
+    //Update Covered Party Type for Lienholders on the vehicles.
+    for(vehlien in veh.Vehicle.Lienholders){
+      var role = claim.addPropertyContact( "lienholder", vehlien.Lienholder )
+      if(role == null){
+        var cont1 = claim.getClaimContact( vehlien.Lienholder )
+        role = cont1.Roles.firstWhere(\ c -> c.Role == ContactRole.TC_LIENHOLDER)
+      }
+      if(role != null){
+        if(CoveredPartyType.getTypeKeys(false).contains(vehlien.LienHolderTypeExt.Code)){
+          var covPartyType = CoveredPartyType.get(vehlien.LienHolderTypeExt.Code)
+          role.CoveredPartyType = covPartyType
+          role.Comments = covPartyType.DisplayName
+        }
+      } 
+    }
+    //Update Covered Party Type for Additional Interest Risks on the property.
+    for(addIntRisk in veh.Vehicle.AdditionalInterestRisksExt){
+      var role = claim.addPropertyContact("AdditionalInterestRisk", addIntRisk.Contact)
+      if(role == null){
+        var claimCont = claim.getClaimContact( addIntRisk.Contact )
+        role = claimCont.Roles.firstWhere(\ c -> c.Role == ContactRole.TC_ADDITIONALINTERESTRISK)
+      }
+      if(role != null){
+          role.CoveredPartyType = addIntRisk.CoveredPartyType
+          role.Comments = addIntRisk.CoveredPartyType.DisplayName
+      }
+    }
+  }//end for vehicle
+  //We are here
+  //var lienCC = claim.getAllContactsWithRoles({ContactRole.TC_LIENHOLDER})*.Contact
+  var addCC = claim.getAllContactsWithRoles({ContactRole.TC_ADDITIONALINTERESTRISK})*.Contact
+  
+  for(prop in claim.Properties){
+    var coverages : Coverage[];
+    for(riskUnit in claim.Policy.RiskUnits.where(\ r -> (r.Subtype == typekey.RiskUnit.TC_LOCATIONBASEDRU or r.Subtype == typekey.RiskUnit.TC_PROPERTYRU)
+        and (r as LocationBasedRU).Property == prop and r.Coverages.Count > 0)){
+       coverages = riskUnit.Coverages
+    }
+    
+    //Add Primary Trainer if selected contact doesn't contain that role.
+    if((prop.ex_PrimaryTrainer.New or prop.ex_PrimaryTrainer.Changed or
+    prop.ex_PrimaryTrainer != (prop.OriginalVersion as PolicyLocation).ex_PrimaryTrainer) and prop.ex_PrimaryTrainer != null){
+      claim.addPropertyContact( "PrimaryTrainer", prop.ex_PrimaryTrainer );      
+    }
+    //Add Alternate Trainer if selected contact doesn't contain that role.        
+    if((prop.ex_AlternateTrainer.New or prop.ex_AlternateTrainer.Changed or
+    prop.ex_AlternateTrainer != (prop.OriginalVersion as PolicyLocation).ex_AlternateTrainer) and prop.ex_AlternateTrainer != null){
+      claim.addPropertyContact( "AlternateTrainer", prop.ex_AlternateTrainer );
+    }
+    
+    //Update Covered Party Type for Lienholders on the property.
+    for(lien in prop.Lienholders){
+      var clmContRole = claim.addPropertyContact( "lienholder", lien.Lienholder )
+      if(CoveredPartyType.getTypeKeys(false).contains(lien.ex_LienHolderType.Code)){
+        if(clmContRole == null){  
+          clmContRole = claim.getClaimContact(lien.Lienholder).Roles.firstWhere(\ c -> c.Role == ContactRole.TC_LIENHOLDER)
+        }
+        var covPartyType = CoveredPartyType.get(lien.ex_LienHolderType.Code)
+        clmContRole.CoveredPartyType = covPartyType
+        clmContRole.Comments = covPartyType.DisplayName      
+      }
+    }//end for Lien
+    //Update Covered Party Type for Additional Interest Risks on the property.
+    for(addIntRisk in prop.AdditionalInterestRisksExt){
+      var clmContRole = claim.addPropertyContact("AdditionalInterestRisk", addIntRisk.Contact)
+      if(clmContRole == null){
+        clmContRole = claim.getClaimContact(addIntRisk.Contact).Roles.firstWhere(\ c -> c.Role == ContactRole.TC_ADDITIONALINTERESTRISK)
+      }
+      clmContRole.CoveredPartyType = addIntRisk.CoveredPartyType
+      clmContRole.Comments = addIntRisk.CoveredPartyType.DisplayName
+
+      
+    }//end for addIntRisk
+    //Update Covered Party Type for Lienholders on SFPP coverages
+    if(coverages != null){
+      for(cvg in coverages.where(\ c -> c.isSFPP())){
+        for(lien in cvg.HighValueItemExt.Lienholders_Ext ){
+          var role = claim.addPropertyContact( "lienholder", lien.Lienholder )
+          if(role == null){
+            var cont = claim.getClaimContact( lien.Lienholder )
+            role = cont.Roles.firstWhere(\ c -> c.Role == ContactRole.TC_LIENHOLDER )
+          }
+          if(role != null){
+            if(CoveredPartyType.getTypeKeys(false).contains(lien.LienholderType.Code)){
+              var covPartyType = CoveredPartyType.get(lien.LienholderType.Code)
+              role.CoveredPartyType = covPartyType
+              role.Comments = covPartyType.DisplayName
+             }
+           }
+        } 
+        //Update Covered Party Type for Additional Interest Risks on SFPP coverage.
+        for(addIntRisk in cvg.HighValueItemExt.AdditionalInterestExt ){
+          var role = claim.addPropertyContact( "AdditionalInterestRisk", addIntRisk.Contact ) 
+          if(role == null){ 
+            var claimCont = claim.getClaimContact( addIntRisk.Contact )
+            role = claimCont.Roles.firstWhere(\ c -> c.Role == ContactRole.TC_ADDITIONALINTERESTRISK)
+          }
+          if(role != null){
+            role.CoveredPartyType = addIntRisk.CoveredPartyType
+            role.Comments = addIntRisk.CoveredPartyType.DisplayName
+          }
+        }
+      }
+    }//end for cvg
+  }//end for prop
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

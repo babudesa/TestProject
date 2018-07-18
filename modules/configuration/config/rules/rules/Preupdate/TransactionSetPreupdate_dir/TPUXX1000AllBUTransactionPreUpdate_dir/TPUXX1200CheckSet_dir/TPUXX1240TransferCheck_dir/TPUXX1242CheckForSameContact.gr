@@ -1,0 +1,74 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1240TransferCheck_dir
+
+@gw.rules.RuleName("TPUXX1242 - Check For Same Contact")
+internal class TPUXX1242CheckForSameContact {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///sprzygocki - 5/18/11 - removing a block of code that removes a claim contact as it appears to be unnecessary
+//tnewcomb - 9/23/11 - adding that block of code back to prevent a pseudo-duplicate contact from being added to the destination claim
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.Arrays;
+
+var exist : boolean = false;
+var addressList : List
+var payeeNum : int = 0
+
+for(check in (transactionSet as CheckSet).Checks){
+  //Find the transfer check
+  if(check.Transferred and check.TransferredToCheck.New){
+    //Loop through all the payees on this check
+    for(payee in check.Payees){
+      exist = false
+      //Loop through all the contacts of the transfer to claim
+      for(transContact in check.TransferredToCheck.Claim.Contacts){
+        //Compare names - continue if they are the same
+        if(payee.ClaimContact.Contact.DisplayName == transContact.Contact.DisplayName and
+           !transContact.Contact.New){
+        //Compare addresses
+          for(address in payee.ClaimContact.Contact.AllAddresses){
+            for(transAddress in transContact.Contact.AllAddresses){
+              //If the address are the same - the contact exists
+              if(address.DisplayName == transAddress.DisplayName){
+                  exist = true;
+                  //Add checkpayee role to the contact found if it doesn't have it already
+                  if(!transContact.hasRole("checkpayee")){
+                    transContact.Claim.addRole("checkpayee", transContact.Contact)
+                  }
+                  
+                  //prevents "duplicate" contacts from existing on the claim; that is contacts with the
+                  //same address and display name
+                  if(transContact.Contact.LinkedContact == null){
+                    check.Claim.removeFromContacts(check.TransferredToCheck.Payees[payeeNum].ClaimContact)
+                  }
+                  
+                  check.TransferredToCheck.Payees[payeeNum].ClaimContact = transContact
+                  
+                  /*Check to see if the contact has the same role as the check
+                    If it does, make sure the transferred check carries this role with it
+                  */
+                  if(transContact.hasRole(payee.PayeeType as java.lang.String)){
+                    check.TransferredToCheck.Payees[payeeNum].PayeeType = payee.PayeeType
+                  }
+                  
+                  break;
+              }
+            }
+            if(exist){
+              break;
+            }
+          }
+        }
+        //Leave transContact loop if match found
+        if(exist){
+          break;
+        }
+      }
+      payeeNum = payeeNum + 1;
+    }
+  }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,31 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1240TransferCheck_dir
+
+@gw.rules.RuleName("TPUXX1245 - Change Status")
+internal class TPUXX1245ChangeStatus {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(check in (transactionSet as CheckSet).Checks) {
+  if (check.Status == "pendingtransfer") {
+    check.Status = "transferred"
+  }
+  
+  for (thepayment in check.Payments) {
+    if (thepayment.Status == "pendingtransfer") {
+      thepayment.Status = "transferred";
+    }
+  }
+
+  if (check.Status == "transferred") {
+    for (payment in check.Payments) {
+      if (payment.Status == "submitting") {
+        payment.Status = "submitted";
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

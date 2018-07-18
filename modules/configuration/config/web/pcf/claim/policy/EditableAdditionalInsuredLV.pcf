@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="EditableAdditionalInsuredLV">
+    <Require
+      name="ClaimContactRoleList"
+      type="ClaimContactRole[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ClaimContactRoleOwner"
+      type="contact.ClaimContactRoleOwner"/>
+    <Require
+      name="role"
+      type="ContactRole"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="3"
+      toCreateAndAdd="ClaimContactRoleOwner.addEmptyRole(role)"
+      toRemove="ClaimContactRoleOwner.removeRole(ClaimContactRole)"
+      value="ClaimContactRoleList.where(\ c -&gt; c.CoveredPartyType != CoveredPartyType.TC_ADDNLNAMEINSURED &amp;&amp; c.CoveredPartyType != CoveredPartyType.TC_MORENAMEINSUREDDBA)">
+      <Row>
+        <!-- <Cell
+          id="Number"
+          label="displaykey.LV.Policy.EditableAdditionalInsured.Number"
+          printWidth="0.1"
+          sortOrder="1"
+          value="ClaimContactRole.PartyNumber"
+          width="2"/> -->
+        <ClaimContactCell
+          claim="ClaimContactRole.ClaimContact.Claim"
+          editable="true"
+          forceContactSubtype="ClaimContactRoleOwner.getContactType(role)"
+          id="Contact"
+          label="displaykey.LV.Policy.EditableAdditionalInsured.Contact"
+          newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+          required="true"
+          searchLocation=""
+          sortBy="ClaimContactRole.Contact.Name"
+          sortOrder="1"
+          sortValueRange="false"
+          unique="true"
+          validationExpression="ClaimContactRole.Contact == null ? displaykey.LV.Policy.EditableAdditionalInsured.Contact.ContactRequired : null"
+          value="ClaimContactRole.Contact"
+          valueRange="getNonMNIRelatedContacts()"/>
+        <TypeKeyCell
+          editable="true"
+          filter="ClaimContactRole.Contact.isValidCPTPolicy(VALUE)"
+          id="Type"
+          label="displaykey.LV.Policy.EditableAdditionalInsured.Type"
+          numCols="10"
+          printWidth="0.3"
+          required="true"
+          value="ClaimContactRole.CoveredPartyType"
+          valueWidth="150"
+          width="30"
+          wrapLabel="true"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Claim.Status"
+          value="ClaimContactRole.RoleStatusExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getNonMNIRelatedContacts():Contact[]{
+  var nonMNIRelatedContacts:List = new java.util.ArrayList();
+
+  for(cont in Claim.getRelatedContacts( ClaimContactRoleOwner.getContactType( role ) )) {
+    if(cont != Claim.Policy.insured){
+      nonMNIRelatedContacts.add( cont );
+    }
+  }
+  return (nonMNIRelatedContacts.toArray() as Contact[]);
+}]]></Code>
+  </ListViewPanel>
+</PCF>

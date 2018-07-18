@@ -1,0 +1,32 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1130 - InitCaseAssessmentReceived cannot be in future")
+internal class MVXX1130InitCaseAssessmentReceivedcannotbeinfuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (ma in matter.MatterAssignmentsExt where
+    ma.ChangedFields.contains("InitlCaseAssessmentRcvdDate") and
+    ma.InitlCaseAssessmentRcvdDate != null 
+    and gw.api.util.DateUtil.compareIgnoreTime(ma.InitlCaseAssessmentRcvdDate,
+         gw.api.util.DateUtil.currentDate()) > 0) == true/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  
+  for(ma in matter.MatterAssignmentsExt.where(\ m -> 
+       m.ChangedFields.contains("InitlCaseAssessmentRcvdDate")
+      and m.InitlCaseAssessmentRcvdDate != null 
+      and gw.api.util.DateUtil.compareIgnoreTime(m.InitlCaseAssessmentRcvdDate,
+         gw.api.util.DateUtil.currentDate()) > 0)){
+  
+      msg="Please provide an Initial Case Assessment Received Date that is not a date in the future."
+      matter.rejectSubField(ma,"InitlCaseAssessmentRcvdDate", "newloss", msg,Null, Null )
+  }
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

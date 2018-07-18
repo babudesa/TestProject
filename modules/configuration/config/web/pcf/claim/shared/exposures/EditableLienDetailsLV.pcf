@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableLienDetailsLV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Contact"
+      type="Contact"/>
+    <RowIterator
+      autoAdd="Exposure.IsLienExt==true"
+      editable="true"
+      elementName="lienDetail"
+      hideCheckBoxesIfReadOnly="true"
+      numEntriesRequired="1"
+      numEntriesToAdd="1"
+      toAdd="Exposure.addToLiens(lienDetail)"
+      toRemove="Exposure.removeFromLiens(lienDetail); Exposure.UIHelper.addFormerRole(lienDetail)"
+      validationLabel="&quot;Lienholder Type and Name&quot;"
+      value="Exposure.Liens"
+      visible="Exposure.IsLienExt==true">
+      <Row>
+        <TypeKeyCell
+          editable="true"
+          id="LienType"
+          label="displaykey.LV.Policy.EditableTripCoverages.CoverageType"
+          required="Exposure.IsLienExt == true"
+          value="lienDetail.LienType"/>
+        <RangeCell
+          editable="true"
+          filter="isRoleDisplayable(VALUE)"
+          id="Lienholder"
+          label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Lienholder "
+          required="Exposure.IsLienExt == true"
+          value="lienDetail.LienholderExt"
+          valueRange="Exposure.UIHelper.getLienholderList()"/>
+        <TextCell
+          editable="true"
+          id="AccountNumber"
+          label="displaykey.Web.Contact.EFT.AccountNumber"
+          maxChars="25"
+          numCols="25"
+          value="lienDetail.AccountNumber"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function isRoleDisplayable(cont: Contact) : boolean {
+    for(lien in Exposure.Liens){
+        if(lien.LienholderExt!=null){
+           if(lien.LienholderExt==cont)
+         return false
+        }
+      }
+
+    return true
+}]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <ListViewPanel
+    id="AddressBookSearchLV">
+    <Require
+      name="addressBookMatch"
+      type="contact.AddressBookMatch"/>
+    <Require
+      name="addressBookPageHelper"
+      type="contact.ProximitySearchPageHelper"/>
+    <!-- <Require
+      name="pageHelper"
+      type="contact.ProximitySearchPageHelper"/> -->
+    <!-- GW ADDED -->
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Require
+      name="searchResults"
+      type="ContactQuery"/>
+    <Require
+      name="searchCriteria"
+      type="ContactSearchCriteria"/>
+    <Variable
+      initialValue="addressBookPageHelper.getDrivingDirectionsCache()"
+      name="directions"/>
+    <RowIterator
+      checkBoxVisible="searchCriteria.isProximitySearch() or perm.Contact.createab and externalContactSource.supportsDelete() and (addressBookMatch == null or addressBookMatch.canDelete())"
+      editable="false"
+      elementName="contact"
+      hasCheckBoxes="true"
+      pickValue="externalContactSource.createLocal(contact)"
+      value="filterResults(searchResults, searchCriteria) //searchResults">
+      <ToolbarFlag
+        name="ExternalContact"/>
+      <ToolbarFlag
+        condition="perm.Contact.deleteab(contact)"
+        name="CanDeleteContact"/>
+      <Row>
+        <Cell
+          action="gw.api.contact.AddressBookUtil.linkToMatch(AddressBookMatch, contact)"
+          enableSort="false"
+          id="LinkTo"
+          label="displaykey.Web.Addressbook.Search.Result.LinkTo"
+          value="displaykey.Web.Addressbook.Search.Result.LinkTo"
+          valueVisible="addressBookMatch.canLinkTo(contact)"
+          visible="addressBookMatch != null and addressBookMatch.isLinking()"/>
+        <Cell
+          action="AddressBookContactDetailPopup.push(externalContactSource.wrap(contact))"
+          id="DisplayName"
+          label="displaykey.Web.Addressbook.Search.Result.Name"
+          outputConversion="externalContactSource.loadContact(contact, true).CloseDateExt != null ? VALUE.DisplayName + &quot; (Closed)&quot; : VALUE.DisplayName"
+          sortOrder="2"
+          value="contact"/>
+        <!-- Defect 521 djohnson2 10/18/07 Add Contact type to the screen -->
+        <Cell
+          id="ContactType"
+          label="displaykey.Web.Addressbook.Search.Result.ContactType"
+          value="contact.Subtype"/>
+        <Cell
+          id="AddressLine1"
+          label="displaykey.Web.Addressbook.Search.Result.Address"
+          value="contact.PrimaryAddress.AddressLine1"/>
+        <Cell
+          id="City"
+          label="displaykey.Web.Addressbook.Search.Result.City"
+          value="contact.PrimaryAddress.City"
+          wrap="false"/>
+        <Cell
+          id="State"
+          label="displaykey.Web.Addressbook.Search.Result.State"
+          value="contact.PrimaryAddress.State"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"
+          wrap="false"/>
+        <Cell
+          id="PostalCode"
+          label="displaykey.Web.AddressBook.Search.Location.PostalCode"
+          value="contact.PrimaryAddress.PostalCode"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="PrimaryPhone"
+          label="displaykey.Web.Addressbook.Search.Result.Phone"
+          value="util.custom_Ext.finders.getPrimaryContactNumber(contact)"
+          wrap="false"/>
+        <!-- <Cell
+          id="ContactSubtype"
+          label="displaykey.Web.Addressbook.Search.Result.Type"
+          value="contact.Subtype"
+          width="100"
+          wrap="false"/> -->
+        <!-- <Cell
+          id="Score"
+          label="displaykey.Web.AddressBook.Search.Result.ReviewScore"
+          value="contact.Score"
+          width="50"
+          wrap="false"/> -->
+        <Cell
+          enableSort="false"
+          id="PrimaryTIN"
+          label="displaykey.Web.Addressbook.Search.Result.TIN"
+          value="contact.TaxID"
+          wrap="false"/>
+        <Cell
+          id="CMFContactCell"
+          label="displaykey.Web.AddressBook.Search.Result.CMFContact"
+          value="contact.CMFContactExt"/>
+        <Cell
+          enableSort="false"
+          id="GCDistance"
+          label="displaykey.Web.Addressbook.Search.Result.ProximateDistance"
+          sortBy="contact.PrimaryAddress.getDistanceFrom(searchCriteria.ProximitySearchCenter)"
+          sortOrder="1"
+          value="contact.PrimaryAddress.getDistanceFromAsString(searchCriteria.ProximitySearchCenter)"
+          valueVisible="contact.PrimaryAddress.hasLocationInformation()"
+          visible="searchCriteria.isProximitySearch()"
+          width="50"
+          wrap="false"/>
+        <!-- valueVisible="(contact.PrimaryAddress != null) AND (contact.PrimaryAddress.hasLocationInformation())"
+          visible="searchCriteria.ProximitySearch" -->
+        <Cell
+          enableSort="false"
+          id="DrivingDistance"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingDistance"
+          value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalDistanceString()"
+          visible="addressBookPageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"
+          wrap="false"/>
+        <!-- value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalDistanceString()"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)" -->
+        <Cell
+          enableSort="false"
+          id="DrivingTime"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingTime"
+          value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalTimeInMinutes()"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="addressBookPageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"
+          wrap="false"/>
+        <!-- value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalTimeInMinutes()"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)" -->
+        <Cell
+          action="AddressBookDirectionsPopup.push(directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress))//push(addressBookPageHelper.getCachedDrivingDirections(searchCriteria, contact))"
+          enableSort="false"
+          id="Directions"
+          label="displaykey.Web.AddressBook.Search.Result.Directions"
+          value="displaykey.Web.AddressBook.Search.Result.Directions"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)//addressBookPageHelper.haveCachedDrivingDirections(searchCriteria, contact)"
+          visible="addressBookPageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"/>
+        <!-- <Cell
+          action="AddressBookDirectionsPopup.push(directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress))"
+          enableSort="false"
+          id="Directions"
+          label="displaykey.Web.Addressbook.Search.Result.Directions"
+          value="displaykey.Web.Addressbook.Search.Result.Directions"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"/> -->
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[/*
+ This function is to fix the code for defect 5103. This function helps to filter the exact search results based on the search criteria selection.
+*/
+function filterResults(resultset:ContactQuery,
+contactSearchCriteria:ContactSearchCriteria):java.util.List<Contact> {
+    var contactsResult:java.util.List<entity.Contact>
+
+     if(resultset!=null){
+       contactsResult = resultset.iterator().toList()
+       
+       if (contactSearchCriteria.ContactSubtype != null && contactSearchCriteria.ContactSubtype != "Contact" ) {
+        contactsResult.removeWhere(\ c ->c.Subtype != contactSearchCriteria.ContactSubtype)
+       
+       }
+       if(contactSearchCriteria.ContactSubtype == typekey.Contact.TC_CONTACT){
+         contactsResult.removeWhere(\ c ->c.Subtype == typekey.Contact.TC_PLACE)
+       }
+     }
+     return contactsResult
+   }]]></Code>
+  </ListViewPanel>
+</PCF>

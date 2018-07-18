@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  admin="true"
+  desc="Catastrophe"
+  entity="Catastrophe"
+  exportable="true"
+  javaClass="com.guidewire.cc.domain.catastrophe.Catastrophe"
+  platform="false"
+  table="catastrophe"
+  type="retireable">
+  <fulldescription><![CDATA[
+Represents a catastrophe to code claims with. Each catastrophe has a unique
+name and catasrophe number.
+    ]]></fulldescription>
+  <column
+    default="true"
+    desc="True if a catastrophe can be assigned to a new claim."
+    name="Active"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="Catastrophe number."
+    name="CatastropheNumber"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <column
+    desc="Description of the catastrophe."
+    name="Description"
+    type="shorttext">
+    <localization
+      tableName="cat_desc_l10n"/>
+  </column>
+  <column
+    desc="Name of the catastrophe."
+    name="Name"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+    <localization
+      tableName="cat_name_l10n"/>
+  </column>
+  <column
+    default="false"
+    desc="Boolean field to mark a catastrophe to be run in the CatastropheClaimFinder batch process."
+    name="ScheduleBatch"
+    type="bit"/>
+  <typekey
+    desc="Type of the catastrophe (for example, ISO or internal)."
+    name="Type"
+    typelist="CatastropheType"/>
+  <!-- Comment out one columns -->
+  <column
+    desc="Start date when this catastrophe is valid"
+    name="CatastropheValidFrom"
+    nullok="true"
+    type="datetime"/>
+  <column
+    desc="Date when this catastrophe is no longer valid"
+    name="CatastropheValidTo"
+    nullok="true"
+    type="datetime"/>
+  <!-- <typekey desc="Should a claim of this catastrophe type be auto assigned" name="AutoAssign" typelist="YesNo"/> -->
+  <array
+    arrayentity="CatastrophePeril"
+    desc="Details of perils associated with a catastrophe."
+    exportable="true"
+    name="Perils"
+    owner="true"/>
+  <!-- <array arrayentity="CatastropheState" desc="Details of states associated with a catastrophe." exportable="true" name="States" owner="true"/> -->
+  <array
+    arrayentity="CatastropheZone"
+    arrayfield="Catastrophe"
+    desc="The zones that define this catastrophe."
+    exportable="true"
+    name="CatastropheZones"
+    owner="true"/>
+  <!-- <array arrayentity="BranchOffices" desc="Details of branch offices associated with a catastrophe." exportable="true" name="BranchOffices" owner="true"/> -->
+  <array
+    arrayentity="CatastropheClaimsHistory"
+    desc="History of the matched claims."
+    exportable="true"
+    name="ClaimsHistory"
+    owner="true"/>
+  <column
+    desc="Comments regarding the Catastrophe"
+    name="Comments"
+    nullok="true"
+    type="shorttext"/>
+  <column
+    desc="PCS catastrophe number from ISO data feed."
+    name="PCSCatastropheNumber"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="60"/>
+  </column>
+  <events/>
+  <index
+    desc="Enforce uniqueness of catastrophe name"
+    name="catu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="Name"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+  </index>
+  <index
+    desc="Enforce uniqueness of catastrophe number"
+    name="catu2"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="CatastropheNumber"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+  </index>
+</entity>

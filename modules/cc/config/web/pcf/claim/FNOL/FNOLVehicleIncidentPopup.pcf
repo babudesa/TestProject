@@ -1,0 +1,519 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterEnter="initializeVariable()"
+    beforeCommit="cleanBeforeCommit()"
+    canEdit="true"
+    canVisit="true"
+    id="FNOLVehicleIncidentPopup"
+    returnType="VehicleIncident"
+    startInEditMode="true"
+    title="displaykey.Web.FNOLVehicleIncidentPopup.Title">
+    <LocationEntryPoint
+      signature="FNOLVehicleIncidentPopup(VehicleIncident : VehicleIncident, Wizard : gw.api.claim.NewClaimWizardInfo)"/>
+    <LocationEntryPoint
+      signature="FNOLVehicleIncidentPopup(Claim: Claim, Wizard : gw.api.claim.NewClaimWizardInfo)"/>
+    <Variable
+      name="VehicleIncident"
+      type="VehicleIncident"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="InsurerLoss"
+      type="boolean"/>
+    <Variable
+      name="NewVehicle"
+      type="boolean"/>
+    <Variable
+      name="Wizard"
+      type="gw.api.claim.NewClaimWizardInfo"/>
+    <Screen
+      id="FNOLVehicleIncidentScreen">
+      <TitleBar
+        icon="VehicleIncident.HeaderIcon"/>
+      <Toolbar>
+        <EditButtons
+          pickValue="VehicleIncident"/>
+      </Toolbar>
+      <PanelRow>
+        <PanelColumn>
+          <DetailViewPanel>
+            <InputColumn>
+              <Label
+                label="displaykey.Web.FNOLVehicleIncidentPopup.VehicleBasicsLabel"/>
+              <BooleanRadioInput
+                editable="true"
+                falseLabel="displaykey.Web.FNOLVehicleIncidentPopup.LossParty.False.Label"
+                id="LossParty"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.LossParty"
+                onChange="VehicleIncident.VehicleLossParty = (InsurerLoss ? LossPartyType.TC_INSURED : LossPartyType.TC_THIRD_PARTY)"
+                postOnChange="true"
+                trueLabel="displaykey.Web.FNOLVehicleIncidentPopup.LossParty.True.Label"
+                value="InsurerLoss"/>
+              <RangeInput
+                editable="true"
+                id="Vehicle_Picker"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Picker"
+                required="true"
+                sortValueRange="false"
+                value="VehicleIncident.Vehicle"
+                valueRange="VehicleIncident.AvailableVehicles"
+                valueWidth="200"
+                visible="InsurerLoss">
+                <MenuItem
+                  action="NewClaimWizard_PolicyVehicleDetailPopup.push(Claim.Policy.getVehicleRU( VehicleIncident.Vehicle as Key ), Claim.Policy)"
+                  id="VehicleDetailMenuItem"
+                  label="displaykey.Web.FNOLVehicleIncidentPopup.VehicleDetailMenuItem.Label"/>
+                <MenuItem
+                  action="VehicleIncident.Vehicle = new Vehicle(); NewVehicle = true;"
+                  id="NewVehicleMenuItem"
+                  label="displaykey.Web.FNOLVehicleIncidentPopup.NewVehicleMenuItem.Label"/>
+              </RangeInput>
+              <Input
+                editable="true"
+                id="Vehicle_VehicleType"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Type"
+                value="VehicleIncident.VehicleType"
+                visible="NewVehicle or VehicleIncident.VehicleLossParty == LossPartyType.TC_THIRD_PARTY">
+                <Reflect
+                  triggerIds="Vehicle_Picker">
+                  <ReflectCondition
+                    condition="VehicleIncident.Claim.Policy.isPolicyVehicle(VALUE)"
+                    value="&quot;listed&quot;"/>
+                </Reflect>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_Year"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Year"
+                value="VehicleIncident.Vehicle.Year"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Year"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_Make"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Make"
+                required="false"
+                value="VehicleIncident.Vehicle.Make"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Make"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_Model"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Model"
+                required="false"
+                value="VehicleIncident.Vehicle.Model"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Model"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_Style"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Style"
+                postOnChange="true"
+                required="false"
+                value="VehicleIncident.Vehicle.Style"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Style"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_Color"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.Color"
+                value="VehicleIncident.Vehicle.Color"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Color"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_LicensePlate"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.LicensePlate"
+                value="VehicleIncident.Vehicle.LicensePlate"
+                visible="!InsurerLoss or NewVehicle">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.LicensePlate"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_State"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.State"
+                value="VehicleIncident.Vehicle.State"
+                visible="(!InsurerLoss or NewVehicle) and gw.api.address.CountryAddressFields.DefaultCountryHasStates">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.State"/>
+              </Input>
+              <Input
+                available="Claim.canEditVehicle(VehicleIncident.Vehicle)"
+                editable="true"
+                id="Vehicle_VIN"
+                label="displaykey.Web.VehicleIncidentDV.Vehicle.VIN"
+                value="VehicleIncident.Vehicle.Vin"
+                visible="(!InsurerLoss or NewVehicle) and VehicleIncident.Vehicle.Style != VehicleStyle.TC_BOAT and VehicleIncident.Vehicle.Style != VehicleStyle.TC_ATV and VehicleIncident.Vehicle.Style != VehicleStyle.TC_SNOWMOBILE">
+                <Reflect
+                  available="Claim.canEditVehicle(VALUE)"
+                  triggerIds="Vehicle_Picker"
+                  value="VALUE.Vin"/>
+              </Input>
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="Owner_Picker"
+                label="displaykey.Web.VehicleIncidentDV.Owner.Picker"
+                value="VehicleIncident.incidentowner"
+                valueRange="Claim.RelatedContacts"
+                visible="VehicleIncident.VehicleLossParty == LossPartyType.TC_THIRD_PARTY"/>
+              <Input
+                editable="true"
+                id="Theft_Indicator"
+                label="displaykey.Web.VehicleIncidentDV.TheftIndicator"
+                postOnChange="true"
+                value="VehicleIncident.VehStolenInd"
+                visible="InsurerLoss"/>
+              <Input
+                editable="true"
+                id="VehicleParked"
+                label="displaykey.Web.VehicleIncidentDV.VehicleParked"
+                postOnChange="true"
+                value="VehicleIncident.VehicleParked"/>
+            </InputColumn>
+          </DetailViewPanel>
+          <DetailViewPanel
+            visible="true">
+            <InputColumn>
+              <InputDivider/>
+              <Label
+                label="displaykey.Web.VehicleIncidentDV.Damage"/>
+              <TextAreaInput
+                editable="true"
+                id="Description"
+                label="displaykey.Web.VehicleIncidentDV.Description"
+                numCols="30"
+                numRows="3"
+                value="VehicleIncident.Description"/>
+              <Input
+                editable="true"
+                id="TotalLoss"
+                label="displaykey.Web.FNOLVehicleIncidentPopup.PossibleTotalLoss.Label"
+                value="VehicleIncident.TotalLoss">
+                <MenuItem
+                  action="TotalLossCalculatorPopup.push(VehicleIncident)"
+                  id="CalculateButton"
+                  label="displaykey.Web.FNOLVehicleIncidentPopup.PossibleTotalLoss.CalculateButton.Label"/>
+              </Input>
+              <Input
+                id="TotalLossPoints"
+                label="displaykey.Web.FNOLVehicleIncidentPopup.TotalLossPoints.Label"
+                value="VehicleIncident.TotalLossPoints"/>
+              <Input
+                editable="true"
+                id="Operable"
+                label="displaykey.Web.VehicleIncidentDV.Operable"
+                value="VehicleIncident.VehicleOperable"/>
+              <Input
+                editable="true"
+                id="Exposure_AirbagsDeployed"
+                label="displaykey.Web.VehicleIncidentDV.AirbagsDeployed"
+                onChange="VehicleIncident.TotalLossCalculatorPreUpdate()"
+                postOnChange="true"
+                value="VehicleIncident.AirbagsDeployed"
+                visible="!VehicleIncident.VehStolenInd"/>
+              <Input
+                editable="true"
+                id="Exposure_EquipmentFailure"
+                label="displaykey.Web.VehicleIncidentDV.EquipmentFailure"
+                value="VehicleIncident.EquipmentFailure"
+                visible="!VehicleIncident.VehStolenInd"/>
+            </InputColumn>
+          </DetailViewPanel>
+          <DetailViewPanel
+            id="OtherDetailsDV">
+            <InputColumn>
+              <InputDivider/>
+              <Label
+                label="displaykey.Web.FNOLVehicleIncidentPopup.OtherDetailsLabel"/>
+              <Input
+                editable="true"
+                id="Speed"
+                label="displaykey.Web.VehicleIncidentDV.Speed"
+                value="VehicleIncident.Speed"
+                visible="!(VehicleIncident.VehStolenInd or VehicleIncident.VehicleParked)"/>
+              <Input
+                editable="true"
+                id="VehicleDirection"
+                label="displaykey.Web.VehicleIncidentDV.VehicleDirection"
+                value="VehicleIncident.VehicleDirection"
+                visible="!(VehicleIncident.VehStolenInd or VehicleIncident.VehicleParked)"/>
+              <Input
+                editable="true"
+                id="CollisionPoint"
+                label="displaykey.Web.VehicleIncidentDV.CollisionPoint"
+                value="VehicleIncident.CollisionPoint"
+                visible="!VehicleIncident.VehStolenInd"/>
+              <Input
+                editable="true"
+                id="LoanInformation_Loan"
+                label="displaykey.Web.LoanInformationDV.Loan"
+                postOnChange="true"
+                value="VehicleIncident.Vehicle.Loan"/>
+              <Input
+                editable="true"
+                id="MonthlyPayment"
+                label="displaykey.Web.LoanInformationDV.MonthlyPayment"
+                value="VehicleIncident.Vehicle.LoanMonthlyPayment"
+                visible=" VehicleIncident.Vehicle.Loan == true  "/>
+              <Input
+                editable="true"
+                id="MonthsRemaining"
+                label="displaykey.Web.LoanInformationDV.MonthsRemaining"
+                value="VehicleIncident.Vehicle.LoanMonthsRemaining"
+                visible=" VehicleIncident.Vehicle.Loan == true "/>
+              <Input
+                editable="true"
+                id="PayoffAmount"
+                label="displaykey.Web.LoanInformationDV.PayoffAmount"
+                value="VehicleIncident.Vehicle.LoanPayoffAmount"
+                visible=" VehicleIncident.Vehicle.Loan == true "/>
+              <ListViewInput
+                boldLabel="true"
+                def="DriverCitationsLV(VehicleIncident)"
+                editable="true"
+                labelAbove="true"
+                visible="!VehicleIncident.VehStolenInd">
+                <Toolbar>
+                  <ToolbarInput
+                    boldValue="true"
+                    id="CitationToolbarLabel"
+                    value="displaykey.Web.FNOLVehicleIncidentPopup.Citations.Label"/>
+                  <IteratorButtons/>
+                </Toolbar>
+              </ListViewInput>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelColumn>
+        <PanelColumn>
+          <DetailViewPanel
+            visible="!VehicleIncident.VehStolenInd">
+            <InputColumn>
+              <ListViewInput
+                boldLabel="true"
+                editable="true"
+                label="displaykey.Web.FNOLVehicleIncidentPopup.OccupantsLabel"
+                labelAbove="true">
+                <Toolbar>
+                  <ToolbarButton
+                    action="FNOLContactPopup.push(claim, null, ContactRole.TC_DRIVER, VehicleIncident, Wizard);"
+                    icon="&quot;btn_icon_driver.gif&quot;"
+                    id="AddDriverButton"
+                    label="displaykey.Web.FNOLVehicleIncidentPopup.AddDriverButton.Label"
+                    visible="VehicleIncident.driver == null"/>
+                  <ToolbarButton
+                    action="FNOLContactPopup.push(claim, null, ContactRole.TC_PASSENGER, VehicleIncident, Wizard);"
+                    icon="&quot;btn_icon_passenger.gif&quot;"
+                    id="AddPassengerButton"
+                    label="displaykey.Web.FNOLVehicleIncidentPopup.AddPassengerButton.Label"
+                    shortcut="P"/>
+                  <IteratorButtons
+                    addVisible="false"/>
+                </Toolbar>
+                <ListViewPanel
+                  id="OccupantLV">
+                  <RowIterator
+                    checkBoxVisible="true"
+                    editable="false"
+                    elementName="ContactPerson"
+                    toRemove="removeContact(ContactPerson)"
+                    value="VehicleIncident.getContactsByRoles( {ContactRole.TC_DRIVER, ContactRole.TC_PASSENGER} )">
+                    <Row>
+                      <Cell
+                        icon="Wizard.getInjurySeverity(Claim.getClaimContact(ContactPerson)) == SeverityType.TC_FATAL ? &quot;icon_fatality.gif&quot; : &quot;icon_injury.gif&quot;"
+                        iconLabel="displaykey.Web.FNOLVehicleIncidentPopup.InjuredIcon.Label"
+                        id="InjuredIcon"
+                        showHeaderIcon="false"
+                        value="Wizard.isInjured(Claim.getClaimContact(ContactPerson))"/>
+                      <Cell
+                        icon="VehicleIncident.driver == contactPerson ? &quot;icon_driver.gif&quot; : &quot;icon_passenger.gif&quot;"
+                        iconLabel="VehicleIncident.driver == contactPerson ? displaykey.Web.FNOLVehicleIncidentPopup.DriverIcon.Label : displaykey.Web.FNOLVehicleIncidentPopup.PassengerIcon.Label"
+                        id="RoleIcon"
+                        showHeaderIcon="false"
+                        value="true"/>
+                      <Cell
+                        action="FNOLContactPopup.push(Claim, Claim.getClaimContact(ContactPerson), (VehicleIncident.driver == ContactPerson ? &quot;driver&quot; : &quot;passenger&quot;), VehicleIncident, Wizard)"
+                        id="name"
+                        label="displaykey.Web.FNOLVehicleIncidentPopup.Name.Label"
+                        value="displaykey.Web.FNOLVehicleIncidentPopup.NamePosition(ContactPerson.DisplayName, (VehicleIncident.driver == ContactPerson ? ContactRole.TC_DRIVER.DisplayName : ContactRole.TC_PASSENGER.DisplayName))"/>
+                      <Cell
+                        id="Injuries"
+                        label="displaykey.Web.FNOLVehicleIncidentPopup.Injuries.Label"
+                        value="Wizard.getInjuryDescription( Claim.getClaimContact(ContactPerson) )"/>
+                    </Row>
+                  </RowIterator>
+                </ListViewPanel>
+              </ListViewInput>
+            </InputColumn>
+          </DetailViewPanel>
+          <DetailViewPanel
+            visible="VehicleIncident.VehStolenInd">
+            <InputColumn>
+              <Label
+                label="displaykey.Web.FNOLVehicleIncidentPopup.StolenVehicleLabel"/>
+              <Input
+                editable="true"
+                id="Theft_VehLockInd"
+                label="displaykey.Web.VehicleIncidentDV.VehLockInd"
+                postOnChange="true"
+                value="VehicleIncident.VehLockInd"/>
+              <Input
+                editable="true"
+                id="Theft_AntiThftInd"
+                label="displaykey.Web.VehicleIncidentDV.AntiThftInd"
+                postOnChange="true"
+                value="VehicleIncident.AntiThftInd"/>
+              <Input
+                editable="true"
+                id="Theft_OdomRead"
+                label="displaykey.Web.VehicleIncidentDV.OdomRead"
+                postOnChange="true"
+                value="VehicleIncident.OdomRead"/>
+              <Input
+                editable="true"
+                id="Theft_AffdvCmplInd"
+                label="displaykey.Web.VehicleIncidentDV.AffdvCmplInd"
+                postOnChange="true"
+                required="false"
+                value="VehicleIncident.AffdvCmplInd"/>
+              <!-- <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="Theft_AffdvCmplBy"
+                label="displaykey.Web.VehicleIncidentDV.AffdvCmplBy"
+                required="false"
+                value="VehicleIncident.InsuredRep"
+                valueRange="Exposure.Claim.relatedContacts"
+                visible="VehicleIncident.AffdvCmplInd == &quot;Yes&quot;"/> -->
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="Theft_AffdvCmplBy"
+                label="displaykey.Web.VehicleIncidentDV.AffdvCmplBy"
+                required="false"
+                value="VehicleIncident.InsuredRep"
+                valueRange="Claim.relatedContacts"
+                visible="VehicleIncident.AffdvCmplInd == &quot;Yes&quot;"/>
+            </InputColumn>
+          </DetailViewPanel>
+          <PanelDivider/>
+          <DetailViewPanel>
+            <InputColumn>
+              <Label
+                label="displaykey.Web.FNOLVehicleIncidentPopup.ServiceNeededLabel"/>
+            </InputColumn>
+          </DetailViewPanel>
+          <PanelRef
+            def="VehicleIncidentPanelSet(VehicleIncident)"/>
+        </PanelColumn>
+      </PanelRow>
+    </Screen>
+    <Code><![CDATA[function initializeVariable() {
+  if (Claim == null) {
+    Claim = VehicleIncident.getClaim();
+  }
+  if (VehicleIncident == null) {
+    VehicleIncident = new VehicleIncident();
+    VehicleIncident.Vehicle = new Vehicle();
+    NewVehicle = true;
+    if (Claim.VehicleIncidentsOnly.length == 0) {
+      InsurerLoss = true;
+      VehicleIncident.VehicleLossParty = LossPartyType.TC_INSURED;
+    } else if(Claim.LossType == "TRAV") {
+      //Travel vehicle incidents should default to 3rd party
+      InsurerLoss = false;
+      VehicleIncident.VehicleLossParty = LossPartyType.TC_THIRD_PARTY;
+    } else {
+      InsurerLoss = false;
+      VehicleIncident.VehicleLossParty = LossPartyType.TC_THIRD_PARTY;
+    }
+    Claim.addToIncidents(VehicleIncident);
+  }
+  else {
+    InsurerLoss = checkForIncident();
+  }
+}    
+
+function checkForIncident() : boolean {
+  if (VehicleIncident.VehicleLossParty == LossPartyType.TC_INSURED) {
+    return true;
+  } else if (VehicleIncident.VehicleLossParty == LossPartyType.TC_THIRD_PARTY) {
+    return false;
+  } else {
+    for (currentVehicle in Claim.Policy.Vehicles) {
+      if ((currentVehicle).Vehicle == VehicleIncident.Vehicle) {
+        VehicleIncident.VehicleLossParty = LossPartyType.TC_INSURED;
+        return true;
+      }
+    }
+    VehicleIncident.VehicleLossParty = LossPartyType.TC_THIRD_PARTY;
+    return false;
+  }
+}
+
+// Removes any orphaned injury incidents that were created that no
+// longer have any involvement with the vehicle incicent
+function cleanBeforeCommit() {   
+  // Travel LOB does not need to remove the injury incidents
+  if(VehicleIncident.Claim.LossType != "TRAV") {
+    var involvedPersons = new java.util.HashSet<Contact>();
+    var injuryIncidents = VehicleIncident.Claim.InjuryIncidentsOnly
+    
+    // retrieve a list of all drivers and passegners on the all vehicle incidents
+    Claim.VehicleIncidentsOnly.each(\ v -> v.getContactsByRoles( {ContactRole.TC_DRIVER, ContactRole.TC_PASSENGER} ).each(\ c -> involvedPersons.add(c)))
+    Claim.getContactsByRole(ContactRole.TC_PEDESTRIAN).each(\ c-> involvedPersons.add(c))
+    
+    injuryIncidents.each( \ ii -> {
+      // if the injured person for the incident is not related to any contacts on a vehicle incidents, remove it. 
+      if (!involvedPersons.contains( ii.injured )) {
+        Claim.removeFromIncidents( ii )
+      }
+    })
+  }
+}
+
+function removeContact(contact : Contact) {  
+  if (VehicleIncident.driver == contact) {
+    VehicleIncident.driver = null;
+  } else {
+    VehicleIncident.removeRole( ContactRole.TC_PASSENGER, contact );
+  }
+}]]></Code>
+  </Popup>
+</PCF>

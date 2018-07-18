@@ -1,0 +1,28 @@
+package rules.EventMessage.EventFired_dir.Destination14ClaimExport_dir.ClaimContact_dir
+
+@gw.rules.RuleName("ClaimContactContactChanged")
+internal class ClaimContactContactChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ClaimContactContactChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.claimexport.gaigclaimexport.enums.RecordTypeEnum
+
+try {
+
+  var claimContact = messageContext.Root as ClaimContact
+  var f = util.gaic.claimexport.ClaimExportFunctionsFactory.getClaimContactFunctions()
+  
+  //If claim contact is insured or claimant then send changes.
+  if(exists(role in claimContact.Roles where role.Role == ContactRole.TC_CLAIMANT
+    || role.Role == ContactRole.TC_INSURED)){
+    f.sendContactChanges(messageContext, claimContact, RecordTypeEnum.U)
+  }
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

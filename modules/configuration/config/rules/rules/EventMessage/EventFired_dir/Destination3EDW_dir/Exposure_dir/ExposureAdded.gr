@@ -1,0 +1,20 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Exposure_dir
+
+@gw.rules.RuleName("ExposureAdded")
+internal class ExposureAdded {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Exposure
+&& messageContext.EventName == "ExposureAdded"
+&& messageContext.Root.Claim.State != "draft"
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var exposure = messageContext.Root as Exposure;
+if(exposure.LoadCommandID != ScriptParameters.CurrentConversionLoadCommandID){
+  var f = util.gaic.EDW.EDWFunctionsFactory.getFeatureFunctions();
+  f.sendExposureChanges( messageContext, exposure );
+}
+/*end00rule*/
+  }
+}

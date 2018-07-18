@@ -1,0 +1,24 @@
+package rules.Preupdate.ExposurePreupdate_dir
+
+@gw.rules.RuleName("EPU01000 - Assign default coverage")
+internal class EPU01000Assigndefaultcoverage {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.Coverage == null and
+(Exposure.CoverageSubType == "wi_lw" or
+ Exposure.CoverageSubType == "wl_el" or
+ Exposure.CoverageSubType == "wm_wcid")/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/for( coverage in Exposure.Claim.Policy.AllCoverages )
+{
+  if( (coverage.Type == "WI" and Exposure.CoverageSubType == "wi_lw") or
+      (coverage.Type == "WL" and Exposure.CoverageSubType == "wl_el" ) or
+      (coverage.Type == "WM" and Exposure.CoverageSubType == "wm_wcid" ))
+  {
+    Exposure.Coverage = coverage;
+    break;
+  }
+}/*end00rule*/
+  }
+}

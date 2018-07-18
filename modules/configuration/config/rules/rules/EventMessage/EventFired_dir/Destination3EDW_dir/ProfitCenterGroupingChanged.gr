@@ -1,0 +1,33 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir
+
+@gw.rules.RuleName("Profit Center Grouping Changed")
+internal class ProfitCenterGroupingChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ProfitCenterGroupingExtChanged"
+
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashSet
+
+var pcg = messageContext.Root as ProfitCenterGroupingExt;
+var q = gw.api.database.Query.make(SecurityZone);
+var pci = q.join(entity.ProfitCenterSecurityFilterExt, "SecurityZone").cast(ProfitCenterSecurityFilterExt);
+pci.compare("ProfitCenterGrouping", Equals, pcg);
+  
+var grps = new HashSet<Group>()
+
+for(secZone in q.select()){
+  for(group in secZone.Groups){
+    grps.add(group)
+  }
+}
+
+if(grps.HasElements){
+  for(grp in grps){
+    util.gaic.EDW.EDWFunctionsFactory.getUserFunctions().sendGroupDataChanges( messageContext, grp );
+  }
+}/*end00rule*/
+  }
+}

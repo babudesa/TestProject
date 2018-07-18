@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="HolidayDetailDV"
+    mode="US">
+    <Require
+      name="Holiday"
+      type="Holiday"/>
+    <Variable
+      name="linkedZone"
+      type="Zone"/>
+    <Variable
+      name="zoneType"
+      type="ZoneType"/>
+    <Variable
+      initialValue="typekey.Country.TC_US"
+      name="country"
+      type="Country"/>
+    <InputColumn>
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="ZoneType"
+        label="displaykey.Web.Admin.HolidayDetailDV.ZoneType"
+        onChange="linkedZone=null;                           Holiday.filterCriteria.linkedZone=null;                           Holiday.filterCriteria.zoneType=zoneType"
+        postOnChange="true"
+        required="true"
+        value="zoneType"
+        valueRange="gw.api.admin.BaseAdminUtil.getRegionZoneTypesWithGranularity(country)"
+        visible="!Holiday.AppliesToAllZones"/>
+      <ListViewInput
+        def="HolidayZonesLV(Holiday, zoneType, country)"
+        editable="true"
+        hideIfReadOnly="true"
+        label="displaykey.Web.Admin.HolidaysLV.Zones"
+        visible="Holiday.FilterCriteria.ZoneType==&quot;zip&quot;">
+        <Toolbar
+          visible="true">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- filter for counties, filter on state before showing
+           shuttlelist -->
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="state"
+        label="displaykey.Java.Admin.Holidays.SelectState"
+        onChange="Holiday.FilterCriteria.LinkedZone=linkedZone"
+        postOnChange="true"
+        value="linkedZone"
+        valueRange="Zone.finder.findZones(country,typekey.ZoneType.TC_STATE)"
+        visible="Holiday.FilterCriteria.ZoneType == &quot;county&quot;"/>
+      <!-- used here for counties,states
+           not visible if applicable filter has not been selected -->
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="ZoneInput"
+        label="displaykey.Web.Admin.HolidayDetailDV.Zones"
+        numRows="10"
+        shuttleList="true"
+        value="Holiday.ZoneCodes"
+        valueRange="Zone.finder.findZoneCodes(country,Holiday.FilterCriteria.ZoneType,Holiday.FilterCriteria.LinkedZone)"
+        visible="!(Holiday.FilterCriteria.ZoneType==null || Holiday.FilterCriteria.ZoneType==&quot;zip&quot;                   || (Holiday.FilterCriteria.ZoneType == &quot;county&quot; AND Holiday.FilterCriteria.LinkedZone==null))"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

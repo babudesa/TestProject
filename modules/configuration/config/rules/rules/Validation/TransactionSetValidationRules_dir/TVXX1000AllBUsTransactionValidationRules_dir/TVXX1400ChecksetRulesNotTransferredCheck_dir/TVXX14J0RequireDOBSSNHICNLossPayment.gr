@@ -1,0 +1,38 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14J0 - Require DOB & SSN/HICN Loss Payment")
+internal class TVXX14J0RequireDOBSSNHICNLossPayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//* 
+  9/3/2015 - kniese - Closing a Medicare Feature (other than ClaimDenied Reason)
+  with Loss Payment should require DOB and SSN/HICN
+*/
+
+exists(pay in transactionSet.Transactions where
+pay.Subtype == "Payment" and 
+(pay as Payment).PaymentType == PaymentType.TC_SUPPLEMENT and 
+(pay as Payment).CostType == CostType.TC_CLAIMCOST and
+util.gaic.CMS.validation.CMSValidationUtil.generalPrecondition((pay as Payment).Exposure) and 
+((pay as Payment).Exposure.Claimant as Person).MedicareEligibleExt == false and
+(((pay as Payment).Exposure.Claimant as Person).DateOfBirth == null or 
+(((pay as Payment).Exposure.Claimant.TaxID == null) and 
+((pay as Payment).Exposure.Claimant as Person).HICNExt == null)) and
+(pay as Payment).Exposure.ClosedOutcome != ExposureClosedOutcomeType.TC_CLAIMDENIED)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(payment in transactionSet.Transactions.where(\ t -> t.Subtype == "Payment" )){
+      
+  var missingInfo : String = "CMS Medicare fields must be populated on the Claimant: " + payment.Exposure.Claimant + " before this check can be issued: "
+  if((payment.Exposure.Claimant as Person).DateOfBirth==null){
+      missingInfo = missingInfo + "Date of Birth, "
+   }
+   if(((payment.Exposure.Claimant as Person).TaxID=="" or (payment.Exposure.Claimant as Person).TaxID==null) && ((payment.Exposure.Claimant as Person).HICNExt=="" or (payment.Exposure.Claimant as Person).HICNExt==null)){
+      missingInfo = missingInfo + "SSN or HICN"
+   }
+   transactionSet.reject("newloss", missingInfo, null, null)
+    
+  
+}/*end00rule*/
+  }
+}

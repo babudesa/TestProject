@@ -1,0 +1,21 @@
+package rules.Validation.ClaimReopenedValidationRules_dir.CRVXX1000AllBUsClaimReopenedValidationRules_dir
+
+@gw.rules.RuleName("CRVXX1100 - Check for active assigned user")
+internal class CRVXX1100Checkforactiveassigneduser {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Defect 1819 - To prevent activities, etc from being assigned to Default Owner
+Author: erawe
+Date: 5/15/09
+Updates:
+*/
+!claim.AssignedUser.Credential.Active/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+claim.reject( "newloss", "Current assigned user is not active, please assign the claim to an active user before reopening.", null, null )
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

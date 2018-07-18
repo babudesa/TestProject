@@ -1,0 +1,15 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Coverage_dir
+
+@gw.rules.RuleName("CoverageAdded")
+internal class CoverageAdded {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "CoverageAdded"
+&& (messageContext.Root as Coverage).Policy.Claim.State != "draft"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var coverage = messageContext.Root as Coverage;
+var f = util.gaic.EDW.EDWFunctionsFactory.getClaimFunctions();
+f.sendClaimChanges( messageContext, coverage.Policy.Claim );/*end00rule*/
+  }
+}

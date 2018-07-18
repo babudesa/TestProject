@@ -1,0 +1,24 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir
+
+@gw.rules.RuleName("TPOXX1100 - Set required fields for BulkInvoice Items")
+internal class TPOXX1100SetrequiredfieldsforBulkInvoiceItems {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/// Temporary fix to initialise the ex_ProducerCopy field on check to 'Yes'
+for(each in transactionSet.Transactions)
+{
+    var pmt = each as Payment;
+    var chk = pmt.Check;
+    if (chk != null) {
+      if (chk.BulkInvoiceItemInfo.BulkInvoiceItem != null && 
+          chk.ex_ProducerCopy == null) {
+        chk.ex_ProducerCopy = "Yes";     
+        gw.api.util.Logger.logError( "ex_ProducerCopy set to Yes !!!" );
+      }
+    }
+}/*end00rule*/
+  }
+}

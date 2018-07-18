@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir.CPUXX1410SuspiciousClaimActivity_dir
+
+@gw.rules.RuleName("CPUXX1411 - Set flag on claim (not Agri)")
+internal class CPUXX1411SetflagonclaimnotAgri {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.LossType=="EQUINE"
+//4/6/12 erawe: defect 5292 This rule for Equine only
+/*Defect ID : 7669- TECHNICAL: multiple hardcoded activity patterns are causing errors
+ in higher environments, i.e. WC INT. See attached emails.Replaced with activity code instead of activity public id *//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var actCode = util.custom_Ext.finders.findActivityPattern("eq_clm_plcy_eff_exp")
+  claim.createActivityFromPattern( null, actCode )
+  if (gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) < 10){
+     claim.setFlag( "Claim Loss Date within 2 weeks of Policy Effective Date." )
+  }
+  else {
+     claim.setFlag( "Claim Loss Date within 2 weeks of Policy Expiration Date." )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule(), e, null)
+}/*end00rule*/
+  }
+}

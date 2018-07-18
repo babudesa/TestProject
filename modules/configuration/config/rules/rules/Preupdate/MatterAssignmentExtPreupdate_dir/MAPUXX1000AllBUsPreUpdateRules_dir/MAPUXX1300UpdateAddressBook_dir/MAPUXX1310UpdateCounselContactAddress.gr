@@ -1,0 +1,41 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1300UpdateAddressBook_dir
+
+@gw.rules.RuleName("MAPUXX1310 - Update Counsel Contact Address")
+internal class MAPUXX1310UpdateCounselContactAddress {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("CounselContactAddressExt") 
+or (matterAssignmentExt.CounselLawFirmExt != null
+and matterAssignmentExt.CounselContactAddressExt !=null 
+and !matterAssignmentExt.CounselLawFirmExt.AllAddresses.contains(matterAssignmentExt.CounselContactAddressExt))
+/*
+  If the Counsel Law Firm Contact address has been added/changed in ClaimCenter and is not contained
+  in its addresses array, then it needs to be added to the array and possibly
+  synchronized with AddressBook.
+*/
+/*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/var createAddress:boolean=false
+// if the contact is not in AB, then add this new address
+if(matterAssignmentExt.CounselContactAddressExt.AddressBookUID==null){
+  createAddress = true
+}
+// if the contact in AB
+else {
+  // if the address on legal action doesn't match any addresses on this Law Firm by AB ID (AddressBookUID) - create address
+  if(matterAssignmentExt.CounselLawFirmExt.AllAddresses.where(\ a -> a.AddressBookUID==matterAssignmentExt.CounselContactAddressExt.AddressBookUID).IsEmpty){
+    createAddress = true  
+  }
+}
+//add the address to the contact if the address is not in the address array and is not null
+if(createAddress==true){
+  //add address to addresses array on contact
+  matterAssignmentExt.CounselLawFirmExt.addAddress(matterAssignmentExt.CounselContactAddressExt)
+}
+if(matterAssignmentExt.CounselLawFirmExt.AddressBookUID != null){
+  //sync the contact with AB if it was pulled from AB
+  matterAssignmentExt.CounselLawFirmExt.updateAddressBook(true)
+}/*end00rule*/
+  }
+}

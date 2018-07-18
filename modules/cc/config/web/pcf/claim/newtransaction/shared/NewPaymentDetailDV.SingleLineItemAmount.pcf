@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewPaymentDetailDV"
+    mode="SingleLineItemAmount">
+    <Require
+      name="Payment"
+      type="Payment"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <Variable
+      initialValue="Payment.ReserveLine"
+      name="reserveLine"
+      type="ReserveLine"/>
+    <InputColumn>
+      <RangeInput
+        editable="true"
+        id="Transaction_ReserveLine"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.ReserveLine"
+        onChange="Payment.setReserveLine(reserveLine); Payment.PaymentType = null; Payment.ErodesReserves = true"
+        optionLabel="Wizard.getReserveLinePickerOptionLabel(VALUE)"
+        postOnChange="true"
+        required="true"
+        value="reserveLine"
+        valueRange="Wizard.getPayableReserveLines(Payment)"/>
+      <RangeInput
+        editable="true"
+        id="Transaction_Exposure"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Exposure"
+        noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+        postOnChange="true"
+        required="false"
+        value="Payment.Exposure"
+        valueRange="Wizard.getPayableExposures(Payment)"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+      <Input
+        id="Transaction_Coverage"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Coverage"
+        value="Payment.Exposure.PrimaryCoverage"/>
+      <RangeInput
+        editable="true"
+        id="Transaction_CostType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.CostType"
+        postOnChange="true"
+        required="true"
+        value="Payment.CostType"
+        valueRange="Wizard.getPossibleCostTypes(Payment)"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+      <RangeInput
+        editable="true"
+        id="Transaction_CostCategory"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.CostCategory"
+        postOnChange="true"
+        required="true"
+        value="Payment.CostCategory"
+        valueRange="Wizard.getPossibleCostCategories(Payment)"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+      <TypeKeyInput
+        editable="true"
+        filter="Wizard.isAllowedPaymentType( Payment, VALUE )"
+        id="NVV_Financials_NewPaymentDetail_Payment_PaymentType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Payment.PaymentType"
+        requestValidationExpression="Wizard.validatePaymentType(Payment, VALUE)"
+        required="true"
+        value="Payment.PaymentType"/>
+      <Input
+        editable="true"
+        id="Payment_Eroding"
+        label="displaykey.Web.NewCheckWizard.NewPaymentDetail.Eroding"
+        required="true"
+        value="Payment.ErodesReserves"
+        visible="!Payment.Exposure.Closed and Payment.PaymentType != PaymentType.TC_SUPPLEMENT"/>
+      <Input
+        id="NVV_Financials_NewPaymentDetail_Transaction_AvailableReserves"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.AvailableReserves"
+        value="(!Payment.ReserveLine.New) ? financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(Payment.ReserveLine) : financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(Payment.Claim, Payment.Exposure, Payment.CostType, Payment.CostCategory)"/>
+      <Input
+        editable="true"
+        id="NVV_Financials_NewPaymentDetail_Transaction_Comments"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Comments"
+        value="Payment.Comments"/>
+      <Input
+        editable="true"
+        id="NVV_Financials_NewPaymentDetail_Transaction_Amount"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Amount"
+        value="Payment.FirstLineItem.TransactionAmountComponent"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,36 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX1400 - Review Recurring Payment Schedule")
+internal class ABXX1400ReviewRecurringPaymentSchedule {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Conversion Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for converted claims. 
+ */
+
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "review_recurring_payment" )  
+try{
+  var queryResults = gw.api.database.Query.make(Check).compare("Claim", Equals, claim).compare("RecurringCheck", NotEquals, null).select();
+    
+  for(check in queryResults){ 
+      var lastCheckInRecurrence = check.RecurringCheck.Checks.sortBy(\ a -> a.ScheduledSendDate).last() //final check in Recurrence
+      if(lastCheckInRecurrence.ScheduledSendDateInFuture and check==lastCheckInRecurrence){
+        if(gw.api.util.DateUtil.currentDate().trimToMidnight()==gw.api.util.DateUtil.addDays( lastCheckInRecurrence.ScheduledSendDate , -14 )){
+            claim.createActivity(null, ap, "Review recurring payment schedule - 14", null, null, null, null, null)
+        }else if(gw.api.util.DateUtil.currentDate().trimToMidnight()==gw.api.util.DateUtil.addDays( lastCheckInRecurrence.ScheduledSendDate, -7)){
+            claim.createActivity(null, ap, "Review recurring payment schedule - 7", "The final payment in a recurring payment schedule will be sent in 1 week.", null, null, null, null)
+        }
+      }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+
+/*end00rule*/
+  }
+}

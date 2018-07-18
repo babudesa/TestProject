@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="NewDocumentForActivityFromTemplateScreen">
+    <Require
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Toolbar>
+      <ToolbarButton
+        action="initiateSaveDoc()"
+        id="NewDocumentFromTemplate_CustomUpdate"
+        label="displaykey.Button.OK.SaveToECF"
+        visible="gw.api.document.DocumentsUtil.isDocumentAssistantEnabled()"/>
+      <!-- <ToolbarButton
+        action="Activity.addLinkedDocument(DocumentCreationInfo.Document); CurrentLocation.commit()"
+        id="NewDocumentFromTemplate_NoDocumentAssistantCustomUpdate"
+        label="displaykey.Button.OK"
+        visible="not gw.document.DocumentsUtil.isDocumentAssistantEnabled()"/> -->
+      <!-- GW ADDED -->
+      <EditButtons
+        updateLabel="displaykey.Button.SendToECF"
+        updateVisible="!gw.document.DocumentsUtil.isDocumentAssistantEnabled()"/>
+    </Toolbar>
+    <PanelRef
+      def="NewTemplateDocumentDV(DocumentCreationInfo, DocumentCreationInfo.Document, Activity.Claim, null)"/>
+    <Code><![CDATA[
+//This method goes out and grabs the latest claim stored in the database
+  function getLatestClaimVersion():Claim{
+  	var result = find(c in Claim where c.ClaimNumber == Activity.Claim.ClaimNumber)
+  	var c = result.getAtMostOneRow() as Claim
+  	return c
+  }
+  
+  //if the bean versions of the claims are different it does not allow the save to ECF to proceed
+  function initiateSaveDoc(){
+  var updateMessage = util.entityUtils.beanUtils.getUpdatedBeanMessage(DocumentCreationInfo.Document.RelatedTo)
+  var claimUpdate = util.entityUtils.beanUtils.getUpdatedBeanMessage(Claim)
+  if(updateMessage != ""){
+  	GeneralErrorWorksheet.goInWorkspace(updateMessage)
+  }
+  else if(claimUpdate != ""){
+    GeneralErrorWorksheet.goInWorkspace(claimUpdate)
+  }
+  else{
+  	DocumentCreationInfo.setCommitRequested(true)
+  	Activity.addLinkedDocument(DocumentCreationInfo.Document);
+  }
+
+  }
+    ]]></Code>
+  </Screen>
+</PCF>

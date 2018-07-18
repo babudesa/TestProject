@@ -1,0 +1,34 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleName("CPUAG1220 - Initial Contact with Insured")
+internal class CPUAG1220InitialContactwithInsured {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.State != "closed" and
+!claim.isConvertedExt() and
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_process_claim")
+
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_process_claim " )
+var subject:String = "Initial contact with Insured" 
+  
+try{
+  if(claim.LossType=="AGRIAUTO"||claim.LossType=="AGRIPROPERTY" OR claim.LossType==LossType.TC_ALTMARKETSAUTO
+   OR claim.LossType==LossType.TC_SHSAUTO OR claim.LossType==LossType.TC_TRUCKINGAUTO) {
+      claim.createActivityFromPattern( null, ap)
+  }
+  else if(claim.LossType=="AGRILIABILITY") {
+    claim.createActivity( null, ap, subject, subject, "normal", true, claim.ReportedDate, null )
+  }
+}
+catch(e){
+    gw.api.util.Logger.logError( "Unknown Error Occurred in Claim Pre-Update Rules "+ actions.getRule().DisplayName)
+    claim.reject( "newloss", "Unknown Error Occurred in Claim Pre-Update Rules "+ actions.getRule().DisplayName, null, null )
+}
+
+/*end00rule*/
+  }
+}

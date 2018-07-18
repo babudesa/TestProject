@@ -1,0 +1,38 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1100ManualBulkInvoiceApprovalRouting_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("BIAR1110 - Approve By Invoice Owner")
+internal class BIAR1110ApproveByInvoiceOwner {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.CreateUser != bulkInvoice.UpdateUser &&
+bulkInvoice.LastApprovingUser != bulkInvoice.CreateUser
+
+
+
+/****
+ * DO NOT DETELE  -- This is disabled until we resolve the issue with approval
+ * history being wiped out when someone edits the BIN who is not the original creator.
+ *//*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try {
+  
+    var authorityLimits = bulkInvoice.CreateUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+    
+    if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+        bulkInvoice.setApprovingUser( bulkInvoice.CreateUser, bulkInvoice.CreateUser.RootGroup )
+    } else {
+        bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+    }
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

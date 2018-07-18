@@ -1,0 +1,28 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir.EPUAG1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUAG1510 - LIAB - Claimant Contact Activity")
+internal class EPUAG1510LIABClaimantContactActivity {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///6/25/09 erawe - follow up with Santosh to see if all rules should be 
+//under a parent for all activities and there you must be assigned 1st.
+exposure.Claim.LossType=="AGRILIABILITY" and
+(exposure.Claim.AssignmentStatus == "assigned" &&
+exposure.Claim.IncidentReport == false &&
+exposure.Claim.State != "closed" &&
+exposure.Claim.State != "draft" &&
+exposure.Claim.IncidentReport == false and
+(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="ab_develop_facts" and act.Exposure==exposure) &&
+exposure.Claimant!=null ))
+
+
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_develop_facts" )
+exposure.Claim.createActivityFromPattern( exposure, ap)
+    
+    
+/*end00rule*/
+  }
+}

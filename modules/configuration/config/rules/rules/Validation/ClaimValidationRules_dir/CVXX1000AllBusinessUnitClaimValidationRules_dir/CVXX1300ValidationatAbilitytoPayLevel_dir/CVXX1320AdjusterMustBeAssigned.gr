@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1300ValidationatAbilitytoPayLevel_dir
+
+@gw.rules.RuleName("CVXX1320 - Adjuster Must Be Assigned")
+internal class CVXX1320AdjusterMustBeAssigned {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Updated 2/11/10 Sprzygocki: Added a condition to this rule to check if the Claim's
+//  incident report field has been changed. If so, do not run the rule. Once the claim
+//  updates correctly, the original and current version become the same, and the 
+//  validation acts as it should - PR Santosh Dalal - Defect 3026
+claim.AssignmentStatus!="assigned" and
+(claim.OriginalVersion as Claim).IncidentReport==claim.IncidentReport/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.reject( "payment", "There must be an assigned adjuster to reach ability to pay.", null, null )/*end00rule*/
+  }
+}

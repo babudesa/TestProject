@@ -1,0 +1,37 @@
+package rules.EventMessage.EventFired_dir.Destination4CheckPrint_dir.Check_dir.CheckStatusChange_dir
+
+@gw.rules.RuleName("Void Check")
+internal class VoidCheck {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.Root as Check).ex_ManualPaymentMethod == null &&
+((messageContext.Root as Check).Status == "pendingvoid" || 
+(messageContext.Root as Check).Status == "pendingstop")/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = messageContext.Root as Check;
+
+//kmboyd - 5/10/2009 - Do not send to CheckWriter if the check comes from Local. This is due to 
+//duplicate checks being created in the EAM table, while we have multiple environments all of our data
+//ends up going to the CSDT table for local, DEV and INT. Since everyone has the same prefix for local, this
+//was causing the automated jobs to fail on the CheckWriter end, even in INT
+if(gw.api.system.server.ServerUtil.getEnv() != "local" and !msgCheck.Bulked){
+
+  var messageContent = templates.messaging.checkwriter.CheckData.renderToString(msgCheck)
+  var message = messageContext.createMessage(messageContent)
+  //message.MessageCode = msgCheck.CheckNumber
+  // message.putEntityByName("theCheck", msgCheck)
+  // message.submittingCheck( msgCheck )
+}
+/*
+if(msgCheck.Bulked){
+  if(msgCheck.Status=="pendingvoid"){
+    msgCheck.Status="voided"
+  }
+  if(msgCheck.Status=="pendingstop"){
+    msgCheck.Status="stopped"
+  }
+}
+*//*end00rule*/
+  }
+}

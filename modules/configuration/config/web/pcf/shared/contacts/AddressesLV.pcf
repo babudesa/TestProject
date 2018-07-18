@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    compress="true"
+    desc="List of addresses"
+    id="AddressesLV"
+    validationExpression="Contact.AllAddresses.Count == 0 ? validateContact() : null">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <RowIterator
+      checkBoxVisible="CurrentLocation.InEditMode ? true : address.AddressType != AddressType.TC_BILLING"
+      editable="true"
+      elementName="address"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="4"
+      toAdd="addNewAddress(address)"
+      toRemove="Contact.removeAddress(address)"
+      value="Contact.AllAddresses">
+      <Row
+        editable="!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred() or address.AddressBookUID == null">
+        <RadioButtonCell
+          action="Contact.makePrimaryAddress(address)"
+          align="center"
+          editable="!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+          id="Primary"
+          label="displaykey.Web.Addresses.Primary"
+          radioButtonGroup="PrimaryAddress"
+          value="address == Contact.PrimaryAddress"
+          width="10"/>
+        <Cell
+          id="AddressType"
+          label="displaykey.Web.Addresses.AddressType"
+          value="address.AddressType"/>
+        <Cell
+          id="DisplayName"
+          value="address.displayName"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses gw.api.util.Logger //Added for logging in Debug - SR
+property get Contact() : Contact { return contactHandle.Contact; }
+
+function addNewAddress(address : Address) {
+  if(Contact.Preferred && !gw.plugin.util.CurrentUserUtil.getCurrentUser().User.hasCreatePreferred()){
+    address.AddressType = AddressType.TC_MAILING 
+  }
+  Contact.addAddress(address)
+}
+
+function validateContact(): String{
+  //changed to logging in Debug - SR
+  Logger.logDebug("validating contacts")
+  Logger.logDebug(Contact.SourceRelatedContacts.toList().toString())
+  if(Contact.SourceRelatedContacts.Count != 0 and Contact.SourceRelatedContacts.where(\ c -> c.InjuredPartyFlagExt ).Count != 0){
+   return "Enter [Address] for the Injured Party Representative " + Contact 
+  }
+  if(Contact.SourceRelatedContacts.Count != 0 and Contact.SourceRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).Count != 0){
+   return "Enter [Address] for the Beneficiary Representative " + Contact 
+  }
+  
+  else 
+    return null
+  
+}]]></Code>
+  </ListViewPanel>
+</PCF>

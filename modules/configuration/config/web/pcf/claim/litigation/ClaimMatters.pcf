@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="perm.Matter.view(Claim) and perm.System.viewmatters"
+    id="ClaimMatters"
+    title="displaykey.Web.Claim.ClaimMatter">
+    <LocationEntryPoint
+      signature="ClaimMatters(Claim : Claim)"/>
+    <Variable
+      initialValue="new matter.ClaimMattersHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="MatterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <Screen
+      id="ClaimMatterScreen">
+      <TitleBar
+        title="displaykey.Web.ClaimMatters.Title"/>
+      <Toolbar>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignMattersPopup.push(new matter.MatterAssignmentPopup(CheckedValues))"
+          flags="any Matter"
+          id="ClaimMatters_AssignButton"
+          iterator="MattersLV"
+          label="displaykey.Web.ClaimMatters.Assign"
+          shortcut="G"
+          visible="false //perm.Matter.genericassign"/>
+        <ToolbarButton
+          action="null"
+          id="ClaimMatters_RefreshButton"
+          label="displaykey.Web.ClaimMatters.Refresh"
+          shortcut="F"
+          visible="false"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="(CheckedValues[0]).UIHelper.initiateCloseMatter()"
+          flags="one CanCloseMatter, one Matter"
+          id="ClaimMatters_CloseMatterButton"
+          iterator="MattersLV"
+          label="&quot;Close Legal Action&quot;"
+          shortcut="S"
+          visible="perm.Claim.closematter(Claim)"/>
+        <ToolbarButton
+          action="NewMatter.go(Claim)"
+          available="!Claim.Closed"
+          id="ClaimMatters_NewMatterButton"
+          label="&quot;New Legal Action&quot;"
+          shortcut="N"
+          visible="false //perm.Claim.creatematter(Claim)"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="ClaimAllMattersCalendarGroup.go(Claim)"
+          id="ClaimMatters_CalendarButton"
+          label="displaykey.Web.ClaimMatters.Calendar"/>
+      </Toolbar>
+      <PanelRef
+        def="MattersLV(Claim, PageHelper)"
+        editable="perm.Matter.edit(Claim)"/>
+    </Screen>
+  </Page>
+</PCF>

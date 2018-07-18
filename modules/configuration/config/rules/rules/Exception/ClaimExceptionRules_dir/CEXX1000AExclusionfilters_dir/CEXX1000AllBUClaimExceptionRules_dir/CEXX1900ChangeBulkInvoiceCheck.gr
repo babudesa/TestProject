@@ -1,0 +1,27 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1900 - Change BulkInvoice Check")
+internal class CEXX1900ChangeBulkInvoiceCheck {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimNumber == "A00012906"
+
+/* defect 5225 - update BI check 3000020313 with correct Void Executed Date/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.database.Query
+var q = Query.make(BulkInvoice)
+q.compare("BulkInvoiceIDExt", equals, "BIN0000000001")
+var result = q.select().getAtMostOneRow()
+if (result.DateVoidExecExt == "9999-12-31 00:00:00.000" as java.util.Date) {
+ gw.transaction.Transaction.getCurrent().add(result)
+ result.DateVoidExecExt =  "2012-04-23 00:00:00.000" as java.util.Date
+}
+  
+   
+
+
+
+/*end00rule*/
+  }
+}

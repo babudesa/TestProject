@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterReturnFromPopup="refreshAfterLossDateChange()"
+    beforeCommit="if (Claim.Policy.ex_Agency != null) {Claim.Policy.addRole(&quot;Agency&quot;, Claim.Policy.ex_Agency)}"
+    canEdit="true"
+    canVisit="perm.Policy.view(Claim) and perm.System.viewpolicy"
+    handlesValidationIssue="VALUE typeis entity.Policy or VALUE == claim.Insured"
+    id="ClaimPolicyGeneral"
+    title="displaykey.Web.ClaimPolicy.General"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="ClaimPolicyGeneral(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.api.policy.PolicyTypeUtil.hasInternalOnlyFields()"
+      name="HasInternalOnlyFields"
+      type="Boolean"/>
+    <Variable
+      initialValue="Claim.Policy.isPolicyInRefresh( 1 )"
+      name="policyDisconnectedWarning"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Variable
+      initialValue="new util.custom_Ext.VerifiedPolicyInfo()"
+      name="verifiedPolicyInfo"
+      type="util.custom_Ext.VerifiedPolicyInfo"/>
+    <Screen
+      id="ClaimPolicyGeneralScreen">
+      <Toolbar
+        reflectOnBottom="true"
+        visible="perm.Claim.edit(Claim)">
+        <!-- Edit an unverified policy -->
+        <ToolbarButton
+          action="CurrentLocation.startEditing()"
+          default="true"
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_EditButton"
+          label="displaykey.Button.Edit"
+          shortcut="E"
+          visible="!Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+        <!-- Edit a verified policy w/o internal-only fields -->
+        <ToolbarButton
+          action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim, true);"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+          default="true"
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_EditButton2"
+          label="displaykey.Button.Edit"
+          shortcut="E"
+          visible="perm.Policy.makeeditable(Claim) and (Claim.Policy.Verified and not HasInternalOnlyFields) and perm.System.editverifiedpolicy"/>
+        <!-- Edit a verified policy w/ internal-only fields -->
+        <YesNoToolbarButton
+          action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyWithInternalFieldsEditable(CurrentLocation, Claim)"
+          default="true"
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_EditButton3"
+          label="displaykey.Button.Edit"
+          promptQuestion="displaykey.JSP.ClaimPolicyGeneral.EditEntireVerifiedPolicy"
+          shortcut="E"
+          visible="perm.Policy.makeeditable(Claim) and (Claim.Policy.Verified and HasInternalOnlyFields) and perm.System.editverifiedpolicy"/>
+        <!-- Edit internal-only fields on the policy when the user doesn't have permission to edit a verified policy -->
+        <ToolbarButton
+          action="CurrentLocation.startEditing()"
+          default="true"
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_EditButton4"
+          label="displaykey.Button.Edit"
+          shortcut="E"
+          visible="not perm.Policy.makeeditable(Claim) and Claim.Policy.Verified and HasInternalOnlyFields"/>
+        <!-- <ToolbarButton
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_EditButton5"
+          label="displaykey.Button.Edit"
+          visible="Claim.Policy.Verified and HasInternalOnlyFields and (perm.Policy.makeeditable(Claim) and perm.Policy.edit(Claim))">
+          <MenuItem
+            action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim, true)"
+            confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditEntireVerifiedPolicy"
+            hideIfEditable="true"
+            id="EditFullPolicy"
+            label="displaykey.Web.Claim.ClaimPolicyGeneral.ModifyWholePolicyButton"
+            visible="perm.Policy.makeeditable(Claim)"/>
+          <MenuItem
+            action="CurrentLocation.startEditing()"
+            hideIfEditable="true"
+            id="EditInternalOnly"
+            label="displaykey.Web.Claim.ClaimPolicyGenera.ModifyClaimCenterOnlyFieldsButton"
+            visible="perm.Policy.edit(Claim)"/>
+        </ToolbarButton> -->
+        <!-- GW ADDED -->
+        <ToolbarButton
+          action="performPolicyRefresh()"
+          available="!Claim.hasPendingPayments() and !Claim.checkDisconnectedFeatures()"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.RefreshPolicy"
+          id="ClaimPolicyGeneral_RefreshPolicyButton"
+          label="displaykey.Button.RefreshPolicy"
+          shortcut="F"
+          visible="Claim.Policy.Verified and Claim.State == &quot;open&quot;"/>
+        <PickerToolbarButton
+          action="ClaimPolicySelectPolicyPopup.push(Claim, verifiedPolicyInfo)"
+          available="!Claim.hasPendingPayments()"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.SelectPolicy"
+          hideIfEditable="true"
+          id="ClaimPolicyGeneral_SelectPolicyButton"
+          label="displaykey.Button.SelectPolicy"
+          onPick="performPolicySelect(PickedValue); refreshClaimsMade()"
+          shortcut="P"
+          visible="(Claim.LossType!=TC_EQUINE and Claim.State == &quot;open&quot; and Claim.LossDate != null and perm.Claim.selectpolicy(Claim)) or (Claim.LossDate != null and perm.Claim.selectpolicy(Claim) and ((Claim.ClaimNumber.toString().substring(2) as int) &gt; (ScriptParameters.EDWPushFilterProdClaim_End.toString().substring(2) as int)) and Claim.State == &quot;open&quot; and Claim.LossType==TC_EQUINE) "/>
+        <EditButtons
+          editVisible="false"/>
+        <!-- <ToolbarButton
+          action="ViewPolicy.push(gw.api.system.CCConfigParameters.PolicySystemURL.Value, Claim.Policy.PolicyNumber, Claim.LossDate)"
+          icon="&quot;icon_newWindow.gif&quot;"
+          id="ViewInPC"
+          label="displaykey.Button.ViewInPC"
+          visible="gw.api.system.CCConfigParameters.PolicySystemURL.Value.HasContent and perm.System.viewpolicysystem"/> -->
+      </Toolbar>
+      <AlertBar
+        id="ClaimPolicyGeneral_PartialListAlertBar"
+        label="displaykey.JSP.ClaimPolicyGeneral.RefreshSelectPolicy.CheckPending"
+        visible="Claim.hasPendingPayments()"/>
+      <PanelRef
+        def="PolicyGeneralPanelSet(Claim.Policy, Claim, policyDisconnectedWarning)"
+        mode="Claim.LossType"/>
+    </Screen>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+function refreshAfterLossDateChange(){
+  
+  if( !Claim.Policy.isPolicyRefreshFailed(1) and verifiedPolicyInfo.PreviousLossDate != null and verifiedPolicyInfo.SearchLossDate != null and 
+  verifiedPolicyInfo.PreviousLossDate.compareIgnoreTime(verifiedPolicyInfo.SearchLossDate) != 0){
+    gw.api.tools.InternalToolsUtil.reloadCurrentLocation()
+    ClaimPolicyGeneral.go(Claim)
+  }
+  
+  if( Claim.Policy.isPolicyRefreshFailed(1) and verifiedPolicyInfo.PreviousLossDate != null and verifiedPolicyInfo.SearchLossDate != null and 
+  verifiedPolicyInfo.PreviousLossDate.compareIgnoreTime(verifiedPolicyInfo.SearchLossDate) != 0){
+    Claim.LossDate = verifiedPolicyInfo.PreviousLossDate
+  }
+}
+
+function performPolicySelect(pickedValue:PolicySummary){
+  try{
+  Claim.LossDate = verifiedPolicyInfo.SearchLossDate
+  Claim.setPolicyInRefresh()
+  Claim.ClaimsMadeUsedExt = verifiedPolicyInfo.ClaimsMadeDate
+  Claim.ClaimsMadePolicyExt = verifiedPolicyInfo.ClaimsMadePolicy
+  
+  gw.api.policy.ClaimPolicySetPolicyUtil.pickPolicyForClaim(CurrentLocation, Claim, pickedValue)
+ 
+  }
+  catch(ex){
+    var newPolicy = pickedValue
+    var losstype = Claim.LossType.DisplayName
+    throw new UserDisplayableException(displaykey.Java.PolicyItemHandler.PolicyTypeNotValid(newPolicy.PolicyType,losstype,newPolicy.PolicyNumber));
+    
+ }
+}
+
+function performPolicyRefresh(){
+  try{
+  Claim.setPolicyInRefresh()
+  gw.api.policy.ClaimPolicySetPolicyUtil.setPolicyOnClaim(CurrentLocation, Claim, Claim.Policy)
+  }catch(ex){
+    util.ErrorHandling.GAICErrorHandling.logError(Claim, "", ex, "")
+  }
+}
+
+function refreshClaimsMade(){ //location needs to refresh even if the Loss Date has not been changed when switching between LD/DR and CM 
+
+  if((Claim.OriginalVersion as Claim).ClaimsMadePolicyExt != verifiedPolicyInfo.ClaimsMadeDate){
+     gw.api.tools.InternalToolsUtil.reloadCurrentLocation()
+     ClaimPolicyGeneral.go(Claim)
+  }
+}]]></Code>
+  </Page>
+</PCF>

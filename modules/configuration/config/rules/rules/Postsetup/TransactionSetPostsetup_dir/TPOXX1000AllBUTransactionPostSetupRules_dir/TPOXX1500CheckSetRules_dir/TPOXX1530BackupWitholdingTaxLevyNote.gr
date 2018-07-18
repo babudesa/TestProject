@@ -1,0 +1,48 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1530 - Backup Witholding / Tax Levy Note")
+internal class TPOXX1530BackupWitholdingTaxLevyNote {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///exists(check in (TransactionSet as CheckSet).Checks where check.New && exists(payee in check.Payees where payee.Payee.Ex_TaxStatusCode == "B" || payee.Payee.Ex_TaxStatusCode == "T"))
+//Date:6/22/09
+//Author: erawe
+//Updates: - changed the condition above that Kris put in so the rule fires only when financialescalations run
+// tnewcomb 9/15/11 - changed date argument in addNote(...) because check.CreateTime is null at this point.
+exists(check in (transactionSet as CheckSet).Checks where check.Status =="requesting" ||
+        check.Status =="notifying" and check.PaymentMethod =="check")==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/
+for(check in (transactionSet as CheckSet).Claim.Checks){
+  var numBTPayees : int = 0
+  var notePayees : String = ""
+  var notebackuplevy : String = ""
+  var backuplevy : String = ""
+    
+  for (payee in check.Payees){
+    if (payee.Payee.Ex_TaxStatusCode == "B" || payee.Payee.Ex_TaxStatusCode == "T"){
+      if (numBTPayees > 0){
+        notePayees = notePayees + ", "
+      }
+      if (payee.Payee.Ex_TaxStatusCode == "B"){
+        notePayees = notePayees + payee.ClaimContact
+        notebackuplevy = "Backup Withholding"
+        backuplevy = "Backup Withholding Notification"
+        
+      }
+      if (payee.Payee.Ex_TaxStatusCode == "T"){
+        notePayees = notePayees + payee.ClaimContact
+        notebackuplevy = "Tax Levy imposed"
+        backuplevy = "Tax Levy Notification"
+      }
+      numBTPayees = numBTPayees + 1
+    }
+  }
+  if (numBTPayees > 0){
+    var noteSubject = check.Claim.addNote("check", displaykey.Rules.PostSetup.Transaction.Enterprise.TPOXX1530.BackupWitholdingNote((new java.text.DecimalFormat("########0.00")).format(check.NetAmount.Amount), gw.api.util.StringUtil.formatDate( check.CreateTime == null ? gw.api.util.DateUtil.currentDate() : check.CreateTime, "MM-dd-yyyy"), notePayees, notebackuplevy) )
+    noteSubject.Subject = backuplevy
+  }
+}/*end00rule*/
+  }
+}

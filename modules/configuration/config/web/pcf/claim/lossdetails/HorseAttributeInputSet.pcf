@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="HorseAttributeInputSet">
+    <Variable
+      initialValue="FixedPropertyIncident.Claim"
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="FixedPropertyIncident"
+      type="FixedPropertyIncident"/>
+    <Label
+      id="HorseAttribute_detail"
+      label="displaykey.GAIC.Equine.HorseAttribute.Detail"/>
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      editable="true"
+      id="HorseAttribute_breed"
+      label="displaykey.GAIC.Equine.HorseAttribute.Breed"
+      value="FixedPropertyIncident.Property.ex_Breed"/>
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      editable="true"
+      id="HorseAttribute_TOB"
+      label="displaykey.GAIC.Equine.HorseAttribute.YOB"
+      postOnChange="true"
+      validationExpression="(util.custom_Ext.DateTime.getAge(FixedPropertyIncident.Property.ex_DateofBirth) &lt; 0) ? displaykey.GAIC.Equine.LocationDetailDV.YearofBirth.NegativeValidation : null"
+      value="FixedPropertyIncident.Property.ex_DateofBirth"/>
+    <!-- onChange="if(util.custom_Ext.DateTime.getAge(FixedPropertyIncident.Property.ex_DateofBirth) &gt;= 60){GeneralErrorWorksheet.goInWorkspace(displaykey.GAIC.Equine.LocationDetailDV.YearofBirth.HighValidation)}"/> -->
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      editable="true"
+      id="HorseAttribute_sex"
+      label="displaykey.GAIC.Equine.HorseAttribute.Sex"
+      value="FixedPropertyIncident.Property.ex_Sex"/>
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      editable="true"
+      id="HorseAttribute_use"
+      label="displaykey.GAIC.Equine.HorseAttribute.Use"
+      postOnChange="true"
+      value="FixedPropertyIncident.Property.ex_AnimalUse"/>
+    <!-- Defect 431 - 08/13/2007 -add use 2 -->
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      editable="FixedPropertyIncident.Property.ex_AnimalUse !=Null"
+      id="HorseAttribute_use2"
+      label="displaykey.GAIC.Equine.HorseAttribute.Use2"
+      value="FixedPropertyIncident.Property.AnimalUse2Ext"
+      visible="FixedPropertyIncident.Property.ex_AnimalUse !=Null"/>
+    <Input
+      available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+      id="HorseAttribute_age"
+      label="displaykey.GAIC.Equine.HorseAttribute.Age"
+      value="FixedPropertyIncident.Property != null ? FixedPropertyIncident.Property.getAge() : &quot;0&quot;"/>
+    <!-- sdalal Sprint 3 Added value of the animal    djohnson  open amount of insurance    Modified the Amount of Insurance field not to be editable even for unverified policies, as this value would be coming from Full Mortality
+ 		and Specified Perils Coverage Limits -->
+    <Input
+      id="HorseAttribute_value"
+      label="displaykey.GAIC.Equine.HorseAttribute.AmountofInsurance"
+      validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(FixedPropertyIncident.Property.ex_AmountofInsurance) ? null : displayKey.Java.Validation.Number.NotAnInteger"
+      value="FixedPropertyIncident.Property.ex_AmountofInsurance"/>
+    <!-- available="Claim.canEditProperty(FixedPropertyIncident.Property)"validationExpression="FixedPropertyIncident.Property.ex_AmountofInsurance == null  || (FixedPropertyIncident.Property.ex_AmountofInsurance.intValue() == FixedPropertyIncident.Property.ex_AmountofInsurance) ? null : &quot;must be whole dollars only.&quot;"   01/03/2007 djohnson -->
+    <DateInput
+      dateFormat="short"
+      editable="true"
+      id="HorseAttribute_DOD"
+      label="displaykey.GAIC.Equine.HorseAttribute.DOD"
+      required="false"
+      timeFormat="short"
+      validationExpression="FixedPropertyIncident.Claim.validateDeathDate()"
+      value="FixedPropertyIncident.Claim.DeathDate"/>
+    <ClaimContactInput
+      available="true"
+      claim="Claim"
+      editable="true"
+      id="HorseAttribute_Vet"
+      label="displaykey.GAIC.Equine.HorseAttribute.Vet"
+      newContactMenu="ClaimNewVetPickerMenuItemSet"
+      postOnChange="true"
+      required="false"
+      validationExpression="isValidRole(FixedPropertyIncident.VeterinarianExt)"
+      value="FixedPropertyIncident.VeterinarianExt"
+      valueRange="FixedPropertyIncident.getVeterinarianList()"
+      visible="Claim.Policy.Verified"/>
+    <!-- Defect 1886, erawe 6/12/09 - Removed validationExpression for CMF migration/conversion issue per Karen, at least for now.  Defect 1886, blawless 6/17/09 - re-Added validationExpression for CMF migration/conversion  kso def 855 - replace claim.primarydoctor with VeterinarianExt.                  Ensure the subtype is one of the four valid types.  	valueRange="FixedPropertyIncident.Claim.RelatedDoctorArray"   || FixedPropertyIncident.Claim.RelatedMedicalCareOrgArray || FixedPropertyIncident.Claim.RelatedEx_ForeignPerVndrDocArray || FixedPropertyIncident.Claim.RelatedEx_ForeignCoVenMedOrgArray  	    	editable="true" claim="Claim" newContactMenu="ClaimNewVetPickerMenuItemSet" onChange="FixedPropertyIncident.setIncdVeterinarian(FixedPropertyIncident.VeterinarianExt)" onPick="FixedPropertyIncident.setIncdVeterinarian(FixedPropertyIncident.VeterinarianExt)" postOnChange="true"/>  	editable="true" claim="Claim" newContactMenu="NewVetOnlyPickerMenuItemSet"/> -->
+    <Code><![CDATA[function isValidRole(cont:Contact): java.lang.String{
+          	if(!(cont.CMFContactExt and (cont.Subtype == "PersonVendor" || cont.Subtype == "CompanyVendor" || cont.Subtype == "Ex_ForeignPersonVndr" || cont.Subtype == "Ex_ForeignCoVendor"))){
+				if(cont.Subtype == null){
+					return null; 
+				}else{ 
+					if(cont.Subtype == "Doctor" || cont.Subtype == "MedicalCareOrg" 
+							|| cont.Subtype == "Ex_ForeignPerVndrDoc" || cont.Subtype == "Ex_ForeignCoVenMedOrg"){  
+						return null;
+						// Defect 1886 - blawless 6/22/09 - business changed decided to allow all docs and MCOs as vets	
+						/*if(((cont.Subtype == "MedicalCareOrg" || cont.Subtype == "Ex_ForeignCoVenMedOrg") 
+								and (cont as MedicalCareOrg).MedicalOrgSpecialty == "veterinarian")|| ((cont.Subtype == "Doctor" 
+								|| cont.Subtype == "Ex_ForeignPerVndrDoc") 
+								and (cont as Doctor).DoctorSpecialty == "veterinarian")){
+							return null;
+						}else{ 
+							return displaykey.GAIC.Equine.HorseAttribute.VetSpcltyError;
+						}*/ 
+					}else{
+						return displaykey.GAIC.Equine.HorseAttribute.VetTypeError;
+					}
+				}	    
+			}else{
+   				return null;
+			}
+        }]]></Code>
+  </InputSet>
+</PCF>

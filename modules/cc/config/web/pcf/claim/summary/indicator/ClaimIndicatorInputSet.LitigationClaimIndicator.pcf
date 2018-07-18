@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    editable="true"
+    id="ClaimIndicatorInputSet"
+    mode="LitigationClaimIndicator">
+    <Require
+      name="indicator"
+      type="ClaimIndicator"/>
+    <Variable
+      initialValue="findLitigationStart()"
+      name="litigationStart"/>
+    <Variable
+      initialValue="CurrentLocation.InEditMode"
+      name="inEditMode"
+      recalculateOnRefresh="true"/>
+    <RangeRadioInput
+      id="LitigationStatusView"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.LitigationStatus"
+      optionIcon="VALUE == &quot;litigated&quot; or VALUE == &quot;complete&quot; ? indicator.Icon : null"
+      optionLabel="indicator.HoverText"
+      value="indicator.Claim.LitigationStatus"
+      valueRange="LitigationStatus.getTypeKeys(false)"
+      visible="!inEditMode"/>
+    <Input
+      editable="true"
+      hideIfReadOnly="true"
+      id="LitigationStatusEdit"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.LitigationStatus"
+      value="indicator.Claim.LitigationStatus"/>
+    <DateInput
+      dateFormat="short"
+      id="LitigationIdentified"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.LitigationIdentified"
+      value="litigationStart"/>
+    <Input
+      id="DaysAfterFNOL"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.DaysAfterFNOL"
+      value="calculateDaysAfterFNOL(litigationStart)"/>
+    <Input
+      editable="true"
+      id="FirstNoticeSuit"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.FirstNoticeSuit"
+      value="indicator.Claim.FirstNoticeSuit"/>
+    <DateInput
+      dateFormat="short"
+      id="NextTrialDate"
+      label="displaykey.Web.Claim.LitigationClaimIndicator.NextTrialDate"
+      value="findNextTrialDate()"/>
+    <Code><![CDATA[function findLitigationStart() : java.util.Date {
+  var finder = find (m in Matter where m.Claim == indicator.Claim)
+  finder.addAscendingSortColumn("Matter.CreateTime")
+  finder.setPageSize(1)
+  var firstMatter = finder.getFirstResult()
+  return firstMatter.CreateTime
+}
+
+function calculateDaysAfterFNOL(litigationStartTime : java.util.Date) : java.lang.Integer {
+  var result : java.lang.Integer = null
+  if (litigationStartTime != null and indicator.Claim.ReportedDate != null) {
+    result = gw.api.util.DateUtil.differenceInDays(indicator.Claim.ReportedDate, litigationStartTime)
+    if (result < 0) {
+      result = 0
+    }
+  }
+  return result
+}
+
+function findNextTrialDate() : java.util.Date {
+  var startOfDay = java.util.Date.CurrentDate.trimToMidnight()
+  var finder = find (m in Matter
+      where m.Claim == indicator.Claim
+      and m.CloseDate == null
+      and m.TrialDate != null
+      and m.TrialDate >= startOfDay)
+  finder.addAscendingSortColumn("Matter.TrialDate")
+  finder.setPageSize(1)
+  var earliestTrialMatter = finder.getFirstResult()
+  return earliestTrialMatter.TrialDate
+}]]></Code>
+  </InputSet>
+</PCF>

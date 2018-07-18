@@ -1,0 +1,28 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX7000 - Unapproved Bulkinvoice")
+internal class ECVXX7000UnapprovedBulkinvoice {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.database.Query
+var bi = Query.make(BulkInvoice);
+bi.or(\ or1 -> {
+                or1.and(\ and1 -> {
+                                      and1.compare("Status", NotEquals, BulkInvoiceStatus.TC_ISSUED)
+                                      and1.compare("Status", NotEquals, BulkInvoiceStatus.TC_VOIDED)
+                                      and1.compare("Status", NotEquals, BulkInvoiceStatus.TC_STOPPED)
+                                      and1.compare("Status", NotEquals, BulkInvoiceStatus.TC_CLEARED)
+                                      and1.compare("Status", NotEquals, BulkInvoiceStatus.TC_REJECTED)
+                                  })
+                or1.compare("ApprovalStatus", Equals, ApprovalStatus.TC_UNAPPROVED)
+               })
+bi.join(BulkInvoiceItem, "BulkInvoice").compare("ClaimNumber", Equals, exposure.Claim.ClaimNumber)
+var bulkInvoice = bi.select();
+if (!bulkInvoice.Empty){
+  exposure.reject("newloss", "Feature cannot be closed, because there is a pending Bulk Invoice associated with this claim.",null,null)
+}/*end00rule*/
+  }
+}

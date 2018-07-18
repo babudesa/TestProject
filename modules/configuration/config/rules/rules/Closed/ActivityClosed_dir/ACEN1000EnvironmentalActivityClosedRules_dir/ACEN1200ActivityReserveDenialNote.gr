@@ -1,0 +1,42 @@
+package rules.Closed.ActivityClosed_dir.ACEN1000EnvironmentalActivityClosedRules_dir
+
+@gw.rules.RuleName("ACEN1200 - Activity Reserve Denial Note")
+internal class ACEN1200ActivityReserveDenialNote {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/
+  (activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_reserve_change") 
+  ) 
+  and activity.CreateUser!=activity.CloseUser
+  and activity.Approved!=true/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/
+//Environmental Div. new development
+var bodyA : String;
+var note : Note
+
+uses java.text.SimpleDateFormat
+uses java.text.DecimalFormat 
+var status = activity.getApprovalString()
+var user = activity.AssignedUser
+var closeuser=activity.CloseUser
+var check=activity.getApprovalCheckNumber ()
+var amount=(new DecimalFormat("$###,####,##0.00;($-###,####,##0.00)")).format(activity.TransactionSet.Amount)
+var date=(new SimpleDateFormat("M-d-yyyy")).format(gw.api.util.DateUtil.currentDate())
+var exp = activity.TransactionSet.Exposures.toList()
+var e = exp.toString().replaceAll("\\[", "").replaceAll("\\]", "")
+var cost = activity.TransactionSet.Transactions*.CostType*.DisplayName.toList()
+var c = cost.toString().replaceAll("\\[", "").replaceAll("\\]", "")
+
+bodyA =  c +" Reserve of " + amount + " for Feature " + e +
+" has been Rejected by " + closeuser + "."
+ 
+  //note for reserve denial
+  if(activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("approve_reserve_change")) {
+    note = activity.Claim.addNote( "reserves", bodyA )
+      note.Subject = "Reserve Rejection Notification"
+  }
+/*end00rule*/
+  }
+}

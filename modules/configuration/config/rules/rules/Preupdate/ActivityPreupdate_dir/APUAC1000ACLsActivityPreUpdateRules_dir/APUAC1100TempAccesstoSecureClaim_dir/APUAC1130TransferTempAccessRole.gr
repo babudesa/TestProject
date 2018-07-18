@@ -1,0 +1,38 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUAC1000ACLsActivityPreUpdateRules_dir.APUAC1100TempAccesstoSecureClaim_dir
+
+@gw.rules.RuleName("APUAC1130 - Transfer Temp Access Role")
+internal class APUAC1130TransferTempAccessRole {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/!activity.New
+and activity.Status != typekey.ActivityStatus.TC_COMPLETE
+and activity.Status !=typekey.ActivityStatus.TC_SKIPPED 
+and activity.PreviousUser != null/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/if(activity.AssignedUser!=activity.Claim.AssignedUser and 
+!exists(role in activity.Claim.RoleAssignments where role.getAssignedUser() == activity.AssignedUser
+and (role.Role == typekey.UserRole.TC_TEMPCLAIMEDITOR or role.Role == typekey.UserRole.TC_SENSITIVECLAIM))){
+  activity.Claim.assignUserRole(activity.AssignedUser, activity.AssignedGroup, typekey.UserRole.TC_TEMPCLAIMEDITOR)
+  }
+  
+//Remove temp view role from previous user if user has no more open activities on this claim
+var openActivityCount = 0
+
+for(act in activity.Claim.Activities){
+  if(act.AssignedUser == activity.PreviousUser
+  and act.PublicID != activity.PublicID
+  and act.Status == "open"){
+    openActivityCount = openActivityCount + 1
+  }
+}
+if(openActivityCount == 0){
+  for(rolassign in activity.Claim.RoleAssignments){
+    if(rolassign.Role == typekey.UserRole.TC_TEMPCLAIMEDITOR and rolassign.getAssignedUser() == activity.PreviousUser){
+      activity.Claim.removeFromRoleAssignments(rolassign)
+    }
+  }
+}
+/*end00rule*/
+  }
+}

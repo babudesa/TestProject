@@ -1,0 +1,17 @@
+package rules.Validation.ClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCV04000 - At Fault must be determined for non-WC")
+internal class CCV04000AtFaultmustbedeterminedfornonWC {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType ==  "AUTO" or claim.LossType == "PR"  or claim.LossType == "GL")
+and
+(claim.FaultRating == null or claim.FaultRating =="0")
+and
+(0 < gw.api.financials.FinancialsCalculationUtil.getTotalPayments().getAmount(claim).Amount)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var reason = gw.api.util.StringUtil.substring( actions.getRule() as java.lang.String, 0,8);
+claim.rejectField( "FaultRating","newloss",displaykey.Subrogation.Validation.ClaimClosed.FaultRating(reason), null, null)/*end00rule*/
+  }
+}

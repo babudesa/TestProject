@@ -1,0 +1,16 @@
+package rules.Validation.ClaimReopenedValidationRules_dir.CRVWC1000WorkersCompClaimReopenedValidationRules_dir
+
+@gw.rules.RuleName("CRVWC1100 - Statute of Limitations")
+internal class CRVWC1100StatuteofLimitations {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(exp in claim.Exposures where exp.StatuteOfLimitationsExt != null && exp.StatuteOfLimitationsExt.compareIgnoreTime(java.util.Date.CurrentDate)<0)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.reject( null, null, "loadsave", displaykey.Rules.Validation.Claim.WorkersComp.StatuteOfLimitations)    
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

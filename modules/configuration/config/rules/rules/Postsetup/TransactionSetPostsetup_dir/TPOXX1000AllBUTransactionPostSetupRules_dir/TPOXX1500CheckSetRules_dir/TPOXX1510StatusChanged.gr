@@ -1,0 +1,20 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1510 - Status Changed")
+internal class TPOXX1510StatusChanged {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//* Determines if the Primary Check's status changed */
+//Libraries.EntityUtils.hasFieldChanged((transactionSet as CheckSet).PrimaryCheck, "Status" )
+(transactionSet as CheckSet).PrimaryCheck.isFieldChanged("Status")
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//* Run child rules */
+var chk = (transactionSet as CheckSet).PrimaryCheck;
+if (chk.Bulked) {
+  gw.api.util.Logger.logDebug("Check is a BulkCheck, skip to next parent: " + chk.CheckNumber); 
+  actions.exitToNext();  
+}/*end00rule*/
+  }
+}

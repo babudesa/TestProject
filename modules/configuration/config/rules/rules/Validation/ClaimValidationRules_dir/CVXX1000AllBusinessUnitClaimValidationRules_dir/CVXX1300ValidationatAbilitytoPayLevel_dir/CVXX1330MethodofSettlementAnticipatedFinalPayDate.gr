@@ -1,0 +1,18 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1300ValidationatAbilitytoPayLevel_dir
+
+@gw.rules.RuleName("CVXX1330 - Method of Settlement Anticipated Final Pay Date")
+internal class CVXX1330MethodofSettlementAnticipatedFinalPayDate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(exp in claim.Exposures where exp.AnticFinalPmtDateExt!=null)==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exp in claim.Exposures){
+  if(exp.AnticFinalPmtDateExt!=null){
+    if(gw.api.util.DateUtil.compareIgnoreTime( claim.LossDate, exp.AnticFinalPmtDateExt )>0){
+      claim.reject( "payment", "Anticipated Final Payment Date cannot occur before the Date of Loss for feature: " + exp, null, null )
+    }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="FNOLWizard_BasicInfoRightPanelSet"
+    mode="Trav">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Claim.Policy.RiskUnits.where( \ r -&gt; r typeis TripRU  ) as TripRU[]"
+      name="Trips"
+      recalculateOnRefresh="true"/>
+    <DetailViewPanel>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.BasicInfoScreen.TripPanelColumn.InvolvedTripLabel"/>
+        <Label
+          id="NoTripsFound"
+          label="displaykey.Web.BasicInfoScreen.TripPanelColumn.NoTripsFound"
+          visible="Trips.length &lt; 1"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelIterator
+      elementName="Trip"
+      id="TripIterator"
+      value="Claim.Policy.RiskUnits.where( \ r -&gt; r typeis TripRU) as TripRU[]">
+      <IteratorSort
+        sortBy="Trip.StartDate"
+        sortOrder="1"/>
+      <DetailViewPanel
+        id="TripIncidentDV"
+        inline="true"
+        visible="Trips.length &gt; 0">
+        <InputColumn>
+          <Input
+            boldValue="true"
+            id="Trip"
+            labelAbove="true"
+            value="Trip.DisplayName"/>
+          <Input
+            id="GeographicalRegion"
+            label="displaykey.Web.BasicInfoScreen.TripPanelColumn.GeographicalRegion"
+            value="Trip.GeographicalRegion"
+            visible="Trip.GeographicalRegion != null"/>
+          <Label
+            label="displaykey.Web.BasicInfoScreen.TripPanelColumn.TripCoverages"
+            visible="Trip.Coverages.length &gt; 0"/>
+          <ListViewInput
+            id="TripCoveragesInput"
+            visible="Trip.Coverages.length &gt; 0">
+            <Toolbar/>
+            <ListViewPanel
+              id="TripCoveragesLV">
+              <RowIterator
+                editable="false"
+                elementName="anRUCoverage"
+                value="Trip.Coverages">
+                <Row>
+                  <TextCell
+                    id="CoverageType"
+                    value="anRUCoverage.Type"/>
+                  <TextCell
+                    id="CoverageDetails"
+                    value="anRUCoverage.DetailsSummary"/>
+                </Row>
+              </RowIterator>
+            </ListViewPanel>
+          </ListViewInput>
+        </InputColumn>
+      </DetailViewPanel>
+      <PanelDivider
+        visible="Trips.length &gt; 1"/>
+    </PanelIterator>
+    <DetailViewPanel>
+      <InputColumn>
+        <ListViewInput
+          boldLabel="true"
+          label="displaykey.Web.BasicInfoScreen.TripPanelColumn.PolicyCoverages"
+          labelAbove="true"
+          visible="Claim.Policy.Coverages.length &gt; 0">
+          <Toolbar/>
+          <ListViewPanel>
+            <RowIterator
+              alternateEntryStyle="false"
+              editable="false"
+              elementName="dummy"
+              value="new Claim[] { claim }">
+              <Row>
+                <ContentCell
+                  id="CoveragesContentCell">
+                  <DetailViewPanel>
+                    <InputColumn>
+                      <ListViewInput
+                        boldLabel="true"
+                        id="Coverages"
+                        labelAbove="true">
+                        <Toolbar/>
+                        <ListViewPanel
+                          id="CoveragesLV">
+                          <RowIterator
+                            alternateEntryStyle="false"
+                            editable="false"
+                            elementName="coverage"
+                            value="Claim.Policy.Coverages">
+                            <Row>
+                              <TextCell
+                                id="CoverageType"
+                                value="coverage.Type"/>
+                              <TextCell
+                                id="CoverageDetails"
+                                value="coverage.DetailsSummary"/>
+                            </Row>
+                          </RowIterator>
+                        </ListViewPanel>
+                      </ListViewInput>
+                    </InputColumn>
+                  </DetailViewPanel>
+                </ContentCell>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+      </InputColumn>
+    </DetailViewPanel>
+  </PanelSet>
+</PCF>

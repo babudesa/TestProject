@@ -1,0 +1,23 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1511PendingVoid_dir
+
+@gw.rules.RuleName("TPOXX1151D - Status Change of Manual Check/Payment")
+internal class TPOXX1151DStatusChangeofManualCheckPayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.PaymentMethod=="manual"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = (transactionSet as CheckSet).PrimaryCheck
+if(msgCheck.Status == "pendingvoid") {
+  msgCheck.Status = "voided"
+  for (var thepayment in msgCheck.Payments) {
+    if (thepayment.Status == "pendingvoid")  { 
+      thepayment.Status =   "voided"
+    }
+    if (thepayment.Status == "submitting")  { 
+      thepayment.Status =  "submitted"
+    }
+  }
+}/*end00rule*/
+  }
+}

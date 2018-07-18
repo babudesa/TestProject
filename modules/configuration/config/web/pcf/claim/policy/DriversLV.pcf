@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="DriversLV">
+    <Require
+      name="ClaimContactRoleList"
+      type="ClaimContactRole[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ClaimContactRoleOwner"
+      type="contact.ClaimContactRoleOwner"/>
+    <Require
+      name="role"
+      type="ContactRole"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      pageSize="20"
+      value="ClaimContactRoleList">
+      <ToolbarFlag
+        condition="!ClaimContactRole.driverUsedByExposure()"
+        name="Removeable"/>
+      <Row>
+        <!-- <Cell
+          editable="true"
+          id="DriverNumber"
+          label="displaykey.LV.Policy.DriverDetail.Driver.DriverNumberid"
+          printWidth="0.05"
+          value="ClaimContactRole.Contact.Person.DriverNumExt"/> -->
+        <!-- <Cell
+          id="Number"
+          label="displaykey.LV.Policy.EditableOperator.Number"
+          printWidth="0.1"
+          sortOrder="1"
+          value="ClaimContactRole.PartyNumber"/> -->
+        <!-- 6/9/10 erawe do any of the fields need to be editable or required ??  12/14/07 E.R. : Took out DriverNumber because UD/EDW said they do NOT number party's involved (drivers in this case) -->
+        <ClaimContactCell
+          claim="ClaimContactRole.ClaimContact.Claim"
+          forceContactSubtype="Person"
+          id="Name"
+          label="displaykey.LV.Policy.EditableOperator.Contact"
+          newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+          postOnChange="true"
+          required="false"
+          sortOrder="1"
+          sortValueRange="false"
+          validationExpression="ClaimContactRole.Contact == null ? displaykey.LV.Policy.EditableAdditionalInsured.Contact.ContactRequired : null"
+          value="ClaimContactRole.Contact"
+          valueRange="Claim.getDrivers()"/>
+        <!-- <TypeKeyCell
+          filter="VALUE == &quot;driver&quot;"
+          id="CoveredPartyType"
+          label="displaykey.LV.Policy.EditableOperator.CPT"
+          postOnChange="true"
+          required="true"
+          value="ClaimContactRole.Role"/> -->
+        <Cell
+          id="CoveredPartyType"
+          label="displaykey.LV.Policy.EditableOperator.CPT"
+          required="false"
+          value="ClaimContactRole.CoveredPartyType"/>
+        <DateCell
+          id="DOB"
+          label="displaykey.LV.Policy.EditableOperator.DOB"
+          required="false"
+          value="ClaimContactRole.Contact.Person.DateOfBirth"/>
+        <Cell
+          id="DriverLicensceNumber"
+          label="displaykey.LV.Policy.EditableOperator.License"
+          required="false"
+          value="ClaimContactRole.Contact.Person.LicenseNumber"/>
+        <RangeCell
+          available="ClaimContactRole.Contact != null"
+          id="State"
+          label="displaykey.LV.Policy.EditableOperator.State"
+          required="false"
+          value="ClaimContactRole.Contact.Person.LicenseState"
+          valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

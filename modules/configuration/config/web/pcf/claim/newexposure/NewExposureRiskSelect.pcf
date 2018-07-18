@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="Claim.goToExposureOrSummaryScreen()"
+    canEdit="true"
+    canVisit="perm.Claim.createexposure(Claim)"
+    id="NewExposureRiskSelect"
+    parent="Claim(Claim)"
+    startInEditMode="true"
+    title="displaykey.JSP.NewExposure.ClaimMenu.CustomExposureMenu.NewFeature">
+    <LocationEntryPoint
+      signature="NewExposureRiskSelect(Claim : Claim, item : util.exposures.ExposureMenuItem)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="item"
+      type="util.exposures.ExposureMenuItem"/>
+    <Screen
+      id="NewExposureRiskSelectScreen">
+      <!-- SUBTITLE -->
+      <TitleBar
+        subtitle="getSubTitle()"/>
+      <!-- PROPERTIES -->
+      <PanelSet
+        id="NewExpPropertyPanelSet"
+        visible="item.Coverages[0].Subtype==&quot;PropertyCoverage&quot;">
+        <ListDetailPanel
+          id="NewExpListDetPanel_Prop"
+          selectionName="selectedProp"
+          selectionType="LocationBasedRU">
+          <PanelRef
+            def="PropertySelectionLV(item.PolicyProperties, Claim)"
+            mode="Claim.LossType">
+            <Toolbar>
+              <EditButtons
+                updateVisible="false"/>
+            </Toolbar>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="NewExpPropDetailsCard"
+              title="displaykey.Web.ClaimPolicy.LocationDetail">
+              <PanelRef
+                def="PolicyPropertyInformationDV(Claim, selectedProp)"
+                editable="false"
+                mode="Claim.LossType"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </PanelSet>
+      <!-- VEHICLES -->
+      <PanelSet
+        id="NewExpVehiclePanelSet"
+        visible="item.Coverages[0].Subtype==&quot;VehicleCoverage&quot; and (Claim.LossType==&quot;AGRIAUTO&quot; OR Claim.LossType == LossType.TC_ALTMARKETSAUTO OR Claim.LossType == LossType.TC_SHSAUTO OR Claim.LossType == LossType.TC_TRUCKINGAUTO)">
+        <ListDetailPanel
+          id="NewExpListDetPanel_Veh"
+          selectionName="selectedVeh"
+          selectionType="VehicleRU">
+          <PanelRef
+            def="VehSelectionLV(item.PolicyVehicles, Claim)"
+            editable="false"
+            mode="Claim.LossType">
+            <Toolbar>
+              <EditButtons
+                updateVisible="false"/>
+            </Toolbar>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="NewExpVehDetailsCard"
+              title="displaykey.Web.ClaimPolicy.VehicleDetail">
+              <PanelRef
+                def="PolicyVehicleInformationDV(Claim, selectedVeh)"
+                editable="false"
+                mode="Claim.LossType"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </PanelSet>
+      <!-- WATERCRAFTS -->
+      <PanelSet
+        id="NewExpWatercraftPanelSet"
+        visible="item.Coverages[0].Subtype==&quot;VehicleCoverage&quot; and Claim.LossType==&quot;AGRILIABILITY&quot;">
+        <ListDetailPanel
+          id="NewExpListDetPanel_Water"
+          selectionName="selectedWater"
+          selectionType="VehicleRU">
+          <PanelRef
+            def="WatercraftSelectionLV(item.PolicyVehicles, Claim)"
+            editable="false">
+            <Toolbar>
+              <EditButtons
+                updateVisible="false"/>
+            </Toolbar>
+          </PanelRef>
+          <CardViewPanel>
+            <!-- Watercraft Card -->
+            <Card
+              id="NewExpWaterDetailsCard"
+              title="displaykey.GAIC.Web.ClaimPolicy.WatercraftDetail"
+              visible="getWatercraftCvgList(selectedWater).length&gt;0">
+              <PanelRef
+                def="PolicyWatercraftInformationDV(Claim, selectedWater)"
+                editable="false">
+                <Toolbar>
+                  <ToolbarButton
+                    action="selectRisk(selectedWater)"
+                    id="Select"
+                    label="&quot;Select&quot;"
+                    visible="getWatercraftCvgList(selectedWater).length&gt;0"/>
+                </Toolbar>
+              </PanelRef>
+            </Card>
+            <!-- Engine Card -->
+            <Card
+              id="EngineDetails"
+              title="displaykey.GAIC.Card.Vehicles.Watercraft.Title.EngineDetails"
+              visible="getEngines(selectedWater).length&gt;0">
+              <ListDetailPanel
+                selectionName="Engine"
+                selectionType="EngineExt">
+                <PanelRef
+                  def="EngineSelectionLV(getEngines(selectedWater) as entity.EngineExt[], Claim)"
+                  editable="false">
+                  <Toolbar
+                    visible="false"/>
+                </PanelRef>
+                <CardViewPanel>
+                  <Card
+                    id="EngineDetailsCard"
+                    title="displaykey.GAIC.Card.Vehicle.Watercraft.Engine.Title.Details">
+                    <PanelRef
+                      def="WatercraftEngineInformationDV(Engine, Claim.Policy, selectedWater)"
+                      editable="false">
+                      <Toolbar
+                        visible="false"/>
+                    </PanelRef>
+                  </Card>
+                </CardViewPanel>
+              </ListDetailPanel>
+            </Card>
+            <!-- Trailer Card -->
+            <Card
+              id="TrailerDetails"
+              title="displaykey.GAIC.Card.Vehicles.Watercraft.Title.TrailerDetails"
+              visible="getWatercraftTrailerCvgList(selectedWater).length&gt;0">
+              <PanelRef
+                def="TrailerInformationDV(selectedWater)"
+                editable="false">
+                <Toolbar>
+                  <ToolbarButton
+                    action="CurrentLocation.cancel();NewExposureCoverageSelect.go(Claim, getWatercraftTrailerCvgList(selectedWater) as entity.Coverage[])"
+                    id="Select"
+                    label="&quot;Select&quot;"
+                    visible="getWatercraftTrailerCvgList(selectedWater).length&gt;0"/>
+                </Toolbar>
+              </PanelRef>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </PanelSet>
+      <!-- POLICY COVERAGES -->
+      <PanelRef
+        def="NewExpCvgDetailsPanelSet(Claim, item.Coverages)"
+        mode="item.Coverages[0].Subtype"
+        visible="item.Coverages[0].Subtype==&quot;PolicyCoverage&quot;">
+        <Toolbar>
+          <EditButtons
+            updateVisible="false"/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[function getSubTitle() : String{
+        return util.exposures.ExposureMenuUtils.getTitleForNewExposure(item.Coverages[0], "Reduced Menu")
+      }
+      
+      /*
+       * Returns the coverages associated with the trailer
+       */
+      function getWatercraftTrailerCvgList(veh : VehicleRU) : List {
+   	   var trailerList : List = new java.util.ArrayList()
+   	    for(cov in veh.Coverages){
+   	     if((cov as VehicleCoverage).TrailerExt!=null and (cov as VehicleCoverage).TrailerExt==veh.Vehicle.TrailerExt){
+   	      trailerList.add(cov)
+   	     }
+   	    }
+   	   return trailerList;
+   	  }
+   	  
+   	  /*
+       * Returns the coverages associated with just the watercraft
+       */
+   	  function getWatercraftCvgList(veh : VehicleRU) : List {
+   	   var watercraftList : List = new java.util.ArrayList()
+   	   for(cov in veh.Coverages){
+   	    if((cov as VehicleCoverage).TrailerExt==null and (cov as VehicleCoverage).EngineExt==null){
+   	     watercraftList.add(cov)
+   	    }
+   	   }
+   	   return watercraftList;
+   	  }
+   	  
+   	  /*
+       * Returns the engines on the watercraft with coverages attached
+       */
+   	  function getEngines(veh : VehicleRU) : List { 
+   	    var englist : List = new java.util.ArrayList()
+   	    for(eng in veh.Vehicle.EnginesExt){
+   	      if(exists(cov in veh.Coverages where (cov as VehicleCoverage).EngineExt==eng)){
+   	        englist.add(eng)
+   	      }
+   	    }
+   	    return englist
+   	  }
+   	  
+function selectRisk(vehRU:VehicleRU){
+  gw.api.util.CCLocationUtil.runAndCommit(\ -> NewExposureCoverageSelect.go(Claim, getWatercraftCvgList(vehRU) as entity.Coverage[]), CurrentLocation)
+}]]></Code>
+  </Page>
+</PCF>

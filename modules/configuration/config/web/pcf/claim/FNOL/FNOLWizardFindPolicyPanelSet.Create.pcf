@@ -1,0 +1,480 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="FNOLWizardFindPolicyPanelSet"
+    mode="Create">
+    <Variable
+      initialValue="initNewPolicy()"
+      name="newPolicy"
+      type="com.guidewire.cc.web.newclaim.NewClaimPolicyDescription"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Claim.Policy != null ? gw.api.policy.PolicyTabUtil.getTabSet(Claim.Policy) : null"
+      name="policyTabSet"
+      type="java.util.Set"/>
+    <Variable
+      initialValue="initClaimModeArray()"
+      name="claimModeArray"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Wizard.PolicyDescription.UnverifiedPolicyNumber == null and Wizard.PolicyDescription.VerifiedPolicyNumber == null"
+      name="policyEditable"
+      type="Boolean"/>
+    <Variable
+      initialValue="policyEditable ? null : GeneralErrorWorksheet.goInWorkspace(displaykey.NVV.Claim.NewClaimSelectType.Policy.PolicySelectedWarning)"
+      name="displayPolicySelectedWarning"/>
+    <Variable
+      initialValue="true"
+      name="BusUnitLossTypeSymbolEditable"
+      type="boolean"/>
+    <DetailViewPanel>
+      <InputColumn>
+        <!-- <Input
+          editable="true"
+          id="ClaimNumber2"
+          label="displaykey.NVV.Claim.SubView.NewClaimGeneral.Claim.ClaimNumber"
+          required="true"
+          validationExpression="!Claim.DuplicateClaimNumber ? null : displaykey.Java.NewClaimWizard.Error.ClaimNumberNotUnique(Claim.ClaimNumber)"
+          value="Claim.ClaimNumber"
+          visible="!Claim.ClaimNumberGenerationEnabled"/> -->
+        <TypeKeyInput
+          available="policyEditable"
+          editable="Wizard.PolicyDescription.VerifiedPolicyNumber == null and BusUnitLossTypeSymbolEditable"
+          filter="Claim.filterBusinessUnit(VALUE as java.lang.String) and Claim.filterSecureBusLossNCW(VALUE as java.lang.String) and Claim.filterWCBusinessUnits(VALUE as java.lang.String, Wizard.ClaimMode as java.lang.String)"
+          id="BusinessUnitExtInput"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.BusinessUnit"
+          noneSelectedLabel="displaykey.Java.TextValueWidget.NoneSelected"
+          onChange="util.WCHelper.fixClaimMode(Wizard, Claim); BusUnitLossTypeSymbolEditable = setPolicy(CurrentLocation as pcf.api.Wizard); Wizard.setClaimMode(null, null)"
+          postOnChange="true"
+          required="isRequired()"
+          value="Claim.NCWOnlyBusinessUnitExt"
+          visible="true"/>
+        <!-- <TypeKeyInput
+          available="policyEditable"
+          editable="Wizard.PolicyDescription.VerifiedPolicyNumber == null"
+          id="BusinesLineExt"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.LossType"
+          onChange="Claim.populateLossType()"
+          postOnChange="true"
+          required="true"
+          value="Claim.BusinessLineExt">
+          <Reflect
+            triggerIds="BusinessUnitExtInput">
+            <ReflectCondition
+              condition="VALUE ==&quot;eq&quot;"
+              value="&quot;EQUINE&quot;"/>
+          </Reflect>
+        </TypeKeyInput> -->
+        <RangeInput
+          available="policyEditable"
+          confirmMessage="displaykey.Java.Validation.SelectPolicy.Warnings.ChangingClaimType"
+          editable="BusUnitLossTypeSymbolEditable"
+          filter="Claim.filterLossType(VALUE as java.lang.String) and Claim.filterSecureBusLossNCW(VALUE as java.lang.String)"
+          id="ClaimLossType"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.LossType"
+          onChange="util.WCHelper.fixClaimMode(Wizard, Claim);setPolicy(CurrentLocation as pcf.api.Wizard);setClaimFirstAndFinalStatus();Claim.setClaimInfo(Wizard);"
+          optionLabel="getModeOptionLabel(VALUE as String)"
+          postOnChange="true"
+          required="true"
+          showConfirmMessage="Claim.Policy.PolicyType != null and Claim.LossType != Wizard.LossType "
+          sortValueRange="false"
+          value="Wizard.ClaimMode"
+          valueRange="claimModeArray"/>
+        <DateInput
+          available="policyEditable and lossDateAvail()"
+          dateFormat="short"
+          editable="true"
+          id="Claim_LossDate"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.LossDate"
+          postOnChange="true"
+          requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+          required="true"
+          validationExpression="Claim.LossDate != null &amp;&amp; Claim.LossDate.compareIgnoreTime(util.DateUtil.currentDate()) &gt; 0 ? displaykey.Java.Validation.Date.ForbidFuture : ((Claim.ClaimsMadePolicyExt) or (Claim.LossDate != null and Claim.Policy.EffectiveDate != null and Claim.Policy.ExpirationDate != null and gw.api.util.DateUtil.compareIgnoreTime(Claim.LossDate, Claim.Policy.EffectiveDate) &gt;= 0 and gw.api.util.DateUtil.compareIgnoreTime(Claim.LossDate, Claim.Policy.ExpirationDate) &lt;= 0) ? null : displaykey.Java.Validation.FindPolicyPanelSet.LossDate)"
+          value="Claim.LossDate"/>
+        <DateInput
+          available="policyEditable and claimsMadeAvail()"
+          dateFormat="short"
+          editable="true"
+          id="ClaimsMadeDate"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.MadeDate"
+          onChange="setClaimsMadeUsed(); Claim.setClaimsMadeIndicator(); Claim.LossDate = Claim.ReportedDate"
+          postOnChange="true"
+          requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+          required="Wizard.ClaimMode.LossType == &quot;EXECLIABDIV&quot; || Wizard.ClaimMode.LossType == typekey.LossType.TC_MERGACQU || Wizard.ClaimMode.LossType == LossType.TC_SPECIALHUMSERV"
+          validationExpression="Claim.ReportedDate == null || gw.api.util.DateUtil.compareIgnoreTime(Claim.ReportedDate,util.DateUtil.currentDate())&lt;=0 ? null : displaykey.Java.Validation.Date.ForbidFuture"
+          value="Claim.ReportedDate"
+          visible="Wizard.ClaimMode.LossType == &quot;EXECLIABDIV&quot; or Wizard.ClaimMode.LossType == &quot;PROFLIABDIV&quot; || Wizard.ClaimMode.LossType == &quot;SPECIALTYES&quot; or Wizard.ClaimMode.LossType== &quot;ENVLIAB&quot; or Wizard.ClaimMode.LossType== typekey.LossType.TC_MERGACQU or Wizard.ClaimMode.LossType== typekey.LossType.TC_SPECIALHUMSERV"/>
+        <DateInput
+          available="policyEditable"
+          editable="true"
+          id="Claim_lossTime"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.LossTime"
+          timeFormat="short"
+          value="Claim.LossDate"/>
+        <TextInput
+          available="policyEditable"
+          editable="true"
+          focusOnStartEditing="true"
+          id="PolicyNumberTextInput"
+          inputMask="&quot;#######&quot;"
+          label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyNumber"
+          onChange="setPolicy(CurrentLocation as pcf.api.Wizard);"
+          postOnChange="true"
+          required="true"
+          value="newPolicy.UnverifiedPolicyNumber"/>
+        <TypeKeyInput
+          available="policyEditable"
+          confirmMessage="displaykey.Java.Validation.FindPolicyPanelSet.Unselect"
+          editable="BusUnitLossTypeSymbolEditable"
+          filter="filterUnverifiedPolicyType(VALUE as java.lang.String)"
+          id="Type"
+          label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Type"
+          onChange="BusUnitLossTypeSymbolEditable = setPolicy(CurrentLocation as pcf.api.Wizard)"
+          postOnChange="true"
+          required="true"
+          showConfirmMessage="Claim.Policy.PolicyType != null"
+          value="newPolicy.UnverifiedPolicyType"/>
+        <BooleanRadioInput
+          editable="true"
+          id="convertedClaim"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.LossTime.ConvertedClaim"
+          required="true"
+          value="Claim.ConvertedClaimIndExt"
+          visible="Claim.NCWOnlyBusinessUnitExt == typekey.BusinessUnitExt.TC_PE"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelDivider/>
+    <PanelRef
+      def="NewClaimPolicyGeneralDV(Claim.Policy)"
+      editable="!Claim.Policy.Verified"
+      mode="Claim.LossType"/>
+    <PanelRef
+      def="NewClaimVehiclesLV(Claim.Policy.Vehicles, Claim.Policy)"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Vehicles&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        title=" (!Claim.Policy.Verified or (Claim.Policy.TotalVehicles == Claim.Policy.Vehicles.length)) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Vehicles as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Vehicles.PartialList(Claim.Policy.TotalVehicles)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible="perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="NewClaimLocationsLV(Claim.Policy.Properties, Claim.Policy)"
+      id="NewClaimLocationsWithPropertiesLV"
+      mode="Claim.LossType"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Properties&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        appendListViewPaging="true"
+        title=" !Claim.Policy.Verified or (Claim.Policy.TotalProperties == Claim.Policy.Properties.length) ? displaykey.JSP.NewClaimPolicyDetails.Policy.Locations as String : displaykey.JSP.NewClaimPolicyDetails.Policy.Locations.PartialList(Claim.Policy.TotalProperties)"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible="perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="PolicyTripLV( Claim, Wizard )"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Trips&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.ClaimPolicy.Trips"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="NewClaimLocationsLV(Claim.Policy.Properties, Claim.Policy)"
+      mode="Claim.LossType"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Classcodes&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.JSP.NewClaimPolicyDetails.Policy.Classcodes"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="NewClaimEndorsementsLV(Claim.Policy.Endorsements, Claim.Policy)"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Endorsements&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        title="displaykey.JSP.NewClaimPolicyDetails.Endorsements.Title"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <PanelRef
+      def="NewClaimStatCodesLV(Claim.Policy.StatCodes, Claim.Policy)"
+      visible="policyTabSet != null &amp;&amp; policyTabSet.contains(&quot;Statcodes&quot;) &amp;&amp; allRequiredFieldsExist() &amp;&amp; Claim.Policy.Verified">
+      <TitleBar
+        title="displaykey.JSP.NewClaimPolicyDetails.Policy.StatCodes"/>
+      <Toolbar>
+        <IteratorButtons
+          addVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"
+          removeVisible=" !Claim.Policy.Verified and perm.Policy.edit(Claim)"/>
+      </Toolbar>
+    </PanelRef>
+    <Code><![CDATA[uses java.util.ArrayList;
+uses java.util.*
+
+function initNewPolicy() : com.guidewire.cc.web.newclaim.NewClaimPolicyDescription {
+  if (Wizard.PolicyDescription.UnverifiedPolicyType != null) {
+    return Wizard.PolicyDescription
+  }
+  else {
+    var policyDescription = Wizard.PolicyDescription
+    policyDescription.UnverifiedPolicyType = User.util.getCurrentUser().PolicyType
+    return policyDescription
+  }
+}
+
+function setClaimFirstAndFinalStatus() {  
+  Claim.FirstAndFinal = ("AutoFirstAndFinal" == Wizard.ClaimMode.QuickClaimMode.Mode)
+}
+
+
+function getSelectedClaimMode(modeArray : claim.NewClaimMode[]) : claim.NewClaimMode {
+  var result : claim.NewClaimMode = null
+  if ((modeArray != null) && (modeArray.length > 0)){
+    result = modeArray[0]
+    if (Wizard.ClaimMode != null){
+      foreach (indivMode in modeArray){
+        if (Wizard.ClaimMode == indivMode){
+          result = Wizard.ClaimMode  
+        }
+      }      
+    }
+  }  
+  return result
+}
+
+function initClaimModeArray() : claim.NewClaimMode[] {
+  var modeArray = getClaimModesArray();
+  if ((User.util.getCurrentUser().LossType != null) && (Wizard.LossType == null)) {
+    Wizard.setClaimMode(User.util.getCurrentUser().LossType, User.util.getCurrentUser().QuickClaim as String)
+    if (newPolicy.UnverifiedPolicyType == null){
+      var availablePolicyTypes = Wizard.getAvailablePolicyTypes()
+      if ((availablePolicyTypes != null) && (availablePolicyTypes.length > 0)) {
+        newPolicy.UnverifiedPolicyType = availablePolicyTypes[0]
+        modeArray = Wizard.getAvailableClaimModes(newPolicy.UnverifiedPolicyType)
+      }
+      setPolicy(CurrentLocation as pcf.api.Wizard)
+    }
+  } 
+  return modeArray
+}
+
+/* 8.10.15 - cmullin - added code to remove WC/EL Loss Types from the dropdown on NCW Step 1 if Agri, PIM, 
+   SPES or Ocean Marine are selected as Producing Business Unit. These businesses use WC/EL for 
+   conversion only and new WC/EL claims should not be created, per updated WC requirements.
+*/
+function getClaimModesArray():claim.NewClaimMode[]{
+  
+  var modeArray:ArrayList<claim.NewClaimMode> = new ArrayList<claim.NewClaimMode>();
+  for(mode in Wizard.getAvailableClaimModes(null)){
+    if (Wizard.Claim.ProducingBusinessUnitExt != null){
+       if (((Wizard.Claim.ProducingBusinessUnitExt =="ab" and mode.LossType.hasCategory(BusinessUnitExt.TC_AB)) and
+               (mode.LossType!=typekey.LossType.TC_AGRIWC && mode.LossType!=typekey.LossType.TC_AGRIEL)) or 
+           (Wizard.Claim.ProducingBusinessUnitExt =="eq" and mode.LossType.hasCategory(BusinessUnitExt.TC_EQ)) or 
+           (Wizard.Claim.ProducingBusinessUnitExt =="fc" and mode.LossType.hasCategory(BusinessUnitExt.TC_FC)) or 
+           ((Wizard.Claim.ProducingBusinessUnitExt =="im" and mode.LossType.hasCategory(BusinessUnitExt.TC_IM)) and
+               (mode.LossType!= typekey.LossType.TC_PIMINMARINEWC && mode.LossType!=typekey.LossType.TC_PIMINMARINEEL)) or
+           (Wizard.Claim.ProducingBusinessUnitExt == "el"and mode.LossType.hasCategory(BusinessUnitExt.TC_EL)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="ex" and mode.LossType.hasCategory(BusinessUnitExt.TC_EX)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="pl" and mode.LossType.hasCategory(BusinessUnitExt.TC_PL)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="bs" and mode.LossType.hasCategory(BusinessUnitExt.TC_BS)) or
+           ((Wizard.Claim.ProducingBusinessUnitExt =="sp" and mode.LossType.hasCategory(BusinessUnitExt.TC_SP)) and
+               (mode.LossType!= typekey.LossType.TC_SPECIALTYESWC && mode.LossType!=typekey.LossType.TC_SPECIALTYESEL)) or
+	   (Wizard.Claim.ProducingBusinessUnitExt =="en" and mode.LossType.hasCategory(BusinessUnitExt.TC_EN)) or
+           ((Wizard.Claim.ProducingBusinessUnitExt =="om" and mode.LossType.hasCategory(BusinessUnitExt.TC_OM)) and
+               (mode.LossType!= typekey.LossType.TC_OMWC && mode.LossType!=typekey.LossType.TC_OMEL)) or
+	   (Wizard.Claim.ProducingBusinessUnitExt =="pe" and mode.LossType.hasCategory(BusinessUnitExt.TC_PE)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="am" and mode.LossType.hasCategory(BusinessUnitExt.TC_AM)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="oc" and mode.LossType.hasCategory(BusinessUnitExt.TC_OC)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="mi" and mode.LossType.hasCategory(BusinessUnitExt.TC_MI)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="sc" and mode.LossType.hasCategory(BusinessUnitExt.TC_SC)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="tk" and mode.LossType.hasCategory(BusinessUnitExt.TC_TK)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="ec" and mode.LossType.hasCategory(BusinessUnitExt.TC_EC)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="ar" and mode.LossType.hasCategory(BusinessUnitExt.TC_AR)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="do" and mode.LossType.hasCategory(BusinessUnitExt.TC_DO)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="sl" and mode.LossType.hasCategory(BusinessUnitExt.TC_SL)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="sr" and mode.LossType.hasCategory(BusinessUnitExt.TC_SR)) or 
+           (Wizard.Claim.ProducingBusinessUnitExt =="av" and mode.LossType.hasCategory(BusinessUnitExt.TC_AV)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="ma" and mode.LossType.hasCategory(BusinessUnitExt.TC_MA)) or
+           (Wizard.Claim.ProducingBusinessUnitExt =="sh" and mode.LossType.hasCategory(BusinessUnitExt.TC_SH)))
+             modeArray.add(mode)
+        }
+        else {
+      // need to filter out all but 1 on the Workers Comp, Employers Liability loss types until a business unit is selected
+      if (mode.LossType.Code != "PIMINMARINEWC" && mode.LossType.Code != "PIMINMARINEEL" 
+       && mode.LossType.Code != "SPECIALTYESWC" && mode.LossType.Code != "SPECIALTYESEL"
+       && mode.LossType.Code != "STRATEGICCOMPWC" && mode.LossType.Code != "STRATEGICCOMPEL"
+       && mode.LossType.Code != "TRUCKINGWC" && mode.LossType.Code != "TRUCKINGEL"
+       && mode.LossType.Code != "AGRIWC" && mode.LossType.Code != "AGRIEL"
+       && mode.LossType.Code != "OMWC" && mode.LossType.Code != "OMEL"
+       && mode.LossType.Code != "ECUWC" && mode.LossType.Code != "ECUEL"){
+        modeArray.add(mode)
+      }
+    }
+  }
+  
+     //set the Claim Mode if Bus. unit is selected and not Agribusiness
+   if(Claim.ProducingBusinessUnitExt != null and Claim.ProducingBusinessUnitExt != "ab" and Claim.ProducingBusinessUnitExt!="ex" and Claim.ProducingBusinessUnitExt!="fc" 
+       and Claim.ProducingBusinessUnitExt!="am" and Claim.ProducingBusinessUnitExt!="sc"
+       and Claim.ProducingBusinessUnitExt!="tk" and Claim.ProducingBusinessUnitExt!="sh" 
+       and Claim.ProducingBusinessUnitExt!="ec" and Claim.ProducingBusinessUnitExt!="oc"
+       and Claim.ProducingBusinessUnitExt!="mi" and Claim.ProducingBusinessUnitExt!="ar" and Claim.ProducingBusinessUnitExt!="do" and Claim.ProducingBusinessUnitExt!="sl" 
+       and Claim.ProducingBusinessUnitExt!="sr" and Claim.ProducingBusinessUnitExt!="el")
+     Wizard.ClaimMode = modeArray.firstWhere(\ o -> o.LossType.hasCategory(Claim.ProducingBusinessUnitExt))
+     if(Claim.ProducingBusinessUnitExt=="sc"||Claim.ProducingBusinessUnitExt=="oc"||
+       Claim.ProducingBusinessUnitExt=="mi"||Claim.ProducingBusinessUnitExt=="ec"){
+     modeArray.sortDescending()
+   }
+   return (modeArray.toArray() as claim.NewClaimMode[]);
+}
+
+function allRequiredFieldsExist() : boolean {
+  return newPolicy.UnverifiedPolicyNumber != null && newPolicy.UnverifiedPolicyType != null && Wizard.getLossType() != null
+}
+
+function setPolicy(location : pcf.api.Wizard): boolean {
+  var policyChanged = false
+  
+ if(Claim.ProducingBusinessUnitExt!=null and newPolicy.UnverifiedPolicyType!=null){
+    if (Claim.Policy != null and newPolicy.UnverifiedPolicyNumber != Claim.Policy.PolicyNumber) {
+      Claim.Policy.PolicyNumber = newPolicy.UnverifiedPolicyNumber
+    }
+  
+    if (newPolicy.UnverifiedPolicyType != null and newPolicy.UnverifiedPolicyType != Claim.Policy.PolicyType) {
+      claimModeArray = initClaimModeArray()
+      //If we're changing claim types, we're nuking all the claim contacts.
+      policyChanged = true
+    }
+  
+    if (Claim.Policy != null) {
+      Claim.Policy.removeAllRoles()
+    }      
+  
+    
+    if (allRequiredFieldsExist()) {
+      if (Claim.LossType != null and Wizard.LossType != Claim.LossType) {
+        //if the claim loss type has changed, then must reset the wizard by reentering the wizard.
+        var lossDate = Claim.LossDate
+        var policyType = newPolicy.UnverifiedPolicyType
+        var policyNumber = newPolicy.UnverifiedPolicyNumber
+        location.cancel()
+        pcf.FNOLWizard.go(policyType, policyNumber, Wizard.ClaimMode, lossDate, Wizard.PageMode)
+      }
+    
+      //when claimMode is changed, the losstype is not changed on claim yet, so must set the claim loss type before setting policy
+      if (Claim.LossType == null or Wizard.LossType != Claim.LossType) {
+        Claim.LossType = Wizard.LossType
+        policyChanged = true
+      }
+    
+      if (policyChanged) {
+        newPolicy.setPolicyVerified(false)
+        Wizard.PolicyDescription = newPolicy
+        Wizard.setPolicy()
+        if (Claim.Policy != null) {
+          Claim.Policy.removeAllRoles()
+        }
+        policyTabSet = gw.api.policy.PolicyTabUtil.getTabSet(Claim.Policy)
+      }
+    }
+    return false
+   }
+   return true
+}
+
+function filterUnverifiedPolicyType(unverifiedPolType:String):Boolean{
+  if(Wizard.ClaimMode.LossType!= null && exists(lobKey in LOBCode.getTypeKeys(false) where lobKey.hasCategory(Wizard.ClaimMode.LossType) && 
+      exists(polTypeKey in PolicyType.getTypeKeys(false) where polTypeKey.hasCategory(lobKey) && unverifiedPolType.equals(polTypeKey.Code))) &&
+      !unverifiedPolType.toUpperCase().equals("FPL") && !unverifiedPolType.toUpperCase().equals("FLC")){
+     return true;
+  }else{
+    return false;
+  }
+}
+
+function validateUnverifiedPolicyNumber():String{
+  if(newPolicy.UnverifiedPolicyNumber.matches("[0-9]{7}")){
+    return displaykey.Validator.UnverifiedPolicyNumber
+  }else{
+    return null;
+  }
+}
+
+function getModeOptionLabel(mode:String):String{
+  if(mode == null or mode == ""){
+    return displaykey.Java.TextValueWidget.NoneSelected
+  }else{
+    return mode
+  }
+}
+
+function claimsMadeAvail() : Boolean{
+  var avail:boolean = true
+  if( Wizard.ClaimMode.LossType == "EXECLIABDIV" or Wizard.ClaimMode.LossType == "PROFLIABDIV" or Wizard.ClaimMode.LossType == "SPECIALTYES" or Wizard.ClaimMode.LossType == "ENVLIAB" or Wizard.ClaimMode.LossType == typekey.LossType.TC_MERGACQU or Wizard.ClaimMode.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+    if(Claim.LossDate != null and
+       Claim.LossDate != Claim.ReportedDate){
+        avail = false
+    }
+  }
+  return avail
+}
+
+function lossDateAvail() : Boolean{
+  var avail:boolean = true
+  if(Wizard.ClaimMode.LossType == "EXECLIABDIV" or Wizard.ClaimMode.LossType == "PROFLIABDIV" or Wizard.ClaimMode.LossType ==  "SPECIALTYES" or Wizard.ClaimMode.LossType == "ENVLIAB" or Wizard.ClaimMode.LossType == typekey.LossType.TC_MERGACQU or Wizard.ClaimMode.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+    if(Wizard.Claim.ReportedDate != null){
+      avail = false
+    }
+  }
+  return avail
+}
+
+function setClaimsMadeUsed(){
+  if(Claim.ReportedDate != null){
+   Claim.ClaimsMadeUsedExt = true
+  }
+}
+
+function fixClaimMode(){
+  if (Wizard.ClaimMode.LossType.Description == "Workers' Compensation"){
+  }
+  else if(Wizard.ClaimMode.LossType.Description != "Employers' Liability"){
+  }
+  else {
+    Wizard.setClaimMode(null, null)
+  }
+}
+
+function isRequired() : Boolean{
+  if(Claim.NCWOnlyBusinessUnitExt==null && (Wizard.LossType=="ALTMARKETSEL" or Wizard.LossType=="ALTMARKETSWC")){
+    return true
+  }else if((Wizard.LossType.DisplayName=="Employers' Liability" or Wizard.LossType.DisplayName=="Workers' Compensation") && (Claim.NCWOnlyBusinessUnitExt=="am" || Claim.NCWOnlyBusinessUnitExt=="ec" || Claim.NCWOnlyBusinessUnitExt=="mi" || Claim.NCWOnlyBusinessUnitExt=="oc" || Claim.NCWOnlyBusinessUnitExt=="sc" || Claim.NCWOnlyBusinessUnitExt=="tk")){
+    return true
+  }else if(Wizard.LossType==null && (Claim.NCWOnlyBusinessUnitExt=="am" || Claim.NCWOnlyBusinessUnitExt=="ec" || Claim.NCWOnlyBusinessUnitExt=="mi" || Claim.NCWOnlyBusinessUnitExt=="oc" || Claim.NCWOnlyBusinessUnitExt=="sc" || Claim.NCWOnlyBusinessUnitExt=="tk")){
+    return true
+  }else if(Claim.NCWOnlyBusinessUnitExt=="am" || Claim.NCWOnlyBusinessUnitExt=="ec" || Claim.NCWOnlyBusinessUnitExt=="mi" || Claim.NCWOnlyBusinessUnitExt=="oc" || Claim.NCWOnlyBusinessUnitExt=="sc" || Claim.NCWOnlyBusinessUnitExt=="tk"){
+    return true
+  }else{
+    return false
+  }
+}]]></Code>
+  </PanelSet>
+</PCF>

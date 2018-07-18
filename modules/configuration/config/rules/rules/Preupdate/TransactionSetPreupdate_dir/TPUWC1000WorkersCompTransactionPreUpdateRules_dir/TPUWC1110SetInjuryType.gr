@@ -1,0 +1,32 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUWC1000WorkersCompTransactionPreUpdateRules_dir
+
+@gw.rules.RuleName("TPUWC1110 - Set Injury Type")
+internal class TPUWC1110SetInjuryType {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//* 4.16.15 - cmullin - Workers' Comp config - this rule looks at all new 
+Reserves and sets the Exposure Loss/Expense Injury Type equal to the 
+Reserve.WCInjuryTypeExt. The Exposure Injury Type is used to display the 
+"Current Injury Type" on New Check Wizard Step # 2 (NewPaymentDetailDV)
+based on whether the payment cost type is Loss or Expense.
+*/
+//Updated to trigger for all transactions
+//transactionSet.Subtype=="ReserveSet"
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  for(res in transactionSet.AllTransactions){
+  	
+    if(res.CostType == "claimcost" and res.WCInjuryTypeExt != null){
+      res.Exposure.WCLossInjuryTypeExt = res.WCInjuryTypeExt
+    }else if(res.WCInjuryTypeExt != null){
+      res.Exposure.WCExpenseInjuryTypeExt = res.WCInjuryTypeExt
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

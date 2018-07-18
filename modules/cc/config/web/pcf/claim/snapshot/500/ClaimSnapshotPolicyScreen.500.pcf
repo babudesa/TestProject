@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Screen
+    id="ClaimSnapshotPolicyScreen"
+    mode="500">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="SnapshotParam"
+      type="Object"/>
+    <Toolbar/>
+    <CardViewPanel>
+      <Card
+        id="ClaimSnapshotPolicyGeneral500Card"
+        title="displaykey.JSP.ClaimSnapshot.Navigation.Policy.General">
+        <PanelRef
+          def="ClaimSnapshotPolicyGeneral500DetailPanelSet(Claim, SnapshotParam as snapshot.v500.Claim)"/>
+      </Card>
+      <Card
+        id="ClaimSnapshotPolicyVehicles500Card"
+        title="displaykey.JSP.ClaimSnapshot.Navigation.Policy.Vehicles"
+        visible="gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;vehicles&quot; as PolicyTab)">
+        <ListDetailPanel
+          selectionName="VehicleRU"
+          selectionType="snapshot.v500.VehicleRU">
+          <PanelRef
+            def="ClaimSnapshotPolicyVehicles500LV(Claim, SnapshotParam as snapshot.v500.Claim)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="PolicyVehicleCard"
+              title="util.Snapshot.renderValue(VehicleRU)">
+              <PanelRef
+                def="ClaimSnapshotPolicyVehicle500PanelSet(Claim, VehicleRU)"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="ClaimSnapshotPolicyLocations500Screen"
+        title=" gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;properties&quot; as PolicyTab) ?               displaykey.JSP.ClaimSnapshot.Navigation.Policy.Locations :               displaykey.JSP.ClaimSnapshot.Navigation.Policy.ClassCodes"
+        visible="gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;properties&quot; as PolicyTab) or               gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;classcodes&quot; as PolicyTab)">
+        <ListDetailPanel
+          selectionName="LocationBasedRU"
+          selectionType="snapshot.v500.LocationBasedRU">
+          <PanelRef
+            def="ClaimSnapshotPolicyLocations500LV(Claim, SnapshotParam as snapshot.v500.Claim)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel>
+            <Card
+              id="PolicyPropertyCard"
+              title="util.Snapshot.renderValue(LocationBasedRU)">
+              <PanelRef
+                def="ClaimSnapshotPolicyLocation500PanelSet(Claim, LocationBasedRU)"/>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="ClaimSnapshotPolicyTrips500Card"
+        title="displaykey.JSP.ClaimSnapshot.Navigation.Policy.Trips"
+        visible="gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;trips&quot; as PolicyTab)">
+        <ListDetailPanel
+          selectionName="aTripRU"
+          selectionType="snapshot.v500.TripRU">
+          <PanelRef
+            def="ClaimSnapshotPolicyTrips500LV(Claim, SnapshotParam)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel
+            hideTabIfSingle="true">
+            <Card
+              id="CoverageDetail"
+              title="&quot;&quot;">
+              <DetailViewPanel>
+                <InputColumn>
+                  <Label
+                    label="displaykey.LV.Policy.CoverageDetail"/>
+                </InputColumn>
+              </DetailViewPanel>
+              <ListDetailPanel
+                id="TripCoverageLDP"
+                selectionName="SelectedCoverage"
+                selectionType="snapshot.v500.Coverage">
+                <PanelRef>
+                  <Toolbar/>
+                  <ListViewPanel
+                    id="CoveragesLV">
+                    <RowIterator
+                      editable="false"
+                      elementName="TripCoverage"
+                      type="snapshot.v500.Coverage"
+                      value="aTripRU.Coverages">
+                      <Row>
+                        <Cell
+                          id="CoverageType"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CoverageType"
+                          sortOrder="1"
+                          value="TripCoverage.Type"/>
+                        <Cell
+                          formatType="currency"
+                          id="Deductible"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.Deductible"
+                          value="TripCoverage.Deductible"/>
+                        <Cell
+                          formatType="currency"
+                          id="ExposureLimit"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.ExposureLimit"
+                          value="TripCoverage.ExposureLimit"/>
+                        <Cell
+                          formatType="currency"
+                          id="IncidentLimit"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.IncidentLimit"
+                          value="TripCoverage.IncidentLimit"/>
+                        <Cell
+                          id="Notes"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.Notes"
+                          value="TripCoverage.Notes"/>
+                      </Row>
+                    </RowIterator>
+                  </ListViewPanel>
+                </PanelRef>
+                <CardViewPanel
+                  hideTabIfSingle="true">
+                  <Card
+                    id="CovTerms"
+                    title="&quot;&quot;">
+                    <DetailViewPanel>
+                      <InputColumn>
+                        <ListViewInput
+                          boldLabel="true"
+                          label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms"
+                          labelAbove="true">
+                          <Toolbar/>
+                          <ListViewPanel
+                            id="CovTermsLV">
+                            <RowIterator
+                              editable="false"
+                              elementName="CovTerm"
+                              value="SelectedCoverage.CovTerms">
+                              <Row>
+                                <Cell
+                                  id="Type"
+                                  label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms.Type"
+                                  sortOrder="1"
+                                  value="CovTerm.Type"/>
+                                <Cell
+                                  id="Value"
+                                  label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms.Value"
+                                  value="CovTerm.Value"/>
+                                <Cell
+                                  id="ValueType"
+                                  label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms.ValueType"
+                                  value="CovTerm.ValueType"/>
+                                <Cell
+                                  id="AggregationModel"
+                                  label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms.AggregationModel"
+                                  value="CovTerm.AggregationModel"/>
+                                <Cell
+                                  id="RestrictionModel"
+                                  label="displaykey.Web.ClaimSnapshotPolicyTrip500DV.CovTerms.RestrictionModel"
+                                  value="CovTerm.RestrictionModel"/>
+                              </Row>
+                            </RowIterator>
+                          </ListViewPanel>
+                        </ListViewInput>
+                      </InputColumn>
+                    </DetailViewPanel>
+                  </Card>
+                </CardViewPanel>
+              </ListDetailPanel>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="ClaimSnapshotPolicyStatCodes500Card"
+        title="displaykey.JSP.ClaimSnapshot.Navigation.Policy.StatCodes"
+        visible="gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;statcodes&quot; as PolicyTab)">
+        <PanelRef
+          def="ClaimSnapshotPolicyStatCodes500LV(Claim, SnapshotParam as snapshot.v500.Claim)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ClaimSnapshotPolicyEndorsements500Card"
+        title="displaykey.JSP.ClaimSnapshot.Navigation.Policy.Endorsements"
+        visible="gw.api.policy.PolicyTabUtil.isTabAvailable(Claim, &quot;endorsements&quot; as PolicyTab)">
+        <PanelRef
+          def="ClaimSnapshotPolicyEndorsements500LV(Claim, SnapshotParam as snapshot.v500.Claim)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+    </CardViewPanel>
+    <Code><![CDATA[
+function getTrips(riskUnits : snapshot.v500.RiskUnit[]) : Object[] {
+  var list = new java.util.ArrayList()
+  var result = new Object[0]
+  for (ru in riskUnits) {
+    if (ru.Subtype.Name == "TripRU") {
+      list.add( ru )
+    }
+  }
+  print(list)
+  return list as Object[] 
+}
+    ]]></Code>
+  </Screen>
+</PCF>

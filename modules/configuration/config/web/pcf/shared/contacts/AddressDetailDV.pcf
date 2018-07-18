@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressDetailDV">
+    <Require
+      name="address"
+      type="Address"/>
+    <Require
+      name="cityRequired"
+      type="boolean"/>
+    <Require
+      name="stateRequired"
+      type="boolean"/>
+    <Require
+      name="postalCodeRequired"
+      type="boolean"/>
+    <Require
+      name="addressTypeRequired"
+      type="boolean"/>
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Variable
+      initialValue="address.Country != null ? new gw.api.address.AddressAutofillHelper(address.Country) : null"
+      name="AutoFillHelper"
+      recalculateOnRefresh="true"
+      type="gw.api.address.AddressAutofillHelper"/>
+    <!-- Hack to change a space to a hyphen to fix AutoFill and Standardized without going through integration -->
+    <Variable
+      initialValue="(address != null) ? address.zipFix() : false"
+      name="fixZip"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;city&quot;,&quot;country,city,county,state,postalcode&quot;,true)"
+      name="cityHandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;postalcode&quot;,&quot;country,city,county,state,postalcode&quot;,true)"
+      name="postalCodeHandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;county&quot;,&quot;country,city,county,state,postalcode&quot;,true)"
+      name="countyHandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ContactDetail.AddressDetail"/>
+      <TypeKeyInput
+        editable="!(address.StandardizedExt)"
+        id="Country"
+        label="displaykey.Web.ContactDetail.AddressDetail.Country"
+        onChange="address.clearCityStateZipCounty()"
+        postOnChange="true"
+        required="address != null and address.AddressType != null"
+        value="address.Country"/>
+      <Input
+        available="address.Country != null and !address.newPreferredMailingAddress(contact)"
+        editable="!(address.StandardizedExt)"
+        id="AddressType"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressType"
+        postOnChange="true"
+        required="addressTypeRequired and address.Country != null"
+        value="address.AddressType"/>
+      <Input
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="AddressLine1"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine1"
+        required="cityRequired and address.Country != null and address.AddressType != null "
+        value="address.AddressLine1"/>
+      <Input
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="AddressLine2"
+        label="displaykey.Web.ContactDetail.AddressDetail.AddressLine2"
+        value="address.AddressLine2"/>
+      <!-- <Input
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="City"
+        label="displaykey.Web.ContactDetail.AddressDetail.City"
+        required="cityRequired and (address.Country != null and address.AddressType != null)"
+        value="address.City"
+        visible="address.Country != &quot;US&quot; and (!AutoFillHelper.UseAutoFill or !AutoFillHelper.ZipToCityFill)"/> -->
+      <AddressAutoFillInput
+        action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(address, &quot;city&quot;)"
+        autoComplete="cityHandler"
+        autoCompleteArgIds="Country,City,County,State,PostalCode"
+        available="(address.Country != null and address.AddressType != null)"
+        editable="!(address.StandardizedExt)"
+        id="City"
+        label="displaykey.Web.ContactDetail.AddressDetail.City"
+        required="cityRequired and (address.Country != null and address.AddressType != null)"
+        validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;city&quot;)"
+        value="address.City">
+        <Reflect
+          reflectDirectChangesOnly="true"
+          triggerIds="City,PostalCode,State"
+          value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country, &quot;city&quot;, {&quot;city&quot;,&quot;postalcode&quot;,&quot;state&quot;}, {VALUE1,VALUE2,VALUE3}) as java.lang.String"/>
+      </AddressAutoFillInput>
+      <!-- <AddressAutoFillRangeInput
+        action="AutoFillHelper.exitAutoFill()"
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="CityChoice"
+        label="displaykey.Web.ContactDetail.AddressDetail.City"
+        required="cityRequired and (address.Country != null and address.AddressType != null)"
+        validationExpression="AutoFillHelper.validateCityState(address); AutoFillHelper.exitAutoFill();; return null"
+        value="address.City"
+        valueRange="util.custom_Ext.finders.postCodeValidation(address) ? AutoFillHelper.getCitiesFromZip(address) : null"
+        visible="AutoFillHelper.UseAutoFill and AutoFillHelper.ZipToCityFill"/> -->
+      <RangeInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="State"
+        label="displaykey.Web.ContactDetail.AddressDetail.State"
+        required="util.custom_Ext.finders.stateRequired(address.Country.Code, stateRequired) and (address.Country != null and address.AddressType != null)"
+        validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;state&quot;)"
+        value="address.State"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(address.Country)">
+        <Reflect
+          reflectDirectChangesOnly="true"
+          triggerIds="State,PostalCode,City"
+          value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country, &quot;state&quot;, {&quot;state&quot;,&quot;postalcode&quot;,&quot;city&quot;}, {VALUE1,VALUE2,VALUE3}) as typekey.State"
+          valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(address.Country)"/>
+      </RangeInput>
+      <!-- <TextInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="PostalCode"
+        inputMask="util.custom_Ext.finders.getPostCodeMask(address.Country.Code)"
+        label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+        postOnChange="true"
+        required="util.custom_Ext.finders.postCodeRequired(address.Country.Code, postalCodeRequired) and (address.Country != null and address.AddressType != null)"
+        validationExpression="util.custom_Ext.finders.postCodeValidation(address) ? null : util.custom_Ext.finders.postCodeExpression(address.Country.Code)"
+        value="address.PostalCode"
+        visible="address.Country.Code != &quot;US&quot;"/> -->
+      <AddressAutoFillInput
+        action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(address, &quot;postalcode&quot;)"
+        autoComplete="postalCodeHandler"
+        autoCompleteArgIds="Country,City,County,State,PostalCode"
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="PostalCode"
+        inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(address, &quot;postalcode&quot;)"
+        label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+        required="util.custom_Ext.finders.postCodeRequired(address.Country.Code, postalCodeRequired) and (address.Country != null and address.AddressType != null)"
+        validationExpression="util.custom_Ext.finders.postCodeValidation(address) ? null : util.custom_Ext.finders.postCodeExpression(address.Country.Code)"
+        value="address.PostalCode">
+        <Reflect
+          inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(address, &quot;postalcode&quot;)"
+          reflectDirectChangesOnly="true"
+          triggerIds="PostalCode,City"
+          value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country, &quot;postalcode&quot;, {&quot;postalcode&quot;,&quot;city&quot;}, {VALUE1,VALUE2}) as java.lang.String"/>
+      </AddressAutoFillInput>
+      <!-- <AddressAutoFillRangeInput
+        action="AutoFillHelper.exitAutoFill()"
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="PostalCodeChoice"
+        label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+        required="util.custom_Ext.finders.postCodeRequired(address.Country.Code, postalCodeRequired) and (address.Country != null and address.AddressType != null)"
+        validationExpression="AutoFillHelper.validateZip(address); AutoFillHelper.exitAutoFill();; return null"
+        value="address.Postalcode"
+        valueRange="AutoFillHelper.getZipCodesFromCityState(address)"
+        visible="AutoFillHelper.UseAutoFill and !AutoFillHelper.ZipToCityFill and address.Country.Code == &quot;US&quot;"/> -->
+      <TextInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="County"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;county&quot;)"
+        value="address.County">
+        <Reflect
+          reflectDirectChangesOnly="true"
+          triggerIds="County,PostalCode,City"
+          value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country, &quot;county&quot;, {&quot;county&quot;,&quot;postalcode&quot;,&quot;city&quot;}, {VALUE1,VALUE2,VALUE3}) as java.lang.String"/>
+      </TextInput>
+      <!-- <RangeInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="CountyChoiceFromState"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        value="address.County"
+        valueRange="address.Country.Code == &quot;US&quot; ? util.custom_Ext.addressFunctions.getValidCountyForState(address.State) : null"
+        visible="(!AutoFillHelper.UseAutoFill and address.Country.Code == &quot;US&quot;) or address.StandardizedExt"/> -->
+      <!-- <RangeInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="CountyChoiceFromCity"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        validationExpression="AutoFillHelper.validateCounty(address)"
+        value="address.County"
+        valueRange="AutoFillHelper.getCountiesFromCityState(address)"
+        visible="AutoFillHelper.UseAutoFill and !AutoFillHelper.ZipToCityFill and address.Country.Code == &quot;US&quot; and !(address.StandardizedExt)">
+        <Reflect
+          triggerIds="CityChoice"
+          valueRange="AutoFillHelper.getCountiesFromCityState(address)"/>
+      </RangeInput> -->
+      <!-- <RangeInput
+        available="address.Country != null and address.AddressType != null"
+        editable="!(address.StandardizedExt)"
+        id="CountyChoiceFromZip"
+        label="displaykey.Web.ContactDetail.AddressDetail.County"
+        validationExpression="AutoFillHelper.validateCounty(address)"
+        value="address.County"
+        valueRange="util.custom_Ext.finders.postCodeValidation(address) ? AutoFillHelper.getCountiesFromZip(address) : address.County"
+        visible="AutoFillHelper.UseAutoFill and AutoFillHelper.ZipToCityFill and address.Country.Code == &quot;US&quot; and !(address.StandardizedExt)">
+        <Reflect
+          triggerIds="PostalCodeChoice"
+          valueRange="util.custom_Ext.finders.postCodeValidation(address) ? AutoFillHelper.getCountiesFromZip(address) : null"/>
+      </RangeInput> -->
+      <Input
+        available="address.Country != null and address.AddressType != null"
+        editable="(address.StandardizedExt == true)"
+        id="StandardizationIndicator"
+        label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+        postOnChange="true"
+        value="address.StandardizedExt"
+        visible="true"/>
+      <ButtonInput
+        action="StandardizationPopup.push(address)"
+        available="address.Country != null and address.AddressType != null"
+        hideIfReadOnly="true"
+        id="StandardizeAddressButton"
+        value="displaykey.Web.ContactDetail.AddressDetail.StandardizeButtonText"
+        visible="!(address.StandardizedExt)"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

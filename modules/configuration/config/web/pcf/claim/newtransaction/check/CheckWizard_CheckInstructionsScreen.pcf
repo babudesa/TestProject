@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Screen
+    id="CheckWizard_CheckInstructionsScreen">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="wizard"
+      type="financials.CheckWizardInfo"/>
+    <Require
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <Variable
+      initialValue="null"
+      name="prevServiceEnd"
+      type="DateTime"/>
+    <Toolbar>
+      <WizardButtons/>
+      <ToolbarDivider/>
+      <PickerToolbarButton
+        action="PickExistingDocumentPopup.push(claim)"
+        id="Button_Reserve_LinkDocument"
+        label="displaykey.Button.Reserve.LinkDocument"
+        onPick="financials.TransactionSetLinkDocumentHelper.linkDocument(PickedValue, wizard.CheckGroupProxy.CheckSet)"
+        visible="perm.System.viewdocs"/>
+    </Toolbar>
+    <!-- <Verbatim
+      label="displayKey.Wizard.CheckWizard.DeductionsChangedWarning()"
+      visible="wizard.isDeductionWarningNeeded()"
+      warning="true"/> -->
+    <PanelRef
+      def="NewPaymentInstructionsDV(wizard.CheckGroupProxy, wizard, automatedCheckInfo, prevServiceEnd)"
+      mode="canAddRecurrance() and !wizard.Check.containsDeductible() ? &quot;&quot; : &quot;single&quot;"/>
+    <DetailViewPanel
+      columnDivider="false">
+      <Variable
+        initialValue="wizard.CheckGroupProxy"
+        name="check"/>
+      <InputColumn>
+        <Input
+          boldValue="true"
+          id="Space"
+          value="&quot;                                                                                                                                                                                                                    &quot;"/>
+      </InputColumn>
+      <InputColumn>
+        <ButtonInput
+          action="prevServiceEnd = check.ServicePdEnd; check.ServicePdEnd = check.recurringEndDate; check.Memo = check.populateCheckMemoDatesOfService(check.Memo, check.ServicePdStart, prevServiceEnd)"
+          id="RecurringUpdateButton"
+          value="&quot;Refresh&quot;"
+          visible="Check.DOSTypeExt == DateOfServiceExt.TC_RECURRING &amp;&amp; Check.New"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <Code><![CDATA[function canAddRecurrance() : Boolean {
+  // Allow recurrance if check is new
+  if(wizard.Check.New){
+   return true 
+  }
+  // Allow recurrance if you are editting the recurrance, not a single check
+  if(wizard.CheckSet.Recurring and automatedCheckInfo == null){
+   return true 
+  }
+  return false
+}]]></Code>
+  </Screen>
+</PCF>

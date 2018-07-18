@@ -1,0 +1,13 @@
+package rules.Postsetup.ActivityPostsetup_dir
+
+@gw.rules.RuleName("APS02000 - Subro - Add user to Role on claim if necessary")
+internal class APS02000SubroAddusertoRoleonclaimifnecessary {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/Activity.ActivityPattern.Code == "subro_check" and
+not exists(assignment in Activity.Claim.RoleAssignments where assignment.Role <> "subrogationowner")/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/Activity.Claim.assignUserRole( Activity.AssignedUser, Activity.AssignedGroup,  "subrogationowner")/*end00rule*/
+  }
+}

@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Page
+    alwaysInEditMode="false"
+    autosaveable="false"
+    beforeCommit="scriptTool.invokeGosu(gosuString, comments, ticketNum, scriptUser)"
+    canEdit="false"
+    canVisit="perm.System.viewScriptTool"
+    id="ScriptTool"
+    title="&quot;Script Tool History&quot;">
+    <Variable
+      name="gosuString"
+      type="String"/>
+    <Variable
+      initialValue="new util.scripttool.ScriptTool()"
+      name="scriptTool"
+      type="util.scripttool.ScriptTool"/>
+    <Variable
+      name="comments"
+      type="String"/>
+    <Variable
+      name="ticketNum"
+      type="String"/>
+    <Variable
+      initialValue="find(history in ScriptToolHistoryExt).toList().sortByDescending(\ s -&gt; s.CreateTime)"
+      name="histories"
+      recalculateOnRefresh="true"/>
+    <Variable
+      name="scriptUser"
+      type="String"/>
+    <Screen>
+      <ListDetailPanel
+        selectionName="selectedHistory"
+        selectionOnEnter="histories.first()"
+        selectionType="ScriptToolHistoryExt">
+        <PanelRef>
+          <Toolbar>
+            <ToolbarButton
+              action="ScriptRunnerPopup.push()"
+              available="perm.System.runScriptTool"
+              id="ToolbarButton"
+              label="&quot;Run a new script...&quot;"/>
+          </Toolbar>
+          <ListViewPanel
+            border="true">
+            <RowIterator
+              editable="false"
+              elementName="history"
+              id="HistoryRowIterator"
+              pageSize="5"
+              value="histories">
+              <Row>
+                <DateCell
+                  dateFormat="short"
+                  id="ExecDateCell"
+                  label="&quot;Date Executed&quot;"
+                  timeFormat="long"
+                  value="history.CreateTime"
+                  width="&quot;10%&quot;"/>
+                <Cell
+                  id="ExecUserCell"
+                  label="&quot;Executing User&quot;"
+                  value="history.ExecutingUser"/>
+                <Cell
+                  id="TicketNumCell"
+                  label="&quot;Ticket #&quot;"
+                  value="history.TicketNum"/>
+                <Cell
+                  id="CommentsCell"
+                  label="&quot;Comments&quot;"
+                  value="history.Comments"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </PanelRef>
+        <CardViewPanel>
+          <Card
+            id="DetailCard"
+            title="&quot;Details&quot;">
+            <DetailViewPanel>
+              <InputColumn>
+                <TextAreaInput
+                  boldLabel="true"
+                  id="ScriptTextAreaInput"
+                  label="&quot;Script&quot;"
+                  labelAbove="true"
+                  numCols="100"
+                  numRows="10"
+                  value="selectedHistory.Script"/>
+                <InputDivider/>
+                <TextAreaInput
+                  boldLabel="true"
+                  id="BundleTextAreaInput"
+                  label="&quot;Bundle&quot;"
+                  labelAbove="true"
+                  numCols="100"
+                  numRows="15"
+                  value="selectedHistory.ShortBundle"/>
+                <InputDivider/>
+                <TextAreaInput
+                  boldLabel="true"
+                  id="OutputTextAreaInput"
+                  label="&quot;Standard Error/Output&quot;"
+                  labelAbove="true"
+                  numCols="100"
+                  numRows="15"
+                  value="selectedHistory.ShortStdErrOut"/>
+              </InputColumn>
+            </DetailViewPanel>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+    <Code><![CDATA[function canVisit() : boolean {
+  var user = gw.plugin.util.CurrentUserUtil.getCurrentUser().User
+  
+  return user.Roles*.Role == "Integration Firefighter"
+    
+}
+uses gw.api.tree.*
+uses java.util.HashMap
+
+function getBundles() : gw.api.tree.TreeNode{
+  var parent = new SimpleTreeNode("")
+  var c1 = new SimpleTreeNode("Child1")
+  var c11 = new SimpleTreeNode("Child1.1")
+  c1.addChild(c11)
+  parent.addChild(c1)
+  
+  var c2 = new SimpleTreeNode("Child2")
+  var c22 = new SimpleTreeNode("Child2.1")
+  c2.addChild(c22)
+  parent.addChild(c2)
+  return parent
+}
+
+function getRoot(h : ScriptToolHistoryExt) : gw.api.tree.SimpleTreeNode{
+  var root = new SimpleTreeNode("")
+var bean : SimpleTreeNode
+var field : SimpleTreeNode
+
+for(mb in util.scripttool.ScriptToolAudit.Bundle.parse(h.BundleAsString).ModifiedBeans){
+  bean = new SimpleTreeNode("Type: " + mb.type + "   Operation: " + mb.operation)
+  for(f in mb.fields){
+    field = new SimpleTreeNode("Name: " + f.name + "   Old Value: " + f.oldValue.Text + "   New Value: " + f.newValue.Text)
+    bean.addChild(field) 
+  }
+  root.addChild(bean)
+}
+
+return root
+}]]></Code>
+  </Page>
+</PCF>

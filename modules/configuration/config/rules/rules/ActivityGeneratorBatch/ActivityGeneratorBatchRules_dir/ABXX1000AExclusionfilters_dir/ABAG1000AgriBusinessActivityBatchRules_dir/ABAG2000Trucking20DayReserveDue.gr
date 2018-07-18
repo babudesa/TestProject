@@ -1,0 +1,30 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG2000 - Trucking 20 Day Reserve Due")
+internal class ABAG2000Trucking20DayReserveDue {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType==LossType.TC_TRUCKINGAUTO AND !claim.Closed AND
+exists(exp in claim.Exposures where exp.ExposureType==ExposureType.TC_AB_AUTOPROPDAM OR 
+exp.ExposureType==ExposureType.TC_AB_PROPERTYDAMAGE OR exp.ExposureType==ExposureType.TC_AB_BODILYINJURY OR 
+exp.ExposureType==ExposureType.TC_AB_PIP OR exp.ExposureType==ExposureType.TC_AB_MEDPAY) AND
+claim.ReserveLines.Count == 0 &&
+!exists(act in claim.Activities where act.ActivityPattern.Code == "20day_reserve_truck")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exposure in claim.Exposures){
+    if(exposure.ExposureType==ExposureType.TC_AB_AUTOPROPDAM OR 
+    exposure.ExposureType==ExposureType.TC_AB_PROPERTYDAMAGE OR exposure.ExposureType==ExposureType.TC_AB_BODILYINJURY OR 
+    exposure.ExposureType==ExposureType.TC_AB_PIP OR exposure.ExposureType==ExposureType.TC_AB_MEDPAY){
+      if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_Truck20Reserve)){
+        var ap = util.custom_Ext.finders.findActivityPattern("20day_reserve_truck")
+        claim.createActivityFromPattern(exposure, ap)
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

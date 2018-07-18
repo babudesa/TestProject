@@ -1,0 +1,30 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABEN1000EnvironmentalActivityBatchRules_dir
+
+@gw.rules.RuleName("ABEN1200 - 30 Day Reserve Needed")
+internal class ABEN120030DayReserveNeeded {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LevelOfReserveExt==null && claim.ReserveLines.length==0) &&
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_adj"))
+&& gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.CreateTime, 23)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern("30_day_reserve_adj")
+  if(claim.Exposures.length==0){  
+    claim.createActivity(null, ap, "Initial Reserve Review" , "File Must Be Reserved at 30 Days.",null, null, null , null)
+  }
+  else{
+    for(exp in claim.Exposures){
+      if((exp.ReserveLines.getCount()==0) and (!exists(act in claim.Activities where act.ActivityPattern.Code=="30_day_reserve_adj"))){ 
+        claim.createActivity(null, ap, "Initial Reserve Review" , "File Must Be Reserved at 30 Days." , null, null, null, null)
+        break
+      }
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

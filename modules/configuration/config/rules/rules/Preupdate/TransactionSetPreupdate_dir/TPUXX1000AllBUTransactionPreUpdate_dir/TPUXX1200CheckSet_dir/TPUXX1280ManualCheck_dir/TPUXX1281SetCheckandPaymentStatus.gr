@@ -1,0 +1,26 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1280ManualCheck_dir
+
+@gw.rules.RuleName("TPUXX1281 - Set Check and Payment Status")
+internal class TPUXX1281SetCheckandPaymentStatus {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var chk:Check = (transactionSet as CheckSet).PrimaryCheck
+  if(chk.Status == "notifying"){
+    chk.Status = "issued"
+  }
+  if(chk.Status == "issued"){
+    for(thePayment in chk.Payments){
+      if(thePayment.Status == "submitting"){
+        thePayment.Status = "submitted";
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

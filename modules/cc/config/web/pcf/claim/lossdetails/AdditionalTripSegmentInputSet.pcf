@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    editable="true"
+    id="AdditionalTripSegmentInputSet">
+    <Require
+      name="anAddnlTripSegment"
+      type="AddnlTripSegment"/>
+    <Require
+      name="aTripIncident"
+      type="TripIncident"/>
+    <Label
+      label="displaykey.Web.TripIncidentScreen.TripCard.AddnlTripSegments"/>
+    <TypeKeyInput
+      editable="true"
+      id="TransportType"
+      label="displaykey.Web.TripIncidentSegmentLV.CarrierType"
+      postOnChange="true"
+      required="true"
+      value="anAddnlTripSegment.TransportType"/>
+    <Input
+      editable="true"
+      id="CarrierName"
+      label="displaykey.Web.TripIncidentSegmentLV.CarrierName"
+      value="anAddnlTripSegment.CarrierName"/>
+    <Input
+      editable="true"
+      id="CarrierNumber"
+      label="displaykey.Web.TripIncidentSegmentLV.CarrierNumber"
+      numCols="10"
+      value="anAddnlTripSegment.CarrierNumber"/>
+    <Input
+      editable="true"
+      id="PortOfEmbarkation"
+      label="displaykey.Web.TripIncidentSegmentLV.PortOfEmbarkation"
+      numCols="20"
+      value="anAddnlTripSegment.PortOfEmbarkation"/>
+    <Input
+      editable="true"
+      id="PortOfDisembarkation"
+      label="displaykey.Web.TripIncidentSegmentLV.PortOfDisembarkation"
+      numCols="20"
+      value="anAddnlTripSegment.PortOfDisembarkation"/>
+    <DateInput
+      dateFormat="short"
+      editable="true"
+      id="StartedOn"
+      label="displaykey.Web.TripIncidentSegmentLV.StartedOn"
+      timeFormat="short"
+      validationExpression="anAddnlTripSegment.StartDate &gt; anAddnlTripSegment.TripSegment.TripIncident.TripRU.EndDate ? displaykey.Web.ClaimPolicy.Trips.Segment.DepartureDate.Validation : null"
+      value="anAddnlTripSegment.StartDate"/>
+    <DateInput
+      dateFormat="short"
+      editable="true"
+      id="EndedOn"
+      label="displaykey.Web.TripIncidentSegmentLV.EndedOn"
+      timeFormat="short"
+      validationExpression="anAddnlTripSegment.StartDate &gt; anAddnlTripSegment.EndDate ? displaykey.Web.ClaimPolicy.Trips.Segment.ArrivalDate.Validation : null"
+      value="anAddnlTripSegment.EndDate"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.TripIncidentScreen.TripCard.CostsInvolved"/>
+    <Input
+      editable="true"
+      formatType="currency"
+      id="PaidAmount"
+      label="displaykey.Web.TripIncidentScreen.TripCard.PaidAmount"
+      value="anAddnlTripSegment.PaidAmount"/>
+    <Input
+      editable="true"
+      formatType="currency"
+      id="AgentFees"
+      label="displaykey.Web.TripIncidentScreen.TripCard.AgentFees"
+      value="anAddnlTripSegment.AgentFees"
+      visible="anAddnlTripSegment.TransportType == &quot;airline&quot; or anAddnlTripSegment.TransportType == &quot;bus&quot; or anAddnlTripSegment.TransportType == &quot;cruise_ship&quot;"/>
+    <Input
+      editable="true"
+      formatType="currency"
+      id="OtherFees"
+      label="displaykey.Web.TripIncidentScreen.TripCard.OtherFees"
+      value="anAddnlTripSegment.OtherFees"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ClaimPolicy.Trips.Segment.Approval"/>
+    <Input
+      id="Assessment"
+      label="displaykey.Web.ClaimPolicy.Trips.Segment.Approval.Status"
+      value="anAddnlTripSegment.Assessment"/>
+    <Input
+      formatType="currency"
+      id="FinancialImpact"
+      label="displaykey.Web.ClaimPolicy.Trips.Segment.FinancialImpact"
+      value="anAddnlTripSegment.getFinancialImpact(  &quot;approve&quot; )"/>
+    <ContentInput
+      hideIfReadOnly="true"
+      id="AssessmentActions"
+      label="displaykey.Web.ClaimPolicy.Trips.Segment.Approval.Actions">
+      <Link
+        action="anAddnlTripSegment.Assessment = &quot;approve&quot;"
+        hideIfReadOnly="true"
+        id="Approve"
+        label="displaykey.Web.TripIncidentScreen.Approve"
+        styleClass="miniButton"
+        visible="anAddnlTripSegment.Assessment != &quot;approve&quot; "/>
+      <Link
+        action="anAddnlTripSegment.Assessment = &quot;Review&quot;"
+        hideIfReadOnly="true"
+        id="Review"
+        label="displaykey.Web.TripIncidentScreen.Review"
+        styleClass="miniButton"
+        visible="anAddnlTripSegment.Assessment != &quot;Review&quot; "/>
+      <Link
+        action="anAddnlTripSegment.Assessment = &quot;Deny&quot;"
+        hideIfReadOnly="true"
+        id="Deny"
+        label="displaykey.Web.TripIncidentScreen.Deny"
+        styleClass="miniButton"
+        visible="anAddnlTripSegment.Assessment != &quot;Deny&quot; "/>
+      <Link
+        action="anAddnlTripSegment.Assessment = null"
+        hideIfReadOnly="true"
+        id="Clear"
+        label="displaykey.Web.TripIncidentScreen.Clear"
+        styleClass="miniButton"
+        visible="anAddnlTripSegment.Assessment != null"/>
+    </ContentInput>
+    <TextAreaInput
+      available="anAddnlTripSegment.ReasonForDenial == null or anAddnlTripSegment.ReasonForDenial.length == 0"
+      editable="true"
+      id="ReasonForDenial"
+      label="displaykey.Web.ClaimPolicy.Trips.Segment.ReasonForDenial"
+      numCols="40"
+      numRows="4"
+      required="anAddnlTripSegment.Assessment == &quot;Deny&quot; "
+      value="anAddnlTripSegment.ReasonForDenial"
+      visible="anAddnlTripSegment.Assessment == &quot;Deny&quot; ? true : false"/>
+  </InputSet>
+</PCF>

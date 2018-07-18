@@ -1,0 +1,26 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX2000 - Open Legal Actions")
+internal class ECVXX2000OpenLegalActions {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists(mat in exposure.Claim.Matters where
+      (mat.MatterAssignmentsExt*.AssignmentExposuresExt*.Exposure.contains(exposure)
+         and mat.StatusExt == typekey.MatterStatus.TC_OPEN
+         and mat.MatterAssignmentsExt.HasElements
+         and !exists(ae in mat.MatterAssignmentsExt*.AssignmentExposuresExt where
+                     ae.Exposure.State == ExposureState.TC_OPEN && ae.Exposure !=exposure))) == true
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  exposure.reject( "newloss", "You cannot close the only Open Feature tied to a Legal Action.", null, null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}
+
+/*end00rule*/
+  }
+}

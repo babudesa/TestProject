@@ -1,0 +1,25 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1300 - Open Activities")
+internal class CCVXX1300OpenActivities {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Activities.where(\ a -> a.Status==ActivityStatus.TC_OPEN).HasElements    
+       
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var strErrorReason="You cannot close this claim ("+ claim.ClaimNumber + ") because there are open activities.  Please complete or skip any open activities and then close the claim."
+var strPendAssgReason="You cannot close the claim ("+ claim.ClaimNumber + "), while it is in Pending Assignment Status. Please assign the claim and then close the claim"
+
+for (act in claim.Activities.where(\ a -> a.Status==ActivityStatus.TC_OPEN)) {
+  if (act.ActivityPattern.Code == "assignment_review"){
+         claim.reject( "newloss", strPendAssgReason, Null, Null)
+      }
+      else {
+         claim.reject( "newloss", strErrorReason, Null, Null)
+      }
+  break;
+}/*end00rule*/
+  }
+}

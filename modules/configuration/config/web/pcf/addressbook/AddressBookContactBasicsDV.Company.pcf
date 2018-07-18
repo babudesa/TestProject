@@ -1,0 +1,276 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookContactBasicsDV"
+    mode="Company|CompanyVendor|MedicalCareOrg|LawFirm|Ex_ForeignCoVendor|Ex_ForeignCoVenMedOrg|Ex_ForeignCoVenLawFrm|Ex_GAIVendor|AutoRepairShop|FrgnAutoRepairShopExt">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="contact.getSortedCategoryScores()"
+      name="sortedCategoryScores"
+      type="ContactCategoryScore[]"/>
+    <Variable
+      initialValue="sortedCategoryScores != null AND sortedCategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      type="Boolean"/>
+    <Variable
+      initialValue="setInitialValues()"
+      name="initialValues"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="contact.updateCloseIndicator()"
+      name="UpdateCloseIndicator"
+      type="void"/>
+    <InputColumn>
+      <Label
+        label="getLabel()"/>
+      <Input
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="OrganizationName"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName"
+        required="true"
+        value="asCompany().Name"/>
+      <Input
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="OrganizationName2"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName2"
+        required="false"
+        value="asCompany().Name2Ext"
+        visible="asCompany().getSubtype() != &quot;Company&quot;"/>
+      <Input
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="DoingBusinessAsExt"
+        label="displaykey.Web.ContactDetail.Name.DoingBusinessAs"
+        required="false"
+        value="asCompany().DoingBusinessAsExt"/>
+      <Input
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="AppointmentDate"
+        label="displaykey.GAIC.DV.AddressBookContactBasics.ApptDate"
+        value="(contact typeis CompanyVendor?contact:null).ex_AppointmentDate"
+        visible="asCompany().getSubtype() != &quot;Company&quot;"/>
+      <Input
+        editable="User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;) and !contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="CloseDate"
+        label="displaykey.Web.ContactDetail.CloseDate"
+        onChange="contact.updateCloseIndicator()"
+        postOnChange="true"
+        value="Contact.CloseDateExt"
+        visible="asCompany().getSubtype() != &quot;Company&quot;"/>
+      <Input
+        editable="User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;) and !contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        id="VendorCloseReasonExt"
+        label="displaykey.Web.ContactDetail.VendorCloseReason"
+        onChange="contact.updateCloseIndicator()"
+        postOnChange="true"
+        value="Contact.VendorCloseReasonExt"
+        visible="asCompany().getSubtype() != &quot;Company&quot; &amp;&amp; contact.CloseDateExt != null"/>
+      <InputSetRef
+        def="AddressBookBusinessContactInfoInputSet(contact, externalContactSource)"/>
+      <!-- <InputDivider
+        visible="hasCategoryScores OR (contact.Score != null)"/> -->
+      <!-- <Label
+        label="displaykey.Web.Reviews.ReviewPerformance"
+        visible="hasCategoryScores or (contact.Score != null)"/> -->
+      <!-- <Input
+        id="score"
+        label="displaykey.Web.Reviews.OverallScore"
+        value="contact.Score"
+        visible="contact.Score != null"/> -->
+      <!-- <ListViewInput
+        label="displaykey.Web.Reviews.CategoryScores"
+        visible="hasCategoryScores">
+        <Toolbar/>
+        <ListViewPanel
+          id="CategoryScoresLV">
+          <RowIterator
+            editable="false"
+            elementName="categoryScore"
+            pageSize="0"
+            value="sortedCategoryScores">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="Category"
+                label="displaykey.Web.Reviews.Category"
+                value="categoryScore.ReviewCategory"/>
+              <Cell
+                enableSort="false"
+                id="Score"
+                label="displaykey.Web.Reviews.Score"
+                value="categoryScore.Score"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput> -->
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookCompanyVendorAdditionalInfoInputSet(asCompany())"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred() or User.util.getCurrentUser().isBillingAdressAdmin()"
+        mode="contact typeis CompanyVendor ? &quot;CompanyVendor&quot; : null"/>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contact.AddressOwner)"
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+        mode="contact.AddressOwner.InputSetMode"/>
+      <!-- following input set for tax info -->
+      <InputSet
+        editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()">
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <!-- following input for Companies that are not foreign and not GAI vendors -->
+        <Input
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="EIN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+          postOnChange="true"
+          required="!(contact typeis Ex_ForeignCoVendor)"
+          validationExpression="validateTaxID()"
+          value="contact.TaxID"
+          visible="!(Contact.isForeign() or contact typeis Ex_GAIVendor)"/>
+        <!-- following input for companies that are foreign -->
+        <Input
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="W8"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateForeignSSN()"
+          value="contact.TaxID"
+          visible="(contact.isForeign())"/>
+        <!-- following input for companies that are GAI vendors -->
+        <Input
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="ComplAcctgNumber"
+          label="displaykey.Web.ContactDetail.Name.ComplAcctgNumber"
+          postOnChange="true"
+          required="true"
+          validationExpression="asCompany().TaxID == null ? null : !asCompany().TaxID.matches(&quot;[a-zA-Z0-9]{9}&quot;) or asCompany().TaxID.matches(&quot;[9]{9}&quot;) or asCompany().TaxID.matches(&quot;[0]{9}&quot;) ? &quot;Compliance Accounting Number must be filled in, cannot contain all 9's or zeros, may contain characters&quot; : null"
+          value="contact.TaxID"
+          visible="(contact typeis Ex_GAIVendor)"/>
+        <Input
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="TaxStatusCode"
+          label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+          required="true"
+          validationExpression="asCompany().Ex_TaxStatusCode != null ? asCompany().checkContactTaxStatusUpdate(): asCompany().Ex_TaxStatusCode"
+          value="asCompany().Ex_TaxStatusCode"/>
+        <Input
+          editable="true"
+          id="TaxReportingName"
+          label="displaykey.Web.ContactDetail.TaxReportingName"
+          required="false"
+          validationExpression="(contact .Preferred and contact.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+          value="asCompany().Ex_TaxReportingName"/>
+        <!-- w-8 for foreign person -->
+        <Input
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="W8Date"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Recevied"
+          postOnChange="true"
+          required="false"
+          value="contact.W8ReceivedExt"
+          visible="contact.isForeign()"/>
+        <DateInput
+          editable="!asCompany().VerifiedPolicyContactExt and asCompany().canEditTaxInfo() and !asCompany().FormerVerifiedContactExt"
+          id="W8receviedDate"
+          label="displaykey.Web.ContactDetail.Name.TaxID.W8Date"
+          postOnChange="true"
+          required="false"
+          value="contact.W8ReceivedDateExt"
+          visible="contact.isForeign()"/>
+        <InputSetRef
+          def="AddressBookVendorW9InfoInputSet((contact as CompanyVendor))"
+          visible="!(contact.isForeign() or contact typeis Ex_GAIVendor)"/>
+      </InputSet>
+      <!-- <HiddenInput
+        editable="true"
+        id="Ex_LoggedInUserId"
+        value="asCompany().setLoggedInUserId()"/> -->
+      <!-- <HiddenInput
+        editable="true"
+        id="LoggedInUserBUNameEXT"
+        value="asCompany().setLoggedInUserBUName()"/> -->
+      <!-- <HiddenInput
+        editable="true"
+        id="LoggedInUserCompAcctExt"
+        value="asCompany().setLoggedInUserCompAcct()"/> -->
+    </InputColumn>
+    <!-- <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection> -->
+    <Code><![CDATA[function asCompany() : Company {
+        return contact as Company;
+      }
+      
+function setInitialValues(){
+  contact.setLoggedInUserId();
+  contact.setLoggedInUserBUName();
+  contact.setLoggedInUserCompAcct();
+}
+function validateTaxID():String{ 
+  var str : String = null
+if(asCompany().TaxID == null)
+return str; 
+else { 
+  if(!(asCompany().TaxID.matches("[0-9]{9}")) or (asCompany().TaxID.matches("[0]{9}") || asCompany().TaxID.matches("[1]{9}") || asCompany().TaxID.matches("[2]{9}") 
+      || asCompany().TaxID.matches("[3]{9}") || asCompany().TaxID.matches("[4]{9}") || asCompany().TaxID.matches("[5]{9}") || asCompany().TaxID.matches("[6]{9}") 
+      || asCompany().TaxID.matches("[7]{9}") || asCompany().TaxID.matches("[8]{9}") || asCompany().TaxID.matches("[9]{9}")))
+    str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Invalid 
+    }
+ return str;
+}
+// C.McDonald : 9/2013 : need to allow letters for GAI Vendors and Foreign Vendors
+function validateForeignSSN(): String{
+    var str : String = null
+    if(asCompany().TaxID == null){
+      str = null 
+      }
+      else {
+        if(!(asCompany().TaxID.matches("[a-zA-Z0-9]{9}")) or (asCompany().TaxID.matches("[0]{9}") || asCompany().TaxID.matches("[1]{9}") || asCompany().TaxID.matches("[2]{9}") 
+            || asCompany().TaxID.matches("[3]{9}") || asCompany().TaxID.matches("[4]{9}") || asCompany().TaxID.matches("[5]{9}") || asCompany().TaxID.matches("[6]{9}") 
+            || asCompany().TaxID.matches("[7]{9}") || asCompany().TaxID.matches("[8]{9}") || asCompany().TaxID.matches("[9]{9}"))) 
+          str = displaykey.Web.ContactDetail.Name.TaxID.EIN.W8Invalid
+      }
+    return str
+}
+
+function updateCloseDate(cDate : java.util.Date ) {
+  //gw.api.contact.AddressBookUtil.
+  var matchResults = contact.findPotentialMatches().ResultSet
+  
+  print((matchResults.iterator().next() as Contact).CloseDateExt)
+
+}
+
+
+//temp workaround for MedicalCareOrg display. Due to a bug with Load Integrity Checks, the displayName on MedicalCareOrg had to be changed
+function getLabel() : String{
+  var displayName = asCompany().getSubtype().DisplayName 
+  
+  if(displayName == "MedicalCareOrg"){
+    return displaykey.Web.NewContactMenu.ClaimMedicalCareOrg
+  }else{
+    return displayName 
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

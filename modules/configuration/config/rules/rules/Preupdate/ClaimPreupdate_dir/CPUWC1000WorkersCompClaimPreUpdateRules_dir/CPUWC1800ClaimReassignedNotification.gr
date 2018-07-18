@@ -1,0 +1,29 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1800 - Claim Reassigned Notification")
+internal class CPUWC1800ClaimReassignedNotification {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType == LossType.TC_ALTMARKETSWC || claim.LossType == LossType.TC_ALTMARKETSEL ||
+claim.LossType == LossType.TC_STRATEGICCOMPWC || claim.LossType == LossType.TC_STRATEGICCOMPEL ||
+claim.LossType == LossType.TC_TRUCKINGWC || claim.LossType == LossType.TC_TRUCKINGEL &&
+claim.isFieldChanged("AssignedUser") &&
+claim.AssignmentStatus=="assigned" &&
+claim.IncidentReport==false &&
+claim.State!="closed" &&
+claim.State!="draft" /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var originalClaim = claim.OriginalVersion as Claim
+  if(originalClaim.AssignmentStatus=="assigned" && claim.AssignedUser != originalClaim.AssignedUser){
+    var note:String = "The claim has been reassigned to " + claim.AssignedUser.DisplayName + ".";
+    var noteSubject:Note;
+    noteSubject = claim.addNote("general", note);
+    noteSubject.Subject = "Reassignment";
+  }
+}catch(e) {
+   util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

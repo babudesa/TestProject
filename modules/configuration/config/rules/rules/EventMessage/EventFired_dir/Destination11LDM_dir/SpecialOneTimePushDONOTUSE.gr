@@ -1,0 +1,55 @@
+package rules.EventMessage.EventFired_dir.Destination11LDM_dir
+
+@gw.rules.RuleName("Special One Time Push (DO NOT USE)")
+internal class SpecialOneTimePushDONOTUSE {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "MatterExceptionPush" &&
+messageContext.Root typeis Matter &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.Claim.LoadCommandID)/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses templates.messaging.LDM.LawFeatureTemplate
+uses templates.messaging.LDM.LawClaimantTemplate
+uses templates.messaging.LDM.AdjusterTemplate
+uses templates.messaging.LDM.commons.TransactionBaseTemplate
+uses java.util.HashSet
+
+try{
+  var claimants = new HashSet<Contact>()
+  var adjusters = new HashSet<Contact>()
+  var messageContent : String
+  var matter = messageContext.Root as Matter
+  messageContent = ""
+  
+  for(ae in matter.MatterAssignmentsExt*.AssignmentExposuresExt){
+    messageContent += LawFeatureTemplate.renderToString(ae, "C")
+    claimants.add(ae.ClaimantExt)
+    adjusters.add(ae.Exposure.AssignedUser.Contact)
+  }
+  if (claimants.size() > 0){
+    for (cont in claimants){
+      if (cont == null) continue
+        messageContent = messageContent + LawClaimantTemplate.renderToString(cont, "C")
+    }
+  }
+  if(adjusters.size() > 0){
+    for(adj in adjusters){
+      if(adj == null) continue
+        messageContent = messageContent + AdjusterTemplate.renderToString(adj, "C")
+    }
+  }
+  if(messageContent != null && messageContent != ""){
+    //add message into base template
+    messageContent  = TransactionBaseTemplate.renderToString(messageContent)
+    util.gaic.CommonFunctions.sendTemplateMessage(messageContext, messageContent)
+  }
+  //print(messageContent)
+  
+  //util.gaic.CommonFunctions.sendTemplateMessage(messageContext, messageContent)
+    //f.sendExposureChanges(messageContext, exposure)(messageContext, contact)
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

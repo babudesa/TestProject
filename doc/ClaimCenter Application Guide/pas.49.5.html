@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Large Loss Notifications</title>
+    <link rel="StyleSheet" href="css/pas.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Application&nbsp;Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="p-key-integrations.html#4707816">Key Integrations</a> : <a class="WebWorks_Breadcrumb_Link" href="pas.49.1.html#4707816">Policy System Integration</a> : Large Loss Notifications</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="4707816">Large Loss Notifications</a></div>
+      <div class="B_-_Body"><a name="4710239">Sometimes a claim has a large loss associated with it. Carriers determine what large loss amount is based on their </a>business practices. The amount can vary depending on the line of business or policy type. In other words, a personal auto large loss notification might have a lesser amount than one for a homeowner’s policy. The large loss information is critical to an underwriter who uses that information in determining risk and ultimately granting a renewal policy. ClaimCenter can send that information to a policy administration system if the two systems are integrated. </div>
+      <div class="H2_-_Heading_2"><a name="4710106">Policy System Notification Framework</a></div>
+      <div class="B_-_Body"><a name="4712375">Guidewire created a </a><span class="e_-_emphasis">policy system notification framework</span> so that ClaimCenter can send messages to policy administration systems, including Guidewire PolicyCenter. Large loss notifications use this framework. Notifications are created as events, which generate messages in the Guidewire messaging system. A message transport then delivers the messages to the policy system through the plugin <span class="cv_-_computer_voice">IPolicySystemNotificationPlugin</span>, which you can implement to talk to a policy administration system. The plugin has the following method: </div>
+      <PRE class="CF_-_Code_First_Line"><a name="4711194">function claimExceedsLargeLossThreshold(</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4711195">          lossDate : Calendar,</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4711196">          policyNumber : String,</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4711197">          grossTotalIncurred : String,</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4711198">          transactionId : String)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="4711179">  throws PolicySystemRetryableException, PolicySystemAlreadyExecutedException</a></PRE>
+      <div class="B_-_Body"><a name="4711278">In the default configuration, this plugin is not enabled. </a></div>
+      <div class="HS_-_Head_Sub"><a name="4711346">Built-in PolicyCenter Implementation</a></div>
+      <div class="B_-_Body"><a name="4733214">ClaimCenter also contains a PolicyCenter specific implementation, </a><span class="cv_-_computer_voice">PCPolicySystemNotificationPlugin</span>, which calls a web service that PolicyCenter publishes. The PolicyCenter web service interface is called <span class="cv_-_computer_voice">ClaimToPolicySystemNotificationAPI</span>. </div>
+      <div class="HS_-_Head_Sub"><a name="4711263">Handlers</a></div>
+      <div class="B_-_Body"><a name="4710349">The notification system works by registering </a><span class="e_-_emphasis">handlers</span> for each event name associated with a policy system notification. The handler is called: </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4710428">In event fired rules to create a message </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4710429">Sending the message</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4711250">If the messaging destination is resynced </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4711251">You can modify the handler to behave differently at each of these points. In the default configuration, </a>ClaimCenter has one handler: <span class="cv_-_computer_voice">LargeLossPolicySystemNotification</span>, for delivering large loss notifications to the policy system. </div>
+      <div class="H2_-_Heading_2"><a name="4710322">ClaimCenter Sends the Notification to the Policy Administration </a>System</div>
+      <div class="B_-_Body"><a name="4712404">If a claim’s loss reaches that predefined threshold, ClaimCenter creates a message. The message transport calls a </a>web service in PolicyCenter with the claim’s policy number, loss date, and the total gross incurred. The PolicyCenter web service then creates an activity on the policy’s account and adds a referral reason to the policy where an underwriter can see this information.</div>
+      <div class="B_-_Body"><a name="4709076">In the base configuration, the PolicyCenter referral reason type is </a><span class="cv_-_computer_voice">UWReferralReason</span>. The issue description states the gross total incurred of $X reported on (date). The severity is high at 30 points, and the status is Open. PolicyCenter assigns it to the policy underwriter. PolicyCenter creates an activity to the underwriter assigned to the policy after a claim’s gross total incurred crosses the threshold in ClaimCenter. The underwriter needs this type of information in deciding whether to grant a policy renewal. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="4709020">To integrate ClaimCenter with other policy administration systems, you can write your own imple</a>mentation of the plugin. Your implementation of the <span class="cv_-_computer_voice">IPolicySystemNotificationPlugin</span> can work differently with your policy administration systems, and does not have to use web services. </div>
+      <div class="HS_-_Head_Sub"><a name="4708790">How Does it Reach That Certain Threshold?</a></div>
+      <div class="B_-_Body"><a name="4711518">Whether a loss is </a><span class="e_-_emphasis">large</span> is decided by comparing the gross total incurred amount for the claim with a threshold that has been entered into a reference table. The reference table is accessed through the <span class="ui_-_UI_element">Administration</span> tab in the user interface. (See <a href="javascript:WWHClickedPopup('app', 'pas.49.5.html#4710556', '');" title="Large Loss Notifications">“Administering Large Loss Notifications”</a>.)</div>
+      <div class="B_-_Body"><a name="4711435">You can reach a certain threshold in the user interface in either of the following ways:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4708809">Create a claim in ClaimCenter with reserves so that gross total incurred on the claim exceeds the large loss </a>gross total incurred threshold for the claim’s policy type, or</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4708846">Add a new reserve, or new eroding future scheduled payment, or new payment to an existing claim. This is so </a>that the gross total incurred for that claim exceeds the large loss gross total incurred threshold. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4708810">After that threshold has been reached, ClaimCenter stores data indicating whether a notification has been sent to </a>a policy system. The <span class="cv_-_computer_voice">Claim</span> entity has the <span class="cv_-_computer_voice">LargeLossNotificationStatus</span> property. It contains one of the following typecodes from the <span class="cv_-_computer_voice">LargeLossNotificationStatus</span> typelist:</div>
+      <div class="T_-_Table"><a name="4709201">&nbsp;</a></div>
+      <table class="withoutHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4710215">Code</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4710217">Description</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4710219">InQueue</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4710221">ClaimCenter created the notification message and it is waiting to be sent.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4710223">None</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4710225">ClaimCenter did not send the notification.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4710231">Null</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4710233">This is the same as None.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4710227">Sent</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4710229">The notification was successfully sent.</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="HS_-_Head_Sub"><a name="4712612">Rules Related to Large Loss Notifications</a></div>
+      <div class="B_-_Body"><a name="4712613">ClaimCenter uses the following rule sets in large loss notifications.</a></div>
+      <div class="B_-_Body"><a name="4775270">The following table summarizes the rules sets that ClaimCenter uses for large loss notifications.</a></div>
+      <div class="T_-_Table"><a name="4775309">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4775273">Purpose</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4775275">Rule Set</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4775277">Description</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775279">Preupdate rules </a>to detect large losses</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775281">Large Loss </a>Notification</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775289">This </a><span class="uit_-_UI_element_table">Preupdate</span> → <span class="uit_-_UI_element_table">TransactionSetPreupdate</span> → <span class="uit_-_UI_element_table">Large Loss Notification</span> rule fires whenever transaction sets are created or changed. The rule checks if the claim exceeds the large loss threshold for the claim's policy type. It also checks whether a message is in the queue or if PolicyCenter has been notified. If the condition passes, it adds a <span class="cvt_-_computer_voice_table">ClaimExceedsLargeLoss</span> event to the claim. Define the thresholds within the administration user interface of ClaimCenter.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775291">Event rules to </a>support policy system notifications in general</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775293">Policy System </a>Notification</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4775301">This</a><span style="font-family: &quot;Times New Roman&quot;; font-size: 10.0pt"> </span><span class="uit_-_UI_element_table">EventMessage</span><span style="font-family: &quot;Times New Roman&quot;; font-size: 10.0pt"> → </span><span class="uit_-_UI_element_table">EventFired</span><span style="font-family: &quot;Times New Roman&quot;; font-size: 10.0pt"> → </span><span class="uit_-_UI_element_table">Policy System Notification </span>rule is a general rule for all policy system notification events:</div>
+            <div class="LST_-_List_Start_Table_outer" style="margin-left: 0pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="LST_-_List_Start_Table_inner" style="width: 9.36pt; white-space: nowrap;">
+                      <span class="s_-_strong">1. 	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="LST_-_List_Start_Table_inner"><a name="4775302">The rules determine the event name. For a large loss, the event name is </a><span class="cvt_-_computer_voice_table">ClaimExceedsLargeLoss</span>. If you register additional notification handlers, the event name is different.</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="LIT_-_List_Item_Table_outer" style="margin-left: 0pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="LIT_-_List_Item_Table_inner" style="width: 9.36pt; white-space: nowrap;">
+                      <span class="s_-_strong">2. 	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="LIT_-_List_Item_Table_inner"><a name="4775303">The rules find the policy system notification handler that supports the current </a>event name. For large loss, the handler class is <span class="cvt_-_computer_voice_table">LargeLossPolicySystemNotification</span>.</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="LIT_-_List_Item_Table_outer" style="margin-left: 0pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="LIT_-_List_Item_Table_inner" style="width: 9.36pt; white-space: nowrap;">
+                      <span class="s_-_strong">3. 	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="LIT_-_List_Item_Table_inner"><a name="4775304">The rules call the handler’s </a><span class="cvt_-_computer_voice_table">createMessage</span> method to create an outgoing message to persist to the database in the same transaction as the change that triggers the large loss notification. This does not actually send the message yet, which happens asynchronously in another thread. </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="LPT_-_List_Para_Table_outer" style="margin-left: 0pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="LPT_-_List_Para_Table_inner" style="width: 9.36pt; white-space: nowrap;">	</div>
+                  </td>
+                  <td width="100%">
+                    <div class="LPT_-_List_Para_Table_inner"><a name="4775305">The handler’s </a><span class="cvt_-_computer_voice_table">createMessage</span> method delegates the actual sending behavior to the <span class="cvt_-_computer_voice_table">IPolicySystemNotificationPlugin</span> interface.</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="LPT_-_List_Para_Table_outer" style="margin-left: 0pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="LPT_-_List_Para_Table_inner" style="width: 9.36pt; white-space: nowrap;">	</div>
+                  </td>
+                  <td width="100%">
+                    <div class="LPT_-_List_Para_Table_inner"><a name="4775306">The </a><span class="cvt_-_computer_voice_table">message.EventName</span> property encodes which notification occurred. The body of the message contains information that the notification handler might need. For large loss, for example, it would contain the size of the loss.</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="TT_-_Table_Text"><a name="4775307">At message send time, the messaging transport calls the notification handler’s </a><span class="cvt_-_computer_voice_table">send</span> method and does not use this rule set. </div>
+            <div class="TT_-_Table_Text"><a name="4775308">If a claim resync happens (a </a><span class="cvt_-_computer_voice_table">ClaimResync</span> event), then ClaimCenter drops all queued (pending/errant) messages for the destination. However, first ClaimCenter calls the <span class="uit_-_UI_element_table">EventFired</span> rule set to preserve and queue messages. These event rules trigger code that checks the notification handler’s <span class="cvt_-_computer_voice_table">MessageResyncBehavior</span> property for how to handle it. If the value is <span class="cvt_-_computer_voice_table">COPY_LAST</span>, then only one pending message corresponding to that notification will be copied (the last one, by send order).</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="4712641">These rule sets are not enabled in the default configuration.</a></div>
+      <div class="H2_-_Heading_2"><a name="4710556">Administering Large Loss Notifications</a></div>
+      <div class="B_-_Body"><a name="4708335">You can define and map threshold amounts by using a reference table that you access from the user interface. </a>Navigate to the <span class="ui_-_UI_element">Administration</span> tab → <span class="ui_-_UI_element">Metrics &amp; Thresholds</span> → <span class="ui_-_UI_element">Large Loss Thresholds</span> as seen in the following example. </div>
+      <div class="F_-_Figure"><a name="4708383"><img class="Default" src="images/largelosss1.png" style="display: inline; float: none; left: 0.0; top: 0.0" alt="" /></a></div>
+      <div class="HS_-_Head_Sub"><a name="4712722">To edit the threshold levels for large losses</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="4712723">Log in to ClaimCenter with an administrator user name.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712724">Click the </a><span class="ui_-_UI_element">Administration</span> tab</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712725">In the navigation bar, click </a><span class="ui_-_UI_element">Metrics &amp; Thresholds</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712726">Click the </a><span class="ui_-_UI_element">Large Loss Threshold</span> tab.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712727">From the </a><span class="ui_-_UI_element">Policy Type</span> picker, select a policy type to set its threshold amount.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712728">Click the </a><span class="ui_-_UI_element">Edit</span> button.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712729">Edit the value in the </a><span class="ui_-_UI_element">Large Loss Indicator</span> text field.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712730">Click the </a><span class="ui_-_UI_element">Update</span> button.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	9.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712731">If you want to change additional thresholds, select another policy type and repeat these steps.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4708465">You must configure a threshold per line of business (policy type). The following table lists the ClaimCenter </a>policy type defaults that correspond to PolicyCenter.</div>
+      <div class="T_-_Table"><a name="4709410">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4709339">ClaimCenter Policy Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4709341">PolicyCenter Line of Business</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4709343">Default Large Loss Total Reserve </a>Threshold in US Dollars</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709345">BOP</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709347">BOP</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709349">25,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709351">Commercial auto </a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709353">BA</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709355">50,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709357">Commercial property</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709359">CP</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709361">100,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709363">Farmowner’s</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709365">not applicable</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709367">10,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709369">General liability</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709371">GL</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709373">50,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709375">Homeowner’s</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709377">not applicable</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709379">10,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709381">Inland marine</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709383">IM</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709385">25,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709387">Personal auto</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709389">PA</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709391">20,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709393">Personal travel</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709395">not applicable</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709397">no default</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709399">Professional liability</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709401">not applicable</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709403">100,000</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709405">Workers’ compensation</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709407">WC</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="4709409">25,000</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="4709421">In the default configuration, the workers’ compensation and personal auto lines of business are mapped to their </a>equivalent PolicyCenter lines of business for policy search and large losses.</div>
+      <div class="HS_-_Head_Sub"><a name="4712555">See Also</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a href="javascript:WWHClickedPopup('integration', 'cc-pc-integration.28.2.html#2101356', '');" title="Policy System Notifications" name="4712559">“Policy System Notifications” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'cc-pc-integration.28.2.html#2101356', '');" title="Policy System Notifications">Integration Guide</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="4712811">Enabling Large Loss Notification</a></div>
+      <div class="B_-_Body"><a name="4712812">By default, ClaimCenter does not enable any policy system notification integrations. Performing the following </a>steps in Studio enables this behavior. PolicyCenter must be running. However, ClaimCenter does <span class="e_-_emphasis">not</span> need to be running because you must restart it for the changes to take effect after performing this procedure.</div>
+      <div class="HS_-_Head_Sub"><a name="4712896">To enable the built-in integrations</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="4712819">Navigate to </a><span class="ui_-_UI_element">Rule Sets</span> → <span class="ui_-_UI_element">Preupdate</span> → <span class="ui_-_UI_element">TransactionSetPreupdate </span>and select the box next to the <span class="ui_-_UI_element">Large Loss Notification </span>to enable it.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4749998">Navigate to </a><span class="ui_-_UI_element">Rule Sets</span> → <span class="ui_-_UI_element">EventMessage</span> → <span class="ui_-_UI_element">EventFired</span> and select the box next to the <span class="ui_-_UI_element">Policy System Notification </span>rule to enable it.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712824">Navigate to </a><span class="ui_-_UI_element">Messaging</span> and in the row for <span class="ui_-_UI_element">Policy System Notification</span> messaging destination, select the <span class="ui_-_UI_element">Enabled</span> checkbox.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4750071">Navigate to </a><span class="ui_-_UI_element">Plugins</span> → <span class="ui_-_UI_element">gw</span> → <span class="ui_-_UI_element">plugin</span> → <span class="ui_-_UI_element">messaging</span> → <span class="ui_-_UI_element">MessageTransport</span> → <span class="ui_-_UI_element">policySystemNotificationTransport</span> and select the <span class="ui_-_UI_element">Enabled</span> checkbox.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4750084">Find the demo plugin and change the Gosu class. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="4750089">Navigate to </a><span class="ui_-_UI_element">Plugins</span> → <span class="ui_-_UI_element">gw</span> → <span class="ui_-_UI_element">plugin</span> → <span class="ui_-_UI_element">policy</span> → <span class="ui_-_UI_element">IPolicySystemNotitificationPlugin</span>. In the base implementation, ClaimCenter uses a standalone (demo) implementation of the plugin, <span class="cv_-_computer_voice">StandAlonePolicySystemNotificationPlugin</span>, that does not connect to an actual policy system. To use the built-in PolicyCenter integration plugin implementation, change the class to <span class="cv_-_computer_voice">gw.plugin.policy.impl.PCPolicySystemNotificationPlugin</span> and select the box to enable it.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4712869">For the built-in PolicyCenter integration, verify the web service setup. Navigate to </a><span class="ui_-_UI_element">Web Services</span> → <span class="ui_-_UI_element">pcnotification</span>. The web service configuration looks for PolicyCenter on the local machine on port 8180. Set the URL field to the actual server URL for PolicyCenter.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4770391">Set the authentication in the </a><span class="ui_-_UI_element">Default</span> tab to <span class="ui_-_UI_element">HTTP</span>. Choosing <span class="ui_-_UI_element">HTTP </span>expands the tab, so that you can enter a user name and password. The default user name is <span class="it_-_input_text">su</span> and the password is <span class="it_-_input_text">gw</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="4770423">Alternatively, you can choose to set the authentication setting to </a><span class="ui_-_UI_element">None</span> and modify the code to add authentication credentials programmatically. To do this, first edit the class <span class="cv_-_computer_voice">PCPolicySystemNotificationPlugin</span>. Next, find the line:</div>
+      <div class="CS_-_Code_Single_Line"><a name="4770424">_policySystemAPI = new ClaimToPolicySystemNotificationAPI()</a></div>
+      <div class="LP_-_List_Para"><a name="4770425">Immediately afterward, add a line similar to the following and then pass your user name and password:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="4770392">_policySystemAPI.addHandler(new GWAuthenticationHandler( "su", "gw" )) </a></div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	8.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4770393">Refresh the WSDL by clicking the </a><span class="ui_-_UI_element">Refresh</span> button located to the right of the <span class="ui_-_UI_element">URL</span> field. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	9.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4749903">If Studio has not already saved your work, then save it.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	10.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="4750149">Restart ClaimCenter for the changes to take effect. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="4712870">Test your integration</a></div>
+      <div class="B_-_Body"><a name="4750156">In a development system, test PolicyCenter by adding a claim with a loss that exceeds the threshold for that type </a>of claim. If it works correctly, PolicyCenter adds a referral reason and an activity for that policy.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11H0 - Prevent Policy Refresh if Claim is Suspended")
+internal class PVXX11H0PreventPolicyRefreshifClaimisSuspended {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*Prevents the policy from being refreshed when there are features with 
+  Author: Zach Thomas
+  Date: 09/02/11
+*/
+policy.Changed and
+policy.Claim.checkDisconnectedFeatures() and
+(policy.Claim.OriginalVersion as Claim).checkDisconnectedFeatures() and
+policy.isPolicyInRefresh( 1 ) and 
+(policy.Claim.OriginalVersion as Claim).Policy.PolicyNumber == policy.PolicyNumber and 
+(policy.Claim.OriginalVersion as Claim).Policy.PolicySuffix == policy.PolicySuffix and 
+(policy.Claim.OriginalVersion as Claim).Policy.ex_PolicyVersion == policy.ex_PolicyVersion and
+(policy.Claim.OriginalVersion as Claim).Policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in policy.Claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      policy.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+      //gw.api.util.Logger.logInfo( actions.getRule().DisplayName + " - " + displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName) )
+    }// end if
+  }// end for
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null );
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,29 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPU10000PrimaryDiagnosisCodeChanged_dir
+
+@gw.rules.RuleName("CPU10200 - Default")
+internal class CPU10200Default {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for (anInjuryIncident in Claim.InjuryIncidentsOnly)
+{
+  var newCode = anInjuryIncident.InjuryDiagnoses.firstWhere( \ i -> i.IsPrimary == true )
+  var oldCode  = anInjuryIncident.InjuryDiagnoses.firstWhere( \ i -> i.getOriginalValue( "IsPrimary" ) == true )
+  //(anInjuryIncident.getOriginalValue( "PrimaryInjuryDiagnosis") as Primaryinjdiag).ForeignEntity.ICDCode.Code
+
+  // Add this history event if setting a diagnosis to primary for the first time on a claim
+  if(oldCode == null and newCode!=null)
+  {
+    Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.PreUpdate.Claim.SetPrimaryDiagnosis(newCode.ICDCode.Code))
+  }
+
+  // Add this history event if the primary diagnosis code is changed
+  if( oldCode != newCode and oldCode !=null) 
+  {
+    Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.PreUpdate.Claim.ChangedPrimaryDiagnosis(oldCode.ICDCode.Code, newCode.ICDCode.Code))
+  }
+}/*end00rule*/
+  }
+}

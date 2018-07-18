@@ -1,0 +1,15 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir
+
+@gw.rules.RuleName("ARB01000 - Western Regional Auto Supervisors")
+internal class ARB01000WesternRegionalAutoSupervisors {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/BulkInvoice.getLastApprovingUser()==util.RuleGroups.instance.getAuto1TeamASupervisor()
+    or BulkInvoice.getLastApprovingUser()==util.RuleGroups.instance.getAuto1TeamBSupervisor()
+    or BulkInvoice.getLastApprovingUser()==util.RuleGroups.instance.getAuto1TeamCSupervisor()/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/BulkInvoice.setApprovingUser(util.RuleGroups.instance.getWesternAutoGroupSupervisor(), util.RuleGroups.instance.getWesternAutoGroup())
+actions.exit()/*end00rule*/
+  }
+}

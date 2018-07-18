@@ -1,0 +1,20 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUSP1000SpecialtyESClaimPreUpdateRules_dir.CPUSP1100RULESTHATCREATEACTIVTIES_dir
+
+@gw.rules.RuleName("CPUSP1110 - 30 Day Reserve Recommendation Entry Due")
+internal class CPUSP111030DayReserveRecommendationEntryDue {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "30day_reserve_recommendation_spec"))   /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+     
+    var ap = util.custom_Ext.finders.findActivityPattern("30day_reserve_recommendation_spec")
+    claim.createActivityFromPattern(null, ap)
+ 
+ 
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

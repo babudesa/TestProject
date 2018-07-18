@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    beforeCommit="Exposure.totalLossCalculatorPreUpdate();Exposure.isdateofdeathreqd(); Exposure.setFrmrDriver(); Exposure.setFrmrSalvBuyer(); Exposure.setFrmrOwnerOpen(); Exposure.setFrmrOwnerClose() //Exposure.convertVINtoUpperCase(); "
+    beforeValidate="isClaimantTPOCError();"
+    canEdit="perm.Exposure.edit(Exposure)"
+    canVisit="Exposure.Claim.ExposureListChangeable and perm.Exposure.view(Exposure)"
+    id="ExposureDetail"
+    parent="ClaimExposures(Exposure.Claim)"
+    showUpLink="true"
+    startEditing="Exposure.ensureIncidentCreated()"
+    title="displaykey.JSP.NewExposure.ClaimMenu.Exposure(Exposure.CoverageSubType)"
+    validationParameter="Exposure">
+    <LocationEntryPoint
+      signature="ExposureDetail(exposure : Exposure)"/>
+    <Variable
+      name="Exposure"
+      type="Exposure"/>
+    <ScreenRef
+      def="ExposureDetailScreen(Exposure, User.util.CurrentUser)"/>
+    <Code><![CDATA[var oldContact : Contact
+
+// 3/5/14 - kniese - defect 6558 - Medicare - Claimant Party changes where a TPOC row exists
+// This function checks to see if a claimant has tpoc information for a feature they are no longer the claimant on.
+// If the user clears the warning and updates again the fwill delete the TPOC information and save the new
+// claimant.
+function isClaimantTPOCError() {
+  //if(claimant == null)
+    //claimant = Exposure.Claimant
+  
+  for(cont in Exposure.Claim.Contacts){      // search all the contacts on the claim
+    if(cont.Contact.ContactISOMedicareExt != null and cont.Contact.ContactISOMedicareExt.TPOCExt.Count != 0){ // if the contact has tpoc data
+     if(cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt ==Exposure ).Count != 0){ // if the feature on the tpoc data matches this feature
+       if(cont.Contact != Exposure.Claimant){ // if the contact with the tpoc data does not match the exposures claimant
+         if(oldContact != cont.Contact ){ // if the warning has not already been thrown for this contact
+           oldContact = cont.Contact // set the oldContact to this contact so we know the warning has been thrown
+           ClaimantTPOCErrorWorksheet.goInWorkspace(Exposure, cont.Contact) // Go into the error worksheet with the warning link
+         }
+         else{
+           createTPOCDeletedNote()    // create a note for the deleted tpoc
+           deleteFormerClaimantTPOC() // remove the contacts tpoc row
+         }
+       }
+     }
+    }
+  }
+}
+
+// 3/5/14 - kniese - defect 6558 - Medicare - Claimant Party changes where a TPOC row exists
+// This function is used in isClaimantTPOCError(). This deletes the TPOC row on the claimant
+// if they are no longer the claimant on a feature.
+function deleteFormerClaimantTPOC(){
+  for(cont in Exposure.Claim.Contacts){ // search all the contacts on a claim
+      if(cont.Contact.ContactISOMedicareExt != null and cont.Contact.ContactISOMedicareExt.TPOCExt.Count != 0){ // if the contact has tpoc data
+       if(cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt == Exposure ).Count != null){ // if the feature on the tpoc matches this feature
+         if(cont.Contact != Exposure.Claimant){ // if the contact is not the claimant on the feature
+          for(tpoc in cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt == Exposure )){ // for all tpocs on this contact that match this feature
+            cont.Contact.ContactISOMedicareExt.removeFromTPOCExt(tpoc) // remove tpoc
+            oldContact = null // set oldContact back to null
+          }
+         }
+       }
+      }
+    }
+  
+}
+
+// 3/12/14 - kniese - this function creates a note for the claimant tpoc data that is being deleted in the function above
+function createTPOCDeletedNote() {
+  for(cont in Exposure.Claim.Contacts){ // search all contacts on the claim
+    if(cont.Contact.ContactISOMedicareExt != null and cont.Contact.ContactISOMedicareExt.TPOCExt.Count != 0){ // make sure the contact has tpoc data
+       if(cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt == Exposure).Count != 0){ // if the tpoc data is on this exposure
+         if(cont.Contact != Exposure.Claimant){ // if the contact is not the claimant on the exposure
+          for(tpoc in cont.Contact.ContactISOMedicareExt.TPOCExt.where(\ t -> t.ExposureExt == Exposure )){ // for all tpoc's that match this exposure
+           
+           var note:String = "The claimant " + cont.Contact + " on Feature " + Exposure.ExposureType.DisplayName + " was changed to " + Exposure.Claimant + ". TPOC dated " + tpoc.CMSTPOCDate.MonthOfYear + "/" +
+                             tpoc.CMSTPOCDate.DayOfMonth + "/" + tpoc.CMSTPOCDate.YearOfDate + " for " + util.StringUtils.removeDecimal(false, tpoc.CMSTPOCAmount.Amount as java.lang.Double) + " has been removed.";
+           var noteSubject:Note;
+           noteSubject = Exposure.Claim.addNote("medicare", note);
+           noteSubject.Subject = "TPOC removed for Feature " + Exposure.ExposureType.DisplayName + ", Claimant " + cont.Contact;
+          }  
+          
+         }
+       }
+    }
+  }
+  
+}]]></Code>
+  </Page>
+</PCF>

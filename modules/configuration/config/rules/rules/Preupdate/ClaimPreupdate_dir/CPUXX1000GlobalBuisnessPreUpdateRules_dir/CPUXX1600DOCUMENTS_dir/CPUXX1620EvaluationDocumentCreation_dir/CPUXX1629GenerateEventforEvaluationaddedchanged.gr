@@ -1,0 +1,19 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1629 - Generate Event for Evaluation added/changed")
+internal class CPUXX1629GenerateEventforEvaluationaddedchanged {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in claim.Evaluations where evaluation.Changed == true or evaluation.New== true)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(evaluation in claim.Evaluations){
+  if(evaluation.Changed and !evaluation.New){
+    claim.addEvent( "EvaluationChanged" ) 
+  }
+  else if(evaluation.New){
+    claim.addEvent( "EvaluationAdded" )   
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir.CPUWC2100AddFormerRole_dir
+
+@gw.rules.RuleName("CPUWC2120 - Add Former Hospital")
+internal class CPUWC2120AddFormerHospital {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{  
+  for(exposure in claim.Exposures){
+    if(!exposure.New && !exposure.Closed &&
+      (exposure.OriginalVersion as Exposure).Claim.firstintakehospital  != null &&
+       (exposure.OriginalVersion as Exposure).Claim.firstintakehospital != exposure.Claim.firstintakehospital){
+            claim.removeRole(ContactRole.TC_FRMRFIRSTINTAKEHOSP, (Claim.OriginalVersion as Claim).firstintakehospital)
+            claim.addRole(ContactRole.TC_FRMRFIRSTINTAKEHOSP, (Claim.OriginalVersion as Claim).firstintakehospital)  
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

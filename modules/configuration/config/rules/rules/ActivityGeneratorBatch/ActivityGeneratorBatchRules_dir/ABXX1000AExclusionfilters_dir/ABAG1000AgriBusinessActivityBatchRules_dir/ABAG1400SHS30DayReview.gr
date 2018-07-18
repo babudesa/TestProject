@@ -1,0 +1,21 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG1400 - SHS 30 Day Review")
+internal class ABAG1400SHS30DayReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType==LossType.TC_SHSAUTO AND !claim.Closed AND
+exists(exp in claim.Exposures where exp.ExposureType==ExposureType.TC_AB_AUTOPROPDAM OR 
+exp.ExposureType==ExposureType.TC_AB_PROPERTYDAMAGE OR exp.ExposureType==ExposureType.TC_AB_PHYSICALDAMAGE)
+AND (!exists(act in claim.Activities where act.ActivityPattern.Code=="shs_adj_30dayreview"))
+AND gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.ReportedDate,ScriptParameters.Activity_SHSAdjusterReview)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.createActivityFromPattern(null, util.custom_Ext.finders.findActivityPattern("shs_adj_30dayreview"))
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,278 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewCheckAdditionalPayeeDV">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.AdditionalPayee"
+        visible="Check.Payees.length &lt;= 1 and Check.PaymentMethod != PaymentMethod.TC_EFT"/>
+      <ClaimContactInput
+        claim="Check.Claim"
+        editable="true"
+        id="PrimaryPayee_Name"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+        onPick="Check.handleOnPickForPayee(Check.FirstPayee)"
+        required="true"
+        searchLocation="NewCheckWizardAddressBookPickerPopup.push(statictypeof(Check.FirstPayee.Payee), Check.Claim)"
+        value="Check.FirstPayee.Payee"
+        valueRange="Check.Claim.PayeeCandidates"
+        visible="Check.Payees.length &lt;= 1"/>
+      <Input
+        editable="true"
+        id="PrimaryPayee_Type"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+        required="true"
+        value="Check.FirstPayee.PayeeType"
+        visible="Check.Payees.Length &lt;= 1">
+        <Reflect
+          triggerIds="PrimaryPayee_Name"
+          value="Check.getSuggestedPayeeType(VALUE)"
+          valueRange="Check.getAllowedPayeeTypes(VALUE)"/>
+      </Input>
+      <ButtonInput
+        action="Check.addNewPayee()"
+        id="AddJointPayees"
+        value="displaykey.NVV.Financials.Check.AddJointPayees"
+        visible="Check.Payees.Length &lt;= 1"/>
+      <ListViewInput
+        boldLabel="true"
+        editable="true"
+        label="displaykey.NVV.Financials.Check.Payees"
+        labelAbove="true"
+        visible="Check.Payees.Length &gt; 1">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          id="NewCheckPayeeDVPayeesLV"
+          validationExpression="Wizard.validateCheckPayees(Check); return null">
+          <RowIterator
+            editable="true"
+            elementName="CheckPayee"
+            toCreateAndAdd="Check.addNewPayee()"
+            toRemove="Check.removeFromPayees(CheckPayee); Check.handleOnPickForPayee(null);"
+            value="Check.Payees">
+            <Row>
+              <ClaimContactCell
+                claim="Check.Claim"
+                editable="true"
+                id="PayeeName"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+                onChange="Check.handleOnPickForPayee(CheckPayee)"
+                onPick="Check.handleOnPickForPayee(CheckPayee)"
+                postOnChange="true"
+                required="true"
+                value="CheckPayee.Payee"
+                valueRange="Check.Claim.PayeeCandidates"/>
+              <Cell
+                editable="true"
+                id="PayeeType"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+                required="true"
+                validationExpression="CheckPayee.PayeeType == &quot;claimant&quot; &amp;&amp; !CheckPayee.ClaimContact.isClaimant() ? displaykey.Java.NewPayment.Error.PayeeIsNotClaimant : null"
+                value="CheckPayee.PayeeType"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <RangeRadioInput
+        boldLabel="true"
+        editable="true"
+        filter="VALUE !=  PaymentMethod.TC_MANUAL"
+        id="PaymentMethod"
+        label="displaykey.NVV.Financials.NewPaymentInstructions.Check.PaymentMethod"
+        onChange="Check.handleOnPickForPayee(null)"
+        postOnChange="true"
+        value="Check.PaymentMethod"
+        valueRange="PaymentMethod.getTypeKeys( false )"/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="PayTo"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PayTo"
+        numCols="60"
+        numRows="1"
+        value="Check.PayTo"
+        visible="Check.PaymentMethod == PaymentMethod.TC_CHECK">
+        <Reflect
+          triggerIds="PrimaryPayee_Name"
+          value="VALUE.DisplayName"/>
+      </TextAreaInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailTo"
+        visible="Check.PaymentMethod == PaymentMethod.TC_CHECK"/>
+      <Input
+        editable="true"
+        id="DeliveryMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.DeliveryMethod"
+        value="Check.DeliveryMethod"
+        visible="Check.PaymentMethod == PaymentMethod.TC_CHECK"/>
+      <Input
+        editable="true"
+        id="MailToContact"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact"
+        required="true"
+        value="Check.MailTo"
+        visible="Check.PaymentMethod == PaymentMethod.TC_CHECK">
+        <Reflect
+          triggerIds="PrimaryPayee_Name">
+          <ReflectCondition
+            condition="VALUE != null"
+            value="VALUE.DisplayName"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </Input>
+      <Input
+        editable="true"
+        id="MailingAddress"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailingAddress"
+        outputConversion="String.makeSafe(VALUE).combineLines()"
+        value="Check.MailToAddress"
+        visible="Check.PaymentMethod == PaymentMethod.TC_CHECK">
+        <Reflect
+          triggerIds="PrimaryPayee_Name">
+          <ReflectCondition
+            condition="VALUE != null"
+            value="VALUE.PrimaryAddress.DisplayName"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </Input>
+      <InputSet
+        id="EFTDataInputSet"
+        visible="Check.PaymentMethod == PaymentMethod.TC_EFT">
+        <RangeInput
+          editable="true"
+          id="EFTRecords"
+          label="displaykey.Web.Financials.Check.BankData.SelectEFT"
+          value="Check.EFTData"
+          valueRange="Check.FirstPayee.Payee.EFTRecords">
+          <Reflect
+            triggerIds="PrimaryPayee_Name"
+            valueRange="VALUE.EFTRecords"/>
+        </RangeInput>
+        <TextAreaInput
+          editable="true"
+          id="PayTo"
+          label="displaykey.Web.Financials.Check.BankData.BankAcctHolderName"
+          numRows="1"
+          value="Check.PayTo">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.AccountName"/>
+        </TextAreaInput>
+        <Input
+          editable="true"
+          id="BankName"
+          label="displaykey.Web.Financials.Check.BankData.BankName"
+          value="Check.BankName">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankName"/>
+        </Input>
+        <RangeRadioInput
+          editable="true"
+          id="BankAccountType"
+          label="displaykey.Web.Financials.Check.BankData.BankAccountType"
+          required="true"
+          value="Check.BankAccountType"
+          valueRange="BankAccountType.getTypeKeys( false )">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankAccountType"/>
+        </RangeRadioInput>
+        <PrivacyInput
+          editable="true"
+          encryptionExpression="Check.maskBankAccountNumber(VALUE)"
+          id="BankAccountNumber"
+          label="displaykey.Web.Financials.Check.BankData.BankAccountNumber"
+          required="true"
+          value="Check.BankAccountNumber">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankAccountNumber"/>
+        </PrivacyInput>
+        <Input
+          editable="true"
+          id="BankRoutingNumber"
+          label="displaykey.Web.Financials.Check.BankData.BankRoutingNumber"
+          required="true"
+          value="Check.BankRoutingNumber">
+          <Reflect
+            triggerIds="EFTRecords"
+            value="VALUE.BankRoutingNumber"/>
+        </Input>
+      </InputSet>
+      <InputDivider/>
+      <Input
+        boldLabel="true"
+        editable="true"
+        id="DeductionType"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.DeductionType"
+        required="true"
+        value="Check.DeductionType"/>
+      <InputDivider/>
+      <InputSet
+        editable="true"
+        id="CheckPortion">
+        <Label
+          label="displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion"
+          visible="Check.PaymentMethod == PaymentMethod.TC_CHECK"/>
+        <Label
+          id="TransactionPortion"
+          label="displaykey.NVV.Financials.NewCheckPayee.Check.TransactionPortion"
+          visible="Check.PaymentMethod == PaymentMethod.TC_EFT"/>
+        <Choice
+          id="PortionPercentageChoice"
+          option="true"
+          value="checkPortionType">
+          <Input
+            editable="true"
+            formatType="percentagePoints"
+            id="PortionPercentage"
+            label="displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.Percentage"
+            numCols="10"
+            required="checkPortionType"
+            validationExpression="((Check.Portion.FixedTransactionAmount == null and Check.Portion.Percentage == null) ? displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.NoValueError : null)"
+            value="Check.Portion.Percentage"/>
+        </Choice>
+        <Choice
+          id="PortionFixedAmountChoice"
+          option="false"
+          value="checkPortionType">
+          <Input
+            editable="true"
+            formatType="general"
+            helpText="displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.FixedAmount.Tip"
+            id="PortionFixedAmount"
+            label="displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.FixedAmount"
+            numCols="10"
+            required="!checkPortionType"
+            validationExpression="((Check.Portion.FixedTransactionAmount == null and Check.Portion.Percentage == null) ? displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.NoValueError : (Check.Portion.FixedTransactionAmount != null and Check.Portion.FixedTransactionAmount &lt; 0 ) ? displaykey.NVV.Financials.NewCheckPayee.Check.CheckPortion.FixedAmtNegValueError : null)"
+            value="Check.Portion.FixedTransactionAmount"/>
+        </Choice>
+      </InputSet>
+    </InputColumn>
+    <Code><![CDATA[property get checkPortionType() : boolean {
+  return wizard.isCheckPortionPercentage( check );
+}
+
+property set checkPortionType(isPercentage : boolean) {
+  wizard.setCheckPortionPercentage( check, isPercentage );
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

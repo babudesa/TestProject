@@ -1,0 +1,40 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX1180 - Prop Risk Date Validation")
+internal class PVXX1180PropRiskDateValidation {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*  This function validates that property level eff/exp dates are within the policy effective/ 
+  expiration dates 
+  AgriBusiness Sprint 12 by ER, 3/18/08
+  Adjusted this rule to encompass more than just properties on a policy also removed the Coverage
+  checks that this function was doing, since Coverage Date Validation was already in place - kmboyd - 7/22/08
+  
+  Removed Property Effective and Expiration date checks, the business said it doesn't matter if they fall within the policy effective/expiration dates or not. - kmboyd - 10/23/08
+  
+  Added Property Effective and Expiration date checks.  Defect 1733. - blawless - 6/9/09
+  
+*/
+!policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try {
+  //properties
+  for(risk in policy.Properties){
+    if((risk.Property.PhyPropExpDateExt<risk.Property.PhyPropEffDateExt)){
+      policy.rejectSubField( risk, "Property.PhyPropExpDateExt", "newloss", "Property: " + risk.DisplayName + " expiration date is before the properties effective date.", null, null )  
+    }
+    if(risk.Property.PhyPropEffDateExt!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.EffectiveDate,risk.Property.PhyPropEffDateExt)>0 ){
+      policy.rejectSubField( risk, "Property.PhyPropEffDateExt", "newloss", "Property: " + risk.DisplayName + " effective date is before the policy effective date.", null, null )
+    }
+    if(risk.Property.PhyPropExpDateExt!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.ExpirationDate,risk.Property.PhyPropExpDateExt)<0){
+      policy.rejectSubField( risk, "Property.PhyPropExpDateExt", "newloss", "Property: " + risk.DisplayName + " expiration date is after the policy expiration date.", null, null )
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

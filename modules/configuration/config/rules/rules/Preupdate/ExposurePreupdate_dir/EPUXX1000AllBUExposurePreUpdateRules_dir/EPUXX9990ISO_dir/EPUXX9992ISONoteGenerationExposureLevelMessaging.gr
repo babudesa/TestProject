@@ -1,0 +1,35 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX9990ISO_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUXX9992 - ISO Note Generation (Exposure-Level Messaging)")
+internal class EPUXX9992ISONoteGenerationExposureLevelMessaging {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///1/22/10 erawe - turned off rule altogether per Santosh until solution
+//  can be found to suit business needs.
+//2/22/10 - Moving to ISO.xml, checkForChanges()
+//Update: 9/14/09 - erawe - to get a note everytime I commented out the original version line.
+//Update: sprzygocki - 8/17/11 - updated rule to use new functions that are provided.
+//  Needs to be fully tested still
+exposure.isValid( "iso" )
+and exposure.Claim.isValid( "iso", false )
+and !exposure.Claim.ISOClaimLevelMessaging
+and !exposure.Closed
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if (libraries.ISO.anyFieldChanged(exposure, false) || 
+    libraries.ISO.contactFieldChanged(exposure.Claimant) ||
+    ((exposure.OriginalVersion as Exposure).Claimant!=exposure.Claimant)|| 
+    exposure.ISOStatus == "ResendPending") {
+  var sendNote = libraries.ISO.getISONoteBody(exposure)
+    if(!exists(note in exposure.Claim.Notes where note.New and note.Body==sendNote)
+       and exposure.Coverage!=null){
+    var note = exposure.Claim.addNote( exposure, NoteTopicType.TC_INVESTIGATION, sendNote )
+    note.Subject = "Sent to ISO for Claim Search"
+  }
+}
+//print("ISO Claim Level Messaging? " + exposure.Claim.ISOClaimLevelMessaging)
+/*end00rule*/
+  }
+}

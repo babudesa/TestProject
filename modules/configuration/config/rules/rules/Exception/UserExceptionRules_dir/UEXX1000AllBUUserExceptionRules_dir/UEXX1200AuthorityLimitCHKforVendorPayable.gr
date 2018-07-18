@@ -1,0 +1,22 @@
+package rules.Exception.UserExceptionRules_dir.UEXX1000AllBUUserExceptionRules_dir
+
+@gw.rules.RuleName("UEXX1200 - Authority Limit CHK for Vendor Payable")
+internal class UEXX1200AuthorityLimitCHKforVendorPayable {
+  static function doCondition(user : entity.User) : boolean {
+    return /*start00rule*//* added for defect 424 by zthomas on 9/6/07.  Reset Authority Limits to .01 for all users
+with permission of vendorpayable and authority limits greater than .01  */
+exists(role in user.Roles where 
+  exists(perm in role.Role.Privileges where perm.Permission=="vendorpayable")) and
+!exists (usr in user.Roles where usr.Role.Name == "Superuser") and 
+exists (authLimit in user.AuthorityLimits where authLimit.LimitAmount > 0.01)/*end00rule*/
+  }
+
+  static function doAction(user : entity.User, actions : gw.rules.Action) {
+/*start00rule*/for (usr in user.AuthorityLimits)
+  if (usr.LimitAmount > 0.01) {
+  {
+     usr.LimitAmount = 0.01;
+  }
+}/*end00rule*/
+  }
+}

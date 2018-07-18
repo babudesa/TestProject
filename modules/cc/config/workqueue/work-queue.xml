@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+
+<work-queues xmlns="http://guidewire.com/work-queue">
+
+  <!--
+  ==============================================================================
+    Distributed Work Queue Parameters
+
+    NOTES:
+     Work queues provide a way to distribute load for processing-intensive
+     tasks across multiple servers or instances within a server.
+
+     For each workqueue, you may declare as many worker instances as you
+     wish, specifying for each one what server and environment (e.g. dev, test, prod)
+     it should run on.  If no worker is specified for a queue, or the
+     env and server are not specified, a single instance will be started on
+     the batch server.
+
+     Worker definitions include a number of parameters designed to tune
+     latency and load characteristics.  When a new workitem is added to the
+     queue, a notification is broadcast to all servers in the cluster, and
+     workers wake up to compete for the workitem.
+
+     By setting minpollinterval, you can control how long a worker must
+     sleep (in milliseconds) after exhausting all workitems, ignoring notifications,
+     before waking up and polling the database again for more
+     workitems.  For a system generating a large number of workitems (and
+     hence a large number of notifications) and configured with a large
+     number of workers, this attribute should be increased from its
+     default value of 0 to reduce unnecessary load on the database.  The expected
+     latency to process a workitem is minpollinterval / total workers.
+
+     By setting maxpollinterval (default 60,000 milliseconds) you can define
+     how often workers wake up automatically, even if no notification is
+     received.  This default may not be appropriate for large numbers of
+     workers and may need to be increased to prevent excessive numbers of
+     queries for workitems.
+
+     The batchsize attribute to a worker controls how many workitems it will
+     attempt to check out when searching for more workitems.  Larger batchsizes
+     are more efficient, but may not result in good load distribution.
+     Default is 10.
+
+     The workqueue defines a progressinterval attribute, which is used
+     to recover from error situations.  Any workitems checked out
+     longer than this interval will be assumed to have been failed or
+     dropped by a crashing server, and will be reassigned to a new
+     worker instance.  It is important that this interval be much
+     larger than the normal time required to process a workitem.
+
+  ==============================================================================
+  -->
+
+  <work-queue workQueueClass="com.guidewire.pl.domain.escalation.ActivityEscalationWorkQueue" progressinterval="600000">
+    <worker/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.system.workflow.engine.monitor.WorkflowDistributedWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.domain.geodata.geocode.GeocodeWorkQueue" progressinterval="600000">
+    <worker instances="1" batchsize="100"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.claim.impl.ClaimValidationWorkQueue" progressinterval="600000">
+    <!--
+    Configure with 0 instances - this is typically configured dynamically from the command line using
+    IMaintenanceToolsAPI.setWorkQueueConfig() when loaded claims are to be validated.
+    -->
+    <worker instances="0"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.domain.archiving.ArchiveWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.system.contactautosync.ContactAutoSyncWorkQueue" progressinterval="600000">
+    <worker instances="1" maxpollinterval="0"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.contact.ReviewSyncWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.claim.metric.impl.RecalculateClaimMetricsWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.escalation.ClaimExceptionMonitorWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.escalation.IdleClaimExceptionMonitorWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.domain.escalation.GroupExceptionWorkQueue" progressinterval="600000">
+    <worker/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.pl.domain.escalation.UserExceptionWorkQueue" progressinterval="600000">
+    <worker/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.domain.financials.bulkpay.impl.BulkInvoiceWorkQueue" progressinterval="600000">
+    <worker instances="1"/>
+  </work-queue>
+
+  <work-queue workQueueClass="com.guidewire.cc.system.crypt.SnapshotUpgradeWorkQueue" progressinterval="600000">
+      <worker instances="1"/>
+  </work-queue>
+
+</work-queues>

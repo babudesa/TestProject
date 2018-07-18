@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- WARNING: Internal Guidewire file. DO NOT EDIT. -->
+  <ListViewPanel
+    id="PickProfilerSourceLV"
+    mode="WorkQueue">
+    <RowIterator
+      editable="false"
+      elementName="instrumentedWorker"
+      toRemove="deleteProfilerData(instrumentedWorker)"
+      value="gw.api.profiler.WorkQueueProfilerPageHelper.getQuery()">
+      <ToolbarFilter
+        label="displaykey.Web.Profiler.WorkQueueType"
+        name="workQueueTypeChooser">
+        <ToolbarFilterOptionGroup
+          filters="new gw.api.filters.WorkQueueFilterSet(InstrumentedWorker.Type.TypeInfo.getProperty( &quot;WorkQueueID&quot; ) as gw.entity.ITypekeyPropertyInfo).FilterOptions"/>
+      </ToolbarFilter>
+      <ToolbarFlag
+        condition="instrumentedWorker.EndTime != null"
+        name="CanDelete"/>
+      <ToolbarFlag
+        condition="instrumentedWorker.EndTime == null"
+        name="CannotDelete"/>
+      <Row>
+        <Cell
+          id="WorkQueueName"
+          label="displaykey.Web.InternalTools.WorkQueueLv.WorkQueueName"
+          sortOrder="1"
+          value="instrumentedWorker.WorkQueueID"/>
+        <Cell
+          id="AppServerName"
+          label="displaykey.Web.WorkQueueWorkersLv.Hostname"
+          sortOrder="2"
+          value="instrumentedWorker.AppServerName"/>
+        <Cell
+          id="InstanceNumber"
+          label="displaykey.Web.WorkQueueWorkersLv.InstanceId"
+          sortOrder="3"
+          value="instrumentedWorker.InstanceNumber"/>
+        <DateCell
+          dateFormat="short"
+          id="StartTime"
+          label="displaykey.Web.WorkQueueWorkerRunsLv.StartTime"
+          sortDirection="descending"
+          sortOrder="4"
+          timeFormat="short"
+          value="instrumentedWorker.StartTime"/>
+        <DateCell
+          dateFormat="short"
+          id="EndTime"
+          label="displaykey.Web.WorkQueueWorkerRunsLv.EndTime"
+          timeFormat="short"
+          value="instrumentedWorker.EndTime"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function deleteProfilerData(instrumentedWorker : InstrumentedWorker) {
+  gw.transaction.Transaction.runWithNewBundle( \ bundle -> {
+      var localSource = bundle.add( instrumentedWorker )
+      localSource.ProfilerData = null
+    }
+  )
+}
+      
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

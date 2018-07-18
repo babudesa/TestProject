@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableUnderlyingScheduleLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="true"
+      elementName="UnderCvg"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="RowIteratorUnderCvg"
+      toAdd="Claim.addToUnderlyingCoveragesExt(UnderCvg)"
+      toRemove="Claim.removeFromUnderlyingCoveragesExt(UnderCvg)"
+      value="Claim.UnderlyingCoveragesExt">
+      <Row>
+        <RangeCell
+          editable="true"
+          id="Layer"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.Layer"
+          noneSelectedLabel="&quot;None&quot;"
+          sortBy="sortUnderlyingLayer(UnderCvg.UnderLayerTypeExt), UnderCvg.CompanyExt"
+          sortOrder="1"
+          value="UnderCvg.UnderLayerTypeExt"
+          valueRange="underlyingSchedLayers()"/>
+        <TextCell
+          editable="true"
+          id="Company"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.CompanyName"
+          numCols="25"
+          required="true"
+          sortBy="2"
+          value="UnderCvg.CompanyExt"/>
+        <TextCell
+          editable="true"
+          id="PolicyNumber"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.PolicyNumber"
+          maxChars="20"
+          numCols="10"
+          sortOrder="3"
+          value="UnderCvg.PolicyNumberExt"/>
+        <DateCell
+          editable="true"
+          id="EffDate"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.EffDate"
+          sortOrder="4"
+          validationExpression="util.custom_Ext.DateTime.isDateAfter(UnderCvg.EffDateExt, UnderCvg.ExpDateExt)? displaykey.Web.Dates.EffDateAfterExpDate : null"
+          value="UnderCvg.EffDateExt"/>
+        <DateCell
+          editable="true"
+          id="ExpDate"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.ExpDate"
+          sortOrder="5"
+          validationExpression="util.custom_Ext.DateTime.isDateAfter(UnderCvg.EffDateExt, UnderCvg.ExpDateExt)? displaykey.Web.Dates.EffDateAfterExpDate : null"
+          value="UnderCvg.ExpDateExt"/>
+        <TypeKeyCell
+          editable="true"
+          id="PolicyType"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.PolicyType"
+          value="UnderCvg.PolicyTypeExt"
+          valueWidth="80"/>
+        <TypeKeyCell
+          editable="true"
+          id="CoverageDescription"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.CoverageType"
+          sortOrder="6"
+          value="UnderCvg.UnderCvgDescExt"
+          valueWidth="80"/>
+        <TextCell
+          editable="true"
+          formatType="exactNumber"
+          id="OccurrenceLimit"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.OccLimit"
+          numCols="12"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(UnderCvg.OccLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="UnderCvg.OccLimitExt"/>
+        <TextCell
+          editable="true"
+          formatType="exactNumber"
+          id="AggregateLimit"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.AggregatLimit"
+          numCols="12"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(UnderCvg.AggregateLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="UnderCvg.AggregateLimitExt"/>
+        <TextCell
+          editable="true"
+          formatType="exactNumber"
+          id="DeductAttPoint"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.UnderlyingLimitDeduct"
+          numCols="12"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(UnderCvg.DeductAttExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="UnderCvg.DeductAttExt"/>
+        <TextCell
+          editable="true"
+          formatType="general"
+          id="PartPercentage"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.Part"
+          maxChars="20"
+          numCols="10"
+          sortOrder="8"
+          validationExpression="UnderCvg.PartPctExt &gt;100 or UnderCvg.PartPctExt &lt;=0 ? displaykey.LV.Policy.EditableUnderlyingScheduleLV.PartPct : null"
+          value="UnderCvg.PartPctExt"/>
+        <TypeKeyCell
+          editable="true"
+          id="PartType"
+          label="displaykey.LV.Policy.EditableUnderlyingScheduleLV.PartType"
+          sortOrder="7"
+          value="UnderCvg.PartTypeIndExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function goToUnderlying(under : UnderlyingCoverageExt){
+   ClaimPolicyUnderlying.go(Claim);
+    		
+    	}
+ 
+    
+function underlyingSchedLayers():String[]{
+  var underSchedLayerValues:List = new List()
+  
+  underSchedLayerValues.add("Prim")
+      
+  var valueCounter:java.lang.Integer = 1
+  while(valueCounter <= 999){
+    if(valueCounter <= 9){
+    underSchedLayerValues.add("XS00" + valueCounter.toString())
+    }
+    if(valueCounter > 9 and valueCounter <= 99){
+      underSchedLayerValues.add("XS0" + valueCounter.toString())
+    }
+      if(valueCounter > 99){
+        underSchedLayerValues.add("XS" + valueCounter.toString())
+      }
+    valueCounter++
+    }
+    
+    return (underSchedLayerValues.toArray() as String[])
+  
+}
+
+function sortUnderlyingLayer(UnderlyingLayerExt: String): int{
+  var sortValue : double
+  
+  if (UnderlyingLayerExt == null){
+           sortValue = 1000
+  }
+  else if (UnderlyingLayerExt == "Prim"){
+    sortValue = 0
+  }
+  else if (UnderlyingLayerExt.contains("XS")){
+    var temp : String
+    temp = UnderlyingLayerExt.remove("XS")
+    sortValue = temp.AsNumber
+  }
+  return sortValue
+}]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,35 @@
+package rules.Validation.ExposureValidationRules_dir.EVAG1000AgriBusinessExposureValidationRules_dir.EVAG1100ValidforNewLoss_dir
+
+@gw.rules.RuleName("EVAG1120 - Seatbelt In Use (Available and Worn)")
+internal class EVAG1120SeatbeltInUseAvailableandWorn {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Rule to enforce Seatbelt available and Seatbelt in use are populated 
+in cases where exposures are created other than the application, i.e. conversion.
+Sprint : EC Sprint 3    
+Author: Eric Rawe      
+Date: 10/03/08       
+*/
+
+((exposure.Claim.LossType=="AGRIAUTO" && exposure.ExposureType=="ab_BodilyInjury" ||
+exposure.ExposureType=="ab_PhysicalDamage" || exposure.ExposureType=="ab_PIP") ||
+(exposure.Claim.LossType=="AGRILIABILITY" && exposure.Claim.Policy.PolicyType=="AGG" &&
+exposure.ExposureType=="ab_AGG_auto_BodInjury" || exposure.ExposureType=="ab_AGG_gl_BodInjury")) //&&
+//Exposure.VehicleIncident.Vehicle!=null)
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(exposure.SeatbeltAvailableExt ==null ) {
+     exposure.reject( "newloss", displaykey.Rules.Validation.Exposure.Agri.NewLoss.SeatbeltAvailableExt, null, null )
+  }
+  else If (exposure.SeatbeltAvailableExt==true and
+      exposure.SeatbeltWornExt ==null){
+      exposure.reject( "newloss", displaykey.Rules.Validation.Exposure.Agri.NewLoss.SeatbeltWornExt, null, null )
+  }
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}
+    /*end00rule*/
+  }
+}

@@ -1,0 +1,38 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir.PVXX1120CoverageRequirements_dir
+
+@gw.rules.RuleName("PVXX1122 - Coverage Date Validation")
+internal class PVXX1122CoverageDateValidation {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///  This routine validates that coverages are within the policy effective 
+//  dates 
+//  AgriBusiness Sprint 5 by rbr
+/*  Applied rule standards
+*/
+!policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  foreach(cov in policy.AllCoverages ){
+    if(cov.ExpirationDate!=null and cov.EffectiveDate!=null){
+      if(gw.api.util.DateUtil.compareIgnoreTime(cov.ExpirationDate,cov.EffectiveDate)<0){
+        policy.rejectSubField( cov, "ExpirationDate",  "newloss", displaykey.Web.Dates.EffDateAfterExpDate, null, null )  
+      }
+      if(exists(exp in policy.Claim.Exposures where cov == exp.Coverage)){
+        if(util.custom_Ext.DateTime.isDateBefore(cov.EffectiveDate, policy.EffectiveDate) 
+          or util.custom_Ext.DateTime.isDateAfter(cov.EffectiveDate, policy.ExpirationDate) 
+          or util.custom_Ext.DateTime.isDateAfter(cov.ExpirationDate, policy.ExpirationDate)
+          or util.custom_Ext.DateTime.isDateBefore(cov.ExpirationDate, policy.EffectiveDate)){
+          policy.reject(null, null, "newloss", 
+            displaykey.Libraries.ClassExt.DateError( "Coverage: " + cov.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(cov.EffectiveDate, cov.ExpirationDate) , "Policy", util.custom_Ext.DateTime.formatDateString( policy.EffectiveDate, policy.ExpirationDate)))  
+        }
+      }
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}  
+/*end00rule*/
+  }
+}

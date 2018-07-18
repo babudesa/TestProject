@@ -1,0 +1,19 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1111 - Populate RptCreateDateExt for CC transfer offset")
+internal class TVXX1111PopulateRptCreateDateExtforCCtransferoffset {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in (transactionSet as CheckSet).AllTransactions 
+where trans typeis Reserve && trans.RptCreateDateExt == null && trans.New) == true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///loop through AllTransactions instead of Transactions because it 
+//returns offsetting reserves for CheckSets
+for(trans in transactionSet.AllTransactions){
+  if(trans typeis Reserve && trans.RptCreateDateExt == null && trans.New){
+    trans.RptCreateDateExt = gw.api.util.DateUtil.currentDate()
+  }
+}/*end00rule*/
+  }
+}

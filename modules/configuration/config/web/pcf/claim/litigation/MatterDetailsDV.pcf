@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="selectedAssignment.MatterAssignmentStatusExt != typekey.MatterAssignmentStatus.TC_DECLINED"
+    id="MatterDetailsDV">
+    <Require
+      name="selectedAssignment"
+      type="MatterAssignmentExt"/>
+    <Require
+      name="Matter"
+      type="Matter"/>
+    <Variable
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Variable
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="matterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Matter.Counsel.General.CounselDetails"/>
+      <Input
+        id="AssignmentStatusInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.MatterAssignmentStatus"
+        value="selectedAssignment.MatterAssignmentStatusExt"/>
+      <ClaimContactInput
+        claim="Matter.Claim"
+        editable="selectedAssignment.UIHelper.IsLawFirmEditable"
+        id="CounselLawFirmClaimContactInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.LawFirm"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        onChange="selectedAssignment.UIHelper.resetAddresses()"
+        onPick="selectedAssignment.UIHelper.resetAddresses()"
+        postOnChange="true"
+        required="selectedAssignment.Matter.UIHelper.areFieldsRequired()"
+        value="selectedAssignment.CounselLawFirmExt"
+        valueRange="selectedAssignment.UIHelper.ValidPartiesInvolvedForLawFirm"/>
+      <RangeInput
+        align="left"
+        editable="true"
+        id="AttorneyTypeRangeInput"
+        label="displaykey.Matter.Counsel.AttorneyType"
+        postOnChange="true"
+        required="true &amp;&amp; selectedAssignment.CounselLawFirmExt != null"
+        value="selectedAssignment.AttorneyTypeExt"
+        valueRange="selectedAssignment.UIHelper.AttorneyTypeListDropdownDisplay"/>
+      <DateInput
+        id="DateAppointedInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.DefenseAppointedDate"
+        required="false"
+        value="selectedAssignment.DefenseApptDate"/>
+      <DateInput
+        id="DateAcceptedInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.DefenseAcceptedDate"
+        required="false"
+        value="selectedAssignment.DefenseAcceptedDate"/>
+      <TextInput
+        id="MatterIDInput"
+        label="matterActivator.isLOBUsingLSS(Matter.Claim.LossType)? displaykey.Matter.Counsel.General.CounselDetails.LSSMatterID : displaykey.Matter.Counsel.General.CounselDetails.AssignmentID"
+        required="true"
+        value="matterActivator.isLOBUsingLSS(Matter.Claim.LossType) ? selectedAssignment.LSSMatterID : selectedAssignment.PublicID"/>
+      <Input
+        editable="true"
+        id="BillingShareInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.BillingShare"
+        numCols="3"
+        validationExpression="selectedAssignment.UIHelper.validateBillingShare()"
+        value="selectedAssignment.BillSharePrctExt"
+        visible="matterActivator.isLOBUsingLSS(Matter.Claim.LossType)"/>
+      <BooleanRadioInput
+        editable="true"
+        id="StaffingBudgetRequiredCheckBox"
+        label="displaykey.Matter.Counsel.General.StaffingBudgetRequired"
+        value="selectedAssignment.StaffBudgetRequiredExt"
+        visible="matterActivator.isLOBUsingLSS(Matter.Claim.LossType)"/>
+      <ClaimContactInput
+        claim="selectedAssignment.Matter.Claim"
+        editable="selectedAssignment.LeadCounselFromLSS == false"
+        id="LeadCounselClaimContactInput"
+        label="displaykey.Matter.Counsel.General.CounselDetails.LeadCounsel"
+        newContactMenu="ClaimNewAllAttorneyPickerMenuItemSet"
+        postOnChange="true"
+        value="selectedAssignment.LeadCounselExt"
+        valueRange="selectedAssignment.UIHelper.ValidPartiesInvolvedForLeadCounsel"/>
+      <TextInput
+        id="LeadCounselPrimaryPhone"
+        label="displaykey.Matter.Counsel.General.CounselDetails.LeadCounselPrimaryPhone"
+        value="util.custom_Ext.finders.getPrimaryPhoneNumber(selectedAssignment.LeadCounselExt)"
+        visible="util.custom_Ext.finders.getPrimaryPhoneNumber(selectedAssignment.LeadCounselExt) != null"/>
+      <InputDivider/>
+      <Label
+        id="ReportDates"
+        label="displaykey.Matter.Counsel.General.ReportDates"/>
+      <DateInput
+        editable="true"
+        id="PreTrialReportDueDateInput"
+        label="displaykey.Matter.Counsel.General.ReportDates.PreTrialReportDue"
+        postOnChange="true"
+        value="selectedAssignment.PreTrialReportDueDate"/>
+      <DateInput
+        editable="true"
+        id="PreTrialReportReceivedDateInput"
+        label="displaykey.Matter.Counsel.General.ReportDates.PreTrialReportReceived"
+        value="selectedAssignment.PreTrialReportReceivedDate"/>
+      <DateInput
+        editable="true"
+        id="InitialCaseAssessmentDueDateInput"
+        label="displaykey.Matter.Counsel.General.ReportDates.InitialCaseAssessmentDue"
+        value="selectedAssignment.InitlCaseAssessmentDueDate"/>
+      <DateInput
+        editable="true"
+        id="InitialCaseAssessmentReceivedDateInput"
+        label="displaykey.Matter.Counsel.General.ReportDates.InitialCaseAssessmentReceived"
+        value="selectedAssignment.InitlCaseAssessmentRcvdDate"/>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Claimants"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel>
+          <RowIterator
+            editable="true"
+            elementName="assignmentExposure"
+            hideCheckBoxesIfReadOnly="true"
+            toAdd="selectedAssignment.addToAssignmentExposuresExt(assignmentExposure)"
+            toRemove="selectedAssignment.UIHelper.removeAssignmentExposure(assignmentExposure)"
+            value="selectedAssignment.AssignmentExposuresExt">
+            <Variable
+              initialValue="selectedAssignment.UIHelper.getEligibleExposures(assignmentExposure)"
+              name="eligibleExposures"
+              type="Exposure[]"/>
+            <Row>
+              <RangeCell
+                editable="true"
+                filter="selectedAssignment.UIHelper.isClaimantDisplayable(VALUE)"
+                id="ClaimantRangeCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Claimant.Name"
+                onChange="eligibleExposures = selectedAssignment.UIHelper.initClaimantRow(assignmentExposure); selectedAssignment.UIHelper.setExistingOpposingCounsel(assignmentExposure)"
+                postOnChange="true"
+                required="selectedAssignment.Matter.UIHelper.areFieldsRequired()"
+                value="assignmentExposure.ClaimantExt"
+                valueRange="selectedAssignment.UIHelper.EligibleClaimants.toList()"/>
+              <RangeCell
+                editable="true"
+                id="FeatureRangeCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Claimant.Feature"
+                onChange="selectedAssignment.UIHelper.setExistingOpposingCounsel(assignmentExposure)"
+                postOnChange="true"
+                required="selectedAssignment.Matter.UIHelper.areFieldsRequired()"
+                value="assignmentExposure.Exposure"
+                valueRange="eligibleExposures"/>
+              <ClaimContactCell
+                claim="Matter.Claim"
+                editable="true"
+                id="OpposingLawFirmContactCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Details.OpposingLawFirm"
+                newContactMenu="ClaimNewLegalRelatedPickerMenuItemSet"
+                required="(Matter.CoverageOrExtraContractSuitExt == true &amp;&amp; selectedAssignment.Matter.UIHelper.areFieldsRequired())  ? true : false"
+                value="assignmentExposure.OpposingCounselFirmExt"
+                valueRange="selectedAssignment.UIHelper.ValidPartiesInvolvedForOpposingLawFirm"/>
+              <ClaimContactCell
+                claim="Matter.Claim"
+                editable="true"
+                id="OpposingLeadCounselContactCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Details.OpposingLeadCounsel"
+                newContactMenu="ClaimNewAllAttorneyPickerMenuItemSet"
+                value="assignmentExposure.OpposingLeadCounselExt"
+                valueRange="selectedAssignment.UIHelper.ValidPartiesInvolvedForOpposingLeadCounsel"/>
+              <RadioButtonCell
+                action="selectedAssignment.UIHelper.setPrimaryClaimant(assignmentExposure)"
+                editable="true"
+                id="PrimaryClaimantRadioButtonCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Primary"
+                postOnChange="true"
+                radioButtonGroup="PrimaryClaimantRadioButtonGroup"
+                value="assignmentExposure.PrimaryClaimantExt"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Matter.Counsel.General.ContactAddress"/>
+      <InputSetRef
+        def="AddressInputSet(selectedAssignment.CounselContactAddressOwner)"
+        editable="true"
+        id="ContactAddressInputSetRef"
+        mode="selectedAssignment.CounselContactAddressOwner.InputSetMode"
+        visible="selectedAssignment!=null"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.Matter.Counsel.General.BillingPaymentAddress"/>
+      <Input
+        id="BillingAddressLocaiton"
+        label="&quot;Location&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.DisplayName + &quot; (&quot; + selectedAssignment.UIHelper.BillingAddress.AddressType.DisplayName + &quot;)&quot;) : null"/>
+      <Input
+        id="BillingAddressCountry"
+        label="&quot;Country&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.Country) : null"/>
+      <Input
+        id="BillingAddressLine1"
+        label="&quot;Address Line 1&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.AddressLine1) : null"/>
+      <Input
+        id="BillingAddressLine2"
+        label="&quot;Address Line 2&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.AddressLine2) : null"/>
+      <Input
+        id="BillingAddressCity"
+        label="&quot;City&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.City) : null"/>
+      <Input
+        id="BillingAddressState"
+        label="&quot;State&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.State) : null"/>
+      <Input
+        id="BillingAddressZipCode"
+        label="&quot;Zip Code&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.PostalCode) : null"/>
+      <Input
+        id="BillingAddressCounty"
+        label="&quot;County&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.County) : null"/>
+      <Input
+        id="BillingAddressStandard"
+        label="&quot;Standardized?&quot;"
+        value="selectedAssignment.UIHelper.BillingAddress != null ? (selectedAssignment.UIHelper.BillingAddress.StandardizedExt) : null"/>
+    </InputColumn>
+    <Code><![CDATA[/*
+  * Funciton performs validation for the billing share percent field
+  */
+  function validateBillingShare():String{ 
+      
+     if(selectedAssignment.BillSharePrctExt != null){       
+       if(selectedAssignment.BillSharePrctExt.toString().matches("[1-9][0-9]|[1][0][0]|[1-9]")){          
+          var billShare = java.lang.Integer.parseInt(selectedAssignment.BillSharePrctExt)
+                    
+          if(billShare > 100 || billShare < 1){
+              return displaykey.Validator.BillingSharePercent.trim()
+          }
+       }else{
+         return displaykey.Validator.BillingSharePercent.trim()  
+       }    
+     }else{ 
+         return displaykey.Validator.BillingSharePercent.trim()         
+     }
+     return null
+  }]]></Code>
+  </DetailViewPanel>
+</PCF>

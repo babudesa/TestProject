@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Popup
+    beforeCommit="createProperReserveLine()"
+    canEdit="true"
+    id="PaymentTransferPopup"
+    parent="CheckTransfer(Claim, Payment.Check)"
+    startInEditMode="true"
+    title="displaykey.JSP.PaymentTransfer.Title">
+    <LocationEntryPoint
+      signature="PaymentTransferPopup(Payment : Payment, Claim : Claim)"/>
+    <Variable
+      initialValue="new financials.EditTransactionHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Payment"
+      type="Payment"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Screen
+      id="PaymentTransferPopupScreen">
+      <Toolbar>
+        <EditButtons
+          cancelVisible="true"
+          updateVisible="true"/>
+      </Toolbar>
+      <PanelRef
+        def="PaymentTransferDV(Payment, Payment, PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[
+function createProperReserveLine() {
+  if (Payment.CostType != Payment.ReserveLine.CostType
+      or Payment.CostCategory != Payment.ReserveLine.CostCategory) {
+    Payment.findAndSetReserveLine();
+  }
+}
+    ]]></Code>
+  </Popup>
+</PCF>

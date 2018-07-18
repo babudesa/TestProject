@@ -1,0 +1,24 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXXZZZ1 - Run Financial Escalation on Final Payment")
+internal class TPUXXZZZ1RunFinancialEscalationonFinalPayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///This rule needs to be the last rule to run before the final validation
+transactionSet.Subtype == "CheckSet" &&
+(transactionSet as CheckSet).PrimaryCheck.Status =="awaitingsubmission"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///* Run financial escalation immidiately on a Final Payment, to get the Supplemental option
+var check = (transactionSet as CheckSet).PrimaryCheck
+for (each in transactionSet.Transactions){
+  if (each.Subtype =="Payment") {
+    var payment=each as Payment
+    if (payment.PaymentType =="final") {
+       check.requestCheck()
+       transactionSet.escalateAllChecksForFeature(payment)
+    }
+  }
+}/*end00rule*/
+  }
+}

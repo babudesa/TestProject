@@ -1,0 +1,28 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("ABWC2000-Update Jurisdicton Case Number NY/CA Converted")
+internal class ABWC2000UpdateJurisdictonCaseNumberNYCAConverted {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isConvertedExt() &&
+!exists(act in claim.Activities where act.ActivityPattern.Code=="update_jurisdiction_case_number")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/
+var ap = util.custom_Ext.finders.findActivityPattern( "update_jurisdiction_case_number" )
+
+try{
+  for(exp in claim.Exposures){
+     if(exp.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS && (exp.Claim.JurisdictionState=="NY" || exp.Claim.JurisdictionState=="CA") && exp.Claim.JurisClaimNumberExt==null){
+       if(gw.api.util.DateUtil.daysBetween( gw.api.util.DateUtil.currentDate(),exp.CreateTime)>= 30){
+            exp.Claim.createActivityFromPattern(null, ap)
+       }
+     } 
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

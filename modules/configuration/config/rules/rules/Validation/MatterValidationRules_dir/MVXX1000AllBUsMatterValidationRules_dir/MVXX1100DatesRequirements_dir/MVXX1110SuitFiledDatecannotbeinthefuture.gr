@@ -1,0 +1,26 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1110 - Suit Filed Date cannot be in the future")
+internal class MVXX1110SuitFiledDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("SuitFiledDate") and
+matter.SuitFiledDate != null and
+!util.WCHelper.isWCLossType(matter.Claim) and
+gw.api.util.DateUtil.compareIgnoreTime( matter.SuitFiledDate, gw.api.util.DateUtil.currentDate() ) > 0
+/*
+* Rule requires Suit Filed Date to be in the past
+*/
+/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  msg="Please provide a Suit Filed Date that is not a future date."
+  matter.rejectField( "SuitFiledDate", "newloss", msg,Null, Null )
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

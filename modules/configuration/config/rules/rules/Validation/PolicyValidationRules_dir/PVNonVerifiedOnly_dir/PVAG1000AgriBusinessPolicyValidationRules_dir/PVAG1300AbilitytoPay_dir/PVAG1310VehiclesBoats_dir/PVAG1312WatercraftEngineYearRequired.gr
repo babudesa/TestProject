@@ -1,0 +1,18 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVAG1000AgriBusinessPolicyValidationRules_dir.PVAG1300AbilitytoPay_dir.PVAG1310VehiclesBoats_dir
+
+@gw.rules.RuleName("PVAG1312 - Watercraft Engine Year Required")
+internal class PVAG1312WatercraftEngineYearRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/exists(veh in policy.Vehicles where veh.Vehicle.EnginesExt.length>0)==true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/for(veh in policy.Vehicles){
+  for(eng in veh.Vehicle.EnginesExt){
+    if(eng.Year==null){
+      policy.reject("payment", "Engine Year required", null, null)
+    }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,99 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEQ1000EquineExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUEQ1300 - Coverage Reconnect on Policy Refresh")
+internal class EPUEQ1300CoverageReconnectonPolicyRefresh {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Updated: 12/30/11 - sprzygocki - added debugging comments
+((exposure.Coverage == null)
+or
+(exposure.Coverage != exposure.PreviousCoverageExt)
+or
+(exposure.ReconnectFailExt == true and exposure.Coverage != null))
+and
+((exposure.PreviousCoverageExt typeis PolicyCoverage or 
+ (exposure.PreviousCoverageExt typeis PropertyCoverage and 
+  (exposure.PreviousCoverageExt.RiskUnit as LocationBasedRU).Property.LocationNumber == exposure.FixedPropertyIncident.PreviousPropertyExt.LocationNumber)) or 
+   exposure.New or exposure.Claim.Policy.isPolicyInRefresh( 1 ))
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var oldCoverage:Coverage;
+var sendNote = libraries.ISO.getISONoteBody(exposure)
+  
+if(exposure.Coverage == null and exposure.PreviousCoverageExt != null and exposure.Claim.Policy.isPolicyInRefresh( 1 )){
+  oldCoverage = exposure.PreviousCoverageExt;
+  for(newCoverage in exposure.Claim.Policy.AllCoverages){
+    if(newCoverage.Subtype == oldCoverage.Subtype and newCoverage.Type == oldCoverage.Type and oldCoverage != newCoverage){
+      if((newCoverage.Subtype == "PropertyCoverage" and oldCoverage.Subtype== "PropertyCoverage")
+          and ((oldCoverage as PropertyCoverage).RiskUnit as LocationBasedRU).Property.LocationNumber.compareTo(((newCoverage as PropertyCoverage).RiskUnit as LocationBasedRU).Property.LocationNumber) ==0)
+      {
+        exposure.Coverage = newCoverage;
+        exposure.PrimaryCoverage = exposure.Coverage.Type;
+        exposure.ReconnectFailExt = false;
+        break;
+                
+      }
+      else if(newCoverage.Subtype == "PolicyCoverage" and oldCoverage.Subtype== "PolicyCoverage")
+      {
+        exposure.Coverage = newCoverage;
+        exposure.PrimaryCoverage = exposure.Coverage.Type;
+        exposure.ReconnectFailExt = false; 
+        break;
+      }
+    }
+  }
+  if(exposure.Coverage == null || exposure.FixedPropertyIncident.Property == null){
+    exposure.ReconnectFailExt = true;
+    //reset the property if the policy is being refreshed the feature is disconnected and the incident property is set
+    //this is to fix a problem with selecting a policy with the same number as the unverified
+    if(exposure.Claim.Policy.isPolicyInRefresh( 1 ) and exposure.Coverage == null and exposure.FixedPropertyIncident.Property != null){
+      exposure.FixedPropertyIncident.Property = null;
+      //exposure.FixedPropertyIncident.PreviousPropertyExt = (exposure.FixedPropertyIncident.OriginalVersion as FixedPropertyIncident).Property
+    }
+    exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.ReconnectFail(exposure,exposure.FixedPropertyIncident.PreviousPropertyExt.LocationNumber) )
+  }
+  else{  //reconnect successful
+    exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.ReconnectSuccess( exposure, exposure.FixedPropertyIncident.PreviousPropertyExt.LocationNumber) )
+    /*
+    if(!exposure.Closed and exposure.isValid("iso") and !exists(note in exposure.Claim.Notes where note.New and note.Body==sendNote)){
+      if(!exposure.Claim.ISOClaimLevelMessaging){
+        var note = exposure.Claim.addNote( exposure, "investigation", sendNote )
+        note.Subject = "Sent to ISO for Claim Search"
+        //print("Note added from EPUEQ rules")
+      } else {
+        var note = exposure.Claim.addNote( "investigation", sendNote )
+        note.Subject = "Sent to ISO for Claim Search"
+        //print("Note added from EPUEQ rules")
+      }
+    }
+    */
+  }
+}
+else if(exposure.ReconnectFailExt == true and exposure.Coverage!=null){
+  exposure.ReconnectFailExt = false
+  exposure.PrimaryCoverage = exposure.Coverage.Type
+  if(exposure.FixedPropertyIncident.Property == null and typeof exposure.Coverage == PropertyCoverage){
+    exposure.FixedPropertyIncident.Property = ((exposure.Coverage as PropertyCoverage).RiskUnit as LocationBasedRU).Property
+    exposure.FixedPropertyIncident.PreviousPropertyExt = exposure.FixedPropertyIncident.Property;
+  }
+  exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.ManualReconnectSuccess( exposure,exposure.FixedPropertyIncident.PreviousPropertyExt.LocationNumber) )
+  /*
+  if(!exposure.Closed and exposure.isValid("iso") and !exists(note in exposure.Claim.Notes where note.New and note.Body==sendNote)){
+    if(!exposure.Claim.ISOClaimLevelMessaging){
+      var note = exposure.Claim.addNote( exposure, "investigation", sendNote )
+      note.Subject = "Sent to ISO for Claim Search"
+      //print("Note added from EPUEQ rules")
+    } else {
+      var note = exposure.Claim.addNote( "investigation", sendNote )
+      note.Subject = "Sent to ISO for Claim Search"
+      //print("Note added from EPUEQ rules")
+    }
+  }
+  */
+}
+if(exposure.Coverage != exposure.PreviousCoverageExt and exposure.Coverage != null){
+  exposure.PreviousCoverageExt = exposure.Coverage
+}/*end00rule*/
+  }
+}

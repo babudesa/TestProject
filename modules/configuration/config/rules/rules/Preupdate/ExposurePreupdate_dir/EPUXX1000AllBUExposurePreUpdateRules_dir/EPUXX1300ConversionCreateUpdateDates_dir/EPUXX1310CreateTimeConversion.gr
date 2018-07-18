@@ -1,0 +1,23 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1300ConversionCreateUpdateDates_dir
+
+@gw.rules.RuleName("EPUXX1310 - CreateTime Conversion")
+internal class EPUXX1310CreateTimeConversion {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///All exposures even when converted will come in as new - to prevent the Create Date
+//of the converted exposure to be the new create date, this condition checks for 
+//a null Load ID (ClaimCenter specific claims) and one that is not new
+//Author: Stephanie Przygocki
+//Sprint: AgriBusiness Sprint 16
+//Date: 10/7/08
+//Update Date: 5/27/09
+
+!exposure.Claim.ClaimNumber.startsWith( "T") and
+!exposure.isConvertedExt() and //Changed to isConverted from LoadCommandID - SR
+exposure.RptCreateDateExt==null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(!exposure.ChangedFields.Empty) 
+  exposure.RptCreateDateExt = gw.api.util.DateUtil.currentDate()/*end00rule*/
+  }
+}

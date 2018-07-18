@@ -1,0 +1,1178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://api.webservices.cc.guidewire.com/" xmlns:intf="http://api.webservices.cc.guidewire.com/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://entity.webservices.cc.guidewire.com/" xmlns:tns2="http://fault.webservices.cc.guidewire.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><wsdl:types><schema targetNamespace="http://entity.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://api.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="ProcessID"><xsd:annotation><xsd:documentation>A simple class that contains the pid of a previously started batch process.</xsd:documentation></xsd:annotation><sequence><element name="Pid" type="xsd:int"><xsd:annotation><xsd:documentation>The process id of the batch process</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="ProcessStatus"><xsd:annotation><xsd:documentation>Contains information about the status of a previously started batch process. This could contain status
+information for a process that is currently running or for a process that ran was run in the past.
+If the process is not currently running, the opsCompleted and failedOps fields won't have any useful information.</xsd:documentation></xsd:annotation><sequence><element name="DateCompleted" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>The date that the process completed</xsd:documentation></xsd:annotation></element><element name="DetailedStatus" nillable="true" type="soapenc:string"/><element name="FailedOps" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>The number of operations that failed</xsd:documentation></xsd:annotation></element><element name="FailureReason" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>If the process didn't succeed, the reason that the process failed</xsd:documentation></xsd:annotation></element><element name="OpsCompleted" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>The number of operations completed by the process</xsd:documentation></xsd:annotation></element><element name="OpsExpected" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>The number of operations expected to be completed by the process</xsd:documentation></xsd:annotation></element><element name="Progress" nillable="true" type="soapenc:string"/><element name="Running" type="xsd:boolean"><xsd:annotation><xsd:documentation>Whether or not the process is currently running</xsd:documentation></xsd:annotation></element><element name="StartDate" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>The date that the process started running</xsd:documentation></xsd:annotation></element><element name="Success" nillable="true" type="soapenc:boolean"><xsd:annotation><xsd:documentation>Whether or not the process finished successfully, or null if the process is still running</xsd:documentation></xsd:annotation></element><element name="Type" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The type of process</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="UpdateTableStatisticsData"><xsd:annotation><xsd:documentation>Contains the set of SQL that can be applied to update database statistics for
+the given table.</xsd:documentation></xsd:annotation><sequence><element name="StatisticsUpdateStatements" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>The statements that must be executed to update table statistics</xsd:documentation></xsd:annotation></element><element name="TableName" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The name of the table that the array of statements is to be applied to</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="ArrayOfUpdateTableStatisticsData"><complexContent><restriction base="soapenc:Array"><attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:UpdateTableStatisticsData[]"/></restriction></complexContent></complexType><complexType name="QueueWorkerStatus"><xsd:annotation><xsd:documentation>Contains the information about a distributed work queue worker
+@deprecated use {@link WorkQueueStatus} instead for more information relating to all workers across all hosts.
+</xsd:documentation></xsd:annotation><sequence><element name="NumberOfWorkersRunning" type="xsd:int"><xsd:annotation><xsd:documentation>Number of worker running for this queue</xsd:documentation></xsd:annotation></element><element name="QueueName" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Queue name</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="WorkQueueConfig"><xsd:annotation><xsd:documentation>Carries information about the distributed worker processes
+for a distributed workqueue. Used to query and set the
+worker configuration on a server.</xsd:documentation></xsd:annotation><sequence><element name="BatchSize" type="xsd:int"><xsd:annotation><xsd:documentation>Get the max number of workitems to be checked out when a
+worker wakes up. (Default = 10)</xsd:documentation></xsd:annotation></element><element name="Instances" type="xsd:int"><xsd:annotation><xsd:documentation>Get the number of worker instances configured to run on this server</xsd:documentation></xsd:annotation></element><element name="MaxPollInterval" type="xsd:long"><xsd:annotation><xsd:documentation>Get the maximum time in milliseconds that a worker will wait
+between queries for new workitems. When a worker exhausts
+the supply of workitems, it will suspend itself and wait for
+notifications. If no notification is received, it will wake
+up and check for new workitems every maxPollInterval millis.
+This acts as a safety mechanism in case notifications are lost
+in a clustered environment, and guarantees a maximum latency
+for workitem processing. This parameter should increase with
+the number of workers configured, to keep the load on the database
+from growing excessively.
+(Default = 60000)</xsd:documentation></xsd:annotation></element><element name="MinPollInterval" type="xsd:long"><xsd:annotation><xsd:documentation>Get the minimum interval in milliseconds between queries to find workitems.
+Workers are notified whenever a workitem is added to the table.
+When the worker exhausts the supply of workitems, it will
+wait at least this long before checking for new workitems,
+ignoring any notifications received until the interval elapses.
+This interval defaults to 0, meaning that a waiting worker will
+immediately wake up on notification and check for workitems.
+This may be inappropriate for configurations with a large number
+of workers, as all workers will attempt to query for workitems on
+each notification. Use a larger value to reduce the frequency of
+queries. Note that the expected latency = minPollInterval / numWorkers,
+so as the number of workers increases, it makes sense to increase
+this parameter.</xsd:documentation></xsd:annotation></element><element name="ThrottleInterval" type="xsd:long"><xsd:annotation><xsd:documentation>Get the current sleep time between workitems</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="WorkerDetails"><xsd:annotation><xsd:documentation>Details for a particular Worker for a particular host of the in the WorkQueue.</xsd:documentation></xsd:annotation><sequence><element name="Active" type="xsd:boolean"><xsd:annotation><xsd:documentation>Active state of the worker. More precisely, true if the given worker has not been stopped.
+This includes workers that are both active and suspended.</xsd:documentation></xsd:annotation></element><element name="EndTime" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>The time at which the given worker was stopped or null if the worker has not been stopped yet.</xsd:documentation></xsd:annotation></element><element name="Hostname" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The host name.</xsd:documentation></xsd:annotation></element><element name="InstanceId" nillable="true" type="soapenc:int"><xsd:annotation><xsd:documentation>The Instance ID.</xsd:documentation></xsd:annotation></element><element name="LastAwakeTime" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>The last time that the worker was awake.</xsd:documentation></xsd:annotation></element><element name="StartTime" nillable="true" type="xsd:dateTime"><xsd:annotation><xsd:documentation>The worker start time.</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="ArrayOfWorkerDetails"><complexContent><restriction base="soapenc:Array"><attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:WorkerDetails[]"/></restriction></complexContent></complexType><complexType name="WorkQueueStatus"><xsd:annotation><xsd:documentation>Detailed information about Worker Queue.</xsd:documentation></xsd:annotation><sequence><element name="DetailsArray" nillable="true" type="tns1:ArrayOfWorkerDetails"><xsd:annotation><xsd:documentation>An array of {@link WorkerDetails} for Workers of the given queue.</xsd:documentation></xsd:annotation></element><element name="NumActiveWorkItems" type="xsd:int"><xsd:annotation><xsd:documentation>the number of active work items (checkedout or available).</xsd:documentation></xsd:annotation></element><element name="NumActiveWorkerItems" type="xsd:int"><xsd:annotation><xsd:documentation>The number of active workers.</xsd:documentation></xsd:annotation></element><element name="NumActiveWorkers" type="xsd:int"><xsd:annotation><xsd:documentation>The number of active workers.</xsd:documentation></xsd:annotation></element><element name="NumAvailableWorkItems" type="xsd:int"><xsd:annotation><xsd:documentation>The number of available work items</xsd:documentation></xsd:annotation></element><element name="NumCheckedoutWorkItems" type="xsd:int"><xsd:annotation><xsd:documentation>The number of checkedout work items</xsd:documentation></xsd:annotation></element><element name="NumFailedWorkItems" type="xsd:int"><xsd:annotation><xsd:documentation>the number of failed work items</xsd:documentation></xsd:annotation></element><element name="QueueName" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The queue name</xsd:documentation></xsd:annotation></element></sequence></complexType></schema><schema targetNamespace="http://fault.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://api.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="SOAPException"><xsd:annotation><xsd:documentation>A generic SOAP exception.</xsd:documentation></xsd:annotation><sequence><element name="Message" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The message associated with this exception</xsd:documentation></xsd:annotation></element><element name="OtherMessages" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Other messages attached to this exception. This message may contain information
+related to other exceptions that occurred during a SOAP call, but not directly
+associated with this particular exception.</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="SOAPSenderException"><xsd:annotation><xsd:documentation>SOAPSenderException is the base class for all exceptions that resulted from
+a sender error. This usually means that required data was not properly encoded
+or was absent. Senders should not send the message again unless some steps have
+been taken to make the encoded data valid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="DataConversionException"><xsd:annotation><xsd:documentation>Thrown by many APIs when they encounter a problem translating a SOAP data object into
+an internal system object.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="BadIdentifierException"><xsd:annotation><xsd:documentation>Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect).</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="PermissionException"><xsd:annotation><xsd:documentation>Thrown when the authenticated SOAP user does not have permission to
+perform the requested operation</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="SOAPServerException"><xsd:annotation><xsd:documentation>SOAPServerException is the base class for all exceptions that resulted from
+a server error. This is something of a catch-all exception type insofar as
+some things which might in fact be considered SOAPSenderExceptions are reported
+as SOAPServerExceptions. Perhaps a rule failed or something else. Generally it
+indicates a problem in the server that is likely retryable at some future time.
+The database being down, an unavailable plugin, etc would fall into this catagory.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="ServerStateException"><xsd:annotation><xsd:documentation>ServerStateException is thrown when a request is made at a time the
+server is in a state that disallows the request. An example is if
+an attempt is made to add a claim and the server is in maintenance
+mode.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="SOAPRetryableException"><xsd:annotation><xsd:documentation>SOAPRetryableException is the class for all exceptions that are retryable
+immediately. The primary example of this is ConcurrentDataChangeException.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="LoginException"><xsd:annotation><xsd:documentation>Class of exceptions thrown when a user tries to log in and an authentication failure occurs.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:PermissionException"><sequence/></extension></complexContent></complexType><complexType name="EntityStateException"><xsd:annotation><xsd:documentation>Thrown when an attempt is made to manipulate an object that is in a state
+that prevents the operation from being performed. An example is trying to
+modify a Claim that is marked as closed.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="DuplicateKeyException"><xsd:annotation><xsd:documentation>Throws if a duplicate data exception is detected in the database. I.e. a unique index violation.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldConversionException"><xsd:annotation><xsd:documentation>Thrown when a data type cannot be converted into the native data type.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldFormatException"><xsd:annotation><xsd:documentation>Thrown when the input type does not match the format specified in the metadata. I.e. a string is too long.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="RequiredFieldException"><xsd:annotation><xsd:documentation>Thrown when required data is missing from a bean.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="UnknownTypeKeyException"><xsd:annotation><xsd:documentation>Thrown when a typekey value isn't available on the server. This exception can only
+happen if the SOAP WSDL that is being used on the remote side is invalid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="BatchProcessException"><xsd:annotation><xsd:documentation>SOAP Exception specific to batch process operations</xsd:documentation></xsd:annotation><complexContent><extension base="tns2:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="AlreadyExecutedException"><complexContent><extension base="tns2:SOAPSenderException"><sequence/></extension></complexContent></complexType></schema><schema targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="ArrayOf_soapenc_string"><complexContent><restriction base="soapenc:Array"><attribute ref="soapenc:arrayType" wsdl:arrayType="soapenc:string[]"/></restriction></complexContent></complexType></schema></wsdl:types>
+  <wsdl:message name="getValidBatchProcessNamesRequest">
+  </wsdl:message>
+  <wsdl:message name="PermissionException">
+    <wsdl:part name="fault" type="tns2:PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="notifyQueueWorkersResponse">
+  </wsdl:message>
+  <wsdl:message name="getQueueWorkerStatusResponse">
+    <wsdl:part name="getQueueWorkerStatusReturn" type="tns1:QueueWorkerStatus">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The status of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="batchProcessStatusByIDResponse">
+    <wsdl:part name="batchProcessStatusByIDReturn" type="tns1:ProcessStatus">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the status of that particular process invocation</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="startBatchProcessRequest">
+    <wsdl:part name="processName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The name of the process to start</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueStatusResponse">
+    <wsdl:part name="getWorkQueueStatusReturn" type="tns1:WorkQueueStatus">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The status of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUpdateTableStatisticsDataRequest">
+  </wsdl:message>
+  <wsdl:message name="waitOnActiveWorkItemsResponse">
+    <wsdl:part name="waitOnActiveWorkItemsReturn" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">true if the queue is now empty</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="batchProcessStatusByIDRequest">
+    <wsdl:part name="pid" type="tns1:ProcessID">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the process ID to retrieve the status of</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getIncrementalUpdateTableStatisticsDataResponse">
+    <wsdl:part name="getIncrementalUpdateTableStatisticsDataReturn" type="tns1:ArrayOfUpdateTableStatisticsData">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">An array of UpdateTableStatisticsData items, one for each table that has
+updateable statistics</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="whenStatsCalculatedResponse">
+    <wsdl:part name="whenStatsCalculatedReturn" type="xsd:dateTime">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">date of the when the current statistics were calculated</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markPurgeReadyResponse">
+    <wsdl:part name="markPurgeReadyReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The results indicates if the claims were successuflly marked</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markArchiveReadyResponse">
+    <wsdl:part name="markArchiveReadyReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">A string containing the numbers of the claims that were scheduled for archive</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestTerminationOfBatchProcessByIDResponse">
+    <wsdl:part name="requestTerminationOfBatchProcessByIDReturn" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">true if the request was successful, false if the process could not be terminated</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markArchiveReadyRequest">
+    <wsdl:part name="claimNumbers" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Claim numbers of the claims to schedule for archive</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueConfigRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Name of the queue to query</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setWorkQueueConfigRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Name of the queue to modify</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="config" type="tns1:WorkQueueConfig">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The configuration to establish.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="notifyQueueWorkersRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Name of the queue to notify workers</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="ServerStateException">
+    <wsdl:part name="fault" type="tns2:ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueConfigResponse">
+    <wsdl:part name="getWorkQueueConfigReturn" type="tns1:WorkQueueConfig">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">A WorkQueueConfig instance containing the current settings</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUpdateTableStatisticsDataResponse">
+    <wsdl:part name="getUpdateTableStatisticsDataReturn" type="tns1:ArrayOfUpdateTableStatisticsData">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">An array of UpdateTableStatisticsData items, one for each table that has
+updateable statistics</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="whenStatsCalculatedRequest">
+  </wsdl:message>
+  <wsdl:message name="batchProcessStatusByNameResponse">
+    <wsdl:part name="batchProcessStatusByNameReturn" type="tns1:ProcessStatus">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the status of that particular process</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getValidBatchProcessNamesResponse">
+    <wsdl:part name="getValidBatchProcessNamesReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">String[]</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getQueueWorkerStatusRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">name of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="BadIdentifierException">
+    <wsdl:part name="fault" type="tns2:BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueNamesRequest">
+  </wsdl:message>
+  <wsdl:message name="terminateBatchProcessByIDRequest">
+    <wsdl:part name="pid" type="tns1:ProcessID">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the process ID of the process for which to request termination</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getNumActiveWorkItemsRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">name of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPServerException">
+    <wsdl:part name="fault" type="tns2:SOAPServerException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="terminateBatchProcessByNameResponse">
+    <wsdl:part name="terminateBatchProcessByNameReturn" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">true if the request was successful, false if the process could not be terminated</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markPurgeReadyRequest">
+    <wsdl:part name="claimNumbers" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The array of the claim numbers to be marked</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="terminateBatchProcessByIDResponse">
+    <wsdl:part name="terminateBatchProcessByIDReturn" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">true if the request was successful, false if the process could not be terminated</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markForPurgeRequest">
+    <wsdl:part name="claimNumbers" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The list of claim numbers corresponding to the claims
+to be marked for purge.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="restoreRequest">
+    <wsdl:part name="claimNumbers" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="comment" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPSenderException">
+    <wsdl:part name="fault" type="tns2:SOAPSenderException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="batchProcessStatusByNameRequest">
+    <wsdl:part name="processName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the name of the process to retrieve the status of</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getNumActiveWorkItemsResponse">
+    <wsdl:part name="getNumActiveWorkItemsReturn" type="xsd:int">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The status of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="markForPurgeResponse">
+    <wsdl:part name="markForPurgeReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the results indicates if the claims were successfully marked for purged or not.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="waitOnActiveWorkItemsRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">name of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestTerminationOfBatchProcessByIDRequest">
+    <wsdl:part name="pid" type="tns1:ProcessID">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the process ID of the process for which to request termination</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="terminateBatchProcessByNameRequest">
+    <wsdl:part name="processName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the name of the batch process for which to request termination</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueNamesResponse">
+    <wsdl:part name="getWorkQueueNamesReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getWorkQueueStatusRequest">
+    <wsdl:part name="queueName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">name of the queue</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="scheduleForArchiveRequest">
+    <wsdl:part name="claimNumbers" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Claim numbers of the claims to schedule for archive</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="restoreResponse">
+    <wsdl:part name="restoreReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The result indicates the claims processed and skipped</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="scheduleForArchiveResponse">
+    <wsdl:part name="scheduleForArchiveReturn" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">A string containing the numbers of the claims that were scheduled for archive</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestTerminationOfBatchProcessByNameResponse">
+    <wsdl:part name="requestTerminationOfBatchProcessByNameReturn" type="xsd:boolean">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">true if the request was successful, false if the process could not be terminated</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestTerminationOfBatchProcessByNameRequest">
+    <wsdl:part name="processName" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">the name of the batch process for which to request termination</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="SOAPException">
+    <wsdl:part name="fault" type="tns2:SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">if there is an exception thrown during the processing</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getIncrementalUpdateTableStatisticsDataRequest">
+  </wsdl:message>
+  <wsdl:message name="setWorkQueueConfigResponse">
+  </wsdl:message>
+  <wsdl:message name="startBatchProcessResponse">
+    <wsdl:part name="startBatchProcessReturn" type="tns1:ProcessID">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">The process ID that the caller can use to query for status</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="IMaintenanceToolsAPI">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    <wsdl:operation name="batchProcessStatusByID" parameterOrder="pid">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the status of a particular batch process invocation.  If that invocation is still running,
+the status will indicate as much, and only the startDate and opsCompleted fields will be filled in.
+Otherwise the returned object will contain information about
+the completed run (see ProcessStatus for information about all the fields returned).</wsdl:documentation>
+      <wsdl:input message="impl:batchProcessStatusByIDRequest" name="batchProcessStatusByIDRequest"/>
+      <wsdl:output message="impl:batchProcessStatusByIDResponse" name="batchProcessStatusByIDResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+      <wsdl:fault message="impl:SOAPSenderException" name="SOAPSenderException"/>
+    </wsdl:operation>
+    <wsdl:operation name="batchProcessStatusByName" parameterOrder="processName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Gets the status of the given batch process, indicating whether or not the process is running and,
+if so, its current progress.</wsdl:documentation>
+      <wsdl:input message="impl:batchProcessStatusByNameRequest" name="batchProcessStatusByNameRequest"/>
+      <wsdl:output message="impl:batchProcessStatusByNameResponse" name="batchProcessStatusByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getIncrementalUpdateTableStatisticsData">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Obtains the set of SQL statements that are required to update database statistics
+based on user specific threshold value that specifies percentage of table has been
+modified</wsdl:documentation>
+      <wsdl:input message="impl:getIncrementalUpdateTableStatisticsDataRequest" name="getIncrementalUpdateTableStatisticsDataRequest"/>
+      <wsdl:output message="impl:getIncrementalUpdateTableStatisticsDataResponse" name="getIncrementalUpdateTableStatisticsDataResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getNumActiveWorkItems" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieves the number of active work items for a queue</wsdl:documentation>
+      <wsdl:input message="impl:getNumActiveWorkItemsRequest" name="getNumActiveWorkItemsRequest"/>
+      <wsdl:output message="impl:getNumActiveWorkItemsResponse" name="getNumActiveWorkItemsResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getQueueWorkerStatus" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieves the worker status for a paticular server.
+&lt;br&gt;@deprecated use the method {@link #getWorkQueueStatus(String)} instead.  It returns more detailed and accurate
+information about a worker queue across a clustered environment.</wsdl:documentation>
+      <wsdl:input message="impl:getQueueWorkerStatusRequest" name="getQueueWorkerStatusRequest"/>
+      <wsdl:output message="impl:getQueueWorkerStatusResponse" name="getQueueWorkerStatusResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getUpdateTableStatisticsData">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Obtains the set of SQL statements that are required to update database statistics</wsdl:documentation>
+      <wsdl:input message="impl:getUpdateTableStatisticsDataRequest" name="getUpdateTableStatisticsDataRequest"/>
+      <wsdl:output message="impl:getUpdateTableStatisticsDataResponse" name="getUpdateTableStatisticsDataResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getValidBatchProcessNames">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Return the set of valid batch process names</wsdl:documentation>
+      <wsdl:input message="impl:getValidBatchProcessNamesRequest" name="getValidBatchProcessNamesRequest"/>
+      <wsdl:output message="impl:getValidBatchProcessNamesResponse" name="getValidBatchProcessNamesResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueConfig" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get the current configuration of distributed workers for the
+specified work queue.</wsdl:documentation>
+      <wsdl:input message="impl:getWorkQueueConfigRequest" name="getWorkQueueConfigRequest"/>
+      <wsdl:output message="impl:getWorkQueueConfigResponse" name="getWorkQueueConfigResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueNames">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns the list of work queue names for this product.
+These names may be used in {@link #getWorkQueueConfig}
+and {@link #setWorkQueueConfig}.</wsdl:documentation>
+      <wsdl:input message="impl:getWorkQueueNamesRequest" name="getWorkQueueNamesRequest"/>
+      <wsdl:output message="impl:getWorkQueueNamesResponse" name="getWorkQueueNamesResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueStatus" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retrieves the worker status with information about work queues across a cluster.</wsdl:documentation>
+      <wsdl:input message="impl:getWorkQueueStatusRequest" name="getWorkQueueStatusRequest"/>
+      <wsdl:output message="impl:getWorkQueueStatusResponse" name="getWorkQueueStatusResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="markArchiveReady" parameterOrder="claimNumbers">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Schedules the claims with the given claim numbers for archive. This method is
+only present for backwards compatibility; new code should use scheduleForArchive.
+This method actually calls scheduleForArchive internally. Scheduling a claim
+archive is the closest equivalent to marking a claim as archive ready in pre
+5.0.6 versions of ClaimCenter.
+&lt;br&gt;@deprecated Use scheduleForArchive instead</wsdl:documentation>
+      <wsdl:input message="impl:markArchiveReadyRequest" name="markArchiveReadyRequest"/>
+      <wsdl:output message="impl:markArchiveReadyResponse" name="markArchiveReadyResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="markForPurge" parameterOrder="claimNumbers">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Marks the claims represented by the claim numbers for purge.  Does not actually
+do the purge.  Can be run in maintainence or multi-user mode.
+&lt;br&gt;@deprecated To be retired and replaced with #markPurgeReady in bedrock</wsdl:documentation>
+      <wsdl:input message="impl:markForPurgeRequest" name="markForPurgeRequest"/>
+      <wsdl:output message="impl:markForPurgeResponse" name="markForPurgeResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="markPurgeReady" parameterOrder="claimNumbers">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Marks the purge ready flag on claim for the claim purging batch process</wsdl:documentation>
+      <wsdl:input message="impl:markPurgeReadyRequest" name="markPurgeReadyRequest"/>
+      <wsdl:output message="impl:markPurgeReadyResponse" name="markPurgeReadyResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="notifyQueueWorkers" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Wakes up all workers for the specified queue across the cluster.
+Workers will check for workitems and will continue
+processing any found until the workitem table for the
+queue is empty.</wsdl:documentation>
+      <wsdl:input message="impl:notifyQueueWorkersRequest" name="notifyQueueWorkersRequest"/>
+      <wsdl:output message="impl:notifyQueueWorkersResponse" name="notifyQueueWorkersResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="requestTerminationOfBatchProcessByID" parameterOrder="pid">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Requests termination of the given batch process, if it's currently running. Note that it's possible that
+this particular invocation could have finished and another invocation of the same process
+begun, in which case this won't request the termination of the current invocation.
+This method does not wait for the batch process to actually terminate</wsdl:documentation>
+      <wsdl:input message="impl:requestTerminationOfBatchProcessByIDRequest" name="requestTerminationOfBatchProcessByIDRequest"/>
+      <wsdl:output message="impl:requestTerminationOfBatchProcessByIDResponse" name="requestTerminationOfBatchProcessByIDResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+      <wsdl:fault message="impl:SOAPSenderException" name="SOAPSenderException"/>
+    </wsdl:operation>
+    <wsdl:operation name="requestTerminationOfBatchProcessByName" parameterOrder="processName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Requests termination of the given batch process, if it's currently running.
+This method does not wait for the batch process to actually terminate</wsdl:documentation>
+      <wsdl:input message="impl:requestTerminationOfBatchProcessByNameRequest" name="requestTerminationOfBatchProcessByNameRequest"/>
+      <wsdl:output message="impl:requestTerminationOfBatchProcessByNameResponse" name="requestTerminationOfBatchProcessByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="restore" parameterOrder="claimNumbers comment">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Restore the claim</wsdl:documentation>
+      <wsdl:input message="impl:restoreRequest" name="restoreRequest"/>
+      <wsdl:output message="impl:restoreResponse" name="restoreResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="scheduleForArchive" parameterOrder="claimNumbers">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Schedules the claims with the given claim numbers for archive. The claims are looked up and,
+providing they are closed, are immediately scheduled for archive by creating a high priority
+work item that will be picked up by the archiving work queue. Note that the archiving work
+queue is processed asynchronously so it is unlikely that any of the claims will actually be
+archived by the time this call returns.
+&lt;p&gt;
+There is a race condition that can affect this call. If a claim to be archived references a
+newly created admin object, such as a new user, there is a chance the archiving of the claim
+will fail because the new admin object has not yet been copied to the archiving database. This
+is a rare edge case as most claims to be archived are old, closed, claims which have not been
+altered for a long time. The chances of hitting this race condition can be minimized by
+explicitly running the archive batch process before calling this method, though this is
+expensive and is not recommended as a general practice.
+&lt;p&gt;
+Throws SOAPException if claims cannot be scheduled for archive because they cannot be found,
+are closed or because an archive work item could not be created. If any of the claims is not
+found or is not closed then the call fails before attempting to archive any other claims.
+However if all the claims are present and closed it is possible, though very unlikely, for
+some work items to be created successfully and others to fail.
+&lt;p&gt;
+This call is, internally, identical to IClaimAPI.scheduleForArchive and is only included here
+for convenience, so it can be called by the command line maintenance tools.</wsdl:documentation>
+      <wsdl:input message="impl:scheduleForArchiveRequest" name="scheduleForArchiveRequest"/>
+      <wsdl:output message="impl:scheduleForArchiveResponse" name="scheduleForArchiveResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="setWorkQueueConfig" parameterOrder="queueName config">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Sets the configuration for distributed workers for the
+specified work queue.  Any currently running worker
+instances will be stopped after the current workitem in process
+is completed.  New worker instances as specified by the passed
+in config will be created and started.  Note that the
+changes made here are temporary; if the server is restarted,
+the initial values from config.xml will be used when creating
+and starting workers.</wsdl:documentation>
+      <wsdl:input message="impl:setWorkQueueConfigRequest" name="setWorkQueueConfigRequest"/>
+      <wsdl:output message="impl:setWorkQueueConfigResponse" name="setWorkQueueConfigResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="startBatchProcess" parameterOrder="processName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Overridde to ensure correct permission checking.  Starts the given batch process.  If the process is already running on the server,
+an exception will be thrown.</wsdl:documentation>
+      <wsdl:input message="impl:startBatchProcessRequest" name="startBatchProcessRequest"/>
+      <wsdl:output message="impl:startBatchProcessResponse" name="startBatchProcessResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="terminateBatchProcessByID" parameterOrder="pid">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Requests termination of the given batch process, if it's currently running. Note that it's possible that
+this particular invocation could have finished and another invocation of the same process
+begun, in which case this won't request the termination of the current invocation.
+This method does not wait for the batch process to actually terminate
+&lt;br&gt;@deprecated Use requestTerminationOfBatchProcessByID() instead</wsdl:documentation>
+      <wsdl:input message="impl:terminateBatchProcessByIDRequest" name="terminateBatchProcessByIDRequest"/>
+      <wsdl:output message="impl:terminateBatchProcessByIDResponse" name="terminateBatchProcessByIDResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+      <wsdl:fault message="impl:SOAPSenderException" name="SOAPSenderException"/>
+    </wsdl:operation>
+    <wsdl:operation name="terminateBatchProcessByName" parameterOrder="processName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Requests termination of the given batch process, if it's currently running.
+This method does not wait for the batch process to actually terminate
+&lt;br&gt;@deprecated Use requestTerminationOfBatchProcessByName() instead</wsdl:documentation>
+      <wsdl:input message="impl:terminateBatchProcessByNameRequest" name="terminateBatchProcessByNameRequest"/>
+      <wsdl:output message="impl:terminateBatchProcessByNameResponse" name="terminateBatchProcessByNameResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="waitOnActiveWorkItems" parameterOrder="queueName">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Wait on the active work items for a queue</wsdl:documentation>
+      <wsdl:input message="impl:waitOnActiveWorkItemsRequest" name="waitOnActiveWorkItemsRequest"/>
+      <wsdl:output message="impl:waitOnActiveWorkItemsResponse" name="waitOnActiveWorkItemsResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPServerException" name="SOAPServerException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="whenStatsCalculated">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Return the date when the current statistics were calculated.</wsdl:documentation>
+      <wsdl:input message="impl:whenStatsCalculatedRequest" name="whenStatsCalculatedRequest"/>
+      <wsdl:output message="impl:whenStatsCalculatedResponse" name="whenStatsCalculatedResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:SOAPException" name="SOAPException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="IMaintenanceToolsAPISoapBinding" type="impl:IMaintenanceToolsAPI">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="batchProcessStatusByID">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="batchProcessStatusByIDRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="batchProcessStatusByIDResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPSenderException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPSenderException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="batchProcessStatusByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="batchProcessStatusByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="batchProcessStatusByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getIncrementalUpdateTableStatisticsData">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getIncrementalUpdateTableStatisticsDataRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getIncrementalUpdateTableStatisticsDataResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getNumActiveWorkItems">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getNumActiveWorkItemsRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getNumActiveWorkItemsResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getQueueWorkerStatus">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getQueueWorkerStatusRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getQueueWorkerStatusResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getUpdateTableStatisticsData">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getUpdateTableStatisticsDataRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getUpdateTableStatisticsDataResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getValidBatchProcessNames">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getValidBatchProcessNamesRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getValidBatchProcessNamesResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">if there is an exception thrown during the processing</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueConfig">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getWorkQueueConfigRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getWorkQueueConfigResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueNames">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getWorkQueueNamesRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getWorkQueueNamesResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getWorkQueueStatus">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getWorkQueueStatusRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getWorkQueueStatusResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="markArchiveReady">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="markArchiveReadyRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="markArchiveReadyResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If claims cannot be found or cannot be scheduled for archive</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="markForPurge">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="markForPurgeRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="markForPurgeResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If there is exception thrown during the processing</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have both SOAP ADMIN and PURGE permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="markPurgeReady">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="markPurgeReadyRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="markPurgeReadyResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Upon any error</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="notifyQueueWorkers">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="notifyQueueWorkersRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="notifyQueueWorkersResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="requestTerminationOfBatchProcessByID">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="requestTerminationOfBatchProcessByIDRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="requestTerminationOfBatchProcessByIDResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPSenderException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPSenderException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="requestTerminationOfBatchProcessByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="requestTerminationOfBatchProcessByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="requestTerminationOfBatchProcessByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="restore">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="restoreRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="restoreResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Upon any error</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="scheduleForArchive">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="scheduleForArchiveRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="scheduleForArchiveResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If claims cannot be found or cannot be scheduled for archive</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="setWorkQueueConfig">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="setWorkQueueConfigRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="setWorkQueueConfigResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="startBatchProcess">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="startBatchProcessRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="startBatchProcessResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">If the user does not have SOAP ADMIN permissions or if the process is a Purge and the user does not have PURGE permissions.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="terminateBatchProcessByID">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="terminateBatchProcessByIDRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="terminateBatchProcessByIDResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPSenderException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPSenderException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="terminateBatchProcessByName">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="terminateBatchProcessByNameRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="terminateBatchProcessByNameResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="waitOnActiveWorkItems">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="waitOnActiveWorkItemsRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="waitOnActiveWorkItemsResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPServerException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPServerException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="whenStatsCalculated">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="whenStatsCalculatedRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="whenStatsCalculatedResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="SOAPException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">if there is an exception thrown during the processing</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="SOAPException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="IMaintenanceToolsAPIService">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    <wsdl:port binding="impl:IMaintenanceToolsAPISoapBinding" name="IMaintenanceToolsAPI">
+      <wsdlsoap:address location="http://dontuse.defaultvalue.com/IMaintenanceToolsAPI"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

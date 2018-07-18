@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressBookSearchProximityAddressInputSet"
+    mode="default">
+    <Require
+      name="contactSearchCriteria"
+      type="ContactSearchCriteria"/>
+    <Require
+      name="proximitySearchPageHelper"
+      type="contact.CCProximitySearchPageHelper"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.util.Geocode.setDefaultSearchRange(proximitySearchPageHelper, contactSearchCriteria)"
+      name="pspRange"/>
+    <Label
+      label="displaykey.Web.AddressBook.Search.ProximitySearch"/>
+    <RangeInput
+      editable="true"
+      id="ProximitySearchType"
+      label="displaykey.Web.AddressBook.Search.ProximitySearch.Radius"
+      optionLabel="VALUE.getLabel()"
+      sortValueRange="false"
+      value="contactSearchCriteria.ProximitySearchParameters"
+      valueRange="pspRange"
+      valueWidth="228"/>
+    <RangeInput
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="claim != null"
+      id="Address_Name"
+      label="displaykey.Web.Address.Default.Location"
+      required="false"
+      sortValueRange="false"
+      value="psc"
+      valueRange="contactSearchCriteria.ProximitySearchCenterChoices"
+      valueWidth="228"
+      visible="claim != null">
+      <Reflect
+        available="VALUE != null"
+        triggerIds="ProximitySearchType"/>
+    </RangeInput>
+    <Input
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityAddressLine1"
+      label="displaykey.Web.Address.Default.AddressLine1"
+      value="contactSearchCriteria.ProximitySearchCenter.AddressLine1">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.AddressLine1"/>
+    </Input>
+    <Input
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityAddressLine2"
+      label="displaykey.Web.Address.Default.AddressLine2"
+      value="contactSearchCriteria.ProximitySearchCenter.AddressLine2">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.AddressLine2"/>
+    </Input>
+    <Input
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityCity"
+      label="displaykey.Web.Address.Default.City"
+      value="contactSearchCriteria.ProximitySearchCenter.City">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.City"/>
+    </Input>
+    <Input
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityCounty"
+      label="displaykey.Web.Address.Default.County"
+      value="contactSearchCriteria.ProximitySearchCenter.County">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.County"/>
+    </Input>
+    <RangeInput
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityState"
+      label="displaykey.Web.Address.Default.State"
+      value="contactSearchCriteria.ProximitySearchCenter.State"
+      valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(contactSearchCriteria.ProximitySearchCenter.Country)"
+      valueWidth="228"
+      visible="false">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="gw.api.contact.AddressAutocompleteUtil.getStates(VALUE2.Country).firstWhere( \s-&gt; s == VALUE2.State)"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(VALUE2.Country)"/>
+    </RangeInput>
+    <Input
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      editable="true"
+      id="ProximityPostalCode"
+      label="displaykey.Web.Address.Default.PostalCode"
+      value="contactSearchCriteria.ProximitySearchCenter.PostalCode">
+      <Reflect
+        available="VALUE1 != null"
+        inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(VALUE2, &quot;PostalCode&quot;)"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.PostalCode"/>
+    </Input>
+    <TypeKeyInput
+      available="contactSearchCriteria.ProximitySearchParameters != null"
+      confirmMessage="displaykey.RangeInputAddress.CountryChangeWarning"
+      editable="true"
+      id="ProximityCountry"
+      label="displaykey.Web.Address.Default.Country"
+      postOnChange="true"
+      showConfirmMessage="claim != null"
+      value="contactSearchCriteria.ProximitySearchCenter.Country"
+      valueWidth="228">
+      <Reflect
+        available="VALUE1 != null"
+        triggerIds="ProximitySearchType,Address_Name"
+        value="VALUE2.Country"/>
+    </TypeKeyInput>
+    <Code><![CDATA[
+property get psc() : Address {
+        return contactSearchCriteria.ProximitySearchCenter;
+      }
+
+      property set psc(value : Address) {
+        if (claim != null) {
+          contactSearchCriteria.ProximitySearchCenter = value;
+        }
+      }
+      
+    ]]></Code>
+  </InputSet>
+</PCF>

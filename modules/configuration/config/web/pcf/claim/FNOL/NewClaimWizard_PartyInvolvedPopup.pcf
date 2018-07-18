@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCancel="if (IsNew) { Wizard.cancelClaimContact(ClaimContact) }"
+    afterCommit="Wizard.saveDraft()"
+    canEdit="true"
+    id="NewClaimWizard_PartyInvolvedPopup"
+    startInEditMode="true"
+    title="isNew ? displaykey.Wizard.NewClaimWizard.NewClaimPartyInvolved.New : displaykey.Wizard.NewClaimWizard.NewClaimPartyInvolved.Edit">
+    <LocationEntryPoint
+      signature="NewClaimWizard_PartyInvolvedPopup(Wizard : claim.NewClaimWizardInfo, ClaimContact : ClaimContact, IsNew : boolean)"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      name="ClaimContact"
+      type="ClaimContact"/>
+    <Variable
+      name="IsNew"
+      type="boolean"/>
+    <Variable
+      initialValue="ClaimContact.Claim"
+      name="Claim"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="User.util.getCurrentUser()==Claim.AssignedUser || User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;))"
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <Variable
+      initialValue="new pcf_gs.Medicare_PageProc()"
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Screen
+      id="NewClaimWizard_PartyInvolvedScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+      </Toolbar>
+      <AlertBar
+        id="ContactDetailScreen_MoreNamedInsuredDBAAlertBar"
+        label="displaykey.JSP.ContactDetailScreen.MoreNamedInsured.RelatedMNIDoingBusinessAs"
+        visible="Claim.hasRelatedMNIDBAContact(Contact)"/>
+      <CardViewPanel>
+        <Variable
+          initialValue="User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)) ? true : (((Contact typeis PersonVendor) || (Contact typeis CompanyVendor)) ? false : currentUserIsAdjuster)"
+          name="currentUserHasPerm"
+          recalculateOnRefresh="true"
+          type="boolean"/>
+        <Card
+          id="NewClaimWizard_PartyInvolvedBasicsCard"
+          title="displaykey.Web.ContactDetail.PageLinks.Basics">
+          <PanelRef
+            def="ContactBasicsDV(claimContact, true, linkStatus, Claim)"
+            mode="Contact.subtype">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+        <Card
+          id="NewClaimWizard_PartyInvolvedAddressesCard"
+          title="displaykey.Web.ContactDetail.PageLinks.Addresses"
+          visible="!(Contact typeis Place)">
+          <PanelRef
+            def="AddressesPanelSet(claimContact)">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+        <Card
+          id="NewClaimWizard_PartyInvolvedRelatedContactsCard"
+          title="displaykey.Web.ContactDetail.PageLinks.RelatedContacts">
+          <PanelRef
+            def="ContactRelatedContactsDV(claimContact, Claim)">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+        <Card
+          id="ContactMedicareCard"
+          title="&quot;Medicare&quot;"
+          visible="false //ClaimContact.Contact typeis Person and !(ClaimContact.Contact typeis Attorney) and !(ClaimContact.Contact typeis Ex_ForeignPerVndrAttny) and !(ClaimContact.Contact typeis Doctor) and !(ClaimContact.Contact typeis Ex_ForeignPerVndrDoc)  and !(ClaimContact.Contact typeis PersonVendor) and !(ClaimContact.Contact typeis Ex_ForeignPersonVndr)">
+          <PanelRef
+            def="ContactMedicareDataDV(Claim, initContactISOMedicare(ClaimContact.Contact), pageProc, null)">
+            <Toolbar>
+              <ToolbarButtonSetRef
+                toolbarButtonSet="ContactDetailToolbarButtonSet(ClaimContact, false, linkStatus, false)"
+                visible="false"/>
+            </Toolbar>
+          </PanelRef>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+    <Code><![CDATA[property get Contact() : Contact { return claimContact.Contact; }
+
+function initContactISOMedicare(selectedContact : Contact) : ContactISOMedicareExt {
+  if(selectedContact.ContactISOMedicareExt == null && typeof selectedContact == Person)
+    selectedContact.ContactISOMedicareExt = new ContactISOMedicareExt()
+    
+  return selectedContact.ContactISOMedicareExt
+}]]></Code>
+    <!-- <Card
+      id="ContactEFTCard"
+      title="displaykey.Web.ClaimContacts.ContactDetails.EFTInfo"
+      visible="(!(Contact typeis Ex_ForeignCoVenLawFrm) AND !(Contact typeis Ex_ForeignCoVenMedOrg) AND                     !(Contact typeis Ex_ForeignCoVendor) AND !(Contact typeis Ex_ForeignPerVndrAttny) AND                     !(Contact typeis Ex_ForeignPerVndrDoc) AND !(Contact typeis Ex_ForeignPersonVndr))">
+      <PanelRef
+        def="EFTAccountPanelSet(claimContact, currentUserHasPerm)"
+        editable="((Contact typeis PersonVendor) || (Contact typeis CompanyVendor)) ? false : true">
+        <Toolbar/>
+      </PanelRef>
+    </Card> -->
+  </Popup>
+</PCF>

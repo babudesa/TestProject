@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Screen
+    id="AgencyDetailScreen">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="canAccessLinkButtons"
+      type="boolean"/>
+    <Require
+      name="showRoles"
+      type="boolean"/>
+    <Require
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="linkStatus.Known and linkStatus.Linked"
+      name="showRelatedObjects"
+      type="boolean"/>
+    <Toolbar/>
+    <CardViewPanel>
+      <Card
+        id="ContactBasicsCard"
+        title="displaykey.Web.ContactDetail.PageLinks.Basics">
+        <PanelRef
+          def="ContactBasicsDV(contactHandle, showRoles, linkStatus, claim)"
+          mode="Contact.subtype">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, null)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ContactAddressesCard"
+        title="displaykey.Web.ContactDetail.PageLinks.Addresses"
+        visible="!(Contact typeis Place)">
+        <PanelRef
+          def="AddressesPanelSet(contactHandle)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, null)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="ContactRelatedContactsCard"
+        title="displaykey.Web.ContactDetail.PageLinks.RelatedContacts">
+        <PanelRef
+          def="ContactRelatedContactsDV(contactHandle, claim)">
+          <Toolbar>
+            <ToolbarButtonSetRef
+              toolbarButtonSet="ContactDetailToolbarButtonSet(contactHandle, canAccessLinkButtons, linkStatus, null)"/>
+          </Toolbar>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactActivitiesCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Activities"
+        visible=" showRelatedObjects and perm.Claim.genericviewactivity">
+        <PanelRef
+          def="AddressBookContactActivitiesLV(Contact)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactClaimsCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Claims"
+        visible=" showRelatedObjects and perm.Claim.genericviewclaim">
+        <PanelRef
+          def="AddressBookContactClaimsLV(Contact)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactExposuresCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Exposures"
+        visible=" showRelatedObjects and perm.Claim.genericviewexposure">
+        <PanelRef
+          def="AddressBookContactExposuresLV(Contact)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+      <Card
+        id="AddressBookContactMattersCard"
+        title="displaykey.Web.AddressBook.ContactDetail.ScreenTab.Matters"
+        visible=" showRelatedObjects and perm.Claim.genericviewmatter">
+        <PanelRef
+          def="AddressBookContactMattersLV(Contact)">
+          <Toolbar/>
+        </PanelRef>
+      </Card>
+    </CardViewPanel>
+    <Code><![CDATA[
+property get Contact() : Contact { return contactHandle.Contact; }
+    ]]></Code>
+  </Screen>
+</PCF>

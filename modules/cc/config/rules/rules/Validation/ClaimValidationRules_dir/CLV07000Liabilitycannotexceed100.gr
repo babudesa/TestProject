@@ -1,0 +1,25 @@
+package rules.Validation.ClaimValidationRules_dir
+
+@gw.rules.RuleName("CLV07000 -  Liability can not exceed 100")
+internal class CLV07000Liabilitycannotexceed100 {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.SubrogationSummary != null AND
+claim.SubrogationSummary.SubroAdverseParties.length > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var totalExpLiability : java.math.BigDecimal = claim.AdversePartyLiabilityPercent()
+var ruleNumber =  gw.api.util.StringUtil.substring( actions.getRule() as java.lang.String, 0,8)
+
+if (totalExpLiability > 100) {
+  claim.reject( "newloss", displaykey.Subrogation.Validation.Claim.LiabExceedsAdOnly(ruleNumber,totalExpLiability), null, null)
+} else {
+  if (claim.FaultRating == "1"){
+    totalExpLiability = totalExpLiability + claim.Fault;
+    if (totalExpLiability > 100)  {
+      claim.reject( "newloss", displaykey.Subrogation.Validation.Claim.LiabExceedsAdPlusIns(ruleNumber,totalExpLiability), null, null)
+    }
+  }
+}/*end00rule*/
+  }
+}

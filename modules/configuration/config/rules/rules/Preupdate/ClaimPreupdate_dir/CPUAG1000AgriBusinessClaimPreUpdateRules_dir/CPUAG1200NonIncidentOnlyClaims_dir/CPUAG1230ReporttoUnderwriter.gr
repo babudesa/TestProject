@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleName("CPUAG1230 - Report to Underwriter")
+internal class CPUAG1230ReporttoUnderwriter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.State != "closed" and
+!claim.isConvertedExt() and
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_report_underwriter") AND
+(claim.LossType!=LossType.TC_ALTMARKETSAUTO AND claim.LossType!=LossType.TC_SHSAUTO AND claim.LossType!=LossType.TC_TRUCKINGAUTO)
+   
+
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_report_underwriter" )
+
+try{
+  claim.createActivityFromPattern( null, ap)
+}
+catch(e){
+    gw.api.util.Logger.logError( "Unknown Error Occurred in Claim Pre-Update Rules "+ actions.getRule().DisplayName)
+    claim.reject( "newloss", "Unknown Error Occurred in Claim Pre-Update Rules "+ actions.getRule().DisplayName, null, null )
+}
+/*end00rule*/
+  }
+}

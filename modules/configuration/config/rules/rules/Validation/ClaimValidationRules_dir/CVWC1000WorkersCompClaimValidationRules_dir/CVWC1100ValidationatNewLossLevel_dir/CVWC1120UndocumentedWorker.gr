@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVWC1120 - Undocumented Worker")
+internal class CVWC1120UndocumentedWorker {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.InjuredWorker.UndocumentedWorkerExt == true && 
+claim.claimant.MedicareEligibleExt == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  claim.rejectField( "claimant.MedicareEligibleExt", "newloss", displaykey.Rules.Validation.Claim.WorkersComp.UndocumentedWorker, null, null )
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

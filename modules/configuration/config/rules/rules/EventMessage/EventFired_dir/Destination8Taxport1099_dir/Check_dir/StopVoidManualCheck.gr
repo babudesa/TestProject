@@ -1,0 +1,102 @@
+package rules.EventMessage.EventFired_dir.Destination8Taxport1099_dir.Check_dir
+
+@gw.rules.RuleName("Stop/Void Manual Check")
+internal class StopVoidManualCheck {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "CheckStatusChanged" &&
+((messageContext.Root as Check).Status == "stopped" ||
+ (messageContext.Root as Check).Status == "voided") &&
+ (messageContext.Root as Check).PaymentMethod =="manual"
+ 
+
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = messageContext.Root as Check
+
+for (payee in msgCheck.Payees){
+  if(msgCheck.Reportability == "reportable"){
+   /* If we Stoped or voided on an issued check  and it is reportable and have Backup withholding on it and it is not Endorsed (Then send offset message for Box4 which is Backup withholding in Taxport1099 )                                                                        
+   B) If and send offset message for BoxXX (07,06 and 14)) in Taxport1099    */
+   /* Box07 = Nonemployee Compensation, Box06 = Medical and health care payments and Box14 = Gross proceeds to and attorney.*/
+      
+    if (payee.Payee.Ex_TaxStatusCode == "B"){
+   
+        if( msgCheck.BackupWithholdingCheckExt ){ 
+            var amountToSend : java.math.BigDecimal;
+ 
+            for (p in msgCheck.Payments){
+                  for (l in p.LineItems){
+                    if (l.LineCategory != null){ // if line category is not null (not specified)									
+                      for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                        if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                          if((p.Status=="stopped")||(p.Status=="voided")){            
+                          amountToSend = -(l.Amount);
+        
+        var messageContent04 = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend, "04");
+         if (messageContent04 != "") {
+        var message04 = messageContext.createMessage(messageContent04);
+         }
+         var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend,l.IRS1099BoxNumberExt.Code);
+         if (messageContentxx != "") {
+         var messagexx = messageContext.createMessage(messageContentxx);
+                    }
+                 }   
+              }
+            }
+          }
+        }          
+      }
+  }
+  
+    else  {
+      var amountToSend : java.math.BigDecimal;
+            for (p in msgCheck.Payments){
+                for (l in p.LineItems){
+                  if (l.LineCategory != null){ // if line category is not null (not specified)									
+                    for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                      if((p.Status=="stopped")||(p.Status=="voided")){
+                       amountToSend = -(l.Amount);
+                       
+               Var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend, l.IRS1099BoxNumberExt.Code);
+                if (messageContentxx != "") {
+               Var messagexx = messageContext.createMessage(messageContentxx);
+                        }
+                      }
+                    }
+                }
+              }
+            }
+          }
+        }
+    }
+  
+else { 
+     var amountToSend : java.math.BigDecimal;
+           for (p in msgCheck.Payments){
+                for (l in p.LineItems){
+                  if (l.LineCategory != null){ // if line category is not null (not specified)									
+                    for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+                      if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+                      //l.IRS1099BoxNumberExt=bn // set the box number 
+                
+                        if((p.Status=="stopped")||(p.Status=="voided")){               
+                        amountToSend = -(l.Amount);
+                        
+            Var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(msgCheck, amountToSend,l.IRS1099BoxNumberExt.Code);
+              if (messageContentxx != "") {
+            Var messagexx = messageContext.createMessage(messageContentxx);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+   }
+  }
+}/*end00rule*/
+  }
+}

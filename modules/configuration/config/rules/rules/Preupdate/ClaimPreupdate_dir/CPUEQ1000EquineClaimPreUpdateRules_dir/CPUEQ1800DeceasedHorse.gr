@@ -1,0 +1,74 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1800 - Deceased Horse")
+internal class CPUEQ1800DeceasedHorse {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!(claim.New) 
+&& claim.LoadCommandID ==null
+and claim.DeathDate != null
+and !exists(event in claim.History where event.CustomType=="DataChange" 
+and event.Description=="Notification of deceased horse") 
+and claim.State !="draft" and claim.State != "closed"  
+/*
+updated: 3/24/10 erawe -defect 3227
+*/  
+  /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+//should be ClaimCenterEquine@gaig.com
+uses util.custom_Ext.EmailHelper
+
+claim.createCustomHistoryEvent( "DataChange", "Notification of deceased horse" )
+var noteBody:String
+var note:Note
+var environmentInformation = gw.api.system.server.ServerUtil.getEnv().toString()
+var emailHelper=new EmailHelper()
+var body : String = templates.email.NewDeadHorse.renderToString(claim)
+var agent : String = claim.Policy.ex_Agency.DisplayName
+
+if(agent!=null){ //this will add the producer(agency) to the subject in the email
+  if(environmentInformation == "prod"){
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.Underwriters_Email, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Deceased Horse Notification: " + agent, body)
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+  }
+  else{
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Deceased Horse Notification: " + agent, body)
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+  }
+//if the producer(agency) is null we then hard code the email subject with No Producer Entered  
+}else{
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+   emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.Underwriters_Email, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Deceased Horse Notification: No Producer Entered", body)
+    gw.api.util.Logger.logInfo(actions.Rule.DisplayName);
+  }
+  else{
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Deceased Horse Notification: No Producer Entered", body)
+    gw.api.util.Logger.logInfo(actions.Rule.DisplayName);
+  }
+}
+noteBody = "Email notification of a new deceased horse has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+note = claim.addNote("general", noteBody);
+note.Subject = "Deceased Horse Notification"
+  
+
+
+
+
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,56 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOAG1000AgriBusinessTransactionPostSetupRules_dir.TPOAG1100RulesthatCreateActivities_dir
+
+@gw.rules.RuleName("TPOAG1130 - Manager activity for missinge Lienholder")
+internal class TPOAG1130ManageractivityformissingeLienholder {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet" and
+transactionSet.Amount>=2500)&&
+transactionSet.Claim.LossType != LossType.TC_AGRIXSUMBAUTO &&
+transactionSet.Claim.LossType != LossType.TC_AGRIXSUMBLIAB/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+var check = (transactionSet as CheckSet).PrimaryCheck;
+var ap = util.custom_Ext.finders.findActivityPattern( "ab_lienholder_manager")
+var exp = check.Payments[0].ReserveLine.Exposure
+
+for(expose in transactionSet.Exposures){
+  //added this check for feature type, 11/29/11 per defect 4813
+  if(expose.ExposureType=="ab_AGG_auto_BodInjury" or expose.ExposureType=="ab_AGG_gl_BodInjury" or
+    expose.ExposureType=="ab_BodilyInjury"or expose.ExposureType=="ab_MedPay"or 
+    expose.ExposureType=="ab_PersonalInjury"or expose.ExposureType=="ab_PIP"){
+    actions.exit()
+  }else{
+    //loops through and makes sure every lienholder has been paid if it&apos;s a property coverage
+    if(check.Payments[0].CostType=="claimcost"){
+      if((check.Payments[0].ReserveLine.Exposure.Coverage.Subtype =="PropertyCoverage") &&
+        !exists(act in transactionSet.Claim.Activities where 
+        act.ActivityPattern.Code=="ab_lienholder_manager" and 
+        act.Exposure==expose)){
+        var propCov = check.Payments[0].ReserveLine.Exposure.Coverage as PropertyCoverage;
+        if(exists( lienholder in (propCov.RiskUnit as PropertyRU).Property.Lienholders where !exists(payee in (transactionSet as CheckSet).Checks[0].Payees where payee.Payee==lienholder.Lienholder ))){
+          transactionSet.Claim.createActivityFromPattern(expose, ap)
+        }
+      }
+      if((check.Payments[0].ReserveLine.Exposure.Coverage.Subtype =="VehicleCoverage") &&
+        !exists(act in transactionSet.Claim.Activities where 
+        act.ActivityPattern.Code=="ab_lienholder_manager" and 
+        act.Exposure==expose)){
+        var vehCov = check.Payments[0].ReserveLine.Exposure.Coverage as VehicleCoverage;
+        if(exists( lienholder in (vehCov.RiskUnit as VehicleRU).Vehicle.Lienholders where !exists(payee in (transactionSet as CheckSet).Checks[0].Payees where payee.Payee==lienholder.Lienholder ))){
+          transactionSet.Claim.createActivityFromPattern(expose, ap)
+        }
+      }
+    }//end payment type check
+   }//end else
+}//end for
+}//end try
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

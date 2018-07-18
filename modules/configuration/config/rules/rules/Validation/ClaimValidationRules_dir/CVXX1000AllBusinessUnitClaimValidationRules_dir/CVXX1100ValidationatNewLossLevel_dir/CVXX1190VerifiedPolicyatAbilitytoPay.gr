@@ -1,0 +1,20 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX1190 - Verified Policy at Ability to Pay")
+internal class CVXX1190VerifiedPolicyatAbilitytoPay {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Added to insure that when a new policy is brought in during Policy Refresh it is at ability to pay
+  There was no check at New Loss level before so it would go through
+  Author: Kris Boyd
+  Date: 7/8/2008
+  Updated: -
+  EM10 Defect: 1285 - 7/8/2008
+*/
+claim.Policy.isPolicyInRefresh( 1 ) and claim.Policy.ValidationLevel != "payment"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.setPolicyRefreshFailed()
+claim.reject( "newloss", "Verified Policy is not at Ability To Pay", null, null )/*end00rule*/
+  }
+}

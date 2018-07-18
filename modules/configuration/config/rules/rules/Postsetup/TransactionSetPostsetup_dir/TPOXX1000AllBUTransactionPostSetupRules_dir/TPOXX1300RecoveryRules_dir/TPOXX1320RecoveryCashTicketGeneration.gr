@@ -1,0 +1,42 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1300RecoveryRules_dir
+
+@gw.rules.RuleName("TPOXX1320 - Recovery Cash Ticket Generation")
+internal class TPOXX1320RecoveryCashTicketGeneration {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/// bestor 05092009 - Defect 1833 related to notes added for Recovery - Cash Receipt Form transactions
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/
+uses gw.api.util.Logger //Added for logging in Debug - SR
+for(each in transactionSet.Transactions)
+{
+  var recovery = each as Recovery;
+    if(!recovery.OffsetRecovery and recovery.New and recovery.Amount > 0
+        and recovery.Status == "submitting" and recovery.LoadCommandID == null
+        and !recovery.IsBulkedExt and recovery.Claim.isNativeORUpdatedExt()) { 
+      uses java.util.HashMap
+    
+      var note:Note
+      var body:String
+      if (recovery.RecodeExt ==false) {
+        if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "CashReceivedTicket.pdf" )) {
+          if(recovery.ex_recoveryCheckNumber==null){
+            body = "Cash Received Form sent to Specialty Accounting for Money Order/Check Number <unknown> - Receipt Number: " +recovery.ex_CashReceiptNumber;
+          } else {
+            body = "Cash Received Form sent to Specialty Accounting for Money Order/Check Number " + recovery.ex_recoveryCheckNumber + " - Receipt Number: " +recovery.ex_CashReceiptNumber;
+          }
+         note = recovery.Claim.addNote("general", body);
+         note.Subject = "Cash Receipt Notification";
+         recovery.Claim.Bundle.commit()
+         recovery.Claim.addEvent( "NoteAdded" );
+        } else {
+          //changed to logging in Debug - SR
+  		Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+        }
+      }
+    }
+}/*end00rule*/
+  }
+}

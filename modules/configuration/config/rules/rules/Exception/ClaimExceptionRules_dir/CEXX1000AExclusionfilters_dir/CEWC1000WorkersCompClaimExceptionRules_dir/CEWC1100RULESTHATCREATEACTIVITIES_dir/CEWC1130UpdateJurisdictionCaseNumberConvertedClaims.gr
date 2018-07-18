@@ -1,0 +1,32 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEWC1000WorkersCompClaimExceptionRules_dir.CEWC1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEWC1130 - Update Jurisdiction Case Number Converted Claims")
+internal class CEWC1130UpdateJurisdictionCaseNumberConvertedClaims {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!exists(act in claim.Activities where act.ActivityPattern.Code=="update_jurisdiction_case_number")
+
+//5/12/16 dcarson2 - defect 8589 - changed to use a script parameter to allow adding states from administration/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.ArrayList
+
+var ap = util.custom_Ext.finders.findActivityPattern( "update_jurisdiction_case_number" )
+var jurisscriptparam : String = ScriptParameters.JurisdictionStates_RequiringCaseNumber
+
+try{
+  for(exp in claim.Exposures){
+     if(exp.ExposureType == ExposureType.TC_WC_INDEMNITY_TIMELOSS && 
+     (jurisscriptparam.split( "," ) as java.util.ArrayList<java.lang.Object>).contains(exp.Claim.JurisdictionState.Code) && 
+     exp.Claim.JurisClaimNumberExt==null){ 
+       if(gw.api.util.DateUtil.daysBetween( gw.api.util.DateUtil.currentDate(),exp.CreateTime)>= 30){
+            exp.Claim.createActivityFromPattern(null, ap)
+       }
+     } 
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,24 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVWC1000WorkersCompClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVWC1100 - Prevent Close with Conversion ICD")
+internal class CCVWC1100PreventClosewithConversionICD {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/util.WCHelper.isWCLossType(claim) &&
+(claim.ClaimInjuryIncident != null &&
+claim.LoadCommandID != ScriptParameters.CurrentConversionLoadCommandID &&
+claim.LoadCommandID != ScriptParameters.GOSULoadCommandID &&
+claim.ClaimInjuryIncident.InjuryDiagnoses.HasElements)
+
+/**
+ * Defect 8650: If the one and only ICD code is 'WCCONV', then do not allow the claim to be closed.
+ *//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var inc = claim.ClaimInjuryIncident
+if(inc.InjuryDiagnoses.Count == 1 && inc.InjuryDiagnoses.first().ICDCode.Code == gw.api.iso.ISOInjuryLossSection._WCICD){
+  claim.reject(ValidationLevel.TC_NEWLOSS, displaykey.InjuryIncident.ConversionICDClose(gw.api.iso.ISOInjuryLossSection._WCICD), null, null)
+  actions.exit()
+}/*end00rule*/
+  }
+}

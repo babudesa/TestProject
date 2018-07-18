@@ -1,0 +1,38 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir.PVXX1240RULESFORISOANDATP_dir.PVXX1241InsuredRequirements_dir
+
+@gw.rules.RuleName("PVXX1241B - Insured Postal Code Required")
+internal class PVXX1241BInsuredPostalCodeRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*///Defect 1369 - erawe 2/3/09 changed from rejectField to reject
+try{
+  var address = policy.insured.PrimaryAddress;
+  //checking Postal Code
+  var msg = policy.Claim.performAddressValidation(address.PostalCode)
+
+  var postCodeReq : Boolean = util.custom_Ext.finders.postCodeRequired(address.Country.Code, true)
+
+  if(msg == "1")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.PostalCode", "payment", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "Postal Code"), null, null )
+    policy.reject( "payment", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Insured", "Postal Code"), null, null )
+  }
+  if(msg == "2")
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.PostalCode", "payment", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "Postal Code"), null, null )
+    policy.reject( "payment", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Insured", "Postal Code"), null, null )
+  }    
+  if(msg == "3" and postCodeReq)
+  {
+    //Policy.rejectField( "Insured.PrimaryAddress.PostalCode", "payment", displayKey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "Postal Code"), null, null )
+    policy.reject( "payment", displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Insured", "Postal Code"), null, null )
+  }    
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+  //Exposure.reject( null, null, "newloss", "Unknown Error Occurred in Exposure Validation Rule "+actions.getRule().displayName )
+}/*end00rule*/
+  }
+}

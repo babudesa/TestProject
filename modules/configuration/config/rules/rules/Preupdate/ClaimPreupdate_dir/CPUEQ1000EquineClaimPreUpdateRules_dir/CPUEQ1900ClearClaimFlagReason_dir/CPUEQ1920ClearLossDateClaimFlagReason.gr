@@ -1,0 +1,36 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1900ClearClaimFlagReason_dir
+
+@gw.rules.RuleName("CPUEQ1920 - Clear LossDate ClaimFlagReason ")
+internal class CPUEQ1920ClearLossDateClaimFlagReason {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(change in claim.ChangedFields where change=="LossDate") and
+(gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) > 10 
+or gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) > 10)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/  var effFlaggedReason = "Claim Loss Date within 2 weeks of Policy Effective Date."
+  var expFlaggedReason = "Claim Loss Date within 2 weeks of Policy Expiration Date."
+
+try{
+     if(claim.FlagClaimIndicator!=null && claim.FlagClaimIndicator.HoverText!=null){
+        if(claim.FlagClaimIndicator.HoverText.containsIgnoreCase(effFlaggedReason)
+           && gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate) > 10){
+           claim.removeFlagReason(effFlaggedReason)
+           if(gw.api.util.DateUtil.daysBetween(claim.Policy.ExpirationDate, claim.LossDate ) < 10){
+              claim.setFlag(expFlaggedReason)
+           }
+        }else if(claim.FlagClaimIndicator.HoverText.containsIgnoreCase(expFlaggedReason)
+                 && gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) > 10){
+            claim.removeFlagReason(expFlaggedReason)
+           if(gw.api.util.DateUtil.daysBetween(claim.LossDate, claim.Policy.EffectiveDate)<10){
+             claim.setFlag(effFlaggedReason)
+           }
+       }
+    }
+     
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

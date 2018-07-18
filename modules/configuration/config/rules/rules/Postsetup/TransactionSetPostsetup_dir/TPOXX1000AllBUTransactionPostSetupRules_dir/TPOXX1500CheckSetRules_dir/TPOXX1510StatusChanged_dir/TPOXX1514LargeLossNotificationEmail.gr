@@ -1,0 +1,32 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPOXX1514 - Large Loss Notification Email")
+internal class TPOXX1514LargeLossNotificationEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/// moved to Transaction Preupdate as for Recurring checks, the check number was set after generating this history entry
+// and it was set as null on the History log
+transactionSet.Subtype == "CheckSet" and
+((transactionSet as CheckSet).PrimaryCheck).Status == "requesting" and
+(((transactionSet.OriginalVersion) as CheckSet).PrimaryCheck).Status != "requesting" and
+!(transactionSet.New and transactionSet.LoadCommandID != null)
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transSet = transactionSet as CheckSet
+var check = transSet.PrimaryCheck
+if(exists(pymt in transSet.PrimaryCheck.Payments where pymt.PaymentType=="final")){
+  var checks = transSet.Claim.Checks
+  checks = checks.where(\ c -> c.Status == "requesting")  
+  for(ch in checks){
+    ch.sendLargeLossNotfication()
+  }
+}else{
+  if(check.Status == "requesting"){
+    check.sendLargeLossNotfication()
+  }
+}/*end00rule*/
+  }
+}

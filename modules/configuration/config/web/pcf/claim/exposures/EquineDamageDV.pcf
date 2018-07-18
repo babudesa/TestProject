@@ -1,0 +1,416 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  Property Damage subviews - this is called from all the exposure screens. 
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="EquineDamageDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.returnProperty()"
+      name="curCoveredProperty"
+      recalculateOnRefresh="true"
+      type="LocationBasedRU"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="matterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Overall"/>
+      <Input
+        id="LossParty"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossParty"
+        required="true"
+        value="Exposure.LossParty"/>
+      <Input
+        id="ClosedDate"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClosedDate"
+        value="Exposure.CloseDate"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <TypeKeyInput
+        editable="true"
+        id="ClosedOutcome"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClosedOutcome"
+        required="true"
+        value="Exposure.ClosedOutcome"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <!-- In a reconnect situation the primary coverage is actually the previous coverage  Changes Start : kmboyd - 3/9/09  Made a range input so that the user can adjust the coverage while editing the feature  Moved some fields around to be more intuitive when filling out the feature screen with the new covered party changes -->
+      <Input
+        id="PrimaryCoverage"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PreviousCoverage"
+        value="Exposure.PrimaryCoverage"
+        visible="Exposure.ReconnectFailExt and !Exposure.Changed"/>
+      <Input
+        id="PrevHorse"
+        label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exposure.PreviousHorse"
+        value="Exposure.getFormerRiskName()"
+        visible="Exposure.ReconnectFailExt and Exposure.FixedPropertyIncident.Property == null"/>
+      <RangeInput
+        editable="true"
+        id="Exposure_Incident"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Coverage"
+        onChange="Exposure.Coverage = null"
+        postOnChange="true"
+        required="true"
+        value="checkProperty"
+        valueRange="Exposure.Claim.Policy.Properties"
+        valueWidth="300"/>
+      <RangeInput
+        editable="true"
+        id="PriCov"
+        label="Exposure.ReconnectFailExt ? displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PreviousCoverage : displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PrimaryCoverage"
+        onChange="Exposure.setNewCoverage(Exposure.Coverage, true)"
+        optionLabel="VALUE.getDescriptiveName()"
+        postOnChange="true"
+        required="true"
+        value="Exposure.Coverage"
+        valueRange="Exposure.getApplicableCvgs()"
+        valueWidth="300"
+        visible="!Exposure.ReconnectFailExt"/>
+      <RangeInput
+        editable="true"
+        filter="VALUE.isLegalForReconnect(Exposure)"
+        id="CoverageChoice"
+        label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exopsure.ReconnectCoverage"
+        onChange="Exposure.setNewCoverage(Exposure.Coverage, true)"
+        optionLabel="VALUE.getDescriptiveName()"
+        postOnChange="true"
+        required="true"
+        value="Exposure.Coverage"
+        valueRange="Exposure.getApplicableCvgs()"
+        visible="Exposure.ReconnectFailExt"/>
+      <Input
+        editable="true"
+        id="FeatureAtt"
+        label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureAttributes(Exposure.ExposureType)"
+        required="true"
+        value="Exposure.ExposureDetailsExt"
+        visible="Exposure.ExposureType==&quot;eq_surgical&quot;"/>
+      <!-- <Input
+        id="CoverageSubType"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.CoverageSubType"
+        value="Exposure.CoverageSubType"/> -->
+      <!-- Changed End : kmboyd - 3/9/09 -->
+      <DateInput
+        dateFormat="short"
+        id="ReOpenDate"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ReOpenDate"
+        value="Exposure.ReOpenDate"
+        visible=" exposure.ReOpenDate != null "/>
+      <!-- <RangeInput
+        id="Coverage"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Coverage"
+        value="Exposure.Coverage"
+        valueRange="Exposure.Claim.Policy.getCoveragesByCoverageType(Exposure.PrimaryCoverage)"
+        visible="Exposure.Coverage typeis PropertyCoverage"/> -->
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="deathDate"
+        label="displaykey.GAIC.Equine.HorseAttribute.DOD"
+        required="false"
+        timeFormat="short"
+        validationExpression="Exposure.Claim.validateDeathDate()"
+        value="Exposure.Claim.DeathDate"
+        visible=" Exposure.ExposureType == &quot;eq_mortality&quot;"/>
+      <Input
+        id="ReopenedReason"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ReopenedReason"
+        value="Exposure.ReopenedReason"
+        visible=" exposure.ReOpenDate != null "/>
+      <!-- <Input
+        action="ContactDetailPopup.push(Exposure.AssignedUser.Contact, Exposure.Claim)"
+        available="Exposure.AssignedUser.Contact != null"
+        id="AssignedUser_Name"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.AssignedUser.Name"
+        value="Exposure.AssigneeDisplayString"/> -->
+      <!-- not working with new build commented out to proceed -->
+      <Input
+        id="AssignedGroup_Name"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.AssignedGroup.Name"
+        value="Exposure.AssigneeGroupOnlyDisplayString"/>
+      <!-- Add Claim Business Unit to the feature menu screen - kmboyd - 5/5/08 Defect 1093 -->
+      <Input
+        id="ClaimOfficeBranch"
+        label="displaykey.GAIC.Equine.ClaimOfficeBranch"
+        value="util.custom_Ext.OfficeBranchFunctions.getClaimOfficeBranch(Exposure)"
+        visible="!Exposure.New and Exposure.Claim.State !=&quot;draft&quot;"/>
+      <!-- replace status with financial status - def 312 - KOtteson - 9/6/07 -->
+      <Input
+        id="FinancialState"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FinancialStatus"
+        value="Exposure.getFeatureFinancialStatus()"/>
+      <!-- <Input
+        id="StaffState"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.StaffState"
+        value="Exposure.getFeatureStaffingStatus()"/> -->
+      <!-- replace Staffing status with Feature Status - def 595 - kmboyd - 1/11/08 -->
+      <Input
+        id="FeatureStatus"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FeatureStatus"
+        value="Exposure.getFeatureStatus()"/>
+      <Input
+        id="CreateTime"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OpenDate"
+        value="Exposure.RptCreateDateExt"/>
+      <InputSet
+        visible="Exposure.Claim.Policy.StatCodingEnabled">
+        <PolicyStatCodePickerInput
+          action="ClaimPolicyStatCodePickerPopup.push(Exposure.Claim)"
+          editable="true"
+          id="StatLine"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.StatLine"
+          value="Exposure.StatLine"
+          valueRange="Exposure.Claim.Policy.CappedStatCodes"/>
+        <InputSet
+          hideIfReadOnly="true"
+          visible="true">
+          <TextInput
+            id="StatLine_Warning"
+            value="displaykey.Java.StatCodes.StatCodeListCappedWarning(Exposure.Claim.Policy.StatCodeListCap, Exposure.Claim.Policy.StatCodes.length as int)"
+            visible="Exposure.Claim.Policy.StatCodeListCapped"/>
+        </InputSet>
+      </InputSet>
+      <Input
+        id="ValidationLevel"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ValidationLevel"
+        value="Exposure.ValidationLevel"/>
+      <!-- 06/03/2008 - zthomas - Defect 1002, Add ReservedFile_Ext to Exposure. -->
+      <Input
+        editable="true"
+        id="ReservedFile_Ext"
+        label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exposure.ReservedFile_Ext"
+        required="true"
+        value="Exposure.ReservedFileExt"/>
+      <Input
+        editable="true"
+        id="InLititgation"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InLitigation"
+        onChange="Exposure.NoLegalExpenseTypeExt = null;  if (Exposure.ex_InSuit == true &amp;&amp; Exposure.LegalExpenseExt != true) Exposure.LegalExpenseExt = null"
+        postOnChange="true"
+        required="true"
+        value="Exposure.ex_InSuit"/>
+      <Input
+        editable="!Exposure.doesMatterExistForFeature()"
+        id="LegalExpense"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LegalExpense"
+        onChange="Exposure.NoLegalExpenseTypeExt = null"
+        postOnChange="true"
+        required="true"
+        value="Exposure.LegalExpenseExt"
+        visible="matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+      <TypeKeyInput
+        editable="true"
+        id="NoLegalExpenseType"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.NoLegalExpenseType"
+        required="true"
+        value="Exposure.NoLegalExpenseTypeExt"
+        visible="Exposure.ex_InSuit == true and Exposure.LegalExpenseExt == false &amp;&amp; matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+      <!-- <Input
+        editable="true"
+        id="FactorReserve"
+        label="displaykey.NVV.Exposure.Subview.EquineDamage.Exposure.FactorReserve"
+        value="Exposure.ex_FactorReserve"/> -->
+      <!-- Commented out until the business changes its mind.   RBH 1/23/2007
+      
+ Defect 457 djohnson -Release 9 item - Hiding this on the loss detail screen (Move Type of loss from Loss detail to Feature screen) -->
+      <InputDivider/>
+      <!-- <InputDivider/> -->
+      <!-- <DateInput
+        dateFormat="short"
+        editable="true"
+        id="DeathDate"
+        label="displaykey.GAIC.Equine.HorseAttribute.DOD"
+        required="false"
+        timeFormat="short"
+        validationExpression="Exposure.Claim.DeathDate == null || Exposure.Claim.DeathDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+        value="Exposure.Claim.DeathDate"/> -->
+      <!-- take out secode Date of death
+	  defect 801 add date of death -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant"/>
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="Claimant_Picker"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.Picker"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        required="true"
+        showSearchInMenu="false"
+        value="Exposure.Claimant"
+        valueRange="Exposure.getFirstPartyClaimantContacts()"/>
+      <!-- <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="Claimant_Picker"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.Picker"
+        newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+        required="true"
+        value="Exposure.Claimant"
+        valueRange="Exposure.Claim.relatedContacts">
+        <Reflect
+          triggerIds="LossParty">
+          <ReflectCondition
+            condition="VALUE == &quot;insured&quot;"
+            value="Exposure.Claim.Insured"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </ClaimContactInput> -->
+      <!-- by KSO def 527 - use new picker     by KSO def 527 - 11/19/07 - no longer need picker, just display claimant info -->
+      <Input
+        id="Claimant_Type"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.Type"
+        required="true"
+        value="Exposure.ClaimantType">
+        <!-- <Input label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.Type" id="Claimant_Type" value="Exposure.ClaimantType" required="true" editable="true" > 9/28/10 erawe - defect 3552, I discussed with Linda Brady and for our purposes exp.claimanttype will only pull in
+      	Insured.  MoreNamedInsured and DBA are CoveredPartyType, and as is now the value for Type will not pull in that value.  
+      	Linda said that should be fine.  I will leave the Reflect active at this time though. -->
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="Exposure.ClaimantType"/>
+      </Input>
+      <!-- Defect 1116 changeing to EM10 - On all feature screens the field Contact Prohibited is a Yes/No field. This needs to be changed to a read only field and the value should come from the current Claimant that is selected. It is a field on the Contact itself and should be edited inside the contact instead of on the feature screen.     
+     changed edit to false -->
+      <Input
+        id="Claimant_ContactProhibited"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.ContactProhibited"
+        setter="var claimContact = Exposure.Claim.getClaimContact(Exposure.Claimant); if (claimContact != null) claimContact.ContactProhibited = VALUE;"
+        value="Exposure.Claim.getClaimContact(Exposure.Claimant).ContactProhibited">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="Exposure.Claim.getClaimContact(VALUE).ContactProhibited"/>
+      </Input>
+      <!-- by KSO def 527 - 11/19/07 - no longer need picker, just display claimant info -->
+      <Input
+        id="Claimant_PrimaryPhone"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.PrimaryPhone"
+        value="util.custom_Ext.finders.getPrimaryPhoneNumber(Exposure.Claimant)">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="util.custom_Ext.finders.getPrimaryPhoneNumber(VALUE)"/>
+      </Input>
+      <Input
+        id="Claimant_Address"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Claimant.Address"
+        value="Exposure.Claimant.getPrimaryAddressDisplayValue()">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="VALUE.getPrimaryAddressDisplayValue()"/>
+      </Input>
+      <InputDivider/>
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.IncidentOverview"/>  <MenuRangeInput
+        editable="true"
+        id="Property_Incident"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FixedPropertyIncident"
+        required="true"
+        value="Exposure.FixedPropertyIncident"
+        valueRange="Exposure.Claim.FixedPropertyIncidentsOnly">
+        <MenuItem
+          action="NewFixedPropertyIncidentPopup.push(Exposure.Claim)"
+          hideIfReadOnly="true"
+          id="PropertyDamageDV_NewIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.NewIncident"/>
+        <MenuItem
+          action="EditFixedPropertyIncidentPopup.push(Exposure.FixedPropertyIncident)"
+          hideIfReadOnly="true"
+          id="PropertyDamageDV_EditIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.EditIncident"/>
+        <MenuItem
+          action="ViewFixedPropertyIncidentPopup.push(Exposure.FixedPropertyIncident)"
+          hideIfEditable="true"
+          id="PropertyDamageDV_ViewIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ViewIncident"/>
+      </MenuRangeInput>  remove this because we are not using the incident model -->
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Coding"/>
+      <!-- <Input
+        id="Segment"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Segment"
+        value="Exposure.Segment"/> -->
+      <!-- <Input
+        id="Strategy"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Strategy"
+        value="Exposure.Strategy"/> -->
+      <!-- 11/08/2006 djohnson Commented outexposure segment and strategy -->
+      <TypeKeyInput
+        editable="true"
+        filter="util.custom_Ext.getStates.filterStateFromCountry(Exposure.Claim.LossLocation.Country.Code, VALUE.Code)"
+        id="JurisdictionState"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.JurisdictionState"
+        value="Exposure.JurisdictionState"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Claimant.OtherCoverage"
+        postOnChange="true"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OtherCoverageDetails"
+        visible="Exposure.OtherCoverage">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Financials"/>
+      <!-- <Input
+        formatType="currency"
+        id="OpenReserves"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OpenReserves"
+        value="Exposure.ExposureRpt.OpenReserves"/> -->
+      <!-- Replace Remaining reserves by Open reserves sdalal Equine UAT   Replaced Open reserves function from Guidewire with a self created function - Defect 654 - kmboyd -->
+      <Input
+        formatType="currency"
+        id="OpenReserves"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OpenReserves"
+        value="Exposure.openReserves()"/>
+      <Input
+        id="TotalPayments"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.TotalPayments"
+        value="Exposure.ExposureRpt.TotalPayments"/>
+      <Input
+        id="FuturePayments"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FuturePayments"
+        value="Exposure.ExposureRpt.FuturePayments"/>
+      <Input
+        id="TotalRecoveries"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.TotalRecoveries"
+        value="Exposure.ExposureRpt.TotalRecoveries"/>
+      <Input
+        formatType="currency"
+        id="TotalIncurredNet"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.TotalIncurredNet"
+        value="Exposure.ExposureRpt.TotalIncurredNet"/>
+    </InputColumn>
+    <Code><![CDATA[property get checkProperty() : LocationBasedRU{
+    	 return Exposure.returnProperty();
+    	}
+    	
+property set checkProperty(prop : LocationBasedRU){
+         Exposure.setEquineIncident(prop);
+         curCoveredProperty=prop
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

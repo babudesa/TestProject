@@ -1,0 +1,53 @@
+package rules.Postsetup.ClaimPostsetup_dir.CPOXX1000AllBUsClaimPostSetup_dir
+
+@gw.rules.RuleName("CPOXX1300 - Set ISOEnabled Flag")
+internal class CPOXX1300SetISOEnabledFlag {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///ISOEnabled Flag is defaulting to true...so the old condition no longer works
+//  Updated to use "true" so that this will always go in at the end of a claim
+//  sprzygocki 4/16/10 - EM19
+//Updated sprzygocki 10/29/10 - Now using the ISO reference tables
+//Updated sprzygocki 9/30/11 - Defect 4451 (Upgrade-0) - Policy conversion cannot
+//  guarantee that correct data will come in for Watercraft Property claims, so 
+//  we need to prevent the send to ISO for those claims. Steve Gerding has stated that
+//  Watercraft Property is determined by the presence of class code 180 or a coverage
+//  code of ab_WTC_physdamboat
+//Updated sprzygocki 11/9/11 - Defect 4451 (Upgrade-0) - have decided per Karen
+//  to move these changes out for now.
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  //if(!claim.Policy.ex_PolicyVersion.containsIgnoreCase("Z")){
+    if(claim.LossType!=null){
+     if(util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )!=null){
+        claim.ISOEnabled = util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )
+      } else {
+        claim.ISOEnabled = false
+      }
+    } else {
+      claim.ISOEnabled = false
+    }
+  /*} else {
+    if(exists(coverage in claim.Policy.AllCoverages where 
+        coverage.ClassCodeExt=="180" || coverage.Type==TC_AB_WTC_PHYSDAMBOAT)){
+      claim.ISOEnabled = false
+    } else {
+      if(claim.LossType!=null){
+        if(util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )!=null){
+          claim.ISOEnabled = util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )
+        } else {
+          claim.ISOEnabled = false
+        }
+      } else {
+        claim.ISOEnabled = false
+      }
+    }
+  }*/
+} 
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().getDisplayName(), e, null )  
+}/*end00rule*/
+  }
+}

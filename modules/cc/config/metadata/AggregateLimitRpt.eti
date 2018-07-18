@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="An annual or lifetime aggregate limit on a policy or coverage."
+  entity="AggregateLimitRpt"
+  exportable="false"
+  javaClass="com.guidewire.cc.domain.aggregatelimit.AggregateLimitRpt"
+  loadable="false"
+  platform="false"
+  table="agglimitrpt"
+  type="retireable">
+  <fulldescription><![CDATA[Represents denormalized aggregate limit used calculations (i.e., the amount of the limit that has been used to date) for a
+    PolicyPeriod and, optionally, a coverageline.
+    ]]></fulldescription>
+  <column
+    desc="The amount of the limit that has been used that is tracked within ClaimCenter."
+    name="LimitUsed"
+    nullok="true"
+    type="currencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="ClaimCurrency"/>
+  </column>
+  <column
+    default="true"
+    desc="Indicates if the limit used is up-to-date."
+    name="Valid"
+    nullok="false"
+    type="bit"/>
+  <typekey
+    desc="Aggregate limit type: by loss date or by reported date"
+    name="LimitType"
+    nullok="false"
+    typelist="AggregateLimitType"/>
+  <typekey
+    default="limit"
+    desc="Aggregate type: limit or deductible."
+    name="ValueType"
+    nullok="false"
+    typelist="AggregateType"/>
+  <foreignkey
+    columnName="PolicyPeriodID"
+    desc="PolicyPeriod with which the aggregate limit is associated."
+    fkentity="PolicyPeriod"
+    name="PolicyPeriod"
+    nullok="false"/>
+  <foreignkey
+    columnName="CoverageLineID"
+    desc="The associated coverage line."
+    fkentity="CoverageLine"
+    name="CoverageLine"
+    nullok="true"/>
+  <index
+    desc="Index to assure the uniqueness of one AggregateLimitRpt for each unique combination of PolicyPeriod, CoverageLine, LimitType and ValueType"
+    name="agglimitrptu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="PolicyPeriodID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="CoverageLineID"/>
+    <indexcol
+      keyposition="4"
+      name="LimitType"/>
+    <indexcol
+      keyposition="5"
+      name="ValueType"/>
+  </index>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.aggregatelimit.dbchecks.AggregateLimitRptDBCheckBuilder"/>
+</entity>

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="EFTAccountDetailDV">
+    <Require
+      name="eftAccount"
+      type="ABEFTAccountInfoExt"/>
+    <Require
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ContactDetail.EFTAccountDetail"/>
+      <Input
+        editable="true"
+        id="NameOnAccount"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.NameOnAccount"
+        required="true"
+        value="eftAccount.NameOnAccountExt"/>
+      <Input
+        editable="true"
+        id="BankName"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.BankName"
+        required="true"
+        value="eftAccount.BankNameExt"/>
+      <Input
+        editable="true"
+        id="AccountType"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.AccountType"
+        required="true"
+        value="eftAccount.AccountTypeExt"/>
+      <Input
+        editable="true"
+        id="ABANumber"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.ABANumber"
+        required="true"
+        validationExpression="util.EFTAccountInformation.RoutingNumber.isRoutingNumberValid(util.crypto.Encryptor.decrypt(eftAccount.ABANumberExt))? null : displaykey.Web.ContactDetail.paymentInfo.EFTAccountDetail.Invalid"
+        value="ABANumber"
+        visible="true"/>
+      <Input
+        editable="true"
+        id="AccountNumber"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.AccountNumber"
+        required="true"
+        value="AccountNumber"
+        visible="true"/>
+      <Input
+        editable="true"
+        id="CloseDate"
+        label="displaykey.Web.ContactDetail.EFTAccountDetail.CloseDate"
+        required="false"
+        value="eftAccount.CloseDateExt"/>
+    </InputColumn>
+    <Code><![CDATA[
+property get ABANumber() : String{ 
+		return util.EFTAccountInformation.electronicFundsInfo.maskABANumber(eftAccount.ABANumberExt, currentUserIsAdjuster); 
+	}
+	property set ABANumber(ABANum : String){ 
+		eftAccount.ABANumberExt = util.crypto.Encryptor.encrypt(ABANum); 
+	}
+	property get AccountNumber(): String{
+		return util.EFTAccountInformation.electronicFundsInfo.maskAccountInfo(eftAccount.AccountNumberExt, currentUserIsAdjuster);
+	}
+	property set AccountNumber(AcctNum : String){
+		eftAccount.AccountNumberExt = util.crypto.Encryptor.encrypt(AcctNum);
+	}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

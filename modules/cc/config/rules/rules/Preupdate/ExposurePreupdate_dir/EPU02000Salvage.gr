@@ -1,0 +1,35 @@
+package rules.Preupdate.ExposurePreupdate_dir
+
+@gw.rules.RuleName("EPU02000 - Salvage")
+internal class EPU02000Salvage {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.VehicleIncident.TotalLoss == true
+and not exists (
+	act in Exposure.Claim.Activities where(
+		act.Exposure != null
+		and Exposure.VehicleIncident == act.Exposure.VehicleIncident
+		and act.ActivityPattern ==  ActivityPattern.finder.getActivityPatternByCode("salvage_vehicle")
+	)
+)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// Create activities 
+
+Exposure.Claim.createActivityFromPattern(
+	Exposure, ActivityPattern.finder.getActivityPatternByCode("salvage_vehicle"))
+	   
+
+
+Exposure.Claim.createActivityFromPattern(
+	Exposure, 
+ActivityPattern.finder.getActivityPatternByCode("recover_vehicle"))
+
+
+// Set date
+
+if (Exposure.VehicleIncident.DateSalvageAssigned == null) {
+  Exposure.VehicleIncident.DateSalvageAssigned = gw.api.util.DateUtil.currentDate()
+}/*end00rule*/
+  }
+}

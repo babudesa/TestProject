@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    id="AssigneePickerPopup"
+    returnType="gw.api.assignment.Assignee"
+    title="displaykey.Web.AssigneePicker.Title">
+    <LocationEntryPoint
+      signature="AssigneePickerPopup(AssigneePicker : assignment.AssigneePicker)"/>
+    <LocationEntryPoint
+      signature="AssigneePickerPopup(AssigneePicker : assignment.AssigneePicker, Claim : Claim)"/>
+    <Variable
+      name="AssigneePicker"
+      type="assignment.AssigneePicker"/>
+    <Variable
+      initialValue="new contact.CCProximitySearchPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Screen
+      id="AssigneePickerScreen">
+      <SearchPanel
+        criteriaName="SearchCriteria"
+        resultsName="SearchResult"
+        search="SearchCriteria.performSearchByProximity(CurrentLocation, PageHelper)"
+        searchCriteria="createSearchCriteria(claim)"
+        searchResultsType="assignment.AssignmentProximitySearchResult">
+        <PanelRef
+          def="AssignmentSearchDV(AssigneePicker.AllowedAssignmentSearchTypes as typekey.AssignmentSearchType[], SearchCriteria, PageHelper, Claim)"/>
+        <!-- TODO DTCWTI - revisit - "as GroupUserQuery" is probably wrong below -->
+        <PanelRef
+          def="AssignmentUserLV(SearchResult == null ? null : SearchResult.getUsers() as GroupUserQuery, PageHelper, SearchCriteria.getUserCriteria().getContact())"
+          visible="SearchCriteria.SearchType == &quot;User&quot;">
+          <Toolbar>
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="PageHelper.getDrivingDirectionsCache().getSelectedDirections(CheckedValues, SearchCriteria.getUserCriteria().getContact());"
+              flags="any User"
+              id="RetrieveRequested"
+              iterator="AssignmentUserLV"
+              label="displaykey.Web.Addressbook.Search.Result.GetRequested"
+              visible="SearchCriteria.SearchType == &quot;User&quot; AND SearchCriteria.UserCriteria.Contact.isProximitySearch()"/>
+          </Toolbar>
+        </PanelRef>
+        <PanelRef
+          def="AssignmentGroupLV(SearchResult == null ? null : SearchResult.getGroups())"
+          visible="SearchCriteria.SearchType == &quot;Group&quot;">
+          <Toolbar/>
+        </PanelRef>
+        <PanelRef
+          def="AssignmentQueueLV(SearchResult == null ? null : SearchResult.getQueues())"
+          visible="SearchCriteria.SearchType == &quot;Queue&quot;">
+          <Toolbar/>
+        </PanelRef>
+      </SearchPanel>
+    </Screen>
+    <Code><![CDATA[
+        function createSearchCriteria(aClaim: Claim) : assignment.CCAssignmentSearchCriteria {
+          var criteria = new assignment.CCAssignmentSearchCriteria();
+          if(aClaim != null) {
+            criteria.UserCriteria.Contact.initializeProximitySearch(aClaim.Addresses as java.util.List<entity.Address>, aClaim.LossLocation);
+          }
+          return criteria;
+        }
+      
+    ]]></Code>
+  </Popup>
+</PCF>

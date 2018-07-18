@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    editable="true"
+    id="TripIncidentAccommodationsLV">
+    <Require
+      name="aTripIncident"
+      type="TripIncident"/>
+    <RowIterator
+      checkBoxVisible="true"
+      editable="true"
+      elementName="aTripAccommodation"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="TripAccommodationIterator"
+      pickLocation="TripAccommodationAddressPopup.push(aTripIncident, CurrentLocation.InEditMode )"
+      toRemove="aTripIncident.removeFromTripAccommodations( aTripAccommodation )"
+      value="aTripIncident.TripAccommodations">
+      <ToolbarFlag
+        condition="aTripAccommodation.Assessment == &quot;approve&quot; "
+        name="approve_acc"/>
+      <ToolbarFlag
+        condition="aTripAccommodation.Assessment == &quot;Deny&quot;"
+        name="deny_acc"/>
+      <ToolbarFlag
+        condition="aTripAccommodation.Assessment == &quot;Review&quot;"
+        name="review_acc"/>
+      <ToolbarFlag
+        name="row_acc"/>
+      <ToolbarFlag
+        condition="aTripAccommodation.Assessment == null"
+        name="clear_acc"/>
+      <Row
+        editable="true">
+        <Cell
+          action="TripAccommodationAddressPopup.push( aTripAccommodation, aTripIncident, CurrentLocation.InEditMode )"
+          hasCheckBox="true"
+          id="AffectedAccommodationName"
+          label="displaykey.Web.TripIncidentAccommodationLV.PolicyTrip.DisplayName"
+          value="aTripAccommodation"/>
+        <Cell
+          hasCheckBox="true"
+          id="AccommodationStatus"
+          label="displaykey.Web.TripIncidentAccommodationLV.AccommodationStatus"
+          value="aTripAccommodation.CancelOnly ? &quot;Cancelled&quot; : &quot;Rebooked&quot;"/>
+        <Cell
+          formatType="currency"
+          id="AccommodationCostIncurred"
+          label="displaykey.Web.TripIncidentAccommodationLV.AccommodationCostIncurred"
+          value="aTripAccommodation.getFinancialImpact( AssessmentAction.TC_APPROVE )"/>
+        <Cell
+          hasCheckBox="true"
+          id="Assessment"
+          label="displaykey.Web.TripIncidentAccommodationLV.Approval"
+          value="aTripAccommodation.Assessment"/>
+        <Cell
+          available="aTripAccommodation.ReasonForDenial == null or aTripAccommodation.ReasonForDenial.length == 0"
+          editable="aTripAccommodation.Assessment == &quot;Deny&quot; ? true : false"
+          id="ReasonForDenial"
+          label="displaykey.Web.TripIncidentAccommodationLV.ReasonForDenial"
+          required="true"
+          value="aTripAccommodation.ReasonForDenial"
+          valueVisible="aTripAccommodation.Assessment == &quot;Deny&quot; ? true : false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

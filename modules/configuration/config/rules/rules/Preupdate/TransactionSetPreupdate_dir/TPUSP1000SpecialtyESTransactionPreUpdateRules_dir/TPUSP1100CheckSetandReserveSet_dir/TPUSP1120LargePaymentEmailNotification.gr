@@ -1,0 +1,38 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUSP1000SpecialtyESTransactionPreUpdateRules_dir.TPUSP1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUSP1120 - Large Payment Email Notification")
+internal class TPUSP1120LargePaymentEmailNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis CheckSet
+// if the check is Edited before Issue, another email and a note are generated
+// checking the notes for the one with this checknumber in case the check hits the same status twice as with bulk invoice checks 
+and ((!transactionSet.New and transactionSet.Changed) 
+     or (transactionSet.Claim.Notes.where(\ n -> n.Body.containsIgnoreCase(transactionSet.PrimaryCheck.CheckNumber) 
+      and n.Subject==displaykey.Notes.NoteSubject.LargePayment).IsEmpty))
+
+and !(transactionSet.New and transactionSet.LoadCommandID != null)
+
+and ( // if check is Manual, the check status will be "Issued" on a new check Submit
+      // if check is transfered, it will be "Issued" and "New" as a new check is created on a new claim 
+ ((transactionSet.PrimaryCheck.PaymentMethod == PaymentMethod.TC_MANUAL 
+  or transactionSet.New) and transactionSet.PrimaryCheck.Status == TransactionStatus.TC_ISSUED
+  )
+  // if check is regular (not Manual), the check status will be "Requesting" for Final payment or 
+  // "Awaiting Submission" for Partial and Supplemental payments when new check is created
+  or (!(transactionSet.PrimaryCheck.PaymentMethod == PaymentMethod.TC_MANUAL) and
+    (((transactionSet.PrimaryCheck.Payments.first().PaymentType==PaymentType.TC_PARTIAL 
+    or transactionSet.PrimaryCheck.Payments.first().PaymentType==PaymentType.TC_SUPPLEMENT) 
+      and transactionSet.PrimaryCheck.Status == TransactionStatus.TC_AWAITINGSUBMISSION)
+    or (transactionSet.PrimaryCheck.Payments.first().PaymentType==PaymentType.TC_FINAL 
+    and transactionSet.PrimaryCheck.Status == TransactionStatus.TC_REQUESTING))
+  )
+)
+
+// Defect#8360(ivorobyeva): Added different status checks, so the Manual and regular, Partial, Final and Supplemental 
+// checks will generate an email and a note. Bulk invoce checks' statuses are the same as non-bulk checks/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//*end00rule*/
+  }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="CompensableInputSet">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.getCompensableActivity()"
+      name="CompensableActivity"/>
+    <Variable
+      initialValue="(CompensableActivity != null  or true ) and CompensableActivity.Status == &quot;open&quot;"
+      name="OpenCompensableActivity"
+      type="Boolean"/>
+    <Label
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision"/>
+    <DateInput
+      editable="not OpenCompensableActivity"
+      id="CompensabilityDecision_DueDate"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.DueDate"
+      value="Claim.DateCompDcsnDue"/>
+    <ButtonInput
+      action="ActivityDetailViaClaimWorksheet.goInWorkspace(Claim,CompensableActivity)"
+      id="UpdateCompensabilityActivity"
+      value="displaykey.Button.LossDetails.WC.UpdateCompensableActivity"
+      visible="OpenCompensableActivity"/>
+    <Input
+      editable="not OpenCompensableActivity"
+      id="CompensableStatus"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.CompensableStatus"
+      onChange="Claim.addToHistory( Claim.createCustomHistoryEvent( &quot;DataChange&quot;, displaykey.Rules.PreUpdate.Claim.CompensableDecisionHistory(Claim.Compensable) ) )"
+      postOnChange="true"
+      value="Claim.Compensable"/>
+    <!-- <DateInput
+      id="CompensabilityDecision_DecisionMadeDate"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.DecisionMadeDate"
+      value="Claim.DateCompDcsnMade"/> -->
+    <TextAreaInput
+      editable="not OpenCompensableActivity"
+      id="CompensabilityDecision_BenefitsDecisionReason"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.BenefitsDecisionReason"
+      numCols="35"
+      numRows="3"
+      required="Claim.Compensable == &quot;denied&quot;"
+      value="Claim.BenefitsDecisionReason"/>
+  </InputSet>
+</PCF>

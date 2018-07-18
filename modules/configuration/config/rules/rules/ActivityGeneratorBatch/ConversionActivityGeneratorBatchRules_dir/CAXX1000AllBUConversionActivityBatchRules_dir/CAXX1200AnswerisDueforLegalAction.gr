@@ -1,0 +1,80 @@
+package rules.ActivityGeneratorBatch.ConversionActivityGeneratorBatchRules_dir.CAXX1000AllBUConversionActivityBatchRules_dir
+
+@gw.rules.RuleName("CAXX1200 - Answer is Due for Legal Action")
+internal class CAXX1200AnswerisDueforLegalAction {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for non-converted claims. 
+ */
+
+!util.WCHelper.isWCLossType(claim) and 
+exists(matter in claim.Matters where matter.AnswerDueDate != null &&
+matter.AnswerFiledDate == null && 
+matter.StatusExt != MatterStatus.TC_CLOSED and 
+!exists(act in claim.Activities 
+    where act.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "answer_due" )
+    and act.Subject.contains(matter.DisplayName)
+    and act.Status == "open"))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//**
+ * Defect : 8174 , cprakash, 2/9/2016
+ * This Rule has been moved from Matter Pre Update Rules MPUXX1410 and modified to fire
+ * an activity when applicable matter is not filled with Answer filed date and filled with
+ * Answer Due date, and No activity exists for related exposure and matter combination,
+ * Will be fired 3 days before the Answer Due date and Assigned to Claim owner.
+ */
+
+uses gw.api.util.Logger
+
+Logger.logInfo("In CAXX1200 Rule...")
+try
+{
+  var pattern = util.custom_Ext.finders.findActivityPattern( "answer_due" )
+  var today = gw.api.util.DateUtil.currentDate()
+  // Check Each Feature on the claim
+  for(exposure in claim.Exposures)
+  {
+   Logger.logDebug("Executing on Feature "+exposure.ClaimOrder+ " "+exposure.ExposureType.DisplayName)
+    
+    var matters = claim.Matters.where(\ m -> m.MatterAssignmentsExt*.AssignmentExposuresExt*.Exposure.contains(exposure)
+    and m.AnswerDueDate!=null and m.AnswerFiledDate == null and m.StatusExt!= MatterStatus.TC_CLOSED )
+     
+   Logger.logDebug("Applicable Matters identified for given Feature "+matters.Count)
+    {
+      for(matter in matters)
+      {
+         if(exists (act in claim.Activities where act.ActivityPattern == pattern and 
+         act.Status == ActivityStatus.TC_OPEN and act.Exposure == exposure and act.Matter == matter))
+         {
+          Logger.logDebug("Activity already exists on Feature "+exposure+" and Legal Action, "+ matter +" Skipping Activity Firing")
+           //do nothing...
+         }
+         else
+         {
+          Logger.logDebug("No of Days to go for Answer Due Date,   "+gw.api.util.DateUtil.differenceInDays(today,matter.AnswerDueDate))
+           if(gw.api.util.DateUtil.differenceInDays(today,matter.AnswerDueDate)==3)
+           {
+              Logger.logDebug("Answer is due for the Legal Action Activity Created Successfully")
+               var newAct = claim.createActivityFromPattern(exposure, pattern)
+               newAct.Subject = pattern.Subject +"(" +matter.DisplayName +")"
+               newAct.Description = pattern.Description+ "("+ matter.DisplayName+")"
+               newAct.AssignedUser = matter.Claim.AssignedUser
+               newAct.Matter = matter
+               newAct.Exposure = exposure
+           }
+          }
+        }
+     }
+  }
+}
+catch(e) {
+util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+  
+ /*end00rule*/
+  }
+}

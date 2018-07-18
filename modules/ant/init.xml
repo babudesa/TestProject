@@ -1,0 +1,171 @@
+<project name="Guidewire Ant environment initialization"
+         xmlns:ac="antlib:net.sf.antcontrib"
+         xmlns:gw="antlib:com.guidewire.ant.task"
+         xmlns:gwprivate="antlib:com.guidewire.ant.macro.globals">
+
+  <property file="build.properties"/>
+  <property file="${gw.init.devroot.dir}/branch.properties" prefix="gw.branch"/>
+
+
+  <!-- ===========================================
+       Assert presence of crucial properties
+       =========================================== -->
+
+  <fail unless="gw.branch.req.ant.version"/>
+  <fail unless="gw.branch.req.java.version"/>
+  <fail unless="gw.init.devroot.dir"/>
+
+  <!-- ===========================================
+       Ant-contrib tasks
+       =========================================== -->
+
+  <path id="antcontrib.lib.path">
+    <pathelement location="lib/ant-contrib-1.0b3.jar"/>
+  </path>
+
+  <path id="gosu-core-api.module.path">
+    <fileset dir="../gosu-lib/lib" includes="*.jar"/>
+  </path>
+
+  <path id="gosu-core.module.path">
+    <path refid="gosu-core-api.module.path"/>
+    <fileset dir="../gosu-core-api" includes="*/gw-gosu-core-api.jar"/>
+  </path>
+
+  <path id="gosu-test-api.module.path">
+    <path refid="gosu-core-api.module.path"/>
+    <fileset dir="../gosu-core-api" includes="*/gw-gosu-core-api.jar"/>
+    <fileset dir="../gosu-test-api/lib" includes="*.jar"/>
+  </path>
+
+  <path id="util.module.path">
+    <path refid="gosu-core-api.module.path"/>
+    <fileset dir="../gosu-core-api" includes="*/gw-gosu-core-api.jar"/>
+
+    <pathelement location="../magic/lib/servlet-api.jar"/>
+    <fileset dir="../util/lib" includes="*.jar"/>
+  </path>
+
+  <path id="modules.module.path">
+    <path refid="util.module.path"/>
+    <fileset dir="../util" includes="*/gw-util.jar"/>
+
+    <pathelement location="../magic/lib/servlet-api.jar"/>
+  </path>
+
+  <path id="ant.module.path">
+    <path refid="modules.module.path"/>
+    <fileset dir="../modules" includes="*/gw-modules.jar"/>
+    <pathelement  path="../gosu-core-api/gsrc/"/>
+    <path refid="antcontrib.lib.path"/>
+  </path>
+
+  <target name="antcontrib-tasks">
+    <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antcontrib.lib.path"
+             uri="antlib:net.sf.antcontrib"/>
+  </target>
+
+  <!-- ===========================================
+       Assert Ant and JDK versions
+       =========================================== -->
+
+  <target name="asserts" depends="antcontrib-tasks">
+    <macrodef name="assertversion" uri="antlib:com.guidewire.ant.macro.globals">
+      <attribute name="version"/>
+      <attribute name="required"/>
+      <attribute name="message"/>
+      <sequential>
+        <fail message="@{message}">
+          <condition>
+            <not>
+              <equals arg1="@{required}" arg2="@{version}"/>
+            </not>
+          </condition>
+        </fail>
+      </sequential>
+    </macrodef>
+
+    <!-- Make sure ant.version matches gw.branch.ant.version (eg. 1.7) in branch.properties -->
+    <ac:if>
+      <not> <!-- temporary hack to provide bypass of ant version check -->
+        <isset property="skip.ant.version.check"/>
+      </not>
+      <then>
+    <ac:propertyregex property="ant.version.number" input="${ant.version}" regexp="Apache Ant version ([^\.]*.[^\.].[^\.])" select="\1"/>
+    <gwprivate:assertversion version="${ant.version.number}" required="${gw.branch.req.ant.version}"
+      message="You are running using the wrong version of Ant: ${ant.version.number} - please use Ant ${gw.branch.req.ant.version}"/>
+      </then>
+    </ac:if>
+  	
+    <!-- Make sure java.version matches gw.branch.req.java.version (eg. 1.5) in branch.properties -->
+  	<ac:if>
+  		<equals arg1="${os.name}" arg2="Windows 8.1"/> <!-- temporary hack so I don't have to keep stashing build.properties -->
+  		<then>
+  			<echo message="You are using Windows 10. No need to worry about the Java version right now."/>
+  		</then>
+  		<else>
+  			<ac:propertyregex property="java.version.number" input="${java.version}" regexp="([0-9]*\.[0-9]*).*" select="\1"/>
+  			<gwprivate:assertversion version="${java.version.number}" required="${gw.branch.req.java.version}"
+			message="You are running using the wrong JDK: ${java.version} - please use JDK ${gw.branch.req.java.version}"/>
+  		</else>
+	</ac:if>
+  </target>
+
+  <!-- ===========================================
+       GW Ant tasks and global macros
+       =========================================== -->
+
+  <target name="gw-macros" depends="antcontrib-tasks">
+    <macrodef name="run" uri="antlib:com.guidewire.ant.macro">
+      <attribute name="mainclass"/>
+      <attribute name="mainargs" default=""/>
+      <attribute name="failonerror" default="true"/>
+      <attribute name="fork" default="yes"/>
+      <attribute name="spawn" default="false"/>
+      <attribute name="dir" default=""/>
+      <attribute name="maxheap" default="512"/>
+      <attribute name="minheap" default="32"/>
+      <attribute name="maxpermsize" default="128"/>
+      <attribute name="classpathref"/>
+      <element name="classpaths" optional="true" description="additional classpaths"/>
+      <element name="jvmargs" optional="true" description="additional jvmargs"/>
+      <sequential>
+        <java failonerror="@{failonerror}" classname="@{mainclass}" fork="@{fork}" dir="@{dir}" spawn="@{spawn}">
+          <classpath>
+            <path refid="@{classpathref}"/>
+            <classpaths/>
+          </classpath>
+          <syspropertyset>
+            <propertyref builtin="all"/>
+          </syspropertyset>
+          <jvmarg value="-Xmx@{maxheap}m"/>
+          <jvmarg value="-Xms@{minheap}m"/>
+          <jvmarg value="-XX:MaxPermSize=@{maxpermsize}m"/>
+          <jvmarg value="-ea"/>
+          <jvmarg value="-Djdbc.drivers=${jdbc.drivers}"/>
+          <jvmargs/>
+          <arg line="@{mainargs}"/>
+        </java>
+      </sequential>
+    </macrodef>
+  </target>
+
+  <target name="gw-tasks">
+    <taskdef resource="com/guidewire/ant/antlib.xml" uri="antlib:com.guidewire.ant.task">
+      <classpath>
+        <path refid="gosu-core.module.path"/>
+        <!-- this applies to the platform dev environment -->
+        <pathelement location="../gosu-core/dist/gw-gosu-core.jar"/>
+        <!-- this applies to all other environments -->
+        <pathelement location="../gosu-core/lib/gw-gosu-core.jar"/>
+
+        <path refid="ant.module.path"/>
+        <!-- this applies to the platform dev environment -->
+        <pathelement location="../ant/dist/gw-ant.jar"/>
+        <!-- this applies to all other environments -->
+        <pathelement location="../ant/lib/gw-ant.jar"/>
+      </classpath>
+    </taskdef>
+  </target>
+
+</project>

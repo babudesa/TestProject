@@ -1,0 +1,20 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1300ValidationatAbilitytoPayLevel_dir
+
+@gw.rules.RuleName("CVXX1380 - Coorinates Required")
+internal class CVXX1380CoorinatesRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossLocation.Latitude==null or claim.LossLocation.Longitude==null) and
+claim.LossCause=="sinkholecollapse"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.reject("payment", "Longitude and Latitude are required for a Cause of Sinkhole collapse", null, null)
+}
+catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,22 @@
+package rules.Validation.MatterReopenedValidationRules_dir.MRVXX1000AllBUsMatterReopenedRules_dir
+
+@gw.rules.RuleName("MRVXX1100 - Closed Features")
+internal class MRVXX1100ClosedFeatures {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/(matter.MatterAssignmentsExt.HasElements) &&
+!exists(ae in matter.MatterAssignmentsExt*.AssignmentExposuresExt
+  where (ae.Exposure.State == ExposureState.TC_OPEN &&  
+         ae.Exposure.LegalExpenseExt == true))
+  /*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var strErrorReason= "Please reopen at least one Feature before reopening the Legal Action."
+    matter.reject("newloss", strErrorReason, Null, Null) 
+    
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

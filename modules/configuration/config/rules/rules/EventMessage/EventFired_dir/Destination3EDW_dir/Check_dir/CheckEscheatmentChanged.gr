@@ -1,0 +1,20 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Check_dir
+
+@gw.rules.RuleName("Check Escheatment Changed")
+internal class CheckEscheatmentChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.EventName == "CheckChanged")
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.EDW.EDWFunctionsFactory;
+var msgCheck : Check = messageContext.Root as Check;
+var f = EDWFunctionsFactory.getFinancialFunctions();
+
+if ((f.isEscheatmentDateChanged( msgCheck )) or (f.isEscheatStatusChanged( msgCheck ))) {
+  f.sendEscheatChanges( messageContext, msgCheck);
+}
+/*end00rule*/
+  }
+}

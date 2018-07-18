@@ -1,0 +1,67 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir.EPUAG1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUAG1520 - Reserve Conversion Due")
+internal class EPUAG1520ReserveConversionDue {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*12/9/09 erawe:  added rule to replace CPUAG1240.  
+Use inSuit now, not first notice suit
+Updated: Brian Lawless 3/23/10 - defect 3236 - :  the rule was validating all exposures with 
+  the claim. Since claim goes to ability to pay prior to exposures now, this is no longer 
+  correct.  The reserve will now be created for any qualifying exposure when it reaches 
+  ability to pay
+Updated: Brian Lawless 3/29/10 - defect 3236 - added check to keep reserve from being created on suspended claim
+Updated: Stephanie Przygocki 3/31/10 - defect 3236 - Brian is out so I am updating. The condition
+  Exposure.Claim.hasDisconnectedFeatures() is wrong...that function is no longer used...checking
+  now instead that the claim is suspended via the refresh function
+*/
+(exposure.Claim.AssignmentStatus == "assigned" &&
+exposure.Claim.IncidentReport == false &&
+exposure.Claim.State != "closed" &&
+exposure.Claim.State != "draft" &&
+!exposure.Closed &&
+!exposure.Claim.checkDisconnectedFeatures() &&
+!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="ab_factor_reserve" and act.Exposure==exposure ) &&
+exposure.ex_InSuit==true )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*///Updated 9/22/11 erawe - defect 4313/4475 - added _data to check in TAXX1100
+
+try{
+var policyRes = exposure.Claim.Policy.safeValidate();
+var results = exposure.Claim.safeValidate( false );
+var expRes = exposure.safeValidate( false);
+
+  if (expRes.ValidationLevelPassed == "payment" and (policyRes.ValidationLevelPassed ==  "payment" and (results.Errors.length == 1 and (results.Errors[0] as ValidationIssue).Reason == "Policy must be at ability to pay.") or results.ValidationLevelPassed == "payment")){
+     if((exposure.ExposureType=="ab_AGG_auto_BodInjury"|| exposure.ExposureType=="ab_AGG_gl_BodInjury"|| exposure.ExposureType=="ab_BodilyInjury"))
+     {
+       var checkReserve:Boolean = false;
+       for(trans in exposure.Claim.getAllTransactions()){
+         if(trans.Exposure == exposure and trans.CostType == "claimcost")
+         {
+           checkReserve = true;     
+         }
+       }  
+       if(checkReserve == false){
+         try{
+           var _data : java.util.Map = gw.api.web.Scopes.getRequest()
+           _data["AutoRes"] = true
+         }catch(e){
+           gw.api.util.Logger.logError("Error getting request in rule " + actions.getRule().DisplayName) 
+         }
+         exposure.Claim.createCustomHistoryEvent( "DataChange", "Factor Reserve for Bodily Injury" )
+         //exposure.createNewReserveSet( "claimcost", "unspecified", 999, true )
+         var newReserve =  exposure.setAvailableReserves("claimcost", "unspecified", 999, gw.plugin.util.CurrentUserUtil.getCurrentUser().User)
+         newReserve.FactorReserveExt = true
+         var ap = util.custom_Ext.finders.findActivityPattern( "ab_factor_reserve" )
+         exposure.Claim.createActivityFromPattern( exposure, ap)
+       }
+     }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure.Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

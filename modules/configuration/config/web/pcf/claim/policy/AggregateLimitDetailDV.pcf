@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    id="AggregateLimitDetailDV">
+    <Require
+      name="AggregateLimit"
+      type="AggregateLimit"/>
+    <Require
+      name="Policy"
+      type="Policy"/>
+    <Require
+      name="AggregateLimitHelper"
+      type="admin.AggregateLimitHelper"/>
+    <Variable
+      initialValue="AggregateLimit.PolicyPeriod.PolicyPeriodType"
+      name="PolicyPeriodType"
+      type="PolicyPeriodType"/>
+    <Variable
+      initialValue="AggregateLimit.getLimitUsed()"
+      name="LimitUsed"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="AggregateLimit_ValueType"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.ValueType"
+        postOnChange="true"
+        required="true"
+        value="AggregateLimit.ValueType"/>
+      <RangeInput
+        confirmMessage="displaykey.Java.AggregateLimit.Warning.PolicyPeriodTypeChanged"
+        editable="true"
+        id="AggregateLimit_PolicyPeriodType"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.PolicyPeriodType"
+        onChange="AggregateLimit.resetCoverageLines()"
+        postOnChange="true"
+        required="true"
+        showConfirmMessage="PolicyPeriodType != null"
+        value="PolicyPeriodType"
+        valueRange="gw.api.admin.AggregateLimitUtil.getPolicyTypes(Policy)"/>
+      <Input
+        confirmMessage="displaykey.Java.AggregateLimit.Warning.LimitTypeChanged"
+        editable="true"
+        id="AggregateLimit_LimitType"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.LimitType"
+        onChange="AggregateLimitHelper.resetCoveragesAndAssign(AggregateLimit, PolicyPeriodType, Policy)"
+        postOnChange="true"
+        required="true"
+        showConfirmMessage="AggregateLimit.LimitType != null"
+        value="AggregateLimit.LimitType"/>
+      <Input
+        available="AggregateLimit.ValueType != null and PolicyPeriodType != null and AggregateLimit.LimitType != null"
+        editable="true"
+        formatType="exactNumber"
+        id="AggregateLimit_LimitAmount"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.LimitAmount"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        required="true"
+        validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(AggregateLimit.LimitAmount) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+        value="AggregateLimit.LimitAmount"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        hideIfEditable="true"
+        id="AggregateLimit_AmountUsed"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.AmountUsed"
+        required="false"
+        value="LimitUsed"/>
+      <Input
+        editable="true"
+        id="AggregateLimit_Comments"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.AggregateLimit.Comments"
+        required="false"
+        value="AggregateLimit.Comments"/>
+      <ListViewInput
+        def="AggregateLimitCoveragesLV(AggregateLimitHelper, Policy, AggregateLimit)"
+        editable="AggregateLimit.PolicyPeriod != null"
+        label="displaykey.NVV.Policy.AggregateLimitDetail.Coverages">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

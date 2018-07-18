@@ -1,0 +1,22 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVFC1000FidCrimeClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVFC1200 - Validate Sublimits KR")
+internal class CCVFC1200ValidateSublimitsKR {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Exposures.IsEmpty/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exp in claim.Exposures){
+  try{ 
+    if(exp.ExposureType == ExposureType.TC_KR_KIDNAPRANSOM && exp.SublimitsExt==null){
+      claim.rejectSubField(exp,"SublimitsExt","newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.KR.Sublimits, null,null)
+    }
+  }
+  catch(e)
+  {
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+  }
+}/*end00rule*/
+  }
+}

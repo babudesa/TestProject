@@ -1,0 +1,18 @@
+package rules.Validation.ExposureValidationRules_dir.EXV05000ISOValidation_dir
+
+@gw.rules.RuleName("EXV05400 - Description")
+internal class EXV05400Description {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.Claim.LossType !=  "WC" && (Exposure.Incident.Description == null || Exposure.Incident.Description.length() == 0)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if (Exposure.VehicleIncident != null) {
+  Exposure.rejectField( "VehicleIncident.Description", "iso", displaykey.Rules.Validation.Exposure.VehicleDescriptionNotEmpty, null, null )
+} else if (Exposure.FixedPropertyIncident != null) {
+  Exposure.rejectField( "FixedPropertyIncident.Description", "iso", displaykey.Rules.Validation.Exposure.PropertyDescriptionNotEmpty, null, null )
+} else {
+  Exposure.rejectField( "Incident.Description", "iso", displaykey.Rules.Validation.Exposure.DescriptionNotEmpty, null, null )
+}/*end00rule*/
+  }
+}

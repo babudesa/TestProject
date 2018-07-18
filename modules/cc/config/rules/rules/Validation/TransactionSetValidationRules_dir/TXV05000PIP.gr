@@ -1,0 +1,48 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleName("TXV05000 - PIP")
+internal class TXV05000PIP {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "checkset"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var relevantExposures = new java.util.HashSet<Exposure>()
+for (txn in transactionSet.AllTransactions) {
+  if (txn.Subtype == "payment" and txn.CostType == CostType.TC_CLAIMCOST
+          and txn.Exposure != null and not txn.Exposure.Closed and txn.Exposure.Coverage typeis VehicleCoverage) {
+    relevantExposures.add(txn.Exposure)
+  }
+}
+var claimSumForPIPClaimAgg : gw.api.financials.CurrencyAmount
+if (relevantExposures.size() > 0) {
+  claimSumForPIPClaimAgg = relevantExposures.first().Claim.sumForPIPClaimAgg()
+}
+for (exposure in relevantExposures) {
+  var claimant = exposure.Claimant
+  var coverage = exposure.Coverage as VehicleCoverage
+
+  exposure.PIPNonMedAggLimitReached = false
+  exposure.PIPESSLimitReached = false
+  exposure.PIPPersonAggLimitReached = false
+  exposure.PIPClaimAggLimitReached = false
+
+  if (coverage.NonmedAggLimit > 0 and exposure.Claim.sumForPIPNonmedAgg(claimant) > coverage.NonmedAggLimit) { 
+    transactionSet.reject( null, null, "external", displaykey.Rules.Validation.Transaction.AggregateLimit.NonMedical(gw.api.util.CurrencyUtil.renderAsCurrency(coverage.NonmedAggLimit), exposure.Coverage.Type, gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    exposure.PIPNonMedAggLimitReached = true
+  }
+  if (coverage.ReplaceAggLimit > 0 and exposure.Claim.sumForPIPReplaceAgg(claimant) > coverage.ReplaceAggLimit) { 
+    transactionSet.reject( null, null, "external", displaykey.Rules.Validation.Transaction.AggregateLimit.ReplacementServices(gw.api.util.CurrencyUtil.renderAsCurrency(coverage.ReplaceAggLimit), exposure.Coverage.Type, gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    exposure.PIPESSLimitReached = true
+  }
+  if (coverage.PersonAggLimit > 0 and exposure.Claim.sumForPIPPersonAgg(claimant) > coverage.PersonAggLimit) { 
+    transactionSet.reject( null, null, "external", displaykey.Rules.Validation.Transaction.AggregateLimit.PerPerson(gw.api.util.CurrencyUtil.renderAsCurrency(coverage.PersonAggLimit), exposure.Coverage.Type, gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    exposure.PIPPersonAggLimitReached = true
+  }
+  if (coverage.ClaimAggLimit > 0 and claimSumForPIPClaimAgg > coverage.ClaimAggLimit) { 
+    transactionSet.reject( null, null, "external", displaykey.Rules.Validation.Transaction.AggregateLimit.Claim(gw.api.util.CurrencyUtil.renderAsCurrency(coverage.ClaimAggLimit), exposure.Coverage.Type, gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    exposure.PIPClaimAggLimitReached = true
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,35 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1400 - Method of Settlement")
+internal class ECVXX1400MethodofSettlement {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Method of Settlement Rules
+  Sprint: Sprint 8
+  Author: Stephanie Przygocki
+  Date: 5-20-08
+*/
+//also add to checkMOS()
+(exposure.ExposureType == ExposureType.TC_SP_BODILY_INJURY 
+|| exposure.ExposureType=="ab_AGG_auto_BodInjury"
+|| exposure.ExposureType=="ab_AGG_gl_BodInjury"
+|| exposure.ExposureType=="ab_BodilyInjury"
+|| exposure.ExposureType=="ex_auto_BodInjury"
+|| exposure.ExposureType=="ex_excess_BodInjury"
+|| (exposure.ExposureType=="el_DutyDefOtsdLimits" and exposure.Claim.BodilyInjuryExt)
+|| (exposure.ExposureType=="el_DutyDefWthnLimits" and exposure.Claim.BodilyInjuryExt)
+|| (exposure.ExposureType=="el_Indemnity" and exposure.Claim.BodilyInjuryExt)
+|| (exposure.ExposureType=="el_LossAdjustExp" and exposure.Claim.BodilyInjuryExt)
+|| exposure.ExposureType==ExposureType.TC_EN_BODILYINJURY 
+|| exposure.ExposureType== typekey.ExposureType.TC_PE_BODILYINJURY
+|| exposure.ExposureType== typekey.ExposureType.TC_AV_BODILYINJURY
+|| util.WCHelper.isWCorELLossType(exposure.Claim)) and 
+exists(transaction in exposure.getTransactionsIterator(false) where
+      (transaction as Transaction).Subtype=="Payment"
+      and (transaction as Transaction).CostType =="claimcost" 
+      and (transaction as Transaction).Exposure==exposure)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*//*end00rule*/
+  }
+}

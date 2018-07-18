@@ -1,0 +1,47 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1100ManualBulkInvoiceApprovalRouting_dir
+
+@gw.rules.RuleName("BIAR1140 - Approve By SCO Div.Senior VP")
+internal class BIAR1140ApproveBySCODivSeniorVP {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.LastApprovingUser == util.user.SCOHelper.ManualBulkInvoiceApproverUser &&
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser && 
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser /*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var user: User = util.user.SCOHelper.CorpClaimsTwoUser
+    var group:Group = util.GlobalParameters.ParameterFinder.getGroupParameter( "gaicclaims", null )
+    var authorityLimits = bulkInvoice.LastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+    var approvalHistory : List<Activity> = null
+    var currentApprovalAssignedToUser : User = null
+    
+    if(util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice).Count > 0) {      
+      approvalHistory =util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice)      
+      currentApprovalAssignedToUser = util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory)
+    }
+  
+    if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+       if(currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsOneUser ||
+          currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsTwoUser) {
+          var nextApprovingUser = currentApprovalAssignedToUser
+          var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+          bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+       }else{
+          bulkInvoice.setApprovingUser(user, group)
+      }
+    } else {
+        bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+    }
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+    throw aex 
+}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

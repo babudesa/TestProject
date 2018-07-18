@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="VehiclesLV">
+    <Require
+      name="PolicyVehicleList"
+      type="VehicleRU[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="getVehicles(PolicyVehicleList)"
+      name="Vehicles"
+      recalculateOnRefresh="true"
+      type="VehicleRU[]"/>
+    <RowIterator
+      editable="false"
+      elementName="VehicleRU"
+      hasCheckBoxes="true"
+      pageSize="10"
+      toCreateAndAdd="Claim.Policy.createVehicleRU()"
+      toRemove="Claim.Policy.removeVehicleRU(VehicleRU)"
+      value="Vehicles">
+      <Row>
+        <Cell
+          align="left"
+          id="Number"
+          label="displaykey.LV.Policy.Vehicles.Number"
+          printWidth="0.05"
+          sortOrder="1"
+          value="VehicleRU.RUNumber"/>
+        <Cell
+          align="left"
+          id="Year"
+          label="displaykey.LV.Policy.Vehicles.Year"
+          printWidth="0.08"
+          value="VehicleRU.Vehicle.Year"/>
+        <Cell
+          id="Make"
+          label="displaykey.LV.Policy.Vehicles.Make"
+          printWidth="0.11"
+          value="VehicleRU.Vehicle.Make"/>
+        <Cell
+          id="Model"
+          label="displaykey.LV.Policy.Vehicles.Model"
+          printWidth="0.11"
+          value="VehicleRU.Vehicle.Model"/>
+        <Cell
+          id="V_VIN"
+          label="displaykey.LV.Policy.Vehicles.VIN"
+          printWidth="0.22"
+          value="VehicleRU.Vehicle.Vin"/>
+        <Cell
+          align="left"
+          id="MechanicalLift"
+          label="displaykey.LV.Policy.Vehicles.MechLift"
+          printWidth="0.22"
+          value="VehicleRU.Vehicle.MechanicalLiftExt"
+          visible="Claim.LossType==LossType.TC_ALTMARKETSAUTO OR Claim.LossType==LossType.TC_SHSAUTO OR Claim.LossType==LossType.TC_TRUCKINGAUTO OR Claim.LossType==LossType.TC_AGRIAUTO"/>
+        <Cell
+          align="left"
+          id="VehicleWeightCommA"
+          label="displaykey.LV.Policy.Vehicles.WeightSeat"
+          printWidth="0.11"
+          value="VehicleRU.Vehicle.VehicleWeightExt"
+          visible="Claim.LossType==LossType.TC_ALTMARKETSAUTO OR Claim.LossType==LossType.TC_SHSAUTO OR Claim.LossType==LossType.TC_TRUCKINGAUTO OR Claim.LossType==LossType.TC_AGRIAUTO"/>
+        <Cell
+          align="left"
+          id="VehicleWeight"
+          label="displaykey.LV.Policy.Vehicles.Weight"
+          printWidth="0.11"
+          value="VehicleRU.Vehicle.VehicleWeightExt"
+          visible="Claim.LossType!=LossType.TC_ALTMARKETSAUTO AND Claim.LossType!=LossType.TC_SHSAUTO AND Claim.LossType!=LossType.TC_TRUCKINGAUTO AND Claim.LossType!=LossType.TC_AGRIAUTO"/>
+        <Cell
+          align="left"
+          formatType="exactNumber"
+          id="V_CostNew"
+          label="displaykey.LV.Policy.Vehicles.CostNew"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          value="VehicleRU.Vehicle.VehicleNewValueExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses java.util.ArrayList;
+
+public function getVehicles(PolicyVehicles : VehicleRU[]):VehicleRU[]{
+  var vehicleList = new ArrayList();
+  for(vehicle in PolicyVehicleList){
+    if(vehicle.Vehicle.Style!="boat"){
+      vehicleList.add(vehicle)
+    }
+  }
+  return vehicleList as entity.VehicleRU[];
+}]]></Code>
+  </ListViewPanel>
+</PCF>

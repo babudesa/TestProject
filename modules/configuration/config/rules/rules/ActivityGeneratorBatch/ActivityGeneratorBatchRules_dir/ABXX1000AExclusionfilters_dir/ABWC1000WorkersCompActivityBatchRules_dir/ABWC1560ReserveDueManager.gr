@@ -1,0 +1,22 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir
+
+@gw.rules.RuleName("ABWC1560 - Reserve Due - Manager")
+internal class ABWC1560ReserveDueManager {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ReserveLines.Count == 0
+&& !exists(act in claim.Activities where act.ActivityPattern.Code == "reserve_due_mgr") 
+&& exists(exposure in claim.Exposures where exposure.ReservedFileExt == true) 
+//&& claim.State != "closed"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+ if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_WCReserve_Manager )){
+    var ap = util.custom_Ext.finders.findActivityPattern("reserve_due_mgr")
+    claim.createActivityFromPattern(null, ap)
+ }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

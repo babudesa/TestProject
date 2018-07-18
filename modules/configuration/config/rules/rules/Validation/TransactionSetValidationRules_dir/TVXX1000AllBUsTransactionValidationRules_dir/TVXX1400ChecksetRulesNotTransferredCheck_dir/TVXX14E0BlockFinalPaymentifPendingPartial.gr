@@ -1,0 +1,35 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14E0 - Block Final Payment if Pending Partial")
+internal class TVXX14E0BlockFinalPaymentifPendingPartial {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(pay in transactionSet.Transactions where
+pay.Subtype == "Payment" and (pay as Payment).PaymentType == "final" and 
+((pay as Payment).New or (transactionSet.ApprovalStatus == "approved" and 
+transactionSet.Changed) and !((transactionSet as CheckSet).PrimaryCheck.Status == "pendingvoid") or 
+(transactionSet as CheckSet).PrimaryCheck.Status == "pendingstop"))==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(trans in transactionSet.Transactions){
+  var pay = (trans as Payment);
+  var exp : String
+  
+  
+  if(pay.PaymentType == "final"){
+    exp = pay.Exposure.PublicID;
+    for(act in pay.Claim.Activities){
+      if(act.Exposure.PublicID == exp){ 
+        if(act.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment") and act.Status != "complete" and !act.New){
+          for(actTrans in act.TransactionSet.Transactions){
+            if(actTrans.CostType == trans.CostType){
+              transactionSet.reject("payment", "Payment Type Error: A final payment cannot be created because a partial payment is pending.", null, null);
+            }
+          }
+        }
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

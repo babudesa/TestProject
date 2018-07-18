@@ -1,0 +1,60 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVAG1000AgriBusinessTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVAG1100 - Check for Lienholder")
+internal class TVAG1100CheckforLienholder {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet" && transactionSet.New)//&&
+//!(TransactionSet as CheckSet).ForBulkedCheck
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var check = (transactionSet as CheckSet).PrimaryCheck;
+  for(expose in transactionSet.Exposures){
+    //add this check for feature type, 11/29/11 per defect 4813
+    if(expose.ExposureType=="ab_AGG_auto_BodInjury" or expose.ExposureType=="ab_AGG_gl_BodInjury" or
+      expose.ExposureType=="ab_BodilyInjury"or expose.ExposureType=="ab_MedPay"or 
+      expose.ExposureType=="ab_PersonalInjury"or expose.ExposureType=="ab_PIP"){
+      actions.exitToNextRoot();
+    }
+  }  
+    for(payment in check.Payments){
+      if(payment.CostType == "claimcost"){
+        //loops through and makes sure every lienholder has been paid if it's a property coverage
+        if(payment.ReserveLine.Exposure.Coverage.Subtype =="PropertyCoverage"){
+          var propCov = payment.ReserveLine.Exposure.Coverage as PropertyCoverage;
+          //defect 1446 - blawless - added condition to check for SFPP lienholders
+          if(!propCov.isSFPP()){
+            if(exists( lienholder in (propCov.RiskUnit as PropertyRU).Property.Lienholders where !exists(payee in check.Payees where payee.Payee==lienholder.Lienholder))){
+              //defect 1446 - blawless - changed warning message due to confusion when multiple lienholders exist.    
+              transactionSet.reject( null, null, "payment", displaykey.Rules.Validation.Transaction.AgriBusiness.AbilityToPay.LienholderNotPayee )
+              break
+            }
+          }else{
+            if(exists(lienholder in propCov.HighValueItemExt.Lienholders_Ext where !exists(payee in check.Payees where payee.Payee==lienholder.Lienholder))){
+              //defect 1446 - blawless - changed warning message due to confusion when multiple lienholders exist.    
+              transactionSet.reject( null, null, "payment", displaykey.Rules.Validation.Transaction.AgriBusiness.AbilityToPay.LienholderNotPayee )  
+              break
+            }
+          }
+        }
+        if(payment.ReserveLine.Exposure.Coverage.Subtype =="VehicleCoverage"){
+          var vehCov = payment.ReserveLine.Exposure.Coverage as VehicleCoverage;
+          if(exists( lienholder in (vehCov.RiskUnit as VehicleRU).Vehicle.Lienholders where !exists(payee in check.Payees where payee.Payee==lienholder.Lienholder ))){
+            transactionSet.reject( null, null, "payment", displaykey.Rules.Validation.Transaction.AgriBusiness.AbilityToPay.LienholderNotPayee )
+            break
+          }
+        }
+      }
+    }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

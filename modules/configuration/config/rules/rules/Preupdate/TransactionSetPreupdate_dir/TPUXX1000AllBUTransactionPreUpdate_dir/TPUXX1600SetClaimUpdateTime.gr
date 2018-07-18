@@ -1,0 +1,21 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXX1600 - Set ClaimUpdateTime")
+internal class TPUXX1600SetClaimUpdateTime {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.State != "draft" and 
+(transactionSet.Claim.OriginalVersion as Claim).State != "draft"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  var claimUpdateTime:util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+  
+  claimUpdateTime.setClaimUpdateTime(transactionSet.Claim.ClaimNumber, gw.api.util.DateUtil.currentDate())
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,47 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1511PendingVoid_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPOXX1511A - Send Email")
+internal class TPOXX1511ASendEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet.New and transactionSet.LoadCommandID != null)
+
+//Email will be sent for Manual Checks of type Manual or EFT or Canadian
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+try{
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  //set pending void date
+  check.ex_DateVoided = gw.api.util.DateUtil.currentDate();
+   var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+   var EFT_Canadian : String = ""
+  
+   if( check.PrefixExt == "991" and check.ex_ManualPaymentMethod.Code == "eft" )
+    EFT_Canadian = "EFT or Canadian "
+   //var subject:String= EFT_Canadian + "Void Check Request"
+   var emailHelper=new EmailHelper()
+  //EFT and canadian checks - 991
+  if((check.ManualCheck && check.ex_ManualPaymentMethod == "manual") || check.PrefixExt == "991"){
+    var body = templates.email.VoidStopCheck.renderToString(transactionSet, "Void")
+  
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+      emailHelper.sendEmailWithBodyEcf(check.Claim, 
+        ScriptParameters.Divisional_Accounting_Email, ScriptParameters.Divisional_Accounting_Name, 
+        "ClaimCenterSupport@gaig.com", "Claim Center Notification", 
+        EFT_Canadian + "Void Check Request", body)
+    }
+    else{
+      emailHelper.sendEmailWithBodyEcf(check.Claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Divisional_Accounting_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        EFT_Canadian + "Void Check Request", body)
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

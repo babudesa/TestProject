@@ -1,0 +1,29 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUBS1000BondsExposurePreUpdateRules_dir.EPUBS1200RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUBS1210 - Initial Contact with Claimant")
+internal class EPUBS1210InitialContactwithClaimant {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.Claim.AssignmentStatus == "assigned" &&
+exposure.Claim.IncidentReport == false &&
+exposure.Claim.State != "closed" &&
+exposure.Claim.State != "draft" &&
+exposure.Claim.IncidentReport == false and
+(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="initial_cont_with_claimant" and act.Exposure==exposure) &&
+exposure.Claimant!=null ))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var today = gw.api.util.DateUtil.currentDate()
+  var ap = util.custom_Ext.finders.findActivityPattern( "initial_cont_with_claimant" )
+   
+  var act = exposure.Claim.createActivityFromPattern( exposure, ap)
+    
+  act.TargetDate = today.addBusinessDays(ScriptParameters.Activity_BondsInitialContactWithClaimant)
+  act.AssignedUser = exposure.Claim.AssignedUser
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure.Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

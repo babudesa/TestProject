@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Popup
+    canEdit="Contact != null and perm.Contact.editlocal(User.Contact)"
+    canVisit="perm.Contact.viewlocal"
+    desc="Placeholder for app-specific UserContactDetail popup."
+    id="UserContactDetailPopup"
+    returnType="Contact"
+    title="User.DisplayName">
+    <LocationEntryPoint
+      signature="UserContactDetailPopup(User : User)"/>
+    <Variable
+      name="User"
+      type="User"/>
+    <Variable
+      initialValue="new contact.LocationContactHandle(User.Contact)"
+      name="contactHandle"/>
+    <Variable
+      initialValue="Contact==null ? null : Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="(linkStatus != null and linkStatus.Known and linkStatus.Linked) ? true : false"
+      name="showRelatedObjects"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <ScreenRef
+      def="ContactDetailScreen(contactHandle, true, false, linkStatus, null, true, showRelatedObjects)"/>
+    <Code><![CDATA[
+property get Contact() : Contact { return contactHandle.Contact; }
+    ]]></Code>
+  </Popup>
+</PCF>

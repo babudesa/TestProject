@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="Supertype for all RiskUnits."
+  entity="RiskUnit"
+  exportable="true"
+  extendable="true"
+  final="false"
+  javaClass="com.guidewire.cc.domain.policy.RiskUnit"
+  platform="false"
+  table="riskunit"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <column
+    desc="Number of the risk unit on the policy."
+    name="RUNumber"
+    nullok="false"
+    type="integer"/>
+  <foreignkey
+    columnName="PolicyID"
+    desc="Related policy."
+    exportable="false"
+    fkentity="Policy"
+    name="Policy"
+    nullok="false"/>
+  <array
+    arrayentity="RUCoverage"
+    desc="List of coverages directly related to the vehicle."
+    name="Coverages"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="ClassCodeID"
+    desc="The Class Code (if any) assigned to this RiskUnit"
+    fkentity="ClassCode"
+    name="ClassCode"/>
+  <index
+    desc="Enforce uniqueness, the combination of RUNumber, Subtype and ClassCodeID must be unique per policy"
+    name="riskunitu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="PolicyID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="RUNumber"/>
+    <indexcol
+      keyposition="4"
+      name="Subtype"/>
+    <indexcol
+      keyposition="5"
+      name="ClassCodeID"/>
+  </index>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.policy.dbchecks.RiskUnitCoverageRiskUnitPolicyDBCheckBuilder"/>
+</entity>

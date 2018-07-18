@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <NormalCreateCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(Claim)"
+    afterFinish="ClaimFinancialsChecks.go(Claim)"
+    beforeCommit="gw.api.system.bundle.BundleCommitCondition.verify(Claim)"
+    canVisit="perm.Claim.createpayment(Claim) and (Claim.State != ClaimState.TC_DRAFT)"
+    cancelWarning="displaykey.Wizard.NewCheckWizard.CancelWarning"
+    id="NormalCreateCheckWizard"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(Claim)"
+    parent="NormalCreateCheckWizardForward(Claim)">
+    <LocationEntryPoint
+      signature="NormalCreateCheckWizard(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="NormalCreateCheckWizard(Claim : Claim, Exposure : Exposure, CostType : CostType, CostCategory : CostCategory, setReserveLine : Boolean)"/>
+    <Variable
+      initialValue="new financials.NormalCreateCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.NormalCreateCheckWizardInfo"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Check"
+      type="Check"/>
+    <Variable
+      initialValue="null"
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="null"
+      name="CostType"
+      type="CostType"/>
+    <Variable
+      initialValue="null"
+      name="CostCategory"
+      type="CostCategory"/>
+    <Variable
+      initialValue="Boolean.FALSE"
+      name="setReserveLine"
+      type="Boolean"/>
+    <WizardStep
+      allowFinish="false"
+      id="NewCheckPayees"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Label"
+      onExit="Wizard.validateAllCheckPayees(); Wizard.createNewCheckPortionsIfNecessary(); Wizard.refreshBundle()"
+      onFirstEnter="Claim.freezeCurrency()"
+      screen="CheckWizard_CheckPayeesScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckPayments"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Label"
+      onExit="Wizard.validatePayments();Wizard.setDeductionWarningNeeded(false)"
+      onFirstEnter="Wizard.setPreferredCurrency(Wizard.preferredCurrencyByPayees())"
+      screen="CheckWizard_CheckPaymentsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckInstructions"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Label"
+      screen="CheckWizard_CheckInstructionsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+  </NormalCreateCheckWizard>
+</PCF>

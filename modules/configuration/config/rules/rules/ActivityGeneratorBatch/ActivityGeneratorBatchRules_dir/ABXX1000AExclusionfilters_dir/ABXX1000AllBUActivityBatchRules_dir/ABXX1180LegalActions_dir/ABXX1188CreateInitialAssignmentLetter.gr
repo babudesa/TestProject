@@ -1,0 +1,76 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir.ABXX1180LegalActions_dir
+
+@gw.rules.RuleName("ABXX1188 - Create Initial Assignment Letter")
+internal class ABXX1188CreateInitialAssignmentLetter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Matters.IsEmpty &&
+exists(ma in claim.Matters*.MatterAssignmentsExt where
+         ma.MatterAssignmentStatusExt != MatterAssignmentStatus.TC_DECLINED and
+         ma.StatusExt != typekey.AssignmentStatusExt.TC_CLOSED and
+         gw.api.util.DateUtil.daysBetween(ma.CreateTime.trimToMidnight(),
+         gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 7
+and !exists(doc in claim.Documents where
+        doc.ex_SubType == "Assignment"
+        and doc.Matter == ma.Matter
+        and doc.MailToExt == ma.CounselLawFirmExt
+        and (doc.Description != null //defect 8694 added nullcheck for description
+        &&(doc.Description.containsIgnoreCase(ma.LSSMatterID) ||
+        doc.Description.containsIgnoreCase(ma.AssignmentIDNumber)))
+        and doc.ECFIDExt != null ))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+ 
+
+  var pattern = util.custom_Ext.finders.findActivityPattern("create_init_assign_letter")
+  var today = gw.api.util.DateUtil.currentDate().trimToMidnight()
+
+  //get all valid assignments for activity
+  var assignments = claim.Matters*.MatterAssignmentsExt.where(\ m ->
+           m.MatterAssignmentStatusExt != MatterAssignmentStatus.TC_DECLINED and
+           m.StatusExt != typekey.AssignmentStatusExt.TC_CLOSED and 
+           gw.api.util.DateUtil.daysBetween(m.CreateTime.trimToMidnight(),
+           gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 7
+          and !(exists(doc in claim.Documents where 
+          doc.Matter == m.Matter
+          and doc.MailToExt == m.CounselLawFirmExt
+          and doc.Name == "Initial Assignment Letter"
+         and (doc.Description != null //defect 8694 added nullcheck for description
+          &&(doc.Description.containsIgnoreCase(m.LSSMatterID) ||
+             doc.Description.containsIgnoreCase(m.AssignmentIDNumber)))
+          and doc.ECFIDExt != null))
+          and !exists(act in claim.Activities where act.ActivityPattern.Code == "create_init_assign_letter" and
+                       act.MatterAssignmentExt == m))
+      
+        
+  for(ma in assignments){  
+    //Create new activity from existing pattern and add the matter name to the pattern
+    //subject and description
+    //Defect 8346 - skip the activity trigger if the claim is Workers' Comp 
+    if(!(util.WCHelper.isWCLossType(claim))){
+      var newAct = claim.createActivity(null,
+                 pattern, pattern.Subject + " (" + ma.CounselLawFirmExt + ") on the Legal Action (" + ma.Matter.DisplayName + ")",
+                 pattern.Description + " (" + ma.CounselLawFirmExt + ") on the Legal Action (" + ma.Matter.DisplayName + ")",
+                 pattern.Priority, pattern.Mandatory,null, null)
+
+ 
+      //associate exposure,matter, and matter assignment
+      newAct.Exposure = ma.AssignmentExposuresExt.where(\ a -> a.PrimaryClaimantExt).first().Exposure
+      newAct.Matter = ma.Matter
+      newAct.MatterAssignmentExt = ma
+  
+      //assign user 
+      newAct.AssignedUser = claim.AssignedUser
+      //set custom target date 
+      newAct.TargetDate =  ma.CreateTime.trimToMidnight().addDays(7)
+    }
+  }
+
+ 
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

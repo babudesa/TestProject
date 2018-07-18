@@ -1,0 +1,20 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir.CPUWC2100AddFormerRole_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUWC2140 - Add Former Opposing Counsel Role")
+internal class CPUWC2140AddFormerOpposingCounselRole {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.New && !claim.Closed &&
+(claim.OriginalVersion as Claim) .opposingcounsel != null &&
+(claim.OriginalVersion as Claim) .opposingcounsel != claim.opposingcounsel/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/
+try{  
+  claim.addRole(ContactRole.TC_FORMEROPPOSINGCOUNSEL, (claim.OriginalVersion as Claim).opposingcounsel)  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

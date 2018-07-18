@@ -1,0 +1,27 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAXX100AllBUsGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAXX120 - Approval Denied Activity Assignment")
+internal class GAAXX120ApprovalDeniedActivityAssignment {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*///Defect 2337 - Review this Rejected Request Activity should go to the Claim Adjuster, not the entry person
+// added by: blawless - 8/13/09
+
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approval_denied") /*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*///The "Review rejected request" activity should get assigned to the user
+// who submitted the Bulk Invoice.
+// modified by :Ndasari - 4/29/14
+
+
+if(activity.Description.contains("BulkInvoice")){
+  var group=(activity.BulkInvoice.CreateUser.AllGroups.first() as Group)
+  activity.CurrentAssignment.assign(group, activity.BulkInvoice.CreateUser)
+  actions.exit()
+  }else{
+  activity.CurrentAssignment.assign( activity.Claim.AssignedGroup, activity.Claim.AssignedUser ); 
+  actions.exit();
+  }/*end00rule*/
+  }
+}

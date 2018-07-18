@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NoteTemplateSearchDV">
+    <Require
+      name="NoteTemplateSearchCriteria"
+      type="NoteTemplateSearchCriteria"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="Topic"
+        label="displaykey.NVV.Claim.NoteTemplateSearch.Topic"
+        value="NoteTemplateSearchCriteria.Topic"/>
+      <Input
+        editable="true"
+        id="Type"
+        label="displaykey.NVV.Claim.NoteTemplateSearch.Type"
+        value="NoteTemplateSearchCriteria.Type"/>
+      <Input
+        editable="true"
+        id="Language"
+        label="displaykey.NVV.Claim.NoteTemplateSearch.Language"
+        required="true"
+        value="NoteTemplateSearchCriteria.Language"
+        visible="LanguageType.getTypeKeys( false ).Count &gt; 1"/>
+      <RangeInput
+        editable="true"
+        filter="filterLobs(VALUE)"
+        id="LossType"
+        label="displaykey.NVV.Claim.NoteTemplateSearch.LossType"
+        value="NoteTemplateSearchCriteria.Lob"
+        valueRange="LossType.getTypeKeys(false)"/>
+      <Input
+        editable="true"
+        id="Keywords"
+        label="displaykey.NVV.Claim.NoteTemplateSearch.Keywords"
+        value="NoteTemplateSearchCriteria.Keywords"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputSetRef
+        def="SearchAndResetInputSet()"/>
+    </InputFooterSection>
+    <Code><![CDATA[function getLobs():List{
+  var lobs:List = new java.util.ArrayList()
+  var lobCode =  typekey.LossType.getTypeKeys(false)
+  
+  for(i in lobCode){
+    if(i != NoteTemplateSearchCriteria.Lob and !lobs.contains(i.DisplayName)){
+      lobs.add(i.DisplayName)
+    }
+  }
+ 
+  return lobs
+}
+
+function filterLobs(lt:LossType) : boolean{
+  if (lt==LossType.TC_AGRIWC){
+    return true
+  }
+  if (LossType.TF_WC_EXPORT_LOSSTYPES.TypeKeys.contains(lt)){
+    return false
+  }
+  return true
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

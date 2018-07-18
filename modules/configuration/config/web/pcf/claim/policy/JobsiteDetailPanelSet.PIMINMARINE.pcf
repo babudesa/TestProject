@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="JobsiteDetailPanelSet"
+    mode="PIMINMARINE">
+    <Require
+      name="LocationBasedRU"
+      type="LocationBasedRU"/>
+    <DetailViewPanel
+      id="LocationDetailDV">
+      <InputColumn>
+        <InputSetRef
+          def="JobsiteDetailInputSet(LocationBasedRU)"
+          mode="LocationBasedRU.Policy.Claim.LossType"/>
+        <InputSetRef
+          def="AddressInputSet(LocationBasedRU.AddressOwner)"
+          mode="LocationBasedRU.AddressOwner.InputSetMode"/>
+      </InputColumn>
+      <InputFooterSection>
+        <InputSet>
+          <!-- Lienholders -->
+          <ListViewInput
+            def="EditablePropertyLienholdersLV(LocationBasedRU.Property, LocationBasedRU.Policy.Claim)"
+            editable="true"
+            id="Lienholders"
+            label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+            labelAbove="true"
+            validationExpression="LocationBasedRU.Property.validateLienholders()"
+            visible="LocationBasedRU.Policy.Verified">
+            <Toolbar>
+              <IteratorButtons/>
+            </Toolbar>
+          </ListViewInput>
+          <!-- Additional Interest -->
+          <ListViewInput
+            def="EditableAdditionalInterestRisksLV(LocationBasedRU, LocationBasedRU.Policy.Claim)"
+            editable="true"
+            id="AdditionalInterest"
+            label="displaykey.NVV.Policy.LocationDetail.Property.AdditionalInterest"
+            labelAbove="true"
+            validationExpression="LocationBasedRU.Policy.checkCoveredPartyConstraints().formatUserMessage()"
+            visible="LocationBasedRU.Policy.Verified">
+            <Toolbar>
+              <IteratorButtons/>
+            </Toolbar>
+          </ListViewInput>
+          <!-- Location coverages -->
+          <ListViewInput
+            def="EditablePropertyCoveragesLV(LocationBasedRU.Property, LocationBasedRU)"
+            editable="true"
+            id="Coverages"
+            label="displaykey.NVV.Policy.LocationDetail.Property.Coverages"
+            labelAbove="true"
+            mode="LocationBasedRU.Policy.Claim.LossType"
+            visible="LocationBasedRU.Property.RiskTypeExt!=&quot;PRM&quot;">
+            <Toolbar>
+              <IteratorButtons/>
+            </Toolbar>
+          </ListViewInput>
+        </InputSet>
+      </InputFooterSection>
+    </DetailViewPanel>
+    <Code><![CDATA[function getClaimContacts():List {
+  var contactList = new java.util.ArrayList();
+  for(contact in LocationBasedRU.Policy.Claim.Contacts) {
+    if(!contact.hasRole( "agency" ) and !contact.hasRole( "underwriter" )) {
+      contactList.add(contact.Contact)
+    }
+  }
+  return contactList;
+}]]></Code>
+  </PanelSet>
+</PCF>

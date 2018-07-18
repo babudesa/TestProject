@@ -1,0 +1,31 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("PVXX11B0 - Subline Required")
+internal class PVXX11B0SublineRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*Subline is required to be at new loss validation level.
+  Rule placed in equine but not checking equine claims is so we can have this rule at the enterprise level.
+  This rule is in place to validate data being imported into the system.
+  Sprint/Maintenance Release: 16
+  Author: Zach Thomas
+  Date: 10/2/2008
+  
+  11.5.15 - Defect 7750 - cmullin - Enterprise Subline validation moved to ATP. Rule disabled.
+*/
+policy.Claim.LossType != "EQUINE" and !util.WCHelper.isWCorELLossType(policy.Claim) and
+exists(cov in policy.AllCoverages where cov.SublineExt == null)/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(cov in policy.AllCoverages){
+    if(cov.SublineExt == null){
+      policy.reject( "newloss", displaykey.Rules.Validation.Policy.Enterprise.AbilityToPay.Subline(cov.Type.DisplayName, cov.DisplayName), null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,192 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="FNOLWizard_AssignSaveScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Toolbar>
+      <WizardButtons/>
+    </Toolbar>
+    <DetailViewPanel>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.AssignSaveScreen.AssignemntLabel"/>
+        <Choice
+          id="CommonAssignChoice"
+          option="true"
+          value="Wizard.CommonAssignment">
+          <CCAssigneeInput
+            assignable="Claim"
+            claim="Claim"
+            editable="true"
+            id="CommonAssign"
+            label="displaykey.Web.NewClaimWizard.Assign.CommonAssign"
+            showNoneSelected="false"
+            sortValueRange="false"
+            value="Wizard.commonAssignee"
+            valueRange="Claim.SuggestedAssignees"/>
+        </Choice>
+        <Choice
+          hideIfReadOnly="true"
+          id="IndividualAssignChoice"
+          option="false"
+          value="Wizard.CommonAssignment">
+          <Label
+            label="displaykey.Web.FNOLWizard.Assign.IndividualAssignLabel"
+            visible="((Claim.Exposures != null) &amp;&amp; (Claim.Exposures.length &gt; 0))"/>
+          <CCAssigneeInput
+            assignable="Claim"
+            claim="Claim"
+            editable="((Claim.Exposures != null) &amp;&amp; (Claim.Exposures.length &gt; 0))"
+            id="ClaimAssign"
+            label="displaykey.Web.FNOLWizard.Assign.IndividualAssign.ClaimLabel"
+            showNoneSelected="false"
+            sortValueRange="false"
+            value="getAssignableInstanceForClaim().Assignee"
+            valueRange="Claim.SuggestedAssignees"
+            visible="((Claim.Exposures != null) &amp;&amp; (Claim.Exposures.length &gt; 0))"/>
+        </Choice>
+      </InputColumn>
+      <InputColumn>
+        <TextAreaInput
+          boldLabel="true"
+          editable="true"
+          id="Note"
+          label="displaykey.Web.AssignSaveScreen.NewNote.Label"
+          labelAbove="true"
+          numRows="5"
+          postOnChange="true"
+          value="Wizard.AssignSaveNoteBody"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <DetailViewPanel
+      visible="Claim.LossType != LossType.TC_WC">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.NewClaimWizard.Summary.ExposuresLV.Title"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelRef
+      visible="Claim.LossType != LossType.TC_WC">
+      <Toolbar>
+        <ToolbarButton
+          id="AddExposure"
+          label="displaykey.Web.ClaimMenuActions.NewExposure"
+          shortcut="E">
+          <MenuItemTree
+            children="item.Children"
+            elementName="item"
+            type="gw.api.exposure.NewExposureMenuItem"
+            value="gw.api.exposure.NewExposureMenuUtil.createItemsByCoverage(claim)">
+            <MenuItem
+              action="NewClaimWizard_NewExposurePopup.push(claim, wizard, item.loadCoverageFromBundle(claim), item.CoverageType, item.CoverageSubtype)"
+              available="(item.CoverageType != null and item.CoverageSubtype != null) or item.Children.length &gt; 0"
+              hideIfDisabled="false"
+              id="item"
+              label="item.DisplayLabel"/>
+          </MenuItemTree>
+          <MenuItem
+            id="NewExposureMenuItemSet_ByCoverageType"
+            label="displaykey.JSP.NewExposure.ChooseByCoverageType">
+            <MenuItemTree
+              children="item.Children"
+              elementName="item"
+              type="gw.api.exposure.NewExposureMenuItem"
+              value="gw.api.exposure.NewExposureMenuUtil.createItemsByCoverageType(claim)">
+              <MenuItem
+                action="NewClaimWizard_NewExposurePopup.push(claim, wizard, item.loadCoverageFromBundle(claim), item.CoverageType, item.CoverageSubtype)"
+                available="true"
+                hideIfDisabled="false"
+                id="item"
+                label="item.DisplayLabel"/>
+            </MenuItemTree>
+          </MenuItem>
+        </ToolbarButton>
+        <IteratorButtons
+          addVisible="false"/>
+      </Toolbar>
+      <ListViewPanel
+        id="NewExposureLV">
+        <RowIterator
+          checkBoxVisible="true"
+          editable="!Wizard.CommonAssignment"
+          elementName="Exposure"
+          hasCheckBoxes="true"
+          toRemove="Wizard.deleteExposure(Exposure)"
+          value="Claim.Exposures">
+          <Row>
+            <Cell
+              action="NewClaimWizard_ExposurePagePopup.push(Claim, Exposure)"
+              id="Exposures_Order"
+              label="displaykey.LV.Exposure.Exposures.Order"
+              outputConversion="VALUE.ClaimOrder as String"
+              sortOrder="1"
+              value="Exposure"/>
+            <Cell
+              action="NewClaimWizard_ExposurePagePopup.push(Claim, Exposure)"
+              id="Exposures_Type"
+              label="displaykey.LV.Exposure.Exposures.Type"
+              value="Exposure.ExposureType"/>
+            <Cell
+              action="NewClaimWizard_ExposurePagePopup.push(Claim, Exposure)"
+              id="Exposures_Coverage"
+              label="displaykey.LV.Exposure.Exposures.Coverage"
+              value="Exposure.PrimaryCoverage"/>
+            <Cell
+              enableSort="false"
+              id="Exposures_Claimant"
+              label="displaykey.LV.Exposure.Exposures.Claimant"
+              value="Exposure.Claimant"
+              wrap="false"/>
+            <Cell
+              id="Incident"
+              label="displaykey.LV.Exposure.Exposures.Involving"
+              value="Exposure.Incident"/>
+            <Cell
+              id="Exposures_Status"
+              label="displaykey.LV.Exposure.Exposures.Status"
+              value="Exposure.State"/>
+            <AssigneeCell
+              assignable="Exposure"
+              editable="true"
+              enableSort="false"
+              id="Exposures_Assignee"
+              label="displaykey.LV.Exposure.Exposures.AssignTo"
+              showNoneSelected="false"
+              sortValueRange="false"
+              value="getAssignableInstanceForExposure(Exposure).Assignee"
+              valueRange="getAssignableInstanceForExposure(Exposure).Target.SuggestedAssignees"
+              visible="!Wizard.CommonAssignment"
+              wrap="false"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </PanelRef>
+    <Code><![CDATA[function getAssignableInstanceForClaim() : com.guidewire.cc.web.newclaim.NewClaimAssignments.NewClaimAssignmentOption {
+  var allAssignments = Wizard.IndividualAssignments
+  for (var instanceAssignment in allAssignments){
+    if (instanceAssignment.Target == Claim) {
+       return instanceAssignment
+    }
+  }
+  return null   
+}
+      
+
+function getAssignableInstanceForExposure(exposureToFind : Exposure) : com.guidewire.cc.web.newclaim.NewClaimAssignments.NewClaimAssignmentOption {  
+  var allAssignments = Wizard.IndividualAssignments
+  for (var instanceAssignment in allAssignments){
+    if (instanceAssignment.Target == exposureToFind) {
+       return instanceAssignment
+    }
+  }  
+  return null
+}]]></Code>
+  </Screen>
+</PCF>

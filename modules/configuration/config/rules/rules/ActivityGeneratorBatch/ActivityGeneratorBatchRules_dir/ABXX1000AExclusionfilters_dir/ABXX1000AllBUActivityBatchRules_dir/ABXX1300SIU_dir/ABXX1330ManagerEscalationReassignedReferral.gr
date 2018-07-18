@@ -1,0 +1,38 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir.ABXX1300SIU_dir
+
+@gw.rules.RuleName("ABXX1330 - Manager Escalation Reassigned Referral")
+internal class ABXX1330ManagerEscalationReassignedReferral {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Conversion Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for converted claims. 
+ */
+
+exists(act in claim.Activities
+    where act.ActivityPattern.Code == "review_reassigned_siu") &&
+!exists(act in claim.Activities
+          where act.ActivityPattern.Code == "review_reassigned_siu_incomplete")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var currentDate = gw.api.util.DateUtil.currentDate().trimToMidnight()
+
+    for(act in claim.Activities.where(\ a -> a.ActivityPattern.Code == "review_reassigned_siu" 
+    && a.Status == typekey.ActivityStatus.TC_OPEN 
+    && gw.api.util.DateUtil.daysBetween(a.UpdateTime, currentDate) >= ScriptParameters.Activity_SIUManagerEscalation)){
+      if(!exists(act in claim.Activities          
+          where act.ActivityPattern.Code == "review_reassigned_siu_incomplete")){
+        var ap = util.custom_Ext.finders.findActivityPattern("review_reassigned_siu_incomplete")
+        var newAct = claim.createActivity(null,ap, ap.Subject, ap.Description, ap.Priority, ap.Mandatory, null, null)
+        //set custom target date  
+        newAct.TargetDate = currentDate
+        newAct.AssignedUser = act.AssignedGroup.Supervisor
+        break
+      }
+    }
+} catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

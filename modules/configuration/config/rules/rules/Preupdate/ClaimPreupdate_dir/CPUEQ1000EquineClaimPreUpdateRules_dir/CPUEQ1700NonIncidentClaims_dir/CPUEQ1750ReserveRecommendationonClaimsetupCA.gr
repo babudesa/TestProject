@@ -1,0 +1,19 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1700NonIncidentClaims_dir
+
+@gw.rules.RuleName("CPUEQ1750 - Reserve Recommendation on Claim setup-CA")
+internal class CPUEQ1750ReserveRecommendationonClaimsetupCA {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///On all claims there will be a 75-day activity that are defined as: "RR/Adjuster". 
+// Updated 5/22/2009 - zthomas - Defect 1682, change subject to "Reserve Recommendation - 75 Day"
+claim.State != "closed" and
+claim.LoadCommandID==null and 
+not exists( 
+ Activity in claim.Activities
+     where (Activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("eq_75day_note_to_file")))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_75day_note_to_file"), "Reserve Recommendation - 75 Day", null, "normal", true, null, null )
+ /*end00rule*/
+  }
+}

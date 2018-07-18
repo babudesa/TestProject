@@ -1,0 +1,878 @@
+<?xml version="1.0"?>
+<!-- Extension to claim table -->
+<extension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="Claim">
+  <index
+    desc="Covering index for helping to speed up Claim Search by Insured's last name, when including lossdate as one of the criteria"
+    expectedtobecovering="true"
+    name="claimu6"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="InsuredDenormID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="LossDate"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+  <index
+    desc="This covering index exists to help the performance of the claim search                  feature as configured out of the box, which is to constrain on Lost Date                  by default. If this default search configuration is changed then it may                  be worth considering removal of this index. This index also has ClaimNumber                  in it to address execution plan problems with Team Group Activities page in                  MS SQL Server and will be used in places where claimnumber on claim is used."
+    expectedtobecovering="true"
+    name="claimu7u"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="LossDate"/>
+    <indexcol
+      keyposition="4"
+      name="ClaimNumber"/>
+    <indexcol
+      keyposition="5"
+      name="Flagged"/>
+  </index>
+  <index
+    desc="This covering index exists to help the performance of querying for claims                  related to a specified catastrophe."
+    expectedtobecovering="true"
+    name="claimu9"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="LossCause"/>
+    <indexcol
+      keyposition="2"
+      name="LossDate"/>
+    <indexcol
+      keyposition="3"
+      name="LossType"/>
+    <indexcol
+      keyposition="4"
+      name="CatastropheID"/>
+    <indexcol
+      keyposition="5"
+      name="Retired"/>
+    <indexcol
+      keyposition="6"
+      name="LossLocationID"/>
+    <indexcol
+      keyposition="7"
+      name="ID"/>
+  </index>
+  <column
+    desc="Accounting Month in MM format to be populated for Converted Claims"
+    name="AccountingMonthExt"
+    type="integer"/>
+  <column
+   	desc="Policy Form"
+   	name="PolicyFormExt"
+   	type="varchar">
+   		<columnParam
+   			name="size"
+   			value="10"/>
+   	</column>
+   <column
+   	desc="Potential Development"
+   	name="PotentialDevelopmentExt"
+   	nullok="true"
+   	type="nonnegativemoney"/>  
+  <column
+    desc="Accounting Year in YYYY format to be populated for Converted Claims"
+    name="AccountingYearExt"
+    type="year"/>
+  <column
+    desc="Create date for converted claims to preserve the original date of claim creation"
+    name="RptCreateDateExt"
+    type="datetime"/>
+  <column
+    desc="Update date for converted claims to preserve the original date of claim creation"
+    name="RptUpdateDateExt"
+    type="datetime"/>
+  <typekey
+    desc="GAIC modification: Detail about the Loss Cause, corresponds to legacy field."
+    name="ex_DetailLossCause"
+    nullok="true"
+    typelist="LossCauseDetails">
+    <keyfilters>
+      <keyfilter
+        name="LossCause"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="The category of loss locations"
+    name="ex_LossLocation"
+    nullok="true"
+    typelist="LossLocation"/>
+  <typekey
+    desc="Reasons that caused the Loss "
+    name="ex_LossDueTo"
+    nullok="true"
+    typelist="LossDueTo">
+    <keyfilters>
+      <keyfilter
+        name="LossLocation.State"/>
+    </keyfilters>
+  </typekey>
+  <foreignkey
+    desc="Used to reconnect loss locations on policy refresh"
+    fkentity="Address"
+    name="PreviousLossLocationExt"
+	owner="true"
+    nullok="true"/>
+  <!-- 09/21/2007 zthomas: Added array to store former Loss Location Addresses -->
+  <array
+    arrayentity="LossLocationExt"
+    desc="Former Addresses used as the Loss Location."
+    name="FormerLossLocationsExt"/>
+  <column
+    desc="True if one of the special states that reset Type of Loss data."
+    name="SpecialStateSelectedExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="True if claim is being processed for closing"
+    name="PendingClose"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Estimated Damage"
+    name="EstimatedDamage_Ext"
+    nullok="true"
+    type="money"/>
+  <!-- AgriBusiness Sprint 4 rbr -->
+  <column
+    desc="Non-Reserved File Yes/No"
+    name="NonReservedFile_Ext"
+    nullok="true"
+    type="bit"/>
+  <!-- AgriBusiness Sprint 4 rbr -->
+  <typekey
+    desc="Driver Type"
+    name="DriverType_Ext"
+    nullok="true"
+    typelist="DriverType"/>
+  <foreignkey
+    fkentity="Contact"
+	owner="true"
+    name="Driver_Ext"/>
+  <!-- AgriBusiness Sprint 6 by rbr  start  03/26/2008 - zthomas - Defect 981, Add BusinessUnitExt and BusinessLineExt as used in Agribusiness -->
+  <typekey
+    desc="Business Unit for NCW only, do not use"
+    name="NCWOnlyBusinessUnitExt"
+    typelist="BusinessUnitExt"/>
+  <typekey
+    desc="Business Lines"
+    name="BusinessLineExt"
+    typelist="BusinessLineExt">
+    <keyfilters>
+      <keyfilter
+        name="NCWOnlyBusinessUnitExt"/>
+    </keyfilters>
+  </typekey>
+  <!-- 05/20/2008 - zthomas - Defect 1131, Add flag to ensure Policy Disconnected Warning is only displayed once on failed feature reconnect. -->
+  <column
+    default="false"
+    desc="Determines whether to display disconnected feature warning."
+    name="PolicyDisconnectedWarningExt"
+    nullok="true"
+    type="bit"/>
+  <foreignkey
+    desc="Claim Reporter"
+    fkentity="Contact"
+	owner="true"
+    name="ReportedByExt"/>
+  <!-- AgriBusiness Sprint 6 by rbr  end -->
+  <column
+    desc="Was the accident weather related?"
+    name="WeatherRelated_Ext"
+    nullok="true"
+    type="bit"/>
+  <array
+    arrayentity="IndependentAdjuster_Ext"
+    deprecated="true"
+    exportable="true"
+    name="IndependentAdjusters_Ext"
+    triggersValidation="true"/>
+  <array
+    arrayentity="IndepAdjusterExt"
+    exportable="true"
+    name="IndepAdjustersExt"
+    triggersValidation="true"/>
+  <!-- Added for Agri Sprint 12, 3/5/08 jlmiller -->
+  <column
+    default="false"
+    desc="Field used behind the scenes to determine if Superuser or SCOAdmin updated the ISOEnabled field."
+    name="ISOEnabledAdminUpdated_Ext"
+    nullok="false"
+    type="bit"/>
+  <column
+    desc="Used as a flag for whether the loss cause on a claim has changed"
+    name="LossCauseChangedExt"
+    nullok="true"
+    type="bit"/>
+  <foreignkey
+    desc="Previous policy on policy refresh"
+    fkentity="Policy"
+    name="PreviousPolicyExt"
+	owner="true"
+    nullok="true"/>
+  <column
+    default="false"
+    desc="Determines whether the claim's policy was refreshed."
+    name="PolicyRefreshedExt"
+    nullok="true"
+    type="bit"/>
+  <array
+    arrayentity="SIUInvestigationExt"
+    desc="SIU Investigations on the claim"
+    name="SIUInvestigationsExt"/>
+  <typekey
+    desc="Field for initially estimating the amount of a reserve on the features of a claim"
+    name="LevelOfReserveExt"
+    nullok="true"
+    typelist="LevelOfReserveExt"/>
+  <column
+    desc="Description of the Loss Cause if Other is selected"
+    name="LossCauseOtherDescExt"
+    nullok="true"
+    type="mediumtext"/>
+  <column
+    desc="Is the loss due to vendor fraud?"
+    name="VendorFraudExt"
+    nullok="true"
+    type="bit"/>
+  <typekey desc="Whether the deductible has been paid." name="DeductibleStatus" typelist="DeductibleStatus"/>
+  <typekey desc="The reinsurance status for a claim." name="ReinsuranceStatus" typelist="ReinsuranceStatus"/>
+  <foreignkey
+    fkentity="Contact"
+    owner="true"
+    name="MainContactExt"/>
+  <foreignkey
+    fkentity="Contact"
+    owner="true"
+    name="ReporterExt"/>
+  <column
+    name="AmountClaimedExt"
+    type="money"
+    nullok="true"
+    desc="Amount Claimed" />
+<typekey
+    desc="GAIC modification: Detail about the Loss Cause, corresponds to legacy field."
+    name="DetailLossCause2Ext"
+    nullok="true"
+    typelist="LossCauseDetails">
+    <keyfilters>
+      <keyfilter
+        name="LossCause"/>
+    </keyfilters>
+  </typekey>
+<typekey
+    desc="GAIC modification: Detail about the Loss Cause, corresponds to legacy field."
+    name="DetailLossCause3Ext"
+    nullok="true"
+    typelist="LossCauseDetails">
+    <keyfilters>
+      <keyfilter
+        name="LossCause"/>
+    </keyfilters>
+  </typekey>
+<typekey
+    desc="Claim Related Type"
+    name="ClaimRelatedTypeExt"
+    nullok="true"
+    typelist="ClaimRelatedTypeExt"/>
+<typekey
+    desc="Claim Type"
+    name="ClaimTypeExt"
+    nullok="true"
+    typelist="ClaimTypeExt">
+    <keyfilters>
+      <keyfilter
+        name="LossType"/>
+    </keyfilters>
+  </typekey>
+<column
+    name="ASideDICExt"
+    type="bit"
+    nullok="true"
+    desc="A-Side DIC"
+    default="false"/>
+<column
+    name="BodilyInjuryExt"
+    type="bit"
+    nullok="true"
+    desc="Bodily Injury"/>
+<column
+    desc="Indicator that this Claim's Policy is a Claims Made Policy"
+    name="ClaimsMadePolicyExt"
+    nullok="true"
+    type="bit"/>
+<array
+    arrayentity="UnderlyingCoverageExt"
+    desc="Array of underlying coverages"
+    name="UnderlyingCoveragesExt"/>
+<column
+    name="AttachmentPointExt"
+    desc="Attachment Point for Excess Underlying Schedule"
+    type="money"
+    nullok="true"/>
+<column
+    name="LimitsInsuranceExt"
+    desc="Total Limits of Insurance for Excess Underlying Schedule"
+    type="money"
+    nullok="true"/>
+<column
+    default="false"
+    desc="Indicator for Claims Made Date Entered on Step 1 of New Claim Wizard"
+    name="ClaimsMadeUsedExt"
+    nullok="true"
+    type="bit"/>
+<typekey
+    desc="The Area of Practice the Insured was engaged in that led to the claim."
+    name="AreaofPracticeExt"
+    nullok="true"
+    typelist="AreaofPracticeExt">
+    <keyfilters>
+      <keyfilter
+        name="ClaimTypeExt"/>
+    </keyfilters>
+  </typekey>
+<typekey
+    desc="The type of project or industry that led to the claim."
+    name="ProjectCategoryExt"
+    nullok="true"
+    typelist="ProjectCategoryExt">
+    <keyfilters>
+      <keyfilter
+        name="ClaimTypeExt"/>
+    </keyfilters>
+  </typekey>
+<typekey
+    desc="The type of industry that led to the claim."
+    name="IndustryCategoryExt"
+    nullok="true"
+    typelist="IndustryCategoryExt">
+    <keyfilters>
+      <keyfilter
+        name="ClaimTypeExt"/>
+    </keyfilters>
+  </typekey>
+<typekey
+    desc="The action that led the claimant to bring a claim against the Insured."
+    name="UnderlyingDamagesExt"
+    nullok="true"
+    typelist="UnderlyingDamagesExt">
+    <keyfilters>
+      <keyfilter
+        name="ClaimTypeExt"/>
+    </keyfilters>
+    </typekey>
+<typekey
+    desc="The type of contract the Insured was hired for when the claim occured."
+    name="ContractTypeExt"
+    nullok="true"
+    typelist="ContractTypeExt">
+    <keyfilters>
+      <keyfilter
+        name="ClaimTypeExt"/>
+    </keyfilters>
+    </typekey>
+<column
+    desc="The date the Insured notifies us of a potential claim."
+    name="NoticeDateExt"
+    nullok="true"
+    type="datetime"/>
+<foreignkey
+    desc="Incident Claimant"
+    fkentity="Contact"
+	owner="true"
+	deprecated="true"
+    name="IncidentClaimantExt"/>
+<column
+    name="RetentionCostDefExt"
+    type="bit"
+    nullok="true"
+    desc="Retention applies to Cost of Defense"/>
+<column
+    desc="Wind/Hurricane Deductible Triggered?"
+    name="WindHurricaneDedTriExt"
+    nullok="true"
+    type="bit"/>
+<column
+    desc="Wind/Hurricane Catastrophe Deductible Amount"
+    name="WindHurricaneDedAmtExt"
+    nullok="true"
+    type="money"/>
+
+<!-- Added for Specialty E&S 2013 -->
+	<column
+		desc="Inspection Date"
+		name="InspectionDateExt"
+		type="datetime"/>	
+	<array
+		arrayentity="ThirdPartyAdminExt"
+		desc="The list of Insurer/TPA on the Claim"
+		name="ThirdPartyAdminsExt"
+		owner="true"/>
+	<column
+		desc="The Site Number"
+		name="SiteNumberExt"
+		type="varchar">
+		<columnParam
+			name="size"
+			value="50"/>
+	</column>	
+	<column
+		desc="The Site Name"
+		name="SiteNameExt"
+		type="varchar">
+		<columnParam
+			name="size"
+			value="50"/>
+    </column>
+    <column
+		desc="The type of product involved with the loss"
+		name="ProductInvolvedExt"
+		type="varchar">
+		<columnParam
+			name="size"
+			value="50"/>
+	</column>
+	<typekey
+		desc="Claim Type Detail"
+		name="ClaimTypeDetailExt"
+		nullok="true"
+		typelist="ClaimTypeDetailExt"/>	
+	<column
+		desc="The Certificate Number"
+		name="CertNumberExt"
+		type="varchar">
+		<columnParam
+		  name="size"
+		  value="50"/>
+	</column>	
+	<foreignkey
+		desc="Certificate Holder"
+		fkentity="Contact" 
+		owner="true"   
+		name="CertHolderExt"/>		
+	<column
+		desc="The Location ID"
+		name="CertLocationIDExt"
+		type="varchar">
+		<columnParam
+		  name="size"
+		  value="50"/>
+	</column>
+	<column
+		desc="The Certificate Effective Date"
+		name="CertEffectiveDateExt"
+		type="datetime"/>
+	<column
+		desc="The Certificate Expiration Date"
+		name="CertExpirationDateExt"
+		type="datetime"/>
+    <column
+		desc="Certificate General Aggregate Limit."
+		name="CertGenAggregateLimitExt"
+		type="money"/> 	
+    <column
+		desc="Certificate Prod &amp; Completed Ops Agg Limit."
+		name="CertProdCompAggLimitExt"
+		type="money"/> 	
+    <column
+		desc="Certificate Personal &amp; Advertising Injury Limit"
+		name="CertPersAdInjuryAggLimitExt"
+		type="money"/> 	
+	<column
+		desc="Certificate Each Occurrence Limit"
+		name="CertEachOccLimitExt"
+		type="money"/>
+	<column
+		desc="Certificate Deductible"
+		name="CertDeductibleExt"
+		type="money"/>
+	<typekey
+		desc="Certificate Deductible Applies To"
+		name="CertDeductibleAppExt"
+		typelist="DeductApplicationExt"/>
+<!-- END Specialty E&S -->
+<!-- Added for K&R 2013 -->
+  <column
+    desc="Broker Policy Number field to be used on Loss Details screen for Kidnap and Ransom"
+    name="BrokerPolicyNumberExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="20"/>
+  </column>
+  <column
+    desc="Code Name field to be used on Loss Details screen for Kidnap and Ransom"
+    name="CodeNameExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="20"/>
+  </column>
+  <column
+    name="TotAggLimitExt"
+    desc="Quota Share Total Aggregate Limit"
+    type="money"
+    nullok="true"/>
+<!-- End K&R -->
+  <column
+    desc="Agent Updates"
+    name="AgentUpdatesExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="4000" />
+  </column>
+  <column
+  	desc="Legacy Claim Number"
+  	name="LegacyClaimNumExt"
+  	type="varchar" >
+  	<columnParam
+  		name="size"
+  		value="25"/>
+  </column>
+  <column
+  	desc="Manual Claim Number"
+  	name="ManualClaimNumExt"
+  	type="varchar" >
+  	<columnParam
+  		name="size"
+  		value="25"/>
+  </column>
+  <column
+    desc="Manual Converted Claim Indicator"
+    name="ConvertedClaimIndExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Field to save the original Date of Loss sent to ISO"
+    name="OriginalLossDtExt"
+    type="datetime"/>
+  <column
+  	desc="Indicator if Date of Loss is outside of the policy period"
+  	name="DOLOutsideIndExt"
+  	type="bit" 
+  	nullok="false"
+  	default="false" />
+  <array-override
+    name="MedicalTreatments"
+    triggersValidation="true"/>
+<!-- Begin Workers' Comp -->
+
+  <foreignkey
+    columnName="InjuredWorkerExtID"
+    deletefk="true"
+    desc="Workers' Comp only. Details about the Injured Worker."
+    fkentity="InjuredWorkerExt"
+    name="InjuredWorker"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>  
+  <typekey
+    desc="Apportionment Indicator"
+    name="ApportionmentExt"
+    nullok="true"
+    typelist="YesNo"/>  
+  <column
+   	desc="Apportionment Percentage"
+   	name="ApportionmentPctExt"
+   	type="varchar">
+   		<columnParam
+   			name="size"
+   			value="5"/>
+  </column>
+  <typekey
+    desc="Controverted Case Indicator"
+    name="ControvertedExt"
+    nullok="true"
+    typelist="YesNo"/>
+  <column
+    desc="Exposure Injury Indicator"
+    name="ExposureInjuryExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="FROI Employee Treated in Emergency Room"
+    name="EmergencyRoomTxExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Full Pay for Last Day Worked Indicator"
+    name="PaidLastDayWorkedExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Hospitalized Overnight Indicator"
+    name="HospitalOvernightExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="ICD Codes Primary Indicator"
+    name="ICDPrimaryExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Safety Violation Indicator"
+    name="SafetyViolationExt"
+    nullok="true"
+    type="bit"/>
+  <typekey
+    desc="Drug Test"
+    name="DrugTestExt"
+    nullok="true"
+    typelist="YesNo"/>
+  <column
+    desc="Claim Incident Identifier"
+    name="WCCatastropheExt"
+    type="varchar" >
+    <columnParam
+      name="size"
+      value="2"/>
+  </column>
+  <typekey
+    desc="Drug Test Results"
+    name="DrugTestResultExt"
+    nullok="true"
+    typelist="DrugTestResultExt"/>
+  <typekey
+    desc="Fraudulent Claim Code"
+    name="FraudulentCodeExt"
+    nullok="true"
+    typelist="FraudType"/>
+  <typekey
+    desc="Type of Employer"
+    name="EmployerTypeExt"
+    nullok="true"
+    typelist="EmployerType"/>
+  <column
+    desc="Employer Detail"
+    name="EmployerDetailExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="OWCP Case Number"
+    name="OWCPCaseNumberExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="20"/>
+  </column>
+  <column
+    desc="Jurisdiction Claim Number"
+    name="JurisClaimNumberExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="30"/>
+  </column>
+  <column
+    desc="Special Claim Handling Threshold Amount"
+    name="SpecClaimThresholdExt"
+    type="money"/>
+  <column
+    desc="Special Claim Handling Indicator"
+    name="SpecClaimHandlingExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Type of loss code"
+    name="TypeOfLossMostExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="150"/>
+  </column>  
+  <foreignkey
+    fkentity="Contact"
+    owner="true"
+    name="HospitalExt"/>
+  <column
+    desc="The ID of the coverage that is selected on the loss details for WC"
+    name="SelectedCovNumExt"
+    type="integer"/>
+  <column
+    desc="Scheduled for Review - WC field used for Strategic Comp only"
+    name="SchedReviewDateExt"
+    type="datetime"/>
+  <column
+    desc="Legacy Claim Number"
+    name="LegacyClaimNumberExt"
+    type="varchar" >
+    <columnParam
+      name="size"
+      value="25"/>
+  </column>
+  <column
+    desc="Is there an attorney to represent the claimant?"
+    name="AttorneyRepExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Reserved File Yes/No"
+    name="ReservedFileExt"
+    nullok="true"
+    type="bit"/>
+  <foreignkey
+    desc="Used to set the Attorney on New Claim Wizard - Loss Details for Workers' Comp claims."
+    fkentity="Contact"
+    owner="true"
+    name="AttorneyExt"/>
+  <typekey
+    desc="Type of Treatment for Workers' Comp Claims"
+    name="TreatmentTypeExt"
+    nullok="true"
+    typelist="TreatmentTypeExt"/>
+  <foreignkey  	
+    desc="Commercial Lines Experience Evaluation (CLEE) data for this Claim."
+    fkentity="CLEEExt"
+    owner="true"
+    name="CLEEExt"/>
+  <column
+    desc="Name of the TPAAdminExt that should be used to override integrations/rules if the claim belongs to an external user."
+    name="ExternalUserAdminExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="250"/>
+  </column>
+  <column
+    desc="True if Auto Medicare Letter was already created"
+    name="AutoMedicareFlagExt"
+    nullok="true"
+    type="bit"/>
+  <foreignkey
+    desc="Coverage Selected on the Loss Details, for automatic feature creation."
+    name="CoverageSelectedExt"
+    fkentity="Coverage"
+    owner="true"/>
+  <foreignkey
+    desc="TPAAdminExt that should be used to override intergrations/rules if the claim belongs to an external user."
+    name="ExternalHandlingExt"
+    fkentity="TPAAdminExt"
+    nullok="true"
+    owner="false"/>
+  <typekey
+    desc="Managed Care Organization Type"
+    name="ManagedCareOrgTypeExt"
+    nullok="true"
+    typelist="ManagedCareOrgTypeExt"/>
+<!-- Added for Aviation 2016 -->
+  <typekey
+    desc="Identifies the severity of injuries sustained on the claim."
+    name="EventHighestInjuryExt"
+    nullok="true"
+    typelist="EventHighestInjuryExt"/>
+  <typekey
+    desc="Accident Report Status - the furthest level to which an accident report has been completed."
+    name="ReportStatusExt"
+    nullok="true"
+    typelist="ReportStatusExt"/>
+  <typekey
+    desc="Aircraft Ownership Category"
+    name="AircraftOwnerCategoryExt"
+    nullok="true"
+    typelist="AircraftOwnerCategoryExt"/>
+  <column
+    desc="Aircraft Make"
+    name="AircraftMakeExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Aircraft Model"
+    name="AircraftModelExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <column
+    desc="Aircraft Model Year"
+    name="AircraftYearExt"
+    nullok="true"
+    type="year">
+  </column>
+  <typekey
+    desc="Aircraft Size"
+    name="AircraftSizeExt"
+    nullok="true"
+    typelist="AircraftSizeExt"/>
+  <column
+    desc="Aircraft Tail Number - FAA registration alphanumeric code printed on the body or the tail of the aircraft."
+    name="TailNumberExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <typekey
+    desc="A general description of the type of aircraft."
+    name="AircraftTypeExt"
+    nullok="true"
+    typelist="AircraftTypeExt"/>
+  <typekey
+    desc="Use of Aircraft - denotes the tasks that the aircraft will fulfill."
+    name="AircraftUseExt"
+    nullok="true"
+    typelist="AircraftUseExt"/>
+  <typekey
+    desc="Aircraft Engine Type"
+    name="AircraftEngineTypeExt"
+    nullok="true"
+    typelist="AircraftEngineTypeExt"/>
+  <column
+    desc="Standard Airworthiness Certificate Yes/No"
+    name="StandardAirworthinessExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Accident Airport Code - FAA recognized ID where a flight originates or where the unit is primarily hangared."
+    name="AirportCodeExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="40"/>
+  </column>
+  <foreignkey
+    fkentity="Person"
+	owner="true"
+    name="PrimaryPilotExt"/>
+<!-- End Aviation -->
+  <typekey
+    desc="Accident Location for MA Auto"
+    name="MAAccidentLocationExt"
+    nullok="true"
+    typelist="MATownCodeExt"/>
+</extension>

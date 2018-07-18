@@ -1,0 +1,25 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1900 - Do Not Allow Negative Incurred")
+internal class CCVXX1900DoNotAllowNegativeIncurred {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType != typekey.LossType.TC_PERSONALAUTO
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var totalIncurred = claim.getTotalIncurred()
+
+  for(expo in claim.Exposures.where(\ e -> e.OpenReserves != 0 )){
+    totalIncurred = totalIncurred - expo.OpenReserves.Amount
+  }
+
+  if(totalIncurred < 0.0){
+   claim.reject("newloss", displaykey.Error.TotalIncurred.NegativeIncurred, null, null) 
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,33 @@
+package rules.EventMessage.EventFired_dir.DestinationUserGroupAuditing_dir
+
+@gw.rules.RuleName("GroupChanged")
+internal class GroupChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Group == true/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var g:Group=messageContext.Root as Group;
+
+  var body = templates.email.GroupChanged.renderToString(g);
+
+  var emailAddy:String="";
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    emailAddy=ScriptParameters.ClaimCenterProdEmail;
+  }
+  else{
+    emailAddy=ScriptParameters.ClaimCenterDevEmail;
+  }
+  util.Email.sendMail(emailAddy, "Group Change to "+ g.Name +" - ENV: " +gw.api.system.server.ServerUtil.getEnv(), body)
+}
+catch(e){
+  //Eat the exception, if this fails we don't want to limit functionality
+  //as this is just for root cause analysis
+  gw.api.util.Logger.logError("Group Change Auditing Failed") 
+  var emailAddy = (java.lang.System.getProperty("gw.cc.env") == "prod" ? ScriptParameters.ClaimCenterProdEmail : ScriptParameters.ClaimCenterDevEmail)
+  util.Email.sendMail(emailAddy, "Group Auditing Failed", e.StackTraceAsString)
+  e.printStackTrace()
+}/*end00rule*/
+  }
+}

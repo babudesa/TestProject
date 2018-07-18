@@ -1,0 +1,19 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1200AutoPopulateFields_dir
+
+@gw.rules.RuleName("MAPUXX1220 - Initial Case Assessment Due Date")
+internal class MAPUXX1220InitialCaseAssessmentDueDate {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.DefenseAcceptedDate != null &&
+matterAssignmentExt.ChangedFields.contains("DefenseAcceptedDate") &&
+!matterAssignmentExt.ChangedFields.contains("InitlCaseAssessmentDueDate")/*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/try{
+  matterAssignmentExt.InitlCaseAssessmentDueDate = 
+    matterAssignmentExt.DefenseAcceptedDate.addDays(45)
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

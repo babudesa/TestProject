@@ -1,0 +1,15 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Claim_dir
+
+@gw.rules.RuleName("ClaimChanged")
+internal class ClaimChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ClaimChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var claim = messageContext.Root as Claim;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendClaimChanges( messageContext, claim );/*end00rule*/
+  }
+}

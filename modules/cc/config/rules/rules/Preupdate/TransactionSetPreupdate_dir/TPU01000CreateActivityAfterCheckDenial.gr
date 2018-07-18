@@ -1,0 +1,23 @@
+package rules.Preupdate.TransactionSetPreupdate_dir
+
+@gw.rules.RuleName("TPU01000 - Create Activity After Check Denial")
+internal class TPU01000CreateActivityAfterCheckDenial {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.financials.FinancialsUtil;
+
+for (check in (TransactionSet as CheckSet).Checks) {
+  if (check.isFieldChanged( "Status" ) and check.Status == "Denied") {
+    var activity = TransactionSet.Claim.createActivityFromPattern( null, ActivityPattern.finder.getActivityPatternByCode( "check_denied" ) );
+    var currentDescription = activity.Description;
+    var newDescription = (currentDescription != null and currentDescription.length > 0) ? currentDescription + " - " : "";
+
+    activity.Description = newDescription + displaykey.Java.Financials.Check.Deny.Activity.DescriptionDetails( check.PayTo, FinancialsUtil.renderAsCurrency( check.NetAmount ) );
+    activity.assignUserAndDefaultGroup( check.CreateUser );
+  } 
+}/*end00rule*/
+  }
+}

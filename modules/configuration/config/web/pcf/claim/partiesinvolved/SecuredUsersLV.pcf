@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    id="SecuredUsersLV">
+    <Require
+      name="ClaimUserModelList"
+      type="ClaimUserModel[]"/>
+    <RowIterator
+      alternateEntryStyle="false"
+      editable="false"
+      elementName="ClaimUserModel"
+      value="util.admin.SecurityUtil.getFilteredClaimUserModel(ClaimUserModelList,true)">
+      <ToolbarFlag
+        condition="(ClaimUserModel.hasUserRoles() and (getValueRange(ClaimUserModel) as boolean))"
+        name="ClaimUserWithRoles"/>
+      <Row>
+        <Cell
+          id="Name"
+          label="displaykey.LV.Claim.ClaimUsers.Name"
+          printWidth="0.16"
+          sortOrder="1"
+          value="ClaimUserModel.User.Contact"/>
+        <Cell
+          id="Group"
+          label="displaykey.LV.Claim.ClaimUsers.Group"
+          printWidth="0.16"
+          value="ClaimUserModel.Group.Name"/>
+        <Cell
+          id="Assignments"
+          label="displaykey.LV.Claim.ClaimUsers.Assignments"
+          printWidth="0.16"
+          value="ClaimUserModel.Assignments"/>
+        <Cell
+          id="Roles"
+          label="displaykey.LV.Claim.ClaimUsers.Roles"
+          printWidth="0.17"
+          value="getValueRange(ClaimUserModel)"/>
+        <Cell
+          id="Phone"
+          label="displaykey.LV.Claim.ClaimUsers.Phone"
+          printWidth="0.15"
+          value="ClaimUserModel.User.Contact.PrimaryPhoneValue"/>
+        <Cell
+          formatType="email"
+          id="Email"
+          label="displaykey.LV.Claim.ClaimUsers.Email"
+          printWidth="0.19"
+          value="ClaimUserModel.User.Contact.EmailAddress1"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getValueRange(model:ClaimUserModel) : String {
+  return util.StringUtils.formatArray(model.UserRoleAssignments.where(\ role -> typekey.UserRole.TF_USER_ROLE_SECURE.TypeKeys.contains(role.Role))*.Role*.DisplayName);
+}
+]]></Code>
+  </ListViewPanel>
+</PCF>

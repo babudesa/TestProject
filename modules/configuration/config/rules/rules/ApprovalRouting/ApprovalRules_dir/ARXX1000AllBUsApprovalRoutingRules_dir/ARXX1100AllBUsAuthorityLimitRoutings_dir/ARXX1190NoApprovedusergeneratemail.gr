@@ -1,0 +1,37 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100AllBUsAuthorityLimitRoutings_dir
+
+@gw.rules.RuleName("ARXX1190 - No Approved user - generate mail")
+internal class ARXX1190NoApprovedusergeneratemail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.LastApprovingUser == util.user.SCOHelper.CorpClaimsOneUser/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+
+  var emailBody = templates.email.ExceedsAuthorityLimit.renderToString(transactionSet)
+
+  if(java.lang.System.getProperty( "gw.cc.env" ) == "prod") {
+       gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          ScriptParameters.CorporateClaimsSecurity_Email, ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+          "Authority Exceeded Notification", emailBody)
+        gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          "kbirdseye@gaig.com", ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+          "Authority Exceeded Notification", emailBody)      
+  } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null, 
+          ScriptParameters.ClaimCenterDevEmail, ScriptParameters.CorporateClaimsSecurity_Name, 
+          "ClaimCenterSupport@gaig.com", environmentInformation, 
+          "Authority Exceeded Notification", emailBody)  
+  
+  }
+
+}catch(e){
+  
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

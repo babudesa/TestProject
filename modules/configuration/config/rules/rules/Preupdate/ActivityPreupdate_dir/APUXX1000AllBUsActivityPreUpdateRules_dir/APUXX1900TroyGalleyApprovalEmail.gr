@@ -1,0 +1,52 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUXX1000AllBUsActivityPreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("APUXX1900 -Troy Galley Approval Email")
+internal class APUXX1900TroyGalleyApprovalEmail {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//** Author :Ndasri
+* Defect #6750 - Production:  Create and send an email to the activity approver when a check and/or reserve (any financial) approval activity is not 
+ * approved or rejected in 2 business days.
+*/
+activity.AssignedUser == User( "cc:2043" /* Troy Galley */ ) and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment"))and activity.Status!="complete"
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var emailBody = templates.email.ApprovalActivity.renderToString(activity)
+
+try{
+  
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+      
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {     
+
+        
+   //Send approval email to Troay Galley
+     gw.api.email.EmailUtil.sendEmailWithBody(null,
+      "tgalley@gaig.com", "Troy Galley", "ClaimCenterSupport@gaig.com",
+      "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null,
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+        ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+         "Approval Activity Notification", emailBody)   
+    }
+
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule().toString(), e, null );
+}
+/*end00rule*/
+  }
+}

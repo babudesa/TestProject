@@ -1,0 +1,24 @@
+package rules.Preupdate.PolicyPreupdate_dir
+
+@gw.rules.RuleName("PPU01000 - Assign default coverage")
+internal class PPU01000Assigndefaultcoverage {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/Policy.PolicyType=="comp" && Policy.Claim != null/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/for( exposure in Policy.Claim.Exposures )
+{
+  for( coverage in exposure.Claim.Policy.getAllCoverages())
+  {
+    if( (coverage.Type == "WI" and exposure.CoverageSubType == "wi_lw") or
+        (coverage.Type == "WL" and exposure.CoverageSubType == "wl_el" ) or
+        (coverage.Type == "WM" and exposure.CoverageSubType == "wm_wcid" ))
+    {
+      exposure.Coverage = coverage;
+      break;
+    }
+  }
+}/*end00rule*/
+  }
+}

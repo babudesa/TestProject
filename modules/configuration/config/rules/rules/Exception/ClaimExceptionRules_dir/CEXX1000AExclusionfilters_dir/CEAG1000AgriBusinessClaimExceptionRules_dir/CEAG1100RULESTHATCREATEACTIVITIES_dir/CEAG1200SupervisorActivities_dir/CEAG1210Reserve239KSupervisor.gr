@@ -1,0 +1,48 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir.CEAG1200SupervisorActivities_dir
+
+@gw.rules.RuleName("CEAG1210 - Reserve 239K - Supervisor")
+internal class CEAG1210Reserve239KSupervisor {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(act in claim.Activities where act.ActivityPattern.Code=="ab_239_reserve")==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///6/1/10 erawe - defect 3146 if payment is an expense continue on
+//6/1/10 erawe - code is ugly, not sure how to clean up, but it works for their needs
+//7/6/10 erawe - changed reserve.amount check to use the financialutil function
+//because manually reducing a reserve did not get caught with reserve.amount apparently.
+try{
+  for(exp in claim.Exposures){
+    if(!exp.Closed){
+      if (exp.ExposureType=="ab_AGG_auto_BodInjury" || exp.ExposureType=="ab_AGG_gl_BodInjury"|| exp.ExposureType=="ab_BodilyInjury") {
+        if(exp.ReservesQuery.getCount()>=1 ){
+          for(transView in exp.ReservesQuery.iterator()){
+            var reserve = (transView as ReserveView)
+              for(trans in exp.TransactionsQuery.iterator()){ 
+                if((trans as TransactionDefaultView).TransactionSubtype=="Payment" 
+                    && (trans as TransactionDefaultView).CostType != "claimcost"
+                    || exp.PaymentsQuery.getCount()==0){
+                  if(gw.api.financials.FinancialsCalculationUtil.getOpenReserves().getAmount( exp, CostType.TC_CLAIMCOST )==239000){
+                  //if(reserve.Amount == 239000){
+                    for(act in claim.Activities){
+                      if(act.ActivityPattern.Code=="ab_239_reserve" and
+                         gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( reserve.CreateTime, 75) and
+                         !exists(act in exp.Claim.Activities where act.ActivityPattern.Code=="ab_239_reserve_super" and act.Exposure==exp)){ 
+                        var ap = util.custom_Ext.finders.findActivityPattern( "ab_239_reserve_super" )
+                        claim.createActivityFromPattern( exp,ap )
+                      }
+                    }
+                  }
+                }
+              }
+           }
+        }
+      }
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

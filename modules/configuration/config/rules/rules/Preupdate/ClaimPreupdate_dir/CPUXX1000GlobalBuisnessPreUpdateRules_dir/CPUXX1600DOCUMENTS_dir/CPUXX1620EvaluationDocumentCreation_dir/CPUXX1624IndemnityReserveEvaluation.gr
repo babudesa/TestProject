@@ -1,0 +1,113 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1624 - Indemnity Reserve Evaluation")
+internal class CPUXX1624IndemnityReserveEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in claim.Evaluations where evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == EvaluationType.TC_INDEMNITY)
+and claim.BeanVersion == find(clm in Claim where clm.ClaimNumber == claim.ClaimNumber).getAtMostOneRow().BeanVersion/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger
+
+
+for(evaluation in claim.Evaluations){
+  if(evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "indemnity"){
+    var doc = new Document(claim);
+    //build Disability Benefits table
+    var disabilityBenefitsTable : String = "";
+    /* disabilityBenefitsArray sortBy is so the ECF Doc(created below) and the UI (EditableDisabilityBenefitsLV value
+    in the rowIterator match and keep order as entered initially.  We had to use absolute value. */
+    var disabilityBenefitsArray = evaluation.IndemnityEval.DisabilityBenefits.sortBy(\ d -> gw.api.util.Math.abs(d.ID.Value));
+    for(each in disabilityBenefitsArray){
+      disabilityBenefitsTable = disabilityBenefitsTable +
+        "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DisabilityType==null ? "" : each.DisabilityType.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= evaluation.getDisabilityBenefitsToDate(each.DisabilityType)==null ? "" : gw.api.util.StringUtil.formatNumber(evaluation.getDisabilityBenefitsToDate(each.DisabilityType) as java.lang.Double, "$###,###.00") %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.WeeksPaid==null ? "" : each.WeeksPaid.toString() %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.FutureScheduled==null ? "" : gw.api.util.StringUtil.formatNumber(each.FutureScheduled.Amount as java.lang.Double, "$###,###.00") %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.WeeksScheduled==null ? "" : each.WeeksScheduled.toString() %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.PrimaryBodyPart.DisplayName==null ? "" : each.PrimaryBodyPart.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DetailedBodyPart.DisplayName==null ? "" : each.DetailedBodyPart.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.PercentDisabled==null ? "" : each.PercentDisabled + "%" %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.NumberOfWeeks==null ? "" : each.NumberOfWeeks.toString() %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.Rate==null ? "" : gw.api.util.StringUtil.formatNumber(each.Rate as java.lang.Double, "$###,###.00") %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DisabilityBenefitTotal==null ? "" : gw.api.util.StringUtil.formatNumber(each.DisabilityBenefitTotal as java.lang.Double, "$###,###.00") %></td></tr>"
+    }
+    //build Lifetime Benefits table
+    var lifetimeBenefitsTable : String = "";
+    /* liftetimeBenefitsArray sortBy is so the ECF Doc(created below) and the UI (EditableLifetimeBenefitsLV value
+    in the rowIterator match and keep order as entered initially.  We had to use absolute value. */
+    var lifetimeBenefitsArray = evaluation.IndemnityEval.LifetimeBenefits.sortBy(\ l -> gw.api.util.Math.abs(l.ID.Value));
+    for(each in lifetimeBenefitsArray){
+      lifetimeBenefitsTable = lifetimeBenefitsTable +
+        "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.LifetimeBenefitType==null ? "" : each.LifetimeBenefitType.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.NumberOfWeeks==null ? "" : each.NumberOfWeeks.toString() %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.Rate==null ? "" : gw.api.util.StringUtil.formatNumber(each.Rate.Amount as java.lang.Double, "$###,###.00") %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.LifetimeBenefitsTotal==null ? "" : gw.api.util.StringUtil.formatNumber(each.LifetimeBenefitsTotal as java.lang.Double, "$###,###.00") %></td></tr>";
+    }
+    //build Death Benefits table
+    var deathBenefitsTable : String = "";
+    /* deathBenefitsArray sortBy is so the ECF Doc(created below) and the UI (EditableDeathBenefitsLV value
+    in the rowIterator match and keep order as entered initially.  We had to use absolute value. */
+    var deathBenefitsArray = evaluation.IndemnityEval.DeathBenefits.sortBy(\ d -> gw.api.util.Math.abs(d.ID.Value));
+    var deathBenefitsSum : java.math.BigDecimal = 0
+    for(each in deathBenefitsArray){
+      deathBenefitsTable = deathBenefitsTable +
+        "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DeathBenefitType==null ? "" : each.DeathBenefitType.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.Dependent==null ? "" : each.Dependent.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DateOfBirth==null ? "" : each.DateOfBirth.formatDate(SHORT) %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.NumberOfPayPeriods==null ? "" : each.NumberOfPayPeriods.toString() %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.Rate==null ? "" : gw.api.util.StringUtil.formatNumber(each.Rate.Amount as java.lang.Double, "$###,###.00") %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.DeathBenefitsTotal==null ? "" : gw.api.util.StringUtil.formatNumber(each.DeathBenefitsTotal as java.lang.Double, "$###,###.00") %></td></tr>";
+      if(each.DeathBenefitsTotal!=null){
+        deathBenefitsSum = deathBenefitsSum + each.DeathBenefitsTotal
+      }
+    }
+    //build Death Benefits table
+    var expensesTable : String = "";
+    /* expensesArray sortBy is so the ECF Doc(created below) and the UI (EditableProjectedExpensesLV value
+    in the rowIterator match and keep order as entered initially.  We had to use absolute value. */
+    var expensesArray = evaluation.IndemnityEval.Expenses.sortBy(\ p -> gw.api.util.Math.abs(p.ID.Value));
+    var expensesSum : java.math.BigDecimal = 0
+    for(each in expensesArray){
+      expensesTable = expensesTable +
+        "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.ExpenseCategory==null ? "" : each.ExpenseCategory.DisplayName %></td>" +
+        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px;\"><%= each.ExpenseAmount==null ? "" : gw.api.util.StringUtil.formatNumber(each.ExpenseAmount.Amount as java.lang.Double, "$###,###.00") %></td></tr>";
+      if(each.ExpenseAmount!=null){
+        expensesSum = expensesSum + each.ExpenseAmount
+      }
+    }
+    //generate template
+    var formID : String = "WCEV0001"
+    var body = templates.documents.IndemnityReserveEvaluation.renderToString(claim, evaluation, disabilityBenefitsTable, lifetimeBenefitsTable, deathBenefitsTable, deathBenefitsSum, expensesTable, expensesSum, formID)
+    var values = new HashMap();
+    values.put( "IndemnityHTML", body)  
+
+    doc.Claim = claim;
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.Name = "Indemnity Reserve Evaluation";
+    doc.MimeType = "text/html";
+    doc.Status = "approved";
+    doc.ex_SubType = "Reserve Recommendation";
+    doc.ex_Type = "Internal Report";
+    doc.ProcessMethod = "Sent_to_File";
+    doc.Description = "Indemnity Reserve Evaluation";
+    doc.Privileged = "No";
+    doc.FormIDExt = "WCEV0001";
+    
+    if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "IndemnityReserveEvaluation.html" )) {
+      util.document.DocumentProduction.createAndStoreDocumentSynchronously( "IndemnityReserveEvaluation.html", values, doc );
+      var note:String = "Indemnity reserve evaluation document successfully generated.";
+      var noteSubject:Note;
+      noteSubject = claim.addNote("general", note);
+      noteSubject.Subject = "Indemnity Reserve Evaluation Created";
+    }else {
+      //changed to logging in Debug - SR
+	  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+    }
+    values.clear();
+  }
+}/*end00rule*/
+  }
+}

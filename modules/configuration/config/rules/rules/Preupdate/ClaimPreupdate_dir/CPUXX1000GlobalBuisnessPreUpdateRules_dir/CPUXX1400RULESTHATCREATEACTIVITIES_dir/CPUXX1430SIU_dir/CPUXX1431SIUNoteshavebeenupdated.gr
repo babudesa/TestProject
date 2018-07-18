@@ -1,0 +1,33 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir.CPUXX1430SIU_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUXX1431 - SIU Notes have been updated")
+internal class CPUXX1431SIUNoteshavebeenupdated {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///This rule creates an activity for SIU when an SIU-related note is added or
+//  updated
+//Stephanie Przygocki - 3/30/11
+exists(note in claim.Notes where note.SIUInvestigationExt!=null and
+       note.New and note.SIUInvestigationExt.SIUReferralType!="data") == true
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var pattern = util.custom_Ext.finders.findActivityPattern( "updated_siu_referral" )
+
+for(note in claim.Notes){
+  if(note.New and note.SIUInvestigationExt!=null and note.SIUInvestigationExt.SIUReferralType!="data"){
+    var referral = note.SIUInvestigationExt
+    var activity = Claim.createActivityFromPattern( null, pattern )
+    activity.Description = "An existing SIU referral has been updated for " + referral.SIUClaimant + "; please review."
+    var assgdUser = referral.SIUInvestigator
+    activity.assignUserAndDefaultGroup(assgdUser)
+     //disassociating SIUClaimant for notes it is not needed
+    //Reason for disassociation is that a stack trace will happen
+    //if the claimant changed while  a note is being created for SIU.  See CR 720 for more details
+    activity.Claimant = referral.SIUClaimant
+    activity.SIUInvestigationExt = referral
+  }
+}/*end00rule*/
+  }
+}

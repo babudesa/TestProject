@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="VehicleIncidentRentalDV">
+    <Require
+      name="VehicleIncident"
+      type="VehicleIncident"/>
+    <Variable
+      initialValue="getVehicleRentalCoverage(CoverageType.TC_RENTAL)"
+      name="coverageValue"
+      type="String"/>
+    <InputColumn>
+      <InputGroup
+        childrenVisible="VehicleIncident.RentalRequired"
+        id="RentalInputGroup"
+        label="displaykey.Web.VehicleIncidentRentalDV.Rental.ValueLabel">
+        <InputSet
+          visible="VehicleIncident.RentalRequired">
+          <Input
+            id="RentalCoverage"
+            label="displaykey.Web.VehicleIncidentRentalDV.RentalCoverage.Label"
+            value="coverageValue == null ? displaykey.Web.VehicleIncidentRentalDV.RentalCoverage.NoCoverage.Value : coverageValue"/>
+          <Input
+            editable="true"
+            id="RentalBeginDate"
+            label="displaykey.Web.VehicleIncidentRentalDV.RentalBeginDate.Label"
+            value="VehicleIncident.RentalBeginDate"/>
+          <Input
+            editable="true"
+            id="RentalEndDate"
+            label="displaykey.Web.VehicleIncidentRentalDV.RentalEndDate.Label"
+            validationExpression="VehicleIncident.RentalBeginDate != null and VehicleIncident.RentalEndDate != null and VehicleIncident.RentalEndDate &lt; VehicleIncident.RentalBeginDate ? displaykey.Java.Validation.AdminCatastrophe.Date.ForbidValidReverse : null"
+            value="VehicleIncident.RentalEndDate"/>
+          <Input
+            editable="true"
+            id="RentalRate"
+            label="displaykey.Web.VehicleIncidentRentalDV.RentalDailyRate.Label"
+            value="VehicleIncident.RentalDailyRate"/>
+          <Input
+            editable="true"
+            id="RentalAgency"
+            label="displaykey.Web.VehicleIncidentRentalDV.RentalAgency.Label"
+            value="VehicleIncident.RentalAgency"/>
+          <Input
+            editable="true"
+            id="RentalReservation"
+            label="displaykey.Web.VehicleIncidentRentalDV.ReservationNumber.Label"
+            value="VehicleIncident.RentalReserveNo"/>
+        </InputSet>
+      </InputGroup>
+    </InputColumn>
+    <Code><![CDATA[
+function getVehicleRentalCoverage(coverageType : CoverageType) : String {
+  var coverageTypes = VehicleIncident.Claim.Policy.getCoveragesByCoverageType( coverageType );
+  if (coverageTypes.length > 0) {
+    return coverageTypes[0].DetailsSummary
+  }
+  else {
+    return null;
+  }  
+}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

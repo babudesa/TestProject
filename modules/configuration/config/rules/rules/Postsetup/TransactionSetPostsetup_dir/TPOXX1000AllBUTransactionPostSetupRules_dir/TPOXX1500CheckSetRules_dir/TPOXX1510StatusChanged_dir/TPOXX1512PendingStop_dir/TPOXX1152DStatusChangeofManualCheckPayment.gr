@@ -1,0 +1,23 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1512PendingStop_dir
+
+@gw.rules.RuleName("TPOXX1152D - Status Change of Manual Check/Payment")
+internal class TPOXX1152DStatusChangeofManualCheckPayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.PaymentMethod=="manual"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var msgCheck = (transactionSet as CheckSet).PrimaryCheck
+if(msgCheck.Status == "pendingstop") {
+  msgCheck.Status = "stopped"
+  for (var thepayment in msgCheck.Payments) {
+    if (thepayment.Status == "pendingstop")  { 
+      thepayment.Status =   "stopped"
+    }
+    if (thepayment.Status == "submitting")  { 
+      thepayment.Status =  "submitted"
+    }
+  }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="true"
+    id="MedCaseMgrDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.Claim"
+      name="Claim"
+      type="Claim"/>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="MedicalPersonnelLV(Claim.getAllContactsWithRoles((new ContactRole[] {&quot;doctor&quot;,&quot;FirstIntakeDoctor&quot;,&quot;PrimaryDoctor&quot;,&quot;OccTherapist&quot;,&quot;PhysTherapist&quot;,&quot;nursecasemgr&quot;,&quot;casemgr&quot;,&quot;casemgmtco&quot;,&quot;hospital&quot;}) as List&lt;ContactRole&gt;))"
+        editable="false"
+        label="displaykey.MedCaseMgr.LVs.MedicalPersonnelLV"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <ListViewInput
+        boldLabel="true"
+        def="MedicalTreatmentsLV(Claim)"
+        editable="perm.System.editSensMCMdetails"
+        label="displaykey.MedCaseMgr.LVs.MedicalTreatmentsLV"
+        labelAbove="true"
+        visible="perm.System.viewSensMCMdetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <ListViewInput
+        boldLabel="true"
+        def="MedicalContactStatusLV(Claim)"
+        editable="perm.System.editSensMCMdetails"
+        label="displaykey.MedCaseMgr.LVs.MedicalContactStatusLV"
+        labelAbove="true"
+        visible="perm.System.viewSensMCMdetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="MedicalDiagnosisLV(Claim.ensureClaimInjuryIncident(), true)"
+        editable="true"
+        id="MedicalDiagnosisLVInput"
+        label="displaykey.MedCaseMgr.LVs.MedicalDiagnosisLV"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+          <ToolbarDivider
+            hideIfReadOnly="true"/>
+          <CheckedValuesToolbarButton
+            checkedRowAction="aMedicalDiagnosis.InjuryIncident.setPrimaryDiagnosisToFalse(); aMedicalDiagnosis.IsPrimary = true"
+            confirmMessage="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.MakePrimary.Confirm( Claim.ensureClaimInjuryIncident().InjuryDiagnoses.firstWhere( \ i -&gt; i.IsPrimary == true ).ICDCode.Code + &quot; : &quot; +  Claim.ensureClaimInjuryIncident().InjuryDiagnoses.firstWhere( \ i -&gt; i.IsPrimary == true ).ICDCode.CodeDesc)"
+            flags="one allowPrimary"
+            hideIfReadOnly="true"
+            id="Make_Primary"
+            iterator="MedicalDiagnosisLV"
+            label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.MakePrimary"
+            showConfirmMessage="Claim.ensureClaimInjuryIncident().InjuryDiagnoses.where( \ i -&gt; i.IsPrimary == true ).Count &gt; 0"/>
+          <CheckedValuesToolbarButton
+            checkedRowAction="aMedicalDiagnosis.reconfirmDiagnosis()"
+            flags="any reconfirmable"
+            hideIfReadOnly="true"
+            id="Reconfirmed_Diagnosis"
+            iterator="MedicalDiagnosisLV"
+            label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ReconfirmDiagnosis"/>
+        </Toolbar>
+      </ListViewInput>
+      <ListViewInput
+        boldLabel="true"
+        def="NotesLV(Claim.getAllNotesWithTopicAndSubject(NoteTopicType.TC_MEDICAL.Code, displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.DiagnosisConfirmation(Claim.claimant)))"
+        editable="false"
+        id="NotesLVInput"
+        label="displaykey.MedCaseMgr.LVs.NotesLV"
+        labelAbove="true"
+        visible="perm.System.viewmednote and perm.System.viewclaimnotes">
+        <Toolbar/>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableMedicalActionsLV(Exposure)"
+        editable="true"
+        label="displaykey.NVV.Exposure.SubView.WCInjuryDamage.Exposure.MedicalActions"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="DrugsPrescribedLV(Claim)"
+        editable="perm.System.editSensMCMdetails"
+        label="displaykey.MedCaseMgr.LVs.DrugsPrescribedLV"
+        labelAbove="true"
+        visible="perm.System.viewSensMCMdetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

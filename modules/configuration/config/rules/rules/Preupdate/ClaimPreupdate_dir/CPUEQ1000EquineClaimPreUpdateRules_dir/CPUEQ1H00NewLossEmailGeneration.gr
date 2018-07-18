@@ -1,0 +1,54 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1H00 - New Loss Email Generation")
+internal class CPUEQ1H00NewLossEmailGeneration {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LoadCommandID ==  null and !claim.New and
+//If there is no New Loss Notification note that exists for the claim then the following condition below is true
+!exists(ref in claim.Notes where ref.Subject == "New Loss Notification")
+and exists(ref in claim.FixedPropertyIncidentsOnly where ref.Property.LocationNumber != null)
+//Added Claim.State because I did not want the Pre-update rule to run in New claim wizard
+//This rule should only run after the claim is saved
+and claim.State != "draft"
+//Code below checks to see if there is at least one horse assign to this claim
+and claim.Policy.ProducerCode != null
+and claim.ex_DetailLossCause != null 
+and claim.LossCause != null 
+and claim.AssignmentStatus=="assigned"
+/*
+updated: 3/24/10 erawe -defect 3227
+*//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+//should be ClaimCenterEquine@gaig.com
+uses util.custom_Ext.EmailHelper
+var noteBody:String;
+var note:Note;
+var body : String = templates.email.NewLoss.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var agent : String = claim.Policy.ex_Agency.DisplayName
+var emailHelper=new EmailHelper()
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.Underwriters_Email, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "New Loss Notification: " + agent, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+} else {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "New Loss Notification: " + agent, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+  
+noteBody = "New loss email notification has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+note = claim.addNote("general", noteBody);
+note.Subject = "New Loss Notification"
+
+
+/*end00rule*/
+  }
+}

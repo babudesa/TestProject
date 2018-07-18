@@ -1,0 +1,17 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.ClaimContact_dir
+
+@gw.rules.RuleName("ClaimContactChanged")
+internal class ClaimContactChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis ClaimContact
+&& messageContext.EventName == "ClaimContactChanged"
+&& (messageContext.Root.Claim.State == "closed"
+  || messageContext.Root.Claim.State == "open")/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var claimcontact = messageContext.Root as ClaimContact;
+var f = util.gaic.EDW.EDWFunctionsFactory.getClaimContactFunctions();
+f.sendClaimContactMainChanged( messageContext, claimcontact );   /*end00rule*/
+  }
+}

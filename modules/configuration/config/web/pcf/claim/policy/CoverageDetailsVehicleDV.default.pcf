@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    editable="!Coverage.Policy.Verified"
+    id="CoverageDetailsVehicleDV"
+    mode="default">
+    <Require
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      initialValue="Coverage as VehicleCoverage"
+      name="VehicleCoverage"
+      type="VehicleCoverage"/>
+    <!-- Variable below added to fire off the setClassDefaults function that will set class code and description on unverified policies. sprint 9,jlmiller -->
+    <Variable
+      initialValue="false"
+      name="required"
+      type="boolean"/>
+    <Variable
+      initialValue="Coverage.setClassDefaults()"
+      name="setDefaults"/>
+    <!-- Sprint Agri 11 ER: The variable below used to populate coverage eff/exp dates to policy dates -->
+    <Variable
+      initialValue="Coverage.policyCoveragedates()"
+      name="setcoveragedates"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Coverage.Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <InputColumn>
+      <RangeInput
+        editable="VehicleCoverage.notUsedOnExposure()"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        optionLabel="(Coverage.Type!= null and Coverage.Policy.Verified) ? Coverage.covTypeDisplayName() : VALUE.toString()"
+        postOnChange="true"
+        required="true"
+        value="Coverage.Type"
+        valueRange="Coverage.getCoverages()"/>
+      <RangeInput
+        editable="true"
+        id="RiskState"
+        label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        postOnChange="true"
+        required="Coverage.Policy.insured.PrimaryAddress.Country==&quot;US&quot;"
+        value="Coverage.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      <Input
+        id="Subline"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+        required="false"
+        value="Coverage.SublineExt"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+        value="Coverage.ClassCodeExt"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+        value="Coverage.ClassCodeDescExt"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+        onChange="//ClaimNumber==null || ClaimNumber.startsWith(&quot;T&quot;) ? VehicleCoverage.effDateWarn() : null"
+        postOnChange="true"
+        validationExpression="VehicleCoverage.effDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(VehicleCoverage.Policy.EffectiveDate, VehicleCoverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(VehicleCoverage.EffectiveDate, VehicleCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+        onChange="//ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? VehicleCoverage.expDateWarn() : null"
+        postOnChange="true"
+        validationExpression="VehicleCoverage.expDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(VehicleCoverage.Policy.EffectiveDate, VehicleCoverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(VehicleCoverage.EffectiveDate, VehicleCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.ExpirationDate"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="CoverageLimitsInputSet(Coverage)"
+        mode="Coverage.Policy.Claim.LossType"/>
+    </InputColumn>
+    <!-- Added Sprint 8 Agribusiness Eric Rawe 11/15/07 -->
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        def="EditableCoverageReinsuranceLV(Coverage)"
+        id="Reinsurance"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurance"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

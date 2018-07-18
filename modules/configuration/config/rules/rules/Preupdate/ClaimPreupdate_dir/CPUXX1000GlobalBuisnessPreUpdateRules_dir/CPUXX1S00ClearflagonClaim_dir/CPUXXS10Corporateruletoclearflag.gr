@@ -1,0 +1,61 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1S00ClearflagonClaim_dir
+
+@gw.rules.RuleName("CPUXXS10 - Corporate rule to clear flag")
+internal class CPUXXS10Corporateruletoclearflag {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType=="EQUINE" and
+gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) > 10 or
+gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) > 10) or
+claim.LossType=="FIDCRIME" or claim.LossType=="PIMINMARINE" or
+claim.LossType=="EXCESSLIABILITY" or claim.LossType=="EXCESSLIABILITYAUTO" or
+claim.LossType=="EXECLIABDIV" or
+claim.LossType=="PROFLIABDIV" or
+claim.LossType=="SPECIALTYES" or
+claim.LossType=="KIDNAPRANSOM" or
+claim.LossType=="COMMBONDS" or
+claim.LossType=="ENVLIAB" or
+claim.LossType==LossType.TC_MERGACQU
+//(claim.LossType!="AGRIAUTO" && claim.LossType!="AGRILIABILITY" && claim.LossType!="AGRIPROPERTY" and
+//4/12/12 erawe - hack fix for defect 5292
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/  var effFlaggedReason = "Claim Loss Date within 2 weeks of Policy Effective Date."
+  var expFlaggedReason = "Claim Loss Date within 2 weeks of Policy Expiration Date."
+try{
+    
+   if((claim.LossType=="EQUINE" and(gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) > 10 and
+        gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) > 10))){
+          claim.clearFlag(displaykey.Rules.Preupdate.Claim.ClearFlag10Day)
+          var note:Note = claim.Notes.firstWhere(\ n -> n.New and n.Confidential and n.Body.equals(displaykey.Rules.Preupdate.Claim.ClearFlag10Day))
+          note.Confidential = false
+    }else if((claim.LossType=="FIDCRIME" or claim.LossType=="PIMINMARINE" or claim.LossType=="EXCESSLIABILITY" or
+             claim.LossType=="EXCESSLIABILITYAUTO" or claim.LossType=="EXECLIABDIV" or claim.LossType=="PROFLIABDIV" or claim.LossType==LossType.TC_MERGACQU or
+             claim.LossType=="SPECIALTYES" or claim.LossType=="KIDNAPRANSOM" or
+             claim.LossType=="COMMBONDS" or claim.LossType=="ENVLIAB") and claim.Policy.isFieldChanged("Verified")){
+        claim.clearFlag(displaykey.Rules.Preupdate.Claim.ClearFlagUnverified)  
+        var note:Note = claim.Notes.firstWhere(\ n -> n.New and n.Confidential and n.Body.equals(displaykey.Rules.Preupdate.Claim.ClearFlagUnverified))
+        note.Confidential = false 
+    }else if(claim.FlagClaimIndicator.HoverText!=null && claim.FlagClaimIndicator.HoverText.containsIgnoreCase(effFlaggedReason) 
+         && gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) > 10){
+           claim.removeFlagReason(effFlaggedReason)
+            //var note:Note = claim.Notes.firstWhere(\ n -> n.New and n.Confidential and n.Body.containsIgnoreCase(effFlaggedReason))
+            //note.remove()
+          if(gw.api.util.DateUtil.daysBetween(claim.Policy.ExpirationDate, claim.LossDate ) < 10){
+            claim.setFlag(expFlaggedReason)
+          }
+    }else if(claim.FlagClaimIndicator.HoverText!=null && claim.FlagClaimIndicator.HoverText.containsIgnoreCase(expFlaggedReason)
+          && gw.api.util.DateUtil.daysBetween( claim.Policy.ExpirationDate, claim.LossDate ) > 10){
+            claim.removeFlagReason(expFlaggedReason)
+           //var note:Note = claim.Notes.firstWhere(\ n -> n.New and n.Confidential and n.Body.containsIgnoreCase(expFlaggedReason))
+           //note.remove()
+          if(gw.api.util.DateUtil.daysBetween(claim.LossDate, claim.Policy.EffectiveDate)<10){
+            claim.setFlag(effFlaggedReason)
+          }
+    }    
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

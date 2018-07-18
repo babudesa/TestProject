@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableMultiCurrencyRecoveryReservesLV">
+    <Require
+      name="WizardHelper"
+      type="financials.RecoveryReserveWizardHelper"/>
+    <Require
+      name="EditWrapper"
+      type="entity.TransactionEditWrapper"/>
+    <RowIterator
+      editable="true"
+      elementName="RecoveryReserveWrapper"
+      value="new TransactionEditWrapper[] { EditWrapper }">
+      <Row>
+        <TextCell
+          enableSort="false"
+          id="Exposure"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.Exposure"
+          outputConversion="VALUE == null ? displaykey.Web.Financials.Exposure.ClaimLevel : VALUE"
+          value="EditWrapper.Transaction.Exposure.DisplayName"
+          width="100"
+          wrapLabel="true"/>
+        <TextCell
+          enableSort="false"
+          id="Coverage"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.Coverage"
+          value="EditWrapper.Transaction.Exposure.PrimaryCoverage"/>
+        <TextCell
+          enableSort="false"
+          id="LV_Financials_RecoveryReserveSet_RecoveryReserves_CostType"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.CostType"
+          numCols="5"
+          value="EditWrapper.Transaction.CostType"
+          width="5"
+          wrapLabel="true"/>
+        <TextCell
+          enableSort="false"
+          id="CostCategories"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.CostCategories"
+          numCols="5"
+          value="EditWrapper.Transaction.CostCategory"
+          width="5"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="OpenRecoveryReserves"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.OpenRecoveryReserves"
+          value="WizardHelper.getOpenRecoveryReservesAmountPair( RecoveryReserveWrapper.Transaction )"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="Currency"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.Currency"
+          onChange="setNewTransactionAmountToInitialValue()"
+          postOnChange="true"
+          required="true"
+          value="EditWrapper.Currency"/>
+        <Cell
+          editable="true"
+          enableSort="false"
+          formatType="currency"
+          id="NewOpenRecoveryReserves"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.NewOpenRecoveryReserves"
+          numCols="12"
+          postOnChange="true"
+          required="true"
+          value="RecoveryReserveWrapper.NewAmountInTransactionCurrency"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="ChangeAmount"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.ChangeAmount"
+          value="WizardHelper.getChangeAmountPair(RecoveryReserveWrapper)"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          enableSort="false"
+          id="Comments"
+          label="displaykey.LV.Financials.RecoveryReserveSet.MulticurrencyRecoveryReserves.Comments"
+          numCols="10"
+          value="RecoveryReserveWrapper.Transaction.Comments"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function setNewTransactionAmountToInitialValue() {
+  var initialValue = WizardHelper.getOpenRecoveryReservesAmountPair( EditWrapper.Transaction ).Amount
+  // this sets the transaction and claim amounts
+  EditWrapper.NewAmountInTransactionCurrency.setAmount( initialValue )
+}
+      
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,32 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG1100 - Reservation of Rights")
+internal class ABAG1100ReservationofRights {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*This rule creates an activity for Reservation of Rights when the document 
+type and subtype match below created in ECF and brought in by the sweep.
+Only run this rule if they select a feature on the Related To field on
+the document screen.  Therefore check for the existance of a feature first
+6/13 dmonahan - copied rule over from Claim Exception AgriBusiness Rules
+*/
+//Claim.Exposures.length!=0  //means feature does exist
+!claim.Documents.IsEmpty &&
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_ror") AND
+(claim.LossType!=LossType.TC_ALTMARKETSAUTO OR claim.LossType!=LossType.TC_SHSAUTO)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(document in claim.Documents.where(\ d -> d.ex_Type.toLowerCase()=="coverage" 
+    && (d.ex_SubType.toLowerCase()=="reservation/disclaimer" ||
+    d.ex_SubType.toLowerCase()=="reservation" || d.ex_SubType.toLowerCase()=="ror"))){
+      var ap = util.custom_Ext.finders.findActivityPattern( "ab_ror" )
+      claim.createActivityFromPattern( null, ap )
+      break
+   }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

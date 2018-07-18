@@ -1,0 +1,22 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B6 - Recurring Frequency")
+internal class TVXX11B6RecurringFrequency {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var recurr = (transactionSet as CheckSet).Recurrence
+
+  // validate weekly/monthly recurrence is a 2 digit integer
+  if (recurr typeis WeeklyCheckRecurrence && recurr.WeeklyFrequency > 99 || 
+  recurr typeis MonthlyCheckRecurrence && recurr.MonthlyFrequency > 99){
+    transactionSet.rejectField("Recurrence", "newloss", displaykey.Validation.NewCheckWizard.RecurringFrequency, null, null)
+    }
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

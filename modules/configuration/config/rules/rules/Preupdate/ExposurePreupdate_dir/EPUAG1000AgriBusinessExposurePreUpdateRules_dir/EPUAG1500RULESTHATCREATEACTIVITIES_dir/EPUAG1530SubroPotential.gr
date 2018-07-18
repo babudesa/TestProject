@@ -1,0 +1,44 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir.EPUAG1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUAG1530 - Subro Potential")
+internal class EPUAG1530SubroPotential {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*updated - 1/15/10 erawe - created (EPUAG1G00) from CEAG1180 and removed
+  reference to a recovery being needed, per defect 2863.
+*/
+((exposure.Claim.LossType=="AGRIAUTO" or exposure.Claim.LossType=="AGRIPROPERTY") &&
+exposure.Claim.AssignmentStatus == "assigned" &&
+exposure.Claim.IncidentReport == false &&
+exposure.Claim.State != "closed" &&
+exposure.Claim.State != "draft" &&
+exposure.Claim.Exposures.length!=0)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  //for (exposure in claim.Exposures) {
+    if(exposure.SubrogPotentialExt){
+      //for (recovery in exposure.RecoveryReservesQuery.getResultsAsList()){
+         if(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="ab_subro_potential" and act.Exposure==exposure)){
+         var ap = util.custom_Ext.finders.findActivityPattern( "ab_subro_potential" )
+         exposure.Claim.createActivityFromPattern(exposure, ap)
+         }
+      //}
+    }
+  //}
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure.Claim, actions.getRule().DisplayName, e, "" )
+}
+
+
+
+
+    
+
+
+
+
+/*end00rule*/
+  }
+}

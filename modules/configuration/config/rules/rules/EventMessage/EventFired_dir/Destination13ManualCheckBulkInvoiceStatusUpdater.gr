@@ -1,0 +1,36 @@
+package rules.EventMessage.EventFired_dir
+
+@gw.rules.RuleName("Destination 13 - Manual Check Bulk Invoice Status Updater")
+internal class Destination13ManualCheckBulkInvoiceStatusUpdater {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.DestID == 13 &&
+messageContext.Root typeis BulkInvoice &&
+messageContext.Root.PaymentMethod == PaymentMethod.TC_MANUAL &&
+(messageContext.Root.Status == BulkInvoiceStatus.TC_AWAITINGSUBMISSION ||
+messageContext.Root.Status == BulkInvoiceStatus.TC_PENDINGSTOP ||
+messageContext.Root.Status == BulkInvoiceStatus.TC_PENDINGVOID)
+
+/**
+ * This rule only applies to Bulk Invoices using the Manual Payment method
+ * Once the system changes the Bulk Invoice Status to Awaiting Submission
+ * this rule will catch that event and then send the message off 
+ * to the Manual Check Bulk Invoice Status Updater to change the status 
+ * of the Bulk Invoice to Issued and Invoice Items to Submitted
+ * 
+ * This rule has to be in Event Fired rules in order to capture the event triggered by
+ * the system updating the BIN status because that update does not trigger Pre Update rules
+ * If you try to set the status of the BIN Items to Submitted before the BIN is updated to
+ * Awaiting Submission by the system, then not all checks will be created for the line items.
+ *//*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+
+   messageContext.createMessage(messageContext.toString())
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(messageContext, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

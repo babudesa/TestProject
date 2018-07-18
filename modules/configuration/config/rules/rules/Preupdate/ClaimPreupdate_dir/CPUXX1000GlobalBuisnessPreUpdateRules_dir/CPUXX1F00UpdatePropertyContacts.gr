@@ -1,0 +1,154 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUXX1F00 - Update Property Contacts")
+internal class CPUXX1F00UpdatePropertyContacts {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 2/27/2008 - zthomas - defect 789, duplicate rule now exists in Exposure Pre update.
+// 3/18/2008 - zthomas - defect 202, reactivate and modify rule to add trainers to Parties Involved.
+/*Add lienholders and additional interest risks to parties involved. 
+  Sprint/Maintenance Release: EM 10 - Defect 51
+  Author: Zach Thomas
+  Updated: 07/09/08
+  Updated: 02/16/09 - Defect 1054, Modify if conditions to only add property contacts 
+  if they are new or changed.
+  Updated: 05/18/11 - sprzygocki - added an array at the beginning of the function to capture the coverages associated
+    with the risk as coverages no longer sits on the Property
+*/
+claim.State != "draft"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(prop in claim.Properties){
+    var coverages : Coverage[];
+    for(riskUnit in claim.Policy.RiskUnits){
+      if(riskUnit.Subtype=="LocationBasedRU" || riskUnit.Subtype=="PropertyRU" 
+        and (riskUnit as LocationBasedRU).Property==prop){
+        coverages = riskUnit.Coverages
+      }
+    }
+    //Add Primary Trainer if selected contact doesn't contain that role.
+    if((prop.ex_PrimaryTrainer.New or prop.ex_PrimaryTrainer.Changed or claim.State == "draft" or
+    prop.ex_PrimaryTrainer != (prop.OriginalVersion as PolicyLocation).ex_PrimaryTrainer) and prop.ex_PrimaryTrainer != null){
+      claim.addPropertyContact( "PrimaryTrainer", prop.ex_PrimaryTrainer );      
+    }
+    //Add Alternate Trainer if selected contact doesn't contain that role.        
+    if((prop.ex_AlternateTrainer.New or prop.ex_AlternateTrainer.Changed or claim.State == "draft" or
+    prop.ex_AlternateTrainer != (prop.OriginalVersion as PolicyLocation).ex_AlternateTrainer) and prop.ex_AlternateTrainer != null){
+      claim.addPropertyContact( "AlternateTrainer", prop.ex_AlternateTrainer );
+    }
+    //Add Lienholder if selected contact doesn't contain that role.
+    for(lienholder in prop.Lienholders){
+      if((lienholder.New or lienholder.Changed or claim.State == "draft" or
+      !exists(lien in (prop.OriginalVersion as PolicyLocation).Lienholders where lien == lienholder))
+      and lienholder != null){
+        var CCR = claim.addPropertyContact( "lienholder", lienholder.Lienholder )
+        if(CCR != null){
+          for(key in CoveredPartyType.getTypeKeys(false)){
+            if(key.Code == lienholder.ex_LienHolderType.Code){
+              CCR.CoveredPartyType = key
+              break;
+            }
+          }
+          CCR.Comments = lienholder.ex_LienHolderType.DisplayName;
+        }
+      }
+    }
+    //Add Additional Interest Risk if selected contact doesn't contain that role.
+    for(addIntRisk in prop.AdditionalInterestRisksExt){
+      if(exists(element in prop.getAddedArrayElements( "AdditionalInterestRisksExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or
+        exists(element in prop.getChangedArrayElements( "AdditionalInterestRisksExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or 
+        claim.State == "draft"){
+        
+        
+          var CCR = claim.addPropertyContact( "AdditionalInterestRisk", addIntRisk.Contact )
+          if(CCR != null){
+            CCR.CoveredPartyType = addIntRisk.CoveredPartyType;  //add the covered party type
+            CCR.Comments = addIntRisk.CoveredPartyType.DisplayName; //populate the comments
+        
+        }
+      }
+    }
+  
+    /*Add SFPP lienholders and additional interest risks to parties involved if they are new or changed. 
+    Sprint/Maintenance Release: Agri 0 - Defect 1446
+    Author: blawless  
+    Updated: 9/15/09
+    */
+    //loop through all coverages
+    for(cvg in coverages){
+      // only need SFPP coverages
+      if(cvg.isSFPP()){
+        for(lienholder in cvg.HighValueItemExt.Lienholders_Ext){
+          if(lienholder != null and (claim.State == "draft" or 
+              (exists(element in cvg.HighValueItemExt.getAddedArrayElements( "Lienholders_Ext") where (element as LienholderExt) == lienholder)) or 
+              (exists(element in cvg.HighValueItemExt.getChangedArrayElements( "Lienholders_Ext") where (element as LienholderExt) == lienholder)))){
+                
+            var CCR = claim.addPropertyContact( "lienholder", lienholder.Lienholder )
+            if(CCR != null){
+              for(key in CoveredPartyType.getTypeKeys(false)){
+                if(key.Code == lienholder.LienholderType.Code){
+                  CCR.CoveredPartyType = key
+                  break;
+                }
+              }
+              CCR.Comments = lienholder.LienholderType.DisplayName;
+            }    
+          }
+        }
+        
+        for(addIntRisk in cvg.HighValueItemExt.AdditionalInterestExt){
+          if(exists(element in cvg.HighValueItemExt.getAddedArrayElements( "AdditionalInterestExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or
+              exists(element in cvg.HighValueItemExt.getChangedArrayElements( "AdditionalInterestExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or 
+              claim.State == "draft"){
+            var CCR = claim.addPropertyContact( "AdditionalInterestRisk", addIntRisk.Contact )
+            if(CCR != null){
+              CCR.CoveredPartyType = addIntRisk.CoveredPartyType;  //add the covered party type
+              CCR.Comments = addIntRisk.CoveredPartyType.DisplayName; //populate the comments
+            }
+          }
+        }  
+      }
+    }  
+  }
+  
+  for(veh in claim.Policy.Vehicles){
+    //Add Lienholder if selected contact doesn't contain that role.
+    for(lienholder in veh.Vehicle.Lienholders){
+      if((lienholder.New or lienholder.Changed or claim.State == "draft" or
+      !exists(lien in (veh.Vehicle.OriginalVersion as Vehicle).Lienholders where lien == lienholder))
+      and lienholder != null){
+        var CCR = claim.addPropertyContact( "lienholder", lienholder.Lienholder )
+        if(CCR != null){
+          for(key in CoveredPartyType.getTypeKeys(false)){
+            if(key.Code == lienholder.LienHolderTypeExt.Code){
+              CCR.CoveredPartyType = key
+              break;
+            }
+          }
+          CCR.Comments = lienholder.LienHolderTypeExt.DisplayName;
+        }
+      }
+    }
+    //Add Additional Interest Risk if selected contact doesn't contain that role.
+    for(addIntRisk in veh.Vehicle.AdditionalInterestRisksExt){
+      if(exists(element in veh.Vehicle.getAddedArrayElements( "AdditionalInterestRisksExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or
+        exists(element in veh.Vehicle.getChangedArrayElements( "AdditionalInterestRisksExt" ) where (element as RiskPartyExt).PublicID == addIntRisk.PublicID) or 
+        claim.State == "draft"){
+        
+      
+          var CCR = claim.addPropertyContact( "AdditionalInterestRisk", addIntRisk.Contact )
+          if(CCR != null){
+            CCR.CoveredPartyType = addIntRisk.CoveredPartyType;  //add the covered party type
+            CCR.Comments = addIntRisk.CoveredPartyType.DisplayName; //populate the comments
+        
+        }
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

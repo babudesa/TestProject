@@ -1,0 +1,34 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1130DateReportedRequirements_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVXX1134 - Claims Made Requirements in Refresh")
+internal class CVXX1134ClaimsMadeRequirementsinRefresh {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.isPolicyInRefresh( 1 ) and
+exists(cov in claim.Policy.Coverages where cov.ClaimsMadeIndicatorExt) and
+exists(cov in claim.Policy.Coverages where !cov.ClaimsMadeIndicatorExt) and
+claim.Exposures.length > 0 and 
+claim.LossDate != null and
+claim.Policy.ExpirationDate != null and
+gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.ExpirationDate) > 0
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+var msg:String
+
+msg = "Policy has both Claims Made and Occurrence coverages.  Enter a Claims Made Date or Loss Date within the policy term." //make this a displaykey
+
+claim.setPolicyRefreshFailed()
+claim.rejectField("ReportedDate", "loadsave", msg, null, null)
+pcf.ClaimPolicyGeneral.go(claim) 
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

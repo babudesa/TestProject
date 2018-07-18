@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    canEdit="true"
+    canVisit="true"
+    id="TripSegmentPopup"
+    returnType="TripSegment"
+    startInEditMode="startEditable"
+    title="displaykey.Web.TripIncidentScreen">
+    <LocationEntryPoint
+      signature="TripSegmentPopup(aTripSegmentParam : TripSegment, aTripIncident : TripIncident, startEditable : Boolean)"/>
+    <Variable
+      name="aTripSegmentParam"
+      type="TripSegment"/>
+    <Variable
+      name="aTripIncident"
+      type="TripIncident"/>
+    <Variable
+      initialValue="aTripSegmentParam == null ? initTripSegment() : aTripSegmentParam"
+      name="aTripSegment"
+      type="TripSegment"/>
+    <Variable
+      name="startEditable"
+      type="Boolean"/>
+    <Variable
+      name="cancellationOnly"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Variable
+      initialValue="aTripSegment.AddnlTripSegments.length &gt; 0 ? aTripSegment.AddnlTripSegments.first() : null"
+      name="anAddnlTripSegment"
+      recalculateOnRefresh="true"
+      type="AddnlTripSegment"/>
+    <Screen>
+      <PanelRef
+        def="ClaimTripSegmentDetailDV(aTripSegment, aTripIncident)"
+        id="ClaimTripSegmentDetailDV">
+        <Toolbar>
+          <EditButtons
+            pickValue="aTripSegment"
+            updateLabel="aTripSegmentParam == null ? displaykey.Term.OK.Upper : displaykey.Term.Update.Proper"/>
+        </Toolbar>
+      </PanelRef>
+      <CardViewPanel
+        hideTabIfSingle="true">
+        <Card
+          id="RebookedTransportationCard"
+          title="&quot;&quot;"
+          visible="not aTripSegment.CancelOnly">
+          <DetailViewPanel>
+            <InputColumn>
+              <Label
+                label="displaykey.Web.TripIncidentScreen.TripCard.AddnlTripSegments"/>
+            </InputColumn>
+          </DetailViewPanel>
+          <PanelRef
+            def="AdditionalTripSegmentLV(aTripSegment)">
+            <Toolbar>
+              <IteratorButtons/>
+              <ToolbarDivider/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="anAddnlTripSegment.Assessment = &quot;approve&quot;"
+                flags="no approve_add_trav, any row_add_trav"
+                hideIfReadOnly="true"
+                id="SegmentApprovalButton"
+                iterator="AdditionalTripSegmentLV"
+                label="displaykey.Web.TripIncidentScreen.Approve"
+                shortcut="A"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="anAddnlTripSegment.Assessment = &quot;Review&quot;"
+                flags="no review_add_trav, any row_add_trav"
+                hideIfReadOnly="true"
+                id="SegmentReviewlButton"
+                iterator="AdditionalTripSegmentLV"
+                label="displaykey.Web.TripIncidentScreen.Review"
+                shortcut="R"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="anAddnlTripSegment.Assessment = &quot;Deny&quot;"
+                flags="no deny_add_trav, any row_add_trav"
+                hideIfReadOnly="true"
+                id="SegmentDenyButton"
+                iterator="AdditionalTripSegmentLV"
+                label="displaykey.Web.TripIncidentScreen.Deny"
+                shortcut="N"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="anAddnlTripSegment.Assessment = null"
+                flags="any row_add_trav, no clear_add_trav"
+                hideIfReadOnly="true"
+                id="SegmentClearButton"
+                iterator="AdditionalTripSegmentLV"
+                label="displaykey.Web.TripIncidentScreen.TripCard.Clear"
+                shortcut="L"/>
+            </Toolbar>
+          </PanelRef>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+    <Code><![CDATA[function initTripSegment() : TripSegment {
+  var result = new TripSegment()
+  result.TripIncident = aTripIncident
+  return result 
+}]]></Code>
+  </Popup>
+</PCF>

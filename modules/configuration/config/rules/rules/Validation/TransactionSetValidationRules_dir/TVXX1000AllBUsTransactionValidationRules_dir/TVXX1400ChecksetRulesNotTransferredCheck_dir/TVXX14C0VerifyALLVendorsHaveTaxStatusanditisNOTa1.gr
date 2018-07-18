@@ -1,0 +1,40 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14C0 - Verify ALL Vendors Have Tax Status and it is  NOT a 1")
+internal class TVXX14C0VerifyALLVendorsHaveTaxStatusanditisNOTa1 {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///Defect 424: djohnson : Do dont allow the vendor to be payable in the 
+//if the tax status is a "1" or not set.
+for(trans in transactionSet.Transactions){
+    var payment = trans as Payment
+    if(payment.Check.Status!="voided" and payment.Check.Status!="pendingvoid" and
+       payment.Check.Status!="transferred" and payment.Check.Status!="pendingtransfer" and
+       payment.Check.Status!="stopped" and payment.Check.Status!="pendingstop" and
+       payment.Check.Status!="issued" and payment.Check.Status!="cleared"){
+      for (payee in payment.Check.Payees)
+      {
+        if(payee.PayeeType == "vendor") {
+          var payable = true
+          if(payee.ClaimContact.Contact typeis CompanyVendor and payee.ClaimContact.CompanyVendor.Ex_TaxStatusCode == null or
+           payee.ClaimContact.CompanyVendor.Ex_TaxStatusCode == "1")  {
+             payable = false
+          }
+          else if (payee.ClaimContact.Contact typeis PersonVendor and payee.ClaimContact.PersonVendor.Ex_TaxStatusCode == null or 
+           payee.ClaimContact.PersonVendor.Ex_TaxStatusCode == "1")  {
+             payable = false
+             
+          }
+          if (!payable) {
+            transactionSet.reject( "payment", "Cannot issue a payment to a vendor that does not have a tax status code.  Tax status must not be a 1.", null, null );
+          }
+        }
+     }
+   }
+}
+/*end00rule*/
+  }
+}

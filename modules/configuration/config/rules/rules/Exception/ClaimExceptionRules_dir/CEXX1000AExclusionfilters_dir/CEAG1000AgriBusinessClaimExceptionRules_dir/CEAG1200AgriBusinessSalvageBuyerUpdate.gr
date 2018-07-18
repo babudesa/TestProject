@@ -1,0 +1,19 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEAG1200 - AgriBusiness Salvage Buyer Update")
+internal class CEAG1200AgriBusinessSalvageBuyerUpdate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(exposure in claim.Exposures where exposure.VehicleIncident.salvagebuyer != null)==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exposure in claim.Exposures)
+{
+ if(exposure.salvagebuyer != null){
+   exposure.addRole( "salvagebuyer", exposure.salvagebuyer)
+   exposure.salvagebuyer = null;
+   exposure.removeRole( "salvagebuyer", exposure.salvagebuyer )
+ }
+}/*end00rule*/
+  }
+}

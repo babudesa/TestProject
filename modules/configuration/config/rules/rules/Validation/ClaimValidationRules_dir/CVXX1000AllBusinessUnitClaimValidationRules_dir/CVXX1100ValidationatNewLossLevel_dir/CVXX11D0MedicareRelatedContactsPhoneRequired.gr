@@ -1,0 +1,47 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11D0 - Medicare Related Contacts Phone Required")
+internal class CVXX11D0MedicareRelatedContactsPhoneRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(claimContact in claim.Contacts){
+ if(claimContact.Contact.SourceRelatedContacts.Count != 0 
+    and (claimContact.Contact.SourceRelatedContacts.where(\ c -> c.InjuredPartyFlagExt ).Count != 0 
+    or claimContact.Contact.SourceRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).Count != 0)){
+      
+  if(claimContact.Contact.SourceRelatedContacts.where(\ c -> c.InjuredPartyFlagExt ).Count != 0){
+     for(contCont in claimContact.Contact.SourceRelatedContacts.where(\ c -> c.InjuredPartyFlagExt )){
+      if(contCont.RelatedContact.HomePhone == null and contCont.RelatedContact.CellPhoneExt == null
+       and contCont.RelatedContact.WorkPhone == null){
+         for(clCon in claim.Contacts){
+          if(contCont.RelatedContact == clCon.Contact ){
+            if(clCon.cscCellPhoneExt == null and clCon.cscHomePhoneExt == null and clCon.cscWorkPhoneExt == null){
+              claim.reject("loadsave", "Enter Phone for the Injured Party Representative " + claimContact.Contact, null, null) 
+            }
+          }
+         }
+       }
+     }
+}
+ if(claimContact.Contact.SourceRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).Count != 0){
+ for(contCont in claimContact.Contact.SourceRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt )){
+  if(contCont.RelatedContact.HomePhone == null and contCont.RelatedContact.CellPhoneExt == null
+       and contCont.RelatedContact.WorkPhone == null){
+         for(clCon in claim.Contacts){
+          if(contCont.RelatedContact == clCon.Contact ){
+            if(clCon.cscCellPhoneExt == null and clCon.cscHomePhoneExt == null and clCon.cscWorkPhoneExt == null){
+              claim.reject("loadsave", "Enter Phone for the Beneficiary Representative " + claimContact.Contact, null, null) 
+            }
+          }
+         }
+       }
+ }
+}
+  
+ }
+}/*end00rule*/
+  }
+}

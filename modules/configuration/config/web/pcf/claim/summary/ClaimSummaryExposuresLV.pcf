@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ClaimSummaryExposuresLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ExposureList"
+      type="Exposure[]"/>
+    <RowIterator
+      editable="false"
+      elementName="Exposure"
+      value="ExposureList">
+      <Row>
+        <ContentCell
+          align="center"
+          icon="&quot;icon_claimClosed.png&quot; "
+          id="Status"
+          printWidth="0.07"
+          sortBy="Exposure.State">
+          <Link
+            icon="Exposure.Closed ? &quot;icon_claimClosed.png&quot; : &quot;icon_claimOpen.png&quot;"
+            id="StatusIcon"
+            tooltip="Exposure.State.DisplayName"/>
+        </ContentCell>
+        <Cell
+          action="ExposureDetailForward.drilldown(Claim, Exposure)"
+          align="center"
+          id="Order"
+          label="displaykey.LV.Exposure.Exposures.Order"
+          numCols="2"
+          printWidth="0.05"
+          sortOrder="1"
+          value="Exposure.ClaimOrder"
+          wrapLabel="true"/>
+        <Cell
+          action="ExposureDetailForward.drilldown(Claim, Exposure)"
+          id="Type"
+          label="displaykey.LV.Exposure.Exposures.Type"
+          printWidth="0.15"
+          value="Exposure.ExposureType"
+          wrapLabel="true"/>
+        <RangeCell
+          id="Coverage"
+          label="displaykey.LV.Exposure.Exposures.Coverage"
+          numCols="30"
+          optionLabel="(Exposure.Coverage.Type!= null and Exposure.Coverage.Policy.Verified) ? Exposure.Coverage.covTypeDisplayName() : VALUE.toString()"
+          printWidth="0.20"
+          value="Exposure.PrimaryCoverage"
+          valueRange="Exposure.Coverage != null ? Exposure.Coverage.getCoverages() : new java.util.ArrayList()"
+          width="20%"
+          wrapLabel="true"/>
+        <Cell
+          action="ClaimContactDetailPopup.push(Exposure.Claimant, Claim)"
+          enableSort="false"
+          id="Claimant"
+          label="displaykey.LV.Exposure.Exposures.Claimant"
+          printWidth="0.15"
+          value="Exposure.Claimant"/>
+        <Cell
+          action="UserContactDetailPopup.push(Exposure.AssignedUser)"
+          id="Assignee"
+          label="displaykey.LV.Exposure.Exposures.Assignee"
+          numCols="15"
+          printWidth="0.15"
+          sortBy="Exposure.AssignmentStatus,Exposure.AssignedUser,Exposure.AssignedQueue"
+          value="Exposure.AssigneeDisplayString"
+          wrap="false"/>
+        <!-- <Cell
+          enableSort="false"
+          formatType="currency"
+          id="OpenRecoveryReserves"
+          label="displaykey.LV.Exposure.Exposures.OpenRecoveryReserves"
+          numCols="6"
+          printWidth="0.12"
+          value="Exposure.ExposureRpt.OpenRecoveryReserves"
+          visible="perm.Claim.viewrecoveryreserves(Claim)"
+          width="1%"
+          wrapLabel="true"/> -->
+        <!-- <Cell
+          enableSort="false"
+          formatType="currency"
+          id="RemainingReserves"
+          label="displaykey.LV.Exposure.Exposures.RemainingReserves"
+          numCols="10"
+          printWidth="0.12"
+          value="Exposure.ExposureRpt.RemainingReserves"
+          visible="perm.Claim.viewreserves(Claim)"
+          width="1%"
+          wrapLabel="true"/> -->
+        <!-- GW ADDED -->
+        <Cell
+          id="FinancialStatus"
+          label="displaykey.LV.Exposure.Exposures.FinancialStatus"
+          printWidth="0.07"
+          value="Exposure.getFeatureFinancialStatus()"/>
+        <Cell
+          id="FeatureStatus"
+          label="displaykey.LV.Exposure.Exposures.FeatureStatus"
+          printWidth="0.07"
+          value="Exposure.State"/>
+        <Cell
+          id="FeatureCloseDate"
+          label="displaykey.LV.Exposure.Exposures.FeatureCloseDate"
+          printWidth="0.07"
+          value="Exposure.CloseDate"/>
+        <Cell
+          id="FeatureValidation"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ValidationLevel"
+          printWidth="0.07"
+          value="Exposure.ValidationLevel"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="OpenReserves"
+          label="displaykey.LV.Exposure.Exposures.OpenReserves"
+          printWidth="0.12"
+          value="Exposure.ExposureRpt.OpenReserves"
+          visible="perm.Claim.viewreserves(Claim)"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="Paid"
+          label="displaykey.LV.Exposure.Exposures.Paid"
+          printWidth="0.1"
+          value="Exposure.ExposureRpt.TotalPayments"
+          visible="perm.Claim.viewpayments(Claim)"
+          width="1%"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="FuturePayments"
+          label="displaykey.LV.Exposure.Exposures.FuturePayments"
+          numCols="10"
+          printWidth="0.12"
+          value="Exposure.ExposureRpt.FuturePayments"
+          visible="perm.Claim.viewpayments(Claim)"
+          width="1%"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

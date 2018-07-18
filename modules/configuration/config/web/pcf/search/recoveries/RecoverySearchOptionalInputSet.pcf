@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <InputSet
+    id="RecoverySearchOptionalInputSet">
+    <Require
+      name="RecoverySearchCriteria"
+      type="RecoverySearchCriteria"/>
+    <Label
+      label="displaykey.NVV.Search.OptionalParameters"/>
+    <FinancialCriterionMultiCurrencyChoiceInput
+      editable="true"
+      id="Amount"
+      label="displaykey.JSP.RecoverySearch.Recoveries.Amount"
+      required="false"
+      value="RecoverySearchCriteria.FinancialCriterion"/>
+    <!-- <Input
+      editable="true"
+      id="Status"
+      label="displaykey.JSP.RecoverySearch.Recoveries.Status"
+      required="false"
+      value="getRecoveryStatus()//RecoverySearchCriteria.RecoveryStatus"/> -->
+    <RangeInput
+      editable="true"
+      id="Status"
+      label="displaykey.JSP.RecoverySearch.Recoveries.Status"
+      required="false"
+      value="RecoverySearchCriteria.RecoveryStatus"
+      valueRange="getRecoveryStatus()"/>
+    <Input
+      editable="true"
+      id="CostType"
+      label="displaykey.JSP.RecoverySearch.Recoveries.CostType"
+      required="false"
+      value="RecoverySearchCriteria.CostType"/>
+    <!-- <Input
+      editable="true"
+      id="RecoveryCategory"
+      label="displaykey.JSP.RecoverySearch.Recoveries.RecoveryCategory"
+      required="false"
+      value="RecoverySearchCriteria.RecoveryCategory"/> -->
+    <RangeInput
+      editable="true"
+      id="RecoveryCategoryRangeInput"
+      label="displaykey.JSP.RecoverySearch.Recoveries.RecoveryCategory"
+      required="false"
+      value="RecoverySearchCriteria.CostCategory"
+      valueRange="getRecoveryCategory()"/>
+    <DateCriterionChoiceInput
+      chosenOptionVisible="true"
+      editable="true"
+      id="DateSearch"
+      label="displaykey.JSP.RecoverySearch.Recoveries.DateSearch"
+      required="false"
+      value="RecoverySearchCriteria.DateCriterionChoice"/>
+    <Code><![CDATA[// Defect 8144 - added "Surety Claim Credit" to list of available Recovery Categories
+function getRecoveryCategory():java.util.ArrayList{
+  var list=new java.util.ArrayList()
+  for (cat in typekey.CostCategory.getTypeKeys(false)){
+    if((cat==typekey.CostCategory.TC_DEDUCTIBLE or cat==typekey.CostCategory.TC_OVERPAYMENT 
+        or cat==typekey.CostCategory.TC_SALVAGE or cat==typekey.CostCategory.TC_SUBROGATION 
+        or cat==typekey.CostCategory.TC_SURETYCLMCRED or cat==typekey.CostCategory.TC_SECONDINJURYFUND)){
+      list.add(cat)
+    }
+  }
+  return list
+}
+
+function getRecoveryStatus():java.util.ArrayList{
+  var list=new java.util.ArrayList()
+  for(rStatus in typekey.TransactionStatus.TF_RECOVERY.TypeKeys){
+    if(!(rStatus.Code==(typekey.TransactionStatus.TC_DENIED as java.lang.String))){
+      list.add(rStatus)
+    }
+  }
+  return list
+}]]></Code>
+  </InputSet>
+</PCF>

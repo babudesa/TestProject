@@ -1,0 +1,80 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1622 - Property Reserve Evaluation")
+internal class CPUXX1622PropertyReserveEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in Claim.Evaluations where evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "property")
+and Claim.BeanVersion == find(clm in Claim where clm.ClaimNumber == Claim.ClaimNumber).getAtMostOneRow().BeanVersion/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var values = new HashMap();
+for(evaluation in Claim.Evaluations){
+  if(evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "property"){
+    var doc = new Document(Claim);
+    
+    //The line below was commented out because as of sprint 8, documents are no
+    //longer editable after they are saved to ECF.
+    //evaluation.SaveToECFExt = false;  //reset the save to ECF flag so it&apos;s not saved multiple times
+  
+    values.put( "EvaluationName", evaluation.Name);
+    values.put( "RelatedTo", evaluation.getRelatedToValue());
+    values.put( "Claim", Claim );
+    values.put( "Insured", Claim.Insured);
+    values.put( "CreatedBy", evaluation.CreateUser);
+    values.put( "LossD", evaluation.claim.Description);
+    values.put( "CovIssues", evaluation.CoverageIssuesExt);
+    values.put( "DescDamages", evaluation.DamageDescriptionExt);
+    values.put( "ResBasis", evaluation.ReserveBasisExt);
+    values.put( "OthrInfo", evaluation.OtherInfoExt);
+    values.put( "LossEst", evaluation.LossEstimateExt);
+    values.put( "Deduct", evaluation.DeductibleExt);
+    values.put( "Deprec", evaluation.DepreciationExt);
+    values.put( "CoIns", evaluation.CoinsuranceExt);
+    values.put( "Othr", evaluation.OtherDeductionsExt);
+    values.put( "RecReserve", evaluation.RecReserveExt);
+    values.put( "AddComments", evaluation.CommentsExt);
+    values.put( "Claimant", evaluation.ClaimantNameExt);
+    values.put( "NetEstimate", evaluation.calculateNetEstimate() )
+    
+    //Grab the exposure and claimant to be saved to the document
+    if(evaluation.getRelatedToValue() typeis Exposure){
+      doc.Exposure = (evaluation.getRelatedToValue() as Exposure)
+      doc.Ex_ECFFeatureType = doc.Exposure.DisplayName
+    }
+    if(evaluation.Claimant!=null){
+      doc.ex_ClaimantName = doc.Exposure.claimant.DisplayName
+    }
+    doc.Claim = Claim;
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.Name = "Property Reserve Evaluation";
+    doc.MimeType = "application/rtf";
+    doc.Status = "approved";
+    doc.ex_SubType = "Reserve Recommendation"
+    doc.ex_Type = "Internal Report"
+    doc.ProcessMethod = "Sent_to_File"
+    doc.Description = "Property Reserve Evaluation"
+    doc.Privileged = "No"
+    doc.FormIDExt = "ENT0014"
+    
+    values.put( "FormID", doc.FormIDExt );
+        
+    if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "PropertyReserveEvaluation.gosu.rtf" )) {
+      util.document.DocumentProduction.createAndStoreDocumentSynchronously( "PropertyReserveEvaluation.gosu.rtf", values, doc );
+      var note:String = "Property reserve evaluation document successfully generated.";
+      var noteSubject:Note;
+      noteSubject = Claim.addNote("general", note);
+      noteSubject.Subject = "Property Evaluation Created";
+    }
+    else {
+      //changed to logging in Debug - SR
+	  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+    }
+    values.clear();
+  }
+  
+}/*end00rule*/
+  }
+}

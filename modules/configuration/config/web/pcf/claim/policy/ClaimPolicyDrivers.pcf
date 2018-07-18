@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;drivers&quot;) and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+    canVisit="gw.api.policy.PolicyTabUtil.hasTab(Claim, &quot;drivers&quot;) and perm.Policy.view(Claim) and perm.System.viewpolicy and Claim.Policy.Verified and (Claim.LossType==TC_AGRILIABILITY || Claim.LossType==TC_AGRIAUTO || Claim.LossType==TC_PERSONALAUTO || Claim.LossType==TC_ALTMARKETSAUTO || Claim.LossType==TC_SHSAUTO || Claim.LossType==TC_TRUCKINGAUTO)"
+    id="ClaimPolicyDrivers"
+    title="displaykey.JSP.ClaimPolicy.Policy.Drivers">
+    <LocationEntryPoint
+      signature="ClaimPolicyDrivers(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new ContactRole[] {&quot;coveredparty&quot;}"
+      name="userRoles"
+      type="ContactRole[]"/>
+    <Screen
+      id="ClaimPolicyDriversScreen">
+      <!-- 6/9/10 erawe - Made delete button not visible, no longer needed. -->
+      <Toolbar>
+        <IteratorButtons
+          addVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"
+          removeFlags="all Removeable"
+          removeLabel="displaykey.Button.Delete"
+          removeVisible="!Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim)"/>
+        <ToolbarButton
+          action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim)"
+          confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+          id="ClaimPolicyVehicles_AddMoreVehiclesButton"
+          label="displaykey.Button.AddMoreVehicles"
+          visible="false"/>
+      </Toolbar>
+      <!-- visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim)" 6/9/10 erawe Made the add button not visible, no longer needed -->
+      <PanelRef>
+        <CardViewPanel>
+          <Card
+            id="DriverDetailCard"
+            title="displaykey.Web.ClaimPolicy.DriverDetail">
+            <PanelRef
+              def="DriversLV(Claim.Policy.getClaimContactRolesByRoles(userRoles), Claim, Claim.Policy, &quot;coveredparty&quot;)">
+              <!-- <PanelRef def="PeopleInvolvedDetailedLV(claim)"> <PanelRef def="ContactBasicsDV(contactHandle, claimContact, showRoles, linkStatus)"> 6/9/10 erawe Made the edit button not visible, no longer needed -->
+              <Toolbar>
+                <ToolbarButton
+                  action="gw.api.policy.ClaimPolicyMakeEditableUtil.makePolicyEditable(CurrentLocation, Claim, true);"
+                  confirmMessage="displaykey.JSP.ClaimPolicyGeneral.EditVerifiedPolicy"
+                  id="ClaimPolicyDrivers_EditButton"
+                  label="displaykey.Button.Edit"
+                  visible="false"/>
+                <!-- visible="Claim.Policy.Verified and perm.Claim.edit(Claim) and perm.Policy.edit(Claim) and perm.Policy.makeeditable(Claim)" 6/9/10 erawe not sure we need Edit button to be visible -->
+                <EditButtons
+                  cancelVisible="!Claim.Policy.Verified"
+                  editVisible="!Claim.Policy.Verified"
+                  updateVisible="!Claim.Policy.Verified"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

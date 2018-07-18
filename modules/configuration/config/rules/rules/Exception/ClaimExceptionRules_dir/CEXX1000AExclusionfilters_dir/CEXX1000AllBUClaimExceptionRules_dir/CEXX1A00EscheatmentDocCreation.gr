@@ -1,0 +1,81 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1A00 - Escheatment Doc Creation")
+internal class CEXX1A00EscheatmentDocCreation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var sendEscheatDoc:boolean=false;
+  var sendNote180:boolean=false;
+  var sendNote210:boolean=false;
+  var note : Note;
+  var noteBody: String;
+  var bundle : com.guidewire.pl.system.bundle.EntityBundleImpl;
+  var checks = find(chk in Check where chk.Claim == claim)
+  var skipCheck : boolean
+  var firstBulkInvoiceItem : BulkInvoiceItem
+  
+  for(msgCheck in checks.iterator()){
+    
+    //handle bulk check only process first line items check on the related BIN
+    if(msgCheck.Bulked) {
+      firstBulkInvoiceItem = msgCheck.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.InvoiceItems[0]
+     
+      if(msgCheck.BulkInvoiceItemInfo.BulkInvoiceItem == firstBulkInvoiceItem) {
+        skipCheck = false
+      }else {
+        skipCheck = true
+      }
+    //if the check is not bulked don't skip
+    }else if(!msgCheck.Bulked){
+      skipCheck = false   
+    }
+    
+    if(!skipCheck and msgCheck.PaymentMethod=="check" and msgCheck.Status == "issued" and msgCheck.IssueDate != null 
+        and msgCheck.numEscheatNoticesSent() ==0 and gw.api.util.DateUtil.daysSince( msgCheck.IssueDate ) >= 180 and msgCheck.EscheatStatusExt =="escheatable"){
+      sendEscheatDoc=true;
+      sendNote180=true;
+    }
+    else if(!skipCheck and msgCheck.PaymentMethod=="check" and msgCheck.Status== "issued" and msgCheck.IssueDate != null
+        and msgCheck.numEscheatNoticesSent() ==1 and gw.api.util.DateUtil.daysSince( msgCheck.IssueDate ) >= 210 and msgCheck.EscheatStatusExt =="escheatable"){
+      sendEscheatDoc=true;
+      sendNote210=true;
+    }
+    else{
+      //escheat not needed yet or already sent
+      continue;
+    }
+    if(sendEscheatDoc){
+      //Events must be fired off writeable bundles, so make one
+      bundle = new com.guidewire.pl.system.bundle.EntityBundleImpl() 
+      
+      msgCheck = bundle.loadBean(msgCheck.ID) as Check;
+      msgCheck.addEvent( "CreateEscheatmentDoc" );
+      
+      if(sendNote180){
+        noteBody = "6-month Escheat letter was created and mailed to "+ msgCheck.PayTo
+        note = msgCheck.Claim.addNote("check", noteBody)
+        note.Subject = "6-month Escheatment Notice "
+        bundle.add(note)
+      }else if(sendNote210){
+        noteBody = "7-month Escheat letter was created and mailed to "+ msgCheck.PayTo
+        note = msgCheck.Claim.addNote("check", noteBody)
+        note.Subject = "7-month Escheatment Notice "
+        bundle.add(note)
+      }
+      
+      sendEscheatDoc=false;
+      sendNote180=false;
+      sendNote210=false;
+      bundle.commit();
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().getDisplayName(), e, null )  
+}/*end00rule*/
+  }
+}

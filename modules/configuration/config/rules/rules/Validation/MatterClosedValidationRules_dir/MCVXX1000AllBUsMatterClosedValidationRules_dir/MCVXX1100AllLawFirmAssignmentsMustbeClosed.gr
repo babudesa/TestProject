@@ -1,0 +1,26 @@
+package rules.Validation.MatterClosedValidationRules_dir.MCVXX1000AllBUsMatterClosedValidationRules_dir
+
+@gw.rules.RuleName("MCVXX1100 - All Law Firm Assignments Must be Closed")
+internal class MCVXX1100AllLawFirmAssignmentsMustbeClosed {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists(ma in matter.MatterAssignmentsExt where
+        ma.StatusExt == AssignmentStatusExt.TC_OPEN) == true
+        
+        
+        
+/**
+ * If there are any open law firm assignments on the legal action when the 
+ * legal action is closed then throw an error message to the user.
+ *//*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var strErrorReason="You cannot close this Legal Action ("+ matter.Name+ ") because there are open Law Firm Assignments. Please close all assignments before closing the legal action."
+    matter.reject("newloss", strErrorReason, Null, Null) 
+    
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

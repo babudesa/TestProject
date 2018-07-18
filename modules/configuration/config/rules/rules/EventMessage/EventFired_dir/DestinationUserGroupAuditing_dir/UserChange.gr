@@ -1,0 +1,35 @@
+package rules.EventMessage.EventFired_dir.DestinationUserGroupAuditing_dir
+
+@gw.rules.RuleName("UserChange")
+internal class UserChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis User == true &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.LoadCommandID) /*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var u:User=messageContext.Root as User;
+
+  var body = templates.email.UserChanged.renderToString(u);
+
+
+  var emailAddy:String="";
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    emailAddy=ScriptParameters.ClaimCenterProdEmail;
+  }
+  else{
+    emailAddy=ScriptParameters.ClaimCenterDevEmail;
+  }
+  util.Email.sendMail(emailAddy, "User Change to " + u + " - ENV: " +gw.api.system.server.ServerUtil.getEnv(), body)
+}
+catch(e){
+  //Eat the exception, if this fails we don't want to limit functionality
+  //as this is just for root cause analysis
+  gw.api.util.Logger.logError("User Change Auditing Failed") 
+  var emailAddy = (java.lang.System.getProperty("gw.cc.env") == "prod" ? ScriptParameters.ClaimCenterProdEmail : ScriptParameters.ClaimCenterDevEmail)
+  util.Email.sendMail(emailAddy, "User Auditing Failed", e.StackTraceAsString)
+  e.printStackTrace()
+}/*end00rule*/
+  }
+}

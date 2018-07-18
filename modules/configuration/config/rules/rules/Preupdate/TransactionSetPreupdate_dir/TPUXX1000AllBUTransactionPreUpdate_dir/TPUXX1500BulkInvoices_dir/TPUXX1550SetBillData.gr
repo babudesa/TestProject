@@ -1,0 +1,30 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1500BulkInvoices_dir
+
+@gw.rules.RuleName("TPUXX1550 - Set Bill Data")
+internal class TPUXX1550SetBillData {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.BulkInvoiceItemInfo.BulkInvoiceItem.BillHolderExt != null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkSet = transactionSet as CheckSet
+var binType = checkSet.PrimaryCheck.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.BulkInvoiceTypeExt
+
+if(binType == BulkInvoiceType.TC_HEALTHSOLUTION || binType == BulkInvoiceType.TC_MITCHELL || binType == BulkInvoiceType.TC_ONECALLCARE){
+  gaic.import.bill.multi.MultiBillImporter.setBillDataOnPlaceholderCheck(checkSet)
+}else if(binType == BulkInvoiceType.TC_LIT_ADVISOR){
+  var holder = checkSet.PrimaryCheck.BulkInvoiceItemInfo.BulkInvoiceItem.BillHolderExt
+  var bundle = gw.transaction.Transaction.getCurrent()
+  var payment = checkSet.PrimaryCheck.Payments[0]
+  var injuryType = holder.WCInjuryType
+  
+  holder.remove() //the holder is no longer needed and can be removed      
+  payment.WCInjuryTypeExt = injuryType
+  
+  //add a callbackhandler to the current bundle, so that injury type can be set on the proper reserve
+  bundle.addBundleTransactionCallback(new util.gaic.billimport.BillProcessorCallBackHandler(checkSet.PrimaryCheck.Claim.PublicID, 
+                                                                                            injuryType, 
+                                                                                            payment.ReserveLine))
+}/*end00rule*/
+  }
+}

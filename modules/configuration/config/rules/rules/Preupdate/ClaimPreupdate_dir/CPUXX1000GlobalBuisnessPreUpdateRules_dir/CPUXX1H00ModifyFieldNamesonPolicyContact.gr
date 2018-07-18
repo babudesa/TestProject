@@ -1,0 +1,33 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1H00 - ModifyField Names on Policy Contact")
+internal class CPUXX1H00ModifyFieldNamesonPolicyContact {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+*  To allow certain fields on a Verified Policy (contact updates) to
+*  be updated by ClaimCenter and not replace these when an automated process updates, i.e. PRM nightly updates
+*  Sprint/Maintenance Release:Foundation Sprint  
+*  Author: Eric Rawe
+*  Date: 3/9/09
+*/
+claim.Policy.Verified==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+for(contact in claim.Contacts){
+  if(contact.Contact.VerifiedPolicyContactExt and contact.Contact.Changed){
+    if(claim.State == "draft"){
+      contact.Contact.modifiedFieldNamesNCW( claim )
+    }else{
+      contact.Contact.modifiedFieldNames(claim)//this calls the function from ContactSaveOnRefreshFunctions
+    }
+  }
+}
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}
+
+  /*end00rule*/
+  }
+}

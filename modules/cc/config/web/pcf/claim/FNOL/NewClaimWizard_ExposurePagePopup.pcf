@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    beforeCommit="validateExposures()"
+    canEdit="true"
+    id="NewClaimWizard_ExposurePagePopup"
+    parent="FNOLWizard()"
+    startInEditMode="true"
+    title="displaykey.Wizard.NewClaimWizard.NewClaimExposure.Edit">
+    <LocationEntryPoint
+      signature="NewClaimWizard_ExposurePagePopup(Claim : Claim, Exposure : Exposure)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Exposure"
+      type="Exposure"/>
+    <Screen
+      id="NewClaimWizard_ExposurePageScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+      </Toolbar>
+      <PanelRef
+        def="NewClaimExposureDV(Exposure)"
+        mode="Exposure.ExposureType"/>
+    </Screen>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+
+//Validates exposures
+function validateExposures() {
+  if(gw.api.system.CCConfigParameters.EnableClaimantCoverageUniquenessConstraint.Value and Claim.Exposures.hasMatch(\ e -> !e.isClaimantCoverageUnique()))
+      throw new UserDisplayableException(displaykey.Java.Error.Exposure.ClaimantCoverageNotUnique);
+}]]></Code>
+  </Popup>
+</PCF>

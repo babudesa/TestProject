@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Popup
+    afterCommit="util.gaic.EDW.EDWPartyFunctions.getInstance().sendABParties(externalContact.Source.loadContact(externalContact.Contact, true))"
+    beforeCancel="deleteNewRelatedContactsOnCancel()"
+    canEdit="externalContact.Source.supportsUpdate() and perm.Contact.editab(externalContact.Contact)"
+    canVisit="perm.Contact.viewab(externalContact.Contact)"
+    id="AddressBookContactDetailPopup"
+    returnType="Contact"
+    title="externalContact.Source.loadContact(externalContact.Contact, true).CloseDateExt != null ? externalContact.Source.loadContact(externalContact.Contact, true).DisplayName : displaykey.Web.ContactDetail.Title(externalContact.Contact)">
+    <LocationEntryPoint
+      signature="AddressBookContactDetailPopup(externalContact : contact.ExternalContact)"/>
+    <Variable
+      initialValue="new gw.api.contact.ProximitySearchPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="externalContact"
+      type="contact.ExternalContact"/>
+    <Variable
+      initialValue="externalContact.Source.loadContact(externalContact.Contact, true)"
+      name="contact"
+      type="Contact"/>
+    <ScreenRef
+      def="AddressBookContactDetailScreen(contact, externalContact.Source)"
+      mode="contact == null ? &quot;error&quot; : null"/>
+    <Code><![CDATA[function deleteNewRelatedContactsOnCancel(){
+  uses soap.MailingAddressToRelatedContacts.api.MailingAddressToRelatedContactsAPI
+  uses gw.api.soap.GWAuthenticationHandler
+  uses java.util.ArrayList
+
+  var api = new MailingAddressToRelatedContactsAPI()
+  api.addHandler(new GWAuthenticationHandler("su", "gw"))
+  
+  var conCons = api.getRelatedContacts(contact.AddressBookUID)
+  for(cc in contact.SourceRelatedContacts){
+    if(!conCons.contains(cc.SourceContact.AddressBookUID)){
+      cc.SourceContact.deleteFromAddressBook()
+    }
+  }
+}]]></Code>
+  </Popup>
+</PCF>

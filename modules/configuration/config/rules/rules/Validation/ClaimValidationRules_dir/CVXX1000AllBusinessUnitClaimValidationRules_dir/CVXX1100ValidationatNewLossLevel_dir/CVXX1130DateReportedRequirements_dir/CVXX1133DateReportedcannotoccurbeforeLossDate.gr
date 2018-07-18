@@ -1,0 +1,27 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1130DateReportedRequirements_dir
+
+@gw.rules.RuleName("CVXX1133 - Date Reported cannot occur before Loss Date")
+internal class CVXX1133DateReportedcannotoccurbeforeLossDate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ReportedDate!=null and 
+claim.LossDate!=null and
+gw.api.util.DateUtil.compareIgnoreTime(claim.ReportedDate,claim.LossDate)<0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if(claim.Policy.isPolicyInRefresh( 1 )){
+  claim.setPolicyRefreshFailed()
+}
+
+var msga = displaykey.Libraries.ClassExt.RptDateLossDate
+var msgb = displaykey.Libraries.ClassExt.ClaimsMadeLossDate
+
+if(claim.ClaimsMadePolicyExt == false){
+  claim.rejectField( "ReportedDate", "newloss", msga, null, null )
+}else{
+  claim.rejectField( "ReportedDate", "newloss", msgb, null, null )
+}
+
+/*end00rule*/
+  }
+}

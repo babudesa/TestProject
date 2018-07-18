@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableClaimContactRolesLV">
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="claimContact.addToRoles(ClaimContactRole)"
+      toRemove="ClaimContactRole.removeRoleOnly()"
+      validationLabel="displaykey.Web.ContactBasicsHeaderDV.Roles"
+      value="claimContact.Roles">
+      <Row
+        editable="ClaimContactRole.isEditableInELV()">
+        <RangeCell
+          editable="true"
+          enableSort="false"
+          id="Owner"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.Owner"
+          optionLabel="formatOwner(VALUE)"
+          postOnChange="true"
+          printWidth="0.35"
+          sortValueRange="false"
+          value="ClaimContactRole.Owner"
+          valueRange="claimContact.Claim.RoleOwners"
+          valueWidth="300"/>
+        <RangeCell
+          editable="true"
+          id="Role"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.Role"
+          printWidth="0.2"
+          value="ClaimContactRole.Role"
+          valueRange="ClaimContactRole.Owner.AllowedContactRolesForEntity"
+          valueWidth="200"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="IsActive"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.IsActive"
+          numCols="5"
+          printWidth="0.1"
+          value="ClaimContactRole.Active"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="Comments"
+          label="displaykey.LV.Claim.EditableClaimContactRoles.Comments"
+          numCols="10"
+          printWidth="0.35"
+          value="ClaimContactRole.Comments"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function formatOwner(owner : KeyableBean) : String {
+  var result : String;
+  // If it's a draft claim (i.e., a "new claim wizard" claim), then just print out the "DraftClaim" display key;
+  // otherwise, just use the default label (DisplayName). For injury incidents use the display name with injured party name
+  if (owner typeis Claim) {
+    var claim = owner;
+    if (claim.State == "draft") {
+      result = displaykey.LV.Claim.EditableClaimContactRoles.DraftClaim;
+    } else {
+      result = owner.DisplayName;
+    }
+  } else if (owner typeis InjuryIncident) {
+    result = (owner).DisplayNameWithInjuredParty
+  } else {
+    result = owner.DisplayName;
+  }
+  return result;
+}
+      
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,45 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAEQ100EquineGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAEQ150 - Equine Binder Sup Assign")
+internal class GAAEQ150EquineBinderSupAssign {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//* Defect ID : 7669
+TECHNICAL: multiple hardcoded activity patterns are causing errors in higher environments, i.e. WC INT. See attached emails.
+Replaced with activity code instead of activity public id by gyemula */
+ activity.ActivityPattern ==  util.custom_Ext.finders.findActivityPattern("eq_supreview_coverage") OR
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_supreview_100K")  OR
+//activity.ActivityPattern ==  ActivityPattern( "actpattern:1061" /* eq_supreview_coverage */ ) OR
+//activity.ActivityPattern == ActivityPattern( "actpattern:1060" /* eq_supreview_100K */ ) OR
+//1/27/10 erawe - removed eq_sup_unverifiedpolicy, defect 2935
+//activity.ActivityPattern == ActivityPattern( "actpattern:1066" /* eq_sup_unverifiedpolicy */ ) OR
+//activity.ActivityPattern == ActivityPattern( "actpattern:1058" /* eq_supreview_general */ ) OR
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_supreview_dead") OR
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("unable_to_void_check") OR
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("unable_to_stop_check") OR
+activity.ActivityPattern.Code == "eq_ca_letter_supv"
+//activity.ActivityPattern == ActivityPattern( "cc:39" /* eq_supreview_50K */ ) 
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/try{
+var unitManager:User = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType);
+var unitManagerGroup:Group = unitManager.AllGroups.first() as Group;
+
+if(activity.Claim.AssignedUser != activity.Claim.AssignedGroup.Supervisor){
+  activity.CurrentAssignment.assign(activity.Claim.AssignedGroup, activity.Claim.AssignedGroup.Supervisor);
+  actions.exit()
+  }else if (activity.Claim.AssignedUser == activity.Claim.AssignedGroup.Supervisor) {
+    activity.CurrentAssignment.assign(activity.Claim.AssignedGroup,activity.Claim.AssignedGroup.Parent.Supervisor)
+  }else{
+    activity.CurrentAssignment.assign( unitManagerGroup, unitManager );
+    actions.exit()
+}
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule().getDisplayName(), e, "" ) 
+}
+/*end00rule*/
+  }
+}

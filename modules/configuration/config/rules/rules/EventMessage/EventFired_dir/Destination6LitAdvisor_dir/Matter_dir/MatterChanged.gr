@@ -1,0 +1,40 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Matter_dir
+
+@gw.rules.RuleName("MatterChanged")
+internal class MatterChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName.equals("MatterChanged") or
+messageContext.EventName.equals("LSSSendOld")/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.MatterActivator
+
+var activator : MatterActivator = new MatterActivator()
+var matter = messageContext.Root as Matter;
+
+if (activator.isLOBUsingLSS(matter.Claim.LossType)) {
+
+  var changedAssignments = matter.MatterAssignmentsExt.where(\ m -> m.Changed)
+  var results = matter.ChangedFields.where(\ r -> !(r == "UpdateTime" || r == "BeanVersion" || r == "MatterAssignmentsExt"))
+
+  if(!results.Empty || messageContext.EventName.equals("LSSSendOld")){
+    for(assignment in matter.MatterAssignmentsExt){
+      util.gaic.LitAdvisorFunctions.sendNewMatter( messageContext, assignment );
+    }
+  }else{
+    for(assignment in changedAssignments){
+      var statusOrBudgetChanged = 
+              assignment.ChangedFields.where(\ r -> (
+                  r=="StaffingPlanExt" 
+                  || r=="BudgetExt" 
+                  || r=="MatterAssignmentStatusExt"))
+      if (statusOrBudgetChanged.Empty || assignment.New){
+        util.gaic.LitAdvisorFunctions.sendNewMatter( messageContext, assignment );
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,55 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100AllBUsAuthorityLimitRoutings_dir
+
+@gw.rules.RuleName("ARXX1130 - Prevent Re-approval")
+internal class ARXX1130PreventReapproval {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!exists(tran in transactionSet.Transactions where tran.Changed == true) &&
+transactionSet.BeanVersion != null && 
+(transactionSet.BeanVersion != 0 && transactionSet.Subtype == "CheckSet" && (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == typekey.CheckCategoryExt.TC_LIT_ADVISOR)  &&
+!util.user.GroupsHelper.isAGroupSupervisor(transactionSet.LastApprovingUser) and
+!util.user.GroupsHelper.isClaimManager(transactionSet.LastApprovingUser)  and
+transactionSet.LastApprovingUser != transactionSet.getSCOAssistUser() and
+!util.user.SCOHelper.isAnSCO(transactionSet.LastApprovingUser) and
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+ var lastApprovingUser = transactionSet.LastApprovingUser
+ var lastApprovingUserApprovalPath = util.approvals.ApprovalHelper.getApprovalPath(lastApprovingUser, transactionSet)
+ var approvalHistory = util.approvals.ApprovalHelper.getApprovalHistory(transactionSet)
+ var currentApprovalAssignedToUser = util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory)
+ var currentApprovalAssignedByUser = util.approvals.ApprovalHelper.getLastAssignedByUserInHistory(approvalHistory)
+ var lastFirstLevelAssignedByUser = util.approvals.ApprovalHelper.getLastApprovingFirstLevelUser(transactionSet)
+ 
+///if last approving user is the current assigned by user
+ if(lastApprovingUser == currentApprovalAssignedByUser && lastApprovingUser != currentApprovalAssignedToUser &&
+ util.user.GroupsHelper.areUsersInSameGroup(lastApprovingUser,lastFirstLevelAssignedByUser) &&
+ util.approvals.ApprovalHelper.userInApprovalPath(currentApprovalAssignedToUser, lastApprovingUserApprovalPath)) {
+   
+    var nextApprovingUser = currentApprovalAssignedToUser
+    var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+    transactionSet.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    actions.exit()
+    
+ //if last approving user is not the current assigned by user and the current assigned to user
+ //is in the last approving users approval path and the last approving user and the current
+ //assigned by user are not in the same group.
+ } else if(lastApprovingUser != currentApprovalAssignedByUser && util.approvals.ApprovalHelper.userInApprovalPath(currentApprovalAssignedToUser, lastApprovingUserApprovalPath) &&
+     util.user.GroupsHelper.areUsersInSameGroup(lastApprovingUser,lastFirstLevelAssignedByUser) && lastApprovingUser != currentApprovalAssignedToUser)  {
+    
+    var nextApprovingUser = currentApprovalAssignedToUser
+    var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+    transactionSet.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    actions.exit()
+
+ }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,28 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUAG1600 - First Notice of suit")
+internal class CPUAG1600FirstNoticeofsuit {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Generates activity when First Notice Suit radio is marked "Yes".
+  Sprint/Maintenance Release: EM 48 - Defect 5865
+  Author: Craig Mullin
+  Date: 2/7/13
+  Activity was being generated on closed claims. Per Corporate Claims, rule was updated 
+  to trigger only on open claims. 
+*/
+
+claim.FirstNoticeSuit==true 
+ and claim.Closed==false 
+ and not exists( 
+ Activity in claim.Activities
+    where (Activity.ActivityPattern.Code =="ab_first_notice")) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var pattern = util.custom_Ext.finders.findActivityPattern( "ab_first_notice")
+var activity = claim.createActivityFromPattern( null, pattern )
+
+activity.Description = "This claim has been marked as First Notice Suit. Review for reserve."
+activity.AssignedUser=claim.AssignedUser/*end00rule*/
+  }
+}

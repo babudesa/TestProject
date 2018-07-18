@@ -1,0 +1,29 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVAM1000AltMarketsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVAM1100 - All Alt Mrkts 50K warning")
+internal class TVAM1100AllAltMrkts50Kwarning {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet typeis CheckSet and !(transactionSet).PrimaryCheck.Bulked) or
+transactionSet typeis ReserveSet
+
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var altmrkwarning = gw.api.util.StringUtil.formatNumber(ScriptParameters.AltMrktResPayWarning as java.lang.Double, "$#,###")
+if (transactionSet typeis CheckSet){
+var checkAmount = transactionSet.PrimaryCheck.GrossAmountExt
+    if (checkAmount >= (altmrkwarning as java.math.BigDecimal)and transactionSet.New){
+      transactionSet.reject(null, null, "payment", "Reserve/Payment is " + altmrkwarning + " or greater, verify amount")
+    }
+}
+
+if (transactionSet typeis ReserveSet){
+  for (res in transactionSet.AllTransactions.where(\ t -> t.New and t.Amount >= (altmrkwarning as java.math.BigDecimal))){
+    transactionSet.reject(null, null, "payment", "Reserve/Payment is " + altmrkwarning + " or greater, verify amount")
+  }
+}
+/*end00rule*/
+  }
+}

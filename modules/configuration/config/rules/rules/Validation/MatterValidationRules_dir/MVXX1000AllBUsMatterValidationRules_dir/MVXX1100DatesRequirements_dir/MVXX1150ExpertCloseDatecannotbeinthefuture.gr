@@ -1,0 +1,23 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1150 - Expert Close Date cannot be in the future")
+internal class MVXX1150ExpertCloseDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("ExpertCloseDate") and
+matter.ExpertCloseDate != null and
+gw.api.util.DateUtil.compareIgnoreTime( matter.ExpertCloseDate, gw.api.util.DateUtil.currentDate() ) > 0
+/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  msg="Please provide a Expert Close Date that is not a future date."
+  matter.rejectField( "ExpertCloseDate", "newloss", msg,Null, Null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

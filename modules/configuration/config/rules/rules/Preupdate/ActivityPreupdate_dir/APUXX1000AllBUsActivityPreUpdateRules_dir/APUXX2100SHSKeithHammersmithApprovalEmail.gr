@@ -1,0 +1,51 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUXX1000AllBUsActivityPreUpdateRules_dir
+
+@gw.rules.RuleName("APUXX2100 - SHS Keith Hammersmith Approval Email")
+internal class APUXX2100SHSKeithHammersmithApprovalEmail {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/User.util.CurrentUser!= activity.AssignedUser and
+activity.Claim.LossType== LossType.TC_SHSAUTO and
+activity.AssignedUser.DisplayName == "Keith Hammersmith" and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment"))and activity.Status!="complete"
+
+/*This rule is related to APUXX1300.  The logic had to be separate from the other rule to reduce confusion
+* since Ketih is not specified as a "unitmanager" in the scriptparameters.xml
+*//*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+ var emailBody = templates.email.ApprovalActivity.renderToString(activity)
+ 
+ try{
+ 
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+      
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {     
+
+        
+   //Send approval email to Keith Hammersmith
+     gw.api.email.EmailUtil.sendEmailWithBody(null,
+      "khammersmith@GAIG.COM", "Keith Hammersmith", "ClaimCenterSupport@gaig.com",
+      "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null,
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+        ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+         "Approval Activity Notification", emailBody)   
+    }
+
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,87 @@
+#*
+Sample Velocity template for duplicate check SQL.
+INPUT:  $Util -- an instance of com.guidewire.pl.domain.duplicatesearch.VelocityUtil that can be used to access various util classes.
+        $Check -- the check we are testing for duplicates
+        $PayeeTaxIds -- a comma separated list of payee tax IDs for this check.  This is a workaround to get around limitations in Velocity.
+OUTPUT: The SQL that should produce a list of check IDs that match this check, or an empty list of none match
+
+-----------------------------------------------------------------------------
+GAIC Changes for duplicate check logic
+
+Revision History:
+nscavelli 12/20/06 - Added additional field Claimant to include as a dup
+-----------------------------------------------------------------------------
+*#
+
+Select cc_check_head.ID col0
+FROM cc_check cc_check_head
+INNER JOIN (
+  cc_transaction cc_transaction_1
+    INNER JOIN cc_transactionlineitem cc_transactionlineitem_2
+      ON cc_transaction_1.id=cc_transactionlineitem_2.TransactionID
+    ## nscavelli: Added following 2 INNER JOINS to include claimant (exposure level)
+    INNER JOIN
+		cc_exposure ON cc_transaction_1.ExposureID = cc_exposure.ID
+	INNER JOIN
+		cc_contact claimantcontact ON cc_exposure.ClaimantDenormID = claimantcontact.ID
+)
+ON cc_check_head.id=cc_transaction_1.CheckID
+AND cc_transaction_1.Retired = 0
+WHERE
+(
+#set($emptyWHERE=true)
+#if ($string.isNotBlank($Check.payTo))
+  cc_check_head.PayTo = $Util.sql.getSQLStringValue($Check.payTo)
+#set($needsOR=true)
+#set($emptyWHERE=false)
+#end
+## Complex part of the query. If we have payees, join in (through claim contact) all contacts that have the
+## checkpayee role (id=10011) and search on the contact tax ID list passed in to the template.
+#if ($Util.getArrayLength($Check.payees) > 0)
+#if ($needsOR)
+  OR
+#end
+    cc_check_head.ID IN (
+    Select cc_checkpayee_head.CheckID col0
+    FROM cc_checkpayee cc_checkpayee_head
+    INNER JOIN (
+      cc_claimcontact cc_claimcontact_1
+        INNER JOIN cc_contact cc_contact_3
+          ON cc_contact_3.id=cc_claimcontact_1.ContactID
+          AND cc_contact_3.Retired = 0
+          AND cc_contact_3.TaxID IN ( $PayeeTaxIds )
+          INNER JOIN cc_claimcontactrole cc_claimcontactrole_2
+            ON cc_claimcontact_1.id=cc_claimcontactrole_2.ClaimContactID
+            AND cc_claimcontactrole_2.Role = $Util.getTypeCodeId("ContactRole", "checkpayee")
+    ) ON cc_claimcontact_1.id=cc_checkpayee_head.ClaimContactID
+      AND cc_claimcontact_1.Retired = 0
+  )
+#set($emptyWHERE=false)
+#end
+#if ($emptyWHERE)
+  1=1
+#end
+)
+#if ($OtherBeanIDsToIgnore)
+AND cc_check_head.Id not in ($Check.id, $OtherBeanIDsToIgnore)
+#end
+#if (!$OtherBeanIDsToIgnore)
+AND cc_check_head.Id <> $Check.id
+#end
+#if ($Check.servicePdStart)
+AND cc_check_head.ServicePdEnd > $Util.sql.getSQLStringValue($Check.servicePdStart)
+#end
+#if ($Check.servicePdEnd)
+AND cc_check_head.ServicePdStart < $Util.sql.getSQLStringValue($Check.servicePdEnd)
+#end
+AND cc_check_head.Retired = 0
+AND cc_check_head.ClaimID = $Check.claimID
+
+## nscavelli: Add claimant to SQL WHERE clause
+#if ($Check.FirstPayment.Exposure.Claimant)
+AND claimantcontact.ID = $Check.FirstPayment.Exposure.Claimant.ID
+#end
+
+GROUP BY cc_check_head.ID
+## This 'having' is to test the check sum amount.  To remove, remove the 'group by' and the 'having' line below.
+HAVING SUM(cc_transactionlineitem_2.Amount) = $Check.getGrossAmount()

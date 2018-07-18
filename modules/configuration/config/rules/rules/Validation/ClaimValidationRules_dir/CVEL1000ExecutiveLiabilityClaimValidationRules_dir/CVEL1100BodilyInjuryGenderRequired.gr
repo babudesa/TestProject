@@ -1,0 +1,19 @@
+package rules.Validation.ClaimValidationRules_dir.CVEL1000ExecutiveLiabilityClaimValidationRules_dir
+
+@gw.rules.RuleName("CVEL1100 - Bodily Injury Gender Required")
+internal class CVEL1100BodilyInjuryGenderRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.BodilyInjuryExt == true
+
+// cannot set Bodily Injury to true if gender is missing for claimant on a feature/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for (exp in claim.Exposures) {
+  // call the Exposure Validation rule: EVXX1180 - CMS Medicare - Gender Required
+    if (rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1100NewLossFieldRequirements_dir.EVXX1180CMSMedicareGenderRequired.doCondition(exp) == true){
+      rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1100NewLossFieldRequirements_dir.EVXX1180CMSMedicareGenderRequired.doAction(exp, actions)
+    }
+}/*end00rule*/
+  }
+}

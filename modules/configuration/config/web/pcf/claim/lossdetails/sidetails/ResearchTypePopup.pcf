@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Popup
+    canEdit="perm.Claim.edit(Claim) and (perm.System.editSIUDataResearch||perm.System.editSIUInvestigation)"
+    id="ResearchTypePopup"
+    parent="SIDetails(Claim)"
+    startInEditMode="true"
+    title="displaykey.NVV.SIU.ResearchType.Type">
+    <LocationEntryPoint
+      signature="ResearchTypePopup(Claim : Claim, DataResearchParty : DataResearchPartyExt)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="DataResearchParty"
+      type="DataResearchPartyExt"/>
+    <Screen
+      id="ResearchTypePopupScreen">
+      <Toolbar>
+        <EditButtons
+          cancelVisible="true"
+          updateVisible="true"/>
+      </Toolbar>
+      <PanelSet
+        id="ResearchTypePanelSet">
+        <DetailViewPanel
+          id="ResearchTypeDV">
+          <InputColumn>
+            <ListViewInput
+              editable="true">
+              <Toolbar>
+                <IteratorButtons/>
+              </Toolbar>
+              <ListViewPanel
+                id="ResearchTypeLV">
+                <RowIterator
+                  editable="true"
+                  elementName="Type"
+                  hideCheckBoxesIfReadOnly="true"
+                  toAdd="DataResearchParty.addToResearchTypes(Type)"
+                  toRemove="DataResearchParty.removeFromResearchTypes(Type)"
+                  value="DataResearchParty.ResearchTypes">
+                  <Row>
+                    <RangeCell
+                      editable="true"
+                      id="ResearchType"
+                      label="displaykey.NVV.SIU.ResearchType.Type"
+                      required="true"
+                      unique="true"
+                      value="Type.ResearchType"
+                      valueRange="getTFResearchType()"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </ListViewInput>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelSet>
+    </Screen>
+    <Code><![CDATA[function getTFResearchType() :List {
+  var returnList: List<typekey.ResearchTypeExt> = typekey.ResearchTypeExt.TF_DATARESEARCH.TypeKeys
+  return returnList.toList()
+}]]></Code>
+  </Popup>
+</PCF>

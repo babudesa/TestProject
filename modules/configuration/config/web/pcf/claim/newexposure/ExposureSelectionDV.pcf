@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ExposureSelectionDV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.new.exposure.NewExpCvgDetailsPanelSet.exposuretype.exposureTypeChoice"/>
+      <ListViewInput>
+        <Toolbar/>
+        <ListViewPanel
+          id="exposureTypesLV">
+          <RowIterator
+            editable="false"
+            elementName="PEMI"
+            value="isWCClaim ? util.exposures.ExposureMenuUtils.getExposureTypesForWCCoverage(Coverage, Claim) : util.exposures.ExposureMenuUtils.getExposureTypesForCoverage(Coverage)">
+            <Row>
+              <ContentCell
+                id="Select">
+                <Link
+                  action="if(exists(exp in Claim.Exposures where exp.Coverage.ClaimsMadeIndicatorExt != Coverage.ClaimsMadeIndicatorExt)){GeneralErrorWorksheet.goInWorkspace(displaykey.new.exposure.NewExpCvgDetailsPanelSet.exposuretype.select.CovError)}else{ NewExposure.go(Claim, Coverage.Type, PEMI.CoverageSubType, Coverage)}"
+                  id="SelectCell"
+                  label="displaykey.new.exposure.NewExpCvgDetailsPanelSet.exposuretype.select"
+                  styleClass="miniButton"/>
+              </ContentCell>
+              <Cell
+                id="FeatureName"
+                label="displaykey.new.exposure.NewExpCvgDetailsPanelSet.exposuretype.FeatureType"
+                value="PEMI.ExposureType"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,392 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="FNOLWizardFindPolicyPanelSet"
+    mode="Search">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Wizard.PolicySummary"
+      name="selectedPolicySummary"
+      type="PolicySummary"/>
+    <Variable
+      initialValue="initPolicySearchCriteria()"
+      name="policySearchCriteria"
+      type="PolicySearchCriteria"/>
+    <Variable
+      initialValue="Wizard.getAvailableClaimModes( Wizard.PolicySummary.PolicyType )"
+      name="claimModeArray"
+      type="claim.NewClaimMode[]"/>
+    <SearchPanel
+      cachingEnabled="false"
+      criteriaName="PolicySearch"
+      resultsName="PolicySummaryList"
+      search="policySearchCriteria.performSearch()"
+      searchCriteria="policySearchCriteria"
+      searchOnEnter="claim.LossType != null"
+      searchOnRefresh="false"
+      searchResultsType="PolicySummaryQuery">
+      <DetailViewPanel>
+        <InputColumn>
+          <TextInput
+            editable="true"
+            focusOnStartEditing="true"
+            id="policyNumber"
+            label="displaykey.Web.SearchFindPolicyPanelSet.SearchPanel.PolicyNumber.Label"
+            maxChars="20"
+            value="policySearch.PolicyNumber"/>
+          <TextInput
+            editable="true"
+            id="Firstname"
+            label="displaykey.NVV.Policy.PolicySearch.Policy.FirstName"
+            value="PolicySearch.FirstName"/>
+          <TextInput
+            editable="true"
+            id="Lastname"
+            label="displaykey.NVV.Policy.PolicySearch.Policy.LastName"
+            value="PolicySearch.LastName"/>
+          <TextInput
+            editable="true"
+            id="org"
+            label="displaykey.NVV.Policy.PolicySearch.Policy.CompanyName"
+            value="PolicySearch.CompanyName"/>
+          <Input
+            editable="true"
+            id="PolicyType"
+            label="displaykey.NVV.Policy.PolicySearch.Policy.PolicyType"
+            value="PolicySearch.PolicyType"/>
+          <DateInput
+            editable="true"
+            id="date"
+            label="displaykey.NVV.Policy.PolicySearch.Policy.LossDate"
+            validationExpression=""
+            value="PolicySearch.LossDate"/>
+        </InputColumn>
+        <InputColumn>
+          <InputSetRef
+            def="FNOLWizard_PolicySearchInputSet(Claim, policySearchCriteria)"
+            mode="policySearchCriteria.InsuredAddress.Country != null ? policySearchCriteria.InsuredAddress.Country : gw.api.admin.BaseAdminUtil.getDefaultCountry()"/>
+        </InputColumn>
+        <InputFooterSection>
+          <InputSet>
+            <ContentInput
+              id="searchBtns"
+              labelAbove="true">
+              <Link
+                action="resetVariables(); util.SearchUtil.search(); if (PolicySummaryList.getCount() == 1) {selectPolicyRow(PolicySummaryList.getFirstResult(), currentLocation as pcf.api.Wizard);}"
+                available="selectedPolicySummary == null"
+                default="true"
+                id="Search"
+                label="displaykey.Button.Search"
+                shortcut="S"
+                styleClass="bigButton"
+                visible="true"/>
+              <Link
+                action="util.SearchUtil.reset(); resetVariables(); policySearchCriteria.resetPolicySearchCriteria(); "
+                available="selectedPolicySummary == null"
+                id="Reset"
+                label="displaykey.Button.Reset"
+                shortcut="R"
+                styleClass="bigButton"
+                visible="true"/>
+            </ContentInput>
+          </InputSet>
+        </InputFooterSection>
+      </DetailViewPanel>
+      <PanelRef>
+        <Toolbar/>
+        <ListViewPanel
+          id="PolicyResultLV">
+          <RowIterator
+            editable="false"
+            elementName="PolicySummary"
+            pickValue=""
+            value="Wizard.getPolicySummariesOrSelected(PolicySummaryList, selectedPolicySummary)">
+            <Row
+              highlighted="PolicySummary.isSamePolicySummary( selectedPolicySummary)">
+              <ContentCell
+                id="Select"
+                visible="true">
+                <Link
+                  action="selectPolicyRow(policySummary, currentLocation as pcf.api.Wizard)"
+                  confirmMessage="displaykey.Java.Validation.FindPolicyPanelSet.Unselect"
+                  id="selectButton"
+                  label="displaykey.Web.SearchFindPolicyPanelSet.PolicyResultLV.Select.Label"
+                  shortcut="e"
+                  showConfirmMessage="Claim.Policy != null and Claim.Policy.PolicyType != policySummary.PolicyType"
+                  styleClass="miniButton"
+                  visible="selectedPolicySummary == null"/>
+                <Link
+                  action="resetVariables(); Wizard.resetSteps(); util.SearchUtil.search();"
+                  confirmMessage="displaykey.Java.Validation.FindPolicyPanelSet.Unselect"
+                  id="unselectButton"
+                  label="displaykey.Web.SearchFindPolicyPanelSet.PolicyResultLV.Unselect.Label"
+                  shortcut="U"
+                  showConfirmMessage="Claim.Policy != null"
+                  styleClass="miniButton"
+                  visible="selectedPolicySummary != null"/>
+              </ContentCell>
+              <Cell
+                action="PolicySummaryInfoPopup.push(selectedPolicySummary == null ? PolicySummary : selectedPolicySummary)"
+                id="PolicyNumber"
+                label="displaykey.LV.Policy.PolicySearchResult.PolicySearch.PolicyNumber"
+                value="PolicySummary.PolicyNumber"
+                wrap="false"/>
+              <Cell
+                id="Insured"
+                label="displaykey.LV.Policy.PolicySearchResult.PolicySearch.Insured"
+                value="PolicySummary.InsuredName"
+                wrap="false"/>
+              <Cell
+                id="Address"
+                label="displaykey.Web.Address.Default.Address"
+                value="PolicySummary.Address"/>
+              <Cell
+                id="City"
+                label="displaykey.Web.Address.Default.City"
+                value="PolicySummary.City"/>
+              <Cell
+                id="State"
+                label="displaykey.Web.Address.Default.State"
+                value="PolicySummary.State"
+                visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+              <Cell
+                id="Zip"
+                label="displaykey.Web.Address.US.ZIP"
+                value="PolicySummary.PostalCode"/>
+              <Cell
+                id="Effective"
+                label="displaykey.LV.Policy.PolicySearchResult.PolicySearch.Effective"
+                value="PolicySummary.EffectiveDate"/>
+              <Cell
+                id="Expiration"
+                label="displaykey.LV.Policy.PolicySearchResult.PolicySearch.Expiration"
+                value="PolicySummary.ExpirationDate"/>
+              <Cell
+                id="Type"
+                label="displaykey.LV.Policy.PolicySearchResult.PolicySearch.Type"
+                value="PolicySummary.PolicyType"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </PanelRef>
+    </SearchPanel>
+    <DetailViewPanel
+      visible="selectedPolicySummary != null">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.SearchFindPolicyPanelSet.NewClaimLabel"/>
+        <Input
+          editable="true"
+          id="ClaimNumber2"
+          label="displaykey.NVV.Claim.SubView.NewClaimGeneral.Claim.ClaimNumber"
+          required="true"
+          validationExpression="!Claim.DuplicateClaimNumber ? null : displaykey.Java.NewClaimWizard.Error.ClaimNumberNotUnique(Claim.ClaimNumber)"
+          value="Claim.ClaimNumber"
+          visible="!Claim.ClaimNumberGenerationEnabled"/>
+        <DateInput
+          dateFormat="short"
+          editable="true"
+          id="Claim_LossDate"
+          label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.LossDate"
+          required="true"
+          validationExpression="(Claim.LossDate != null and Claim.LossDate &gt; util.DateUtil.currentDate()) ? displaykey.Java.Validation.Date.ForbidFuture : (Claim.LossDate &gt;= selectedPolicySummary.EffectiveDate and Claim.LossDate &lt;= selectedPolicySummary.ExpirationDate ? null : displaykey.Java.Validation.FindPolicyPanelSet.LossDate)"
+          value="Claim.LossDate"/>
+        <DateInput
+          editable="true"
+          id="Claim_lossTime"
+          label="displaykey.Web.SearchFindPolicyPanelSet.Time.Label"
+          timeFormat="short"
+          value="Claim.LossDate"/>
+        <RangeRadioInput
+          confirmMessage="displaykey.Java.Validation.SelectPolicy.Warnings.ChangingClaimType"
+          editable="true"
+          id="ClaimMode"
+          label="displaykey.NVV.Claim.NewClaimSelectType.Claim.LossType"
+          onChange="setClaimFirstAndFinalStatus(); removeAutoCreatedExposuresAndIncidents();"
+          postOnChange="true"
+          required="true"
+          showConfirmMessage="!Wizard.AtHighWaterMark"
+          showNoneSelected="false"
+          sortValueRange="false"
+          stacked="true"
+          value="Wizard.ClaimMode"
+          valueRange="claimModeArray"/>
+      </InputColumn>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.SearchFindPolicyPanelSet.ClaimHistory.Label"
+          visible="isClaimHistoryVisible()"/>
+        <ListViewInput
+          visible="isClaimHistoryVisible()">
+          <Toolbar/>
+          <ListViewPanel
+            id="otherClaimLV">
+            <RowIterator
+              editable="false"
+              elementName="otherClaim"
+              value="Claim.findPriorClaimsByPolicyNumber(selectedPolicySummary.PolicyNumber, {}) as PriorClaimViewQuery">
+              <IteratorSort
+                sortBy="otherClaim.LossDate"
+                sortDirection="descending"
+                sortOrder="1"/>
+              <Row
+                highlighted="otherClaim.State != &quot;closed&quot;">
+                <Cell
+                  id="otherStatus"
+                  label="displaykey.LV.Claim.DuplicateClaimSearchResults.Claims.Status"
+                  value="otherClaim.State"/>
+                <Cell
+                  action="gotoClaimFile(CurrentLocation as pcf.api.Wizard, otherClaim.Claim)"
+                  id="otherID"
+                  label="displaykey.LV.Claim.DuplicateClaimSearchResults.Claims.ID"
+                  value="otherClaim.ClaimNumber"
+                  wrap="false"/>
+                <Cell
+                  id="otherLossDate"
+                  label="displaykey.LV.Claim.DuplicateClaimSearchResults.Claims.LossDate"
+                  sortDirection="descending"
+                  value="otherClaim.LossDate"/>
+                <Cell
+                  id="otherInsured"
+                  label="displaykey.Web.SearchFindPolicyPanelSet.otherClaimLV.Description.Label"
+                  value="otherClaim.Description"
+                  width="200"/>
+                <Cell
+                  enableSort="false"
+                  id="otherPolicyID"
+                  label="displaykey.Web.SearchFindPolicyPanelSet.otherClaimLV.Reported.Label"
+                  value="otherClaim.ReportedDate"
+                  wrap="false"/>
+                <Cell
+                  action="UserContactDetailPopup.push(otherclaim.claim.AssignedUser)"
+                  enableSort="false"
+                  id="otherClaimant"
+                  label="displaykey.Web.SearchFindPolicyPanelSet.otherClaimLV.AssignTo.Label"
+                  value="otherClaim.AssignedUserDisplayName"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+      </InputColumn>
+    </DetailViewPanel>
+    <Code><![CDATA[function initPolicySearchCriteria() : PolicySearchCriteria {
+  if (Wizard.PolicySearchCriteria != null) {
+    return Wizard.PolicySearchCriteria;
+  }
+  else {
+    var searchCriteria = new PolicySearchCriteria();
+    searchCriteria.PolicyType = User.util.getCurrentUser().PolicyType;  //set user default
+    return searchCriteria
+  }
+}
+
+function setClaimFirstAndFinalStatus(){
+  if("AutoFirstAndFinal" == Wizard.ClaimMode.QuickClaimMode.Mode) {
+    Claim.FirstAndFinal = true
+  } else {
+    /* if switching from Quick Claim auto to normal Auto, clear reporter
+       if it is not a Person */
+    if(Claim.reporter!=null and not(Claim.reporter typeis Person)) {
+      Claim.reporter = null
+    }
+  }
+}
+
+function removeAutoCreatedExposuresAndIncidents() {
+  for(exposure in Claim.Exposures) {
+    Wizard.removeExposureFromAssignments(exposure)
+    Claim.removeFromExposures(exposure)
+  }
+  for(incident in Claim.Incidents) {
+    Claim.removeFromIncidents(incident)
+  }
+}
+
+function resetVariables() {
+  selectedPolicySummary = null;
+  Claim.LossDate = null;
+  Claim.ClaimNumber = null;
+  Wizard.QuickClaim = null;
+  Wizard.PolicyDescription = null
+  Claim.LossType = null;
+}
+
+function selectPolicyRow(policySummary : PolicySummary, location : pcf.api.Wizard) {
+  var needReset : boolean = false;
+  if ((Claim.Policy != null) &&
+      (Claim.Policy.PolicyNumber != policySummary.PolicyNumber)){
+      Wizard.resetClaimForPolicyChange()
+      resetVariables()
+  }
+
+  selectedPolicySummary = policySummary;
+  Wizard.setPolicyDescription( policySummary );
+  Claim.LossDate = policySearchCriteria.LossDate;
+  Wizard.savePolicySearch(policySearchCriteria, policySummary);
+  claimModeArray = Wizard.getAvailableClaimModes(policySummary.PolicyType);
+
+  //set user default claim loss type and quick claim mode
+  var lossTypeFound : boolean = false;
+  if (User.util.getCurrentUser().LossType != null) {
+    for (lossType in Wizard.getAvailableLossTypes(policySummary.PolicyType)) {
+      //if user default loss type is in the list of available loss types, the Wizard loss Type will be set to the default,
+      //set needReset and claimMode accordingly
+      if (User.util.getCurrentUser().LossType == lossType) {
+        if (Wizard.LossType != null and Wizard.LossType != User.util.getCurrentUser().LossType) {
+          needReset = true;
+        }
+        Wizard.setClaimMode(User.util.getCurrentUser().LossType, User.util.getCurrentUser().QuickClaim as String);
+        lossTypeFound = true;
+        break;
+      }
+    }
+  }
+
+  if (!lossTypeFound) {
+    if (Wizard.LossType != null and Wizard.LossType != claimModeArray[0].LossType) {
+      needReset = true;
+    }
+    Wizard.ClaimMode = claimModeArray[0];
+  }
+  Claim.LossType = Wizard.LossType;
+  if (needReset) {
+    //if the claim loss type has changed, then must reset the wizard by reentering the wizard.
+    var lossDate = policySearchCriteria.LossDate;
+    var searchCriteriaAndSummary = new claim.NewClaimPolicySearchCriteriaAndSummary(policySearchCriteria, selectedPolicySummary);
+    var oldClaimMode = Wizard.ClaimMode
+    var oldPageMode = Wizard.PageMode
+    location.cancel();
+    pcf.FNOLWizard.go(searchCriteriaAndSummary, oldClaimMode, lossDate, oldPageMode);
+  } else {
+    Wizard.resetSteps()
+    Wizard.setHighWaterMarkAsCurrentStep();
+  }
+}
+
+function gotoClaimFile(location : pcf.api.Wizard, oldClaim : Claim) {
+  location.cancel()
+  pcf.ClaimForward.go(oldClaim)
+}
+
+function isClaimHistoryVisible() : boolean {
+  return
+    selectedPolicySummary.PolicyType == PolicyType.TC_AUTO_PER
+    or selectedPolicySummary.PolicyType == PolicyType.TC_TRAVEL_PER
+    or selectedPolicySummary.PolicyType == PolicyType.TC_HOMEOWNERS
+}
+function search (policySearchResult : PolicySummaryQuery, location : pcf.api.Wizard) {
+  resetVariables();
+  util.SearchUtil.search();
+  if (policySearchResult.getCount() == 1) {
+    selectPolicyRow(policySearchResult.getFirstResult(), location);
+  }
+}]]></Code>
+  </PanelSet>
+</PCF>

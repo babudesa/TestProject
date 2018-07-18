@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <InputSet
+    id="PolicySearchPolicyInputSet">
+    <Require
+      name="PolicySearchCriteria"
+      type="PolicySearchCriteria"/>
+    <Require
+      name="lossdate"
+      type="pcf_gs.ClaimsMadeVisible_PageProc"/>
+    <Require
+      name="verifiedPolicyInfo"
+      type="util.custom_Ext.VerifiedPolicyInfo"/>
+    <Label
+      label="displaykey.NVV.Policy.PolicySearch.Policy"/>
+    <Input
+      editable="true"
+      id="PolicyNumber"
+      label="displaykey.NVV.Policy.PolicySearch.Policy.PolicyNumber"
+      onChange="PolicySearchCriteria.NewSearchExt = false; if (PolicySearchCriteria.PolicyNumber != null)PolicySearchCriteria.PolicyNumber = PolicySearchCriteria.PolicyNumber.toUpperCase()"
+      postOnChange="true"
+      value="PolicySearchCriteria.PolicyNumber"/>
+    <Input
+      editable="true"
+      id="AnimalName"
+      label="displaykey.NVV.Policy.PolicySearch.Policy.AnimalName"
+      onChange="PolicySearchCriteria.NewSearchExt = true"
+      postOnChange="true"
+      value="PolicySearchCriteria.ex_PropertyName"
+      visible="PolicySearchCriteria.LossType == &quot;EQUINE&quot;"/>
+    <Input
+      available="lossDateAvail()"
+      editable="true"
+      id="LossDate"
+      label="displaykey.NVV.Policy.PolicySearch.Policy.LossDate"
+      onChange="PolicySearchCriteria.NewSearchExt = true; lossdate.lossdate = false"
+      postOnChange="true"
+      requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+      required="true"
+      value="PolicySearchCriteria.LossDate"/>
+    <DateInput
+      available="lossdate.Lossdate"
+      dateFormat="short"
+      editable="true"
+      id="ClaimsMadeDate"
+      label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.MadeDate"
+      onChange="PolicySearchCriteria.LossDate = PolicySearchCriteria.ClaimsMadeDateExt; PolicySearchCriteria.NewSearchExt = true; checkForClaimsMade()"
+      postOnChange="true"
+      requestValidationExpression="VALUE != null and gw.api.util.DateUtil.compareIgnoreTime(VALUE,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+      required="false"
+      validationExpression="PolicySearchCriteria.ClaimsMadeDateExt == null || gw.api.util.DateUtil.compareIgnoreTime(PolicySearchCriteria.ClaimsMadeDateExt,util.DateUtil.currentDate())&lt;=0 ? null : displaykey.Java.Validation.Date.ForbidFuture"
+      value="PolicySearchCriteria.ClaimsMadeDateExt"
+      visible="IsClaimsMadeVisible()"/>
+    <Input
+      editable="true"
+      id="Vin"
+      label="displaykey.NVV.Policy.PolicySearch.Policy.Vin"
+      onChange="PolicySearchCriteria.NewSearchExt = true"
+      postOnChange="true"
+      required="false"
+      value="PolicySearchCriteria.Vin"
+      visible="PolicySearchCriteria.LossType == &quot;AUTO&quot;"/>
+    <Input
+      editable="true"
+      id="PropertyCity"
+      label="displaykey.NVV.Policy.PolicySearch.Policy.PropertyCity"
+      onChange="PolicySearchCriteria.NewSearchExt = true"
+      postOnChange="true"
+      required="false"
+      value="PolicySearchCriteria.PropertyAddress.City"
+      visible="PolicySearchCriteria.LossType == &quot;PR&quot; || PolicySearchCriteria.LossType == &quot;GL&quot; || PolicySearchCriteria.LossType == &quot;WC&quot;"/>
+    <!-- <Input
+      editable="true"
+      id="PropertyState"
+      label="PolicySearchCriteria.PropertyAddress.Country.Code == &quot;CA&quot; ? displaykey.Web.Address.CA.Province :displaykey.Web.Address.Default.State"
+      required="false"
+      value="PolicySearchCriteria.PropertyAddress.State"
+      visible="(PolicySearchCriteria.LossType == &quot;PR&quot; || PolicySearchCriteria.LossType == &quot;GL&quot; || PolicySearchCriteria.LossType == &quot;WC&quot;) and gw.api.address.CountryAddressFields.DefaultCountryHasStates"/> -->
+    <Code><![CDATA[function checkForClaimsMade(){
+  if(PolicySearchCriteria.ClaimsMadeDateExt != null){
+       PolicySearchCriteria.ClaimsMadePolicyExt = true
+  }
+}
+
+function lossDateAvail() : Boolean{
+  var avail:boolean = true
+  if(PolicySearchCriteria.LossType == "EXECLIABDIV" or PolicySearchCriteria.LossType == "PROFLIABDIV" or PolicySearchCriteria.LossType == "ENVLIAB" or PolicySearchCriteria.LossType == LossType.TC_SPECIALTYES  or PolicySearchCriteria.LossType == typekey.LossType.TC_MERGACQU  or PolicySearchCriteria.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+    if(PolicySearchCriteria.ClaimsMadeDateExt != null){
+      avail = false}
+  }
+  return avail
+}
+
+
+function IsClaimsMadeVisible() : boolean {
+  var isVisible : boolean = false
+  switch(PolicySearchCriteria.LossType) {
+    case LossType.TC_EXECLIABDIV :
+      return true
+    case LossType.TC_PROFLIABDIV :
+      return true
+    case LossType.TC_ENVLIAB :
+      return true
+    case LossType.TC_SPECIALTYES :
+      return true
+    case LossType.TC_MERGACQU :
+      return true
+    case LossType.TC_SPECIALHUMSERV :
+      return true  
+    default:
+      return false
+  }
+}]]></Code>
+  </InputSet>
+</PCF>

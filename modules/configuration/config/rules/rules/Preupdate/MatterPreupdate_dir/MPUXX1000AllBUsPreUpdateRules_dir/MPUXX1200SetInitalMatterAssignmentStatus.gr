@@ -1,0 +1,75 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir
+
+@gw.rules.RuleName("MPUXX1200 - Set Inital Matter Assignment Status")
+internal class MPUXX1200SetInitalMatterAssignmentStatus {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (ma in matter.MatterAssignmentsExt where
+        ma.New ) == true and
+        !matter.New
+/*
+* sets initial status for each initial assignment when a
+* new matter assignment is added and the matter is not new
+*//*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.MatterActivator
+
+try{
+    
+    var matterActivator = new MatterActivator()
+    
+    //For each matter assignment added to the matter set the initial status
+    for(ma in matter.MatterAssignmentsExt){
+      
+      //If the assignment status has not been set
+      if(ma.MatterAssignmentStatusExt == null){
+        
+        if(matterActivator.isLOBUsingLSS(matter.Claim.LossType)){
+          if(ma.StaffBudgetRequiredExt == true){
+            if(ma.WorkOnContingency == true){
+              ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ASSIGNED
+              ma.DefenseAcceptedDate = gw.api.util.DateUtil.currentDate()
+              ma.StaffBudgetRequiredExt = false
+            }else{
+              
+               //If the line of buisness is using LSS && staffing/budget are required
+              // then set the initial assignment status to "Pending"
+              ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_PENDING
+            }
+          }else{
+            //if the line of  business is using LSS but staffing /budget not required
+            //set status to "Assigned"
+            ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ASSIGNED
+          }
+        }else{
+          //If the line of buisness is using LSS then set the initial assignment
+          //status to "Accepted"
+          ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ACCEPTED
+          
+        }
+      
+        //If the line of buisness is using LSS && staffing/budget are required
+        // then set the initial assignment status to "Pending"
+//        if(matterActivator.isLOBUsingLSS(matter.Claim.LossType) && ma.StaffBudgetRequiredExt == true){
+//          ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_PENDING
+        
+        //If the line of buisness is using LSS then set the initial assignment
+        //status to "Accepted"
+//        }else if(!matterActivator.isLOBUsingLSS(matter.Claim.LossType)){
+//          ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ACCEPTED
+//        
+        //if the line of  business is using LSS but staffing /budget not required
+        //set status to "Assigned"
+//        }else if (matterActivator.isLOBUsingLSS(matter.Claim.LossType) && ma.StaffBudgetRequiredExt == false){
+//          ma.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ASSIGNED
+                 
+      }
+    }
+  
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

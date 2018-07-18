@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="Tracks when a claim's metrics should be recalculated"
+  entity="ClaimMetricRecalculationTime"
+  exportable="false"
+  extendable="true"
+  javaClass="com.guidewire.cc.domain.claim.metric.ClaimMetricRecalculationTime"
+  loadable="false"
+  lockable="true"
+  platform="false"
+  table="claimmetricrecalctime"
+  type="editable">
+  <fulldescription><![CDATA[    Keeps track of the next time a claim's metrics should be recalculated, plus maintain a generation
+    number for the claim metric limits
+
+  ]]></fulldescription>
+  <implementsEntity
+    name="Extractable"/>
+  <implementsInterface
+    iface="gw.api.claim.metric.RecalculateMetrics"
+    impl="gw.claim.metric.RecalculateMetricsMethodsImpl"/>
+  <foreignkey
+    columnName="ClaimID"
+    desc="Claim that owns this ClaimMetricRecalculationTime object."
+    exportable="false"
+    fkentity="Claim"
+    name="Claim"
+    nullok="false"/>
+  <column
+    desc="The time when the claim metrics should next be recalculated."
+    name="NextRecalculationTime"
+    type="datetime"/>
+  <column
+    desc="Generation number, used to identify the limits for this claim's metrics"
+    name="MetricLimitGeneration"
+    nullok="false"
+    type="integer"/>
+  <index
+    desc="Speed up search for claims that need their metrics updating"
+    name="metricrecalcu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="NextRecalculationTime"/>
+  </index>
+</entity>

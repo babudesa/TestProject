@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="FixedPropertyIncidentDV">
+    <Require
+      name="FixedPropertyIncident"
+      type="FixedPropertyIncident"/>
+    <Require
+      name="addressOwner"
+      type="gw.api.address.PolicyLocationAddressOwner"/>
+    <Variable
+      initialValue="FixedPropertyIncident.Claim"
+      name="Claim"
+      type="Claim"/>
+    <!-- Hack to change a space to a hyphen to fix AutoFill and Standardized without going through integration -->
+    <Variable
+      initialValue="(FixedPropertyIncident.Property.Address != null) ? FixedPropertyIncident.Property.Address.zipFix() : false"
+      name="fixZip"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.FixedPropertyIncident.Property"/>
+      <Input
+        id="PrevHorse"
+        label="displaykey.NVV.Web.FixedPropertyIncident.Property.PreviousHorse"
+        value="FixedPropertyIncident.PreviousPropertyExt.LocationNumber"
+        visible="FixedPropertyIncident.Property == null and (FixedPropertyIncident.PreviousPropertyExt != null or FixedPropertyIncident.Property != FixedPropertyIncident.PreviousPropertyExt)"/>
+      <RangeInput
+        editable="FixedPropertyIncident.Property == Null"
+        id="Property_Picker"
+        label="displaykey.Web.FixedPropertyIncident.Property.Picker"
+        newValue="FixedPropertyIncident.Property == Null ? new PolicyLocation(FixedPropertyIncident) : FixedPropertyIncident.Property"
+        optionLabel="VALUE.Address.State == null ? VALUE.LocationNumber : VALUE.DisplayName"
+        postOnChange="true"
+        required="true"
+        value="FixedPropertyIncident.Property"
+        valueRange="FixedPropertyIncident.AvailableProperties"
+        visible="!FixedPropertyIncident.Property.New and FixedPropertyIncident.Property == null"/>
+      <Input
+        editable="FixedPropertyIncident.Property == null"
+        id="LocationInput"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Name"
+        postOnChange="true"
+        required="true"
+        value="FixedPropertyIncident.Property"
+        visible="!FixedPropertyIncident.Property.New and FixedPropertyIncident.Property != null"/>
+      <Input
+        editable="true"
+        id="Location"
+        label="displaykey.GAIC.Equine.LocationDetailDV.Name"
+        postOnChange="true"
+        required="true"
+        value="FixedPropertyIncident.Property.LocationNumber"
+        visible="FixedPropertyIncident.Property.New"/>
+      <Input
+        available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+        editable="true"
+        id="Location_BarnName"
+        label="displaykey.Web.FixedPropertyIncident.Property.BarnName"
+        value="FixedPropertyIncident.Property.ex_BarnName"/>
+      <!-- <Reflect
+        available="true"
+        triggerIds="Property_Picker"
+        value="VALUE.exBarnName"/> -->
+      <!-- 1 -->
+      <Input
+        available="Claim.canEditProperty(FixedPropertyIncident.Property)"
+        editable="true"
+        id="Address_Type"
+        label="displaykey.Web.FixedPropertyIncident.Property.Address.AddressType"
+        value="FixedPropertyIncident.Property.ex_AnimalAddressType"/>
+      <InputSetRef
+        def="AddressInputSet(addressOwner)"
+        mode="addressOwner.InputSetMode"/>
+      <!-- GW ADDED -->
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.FixedPropertyIncident.Damage"/>
+      <TextAreaInput
+        editable="true"
+        id="Description"
+        label="displaykey.Web.FixedPropertyIncident.Description"
+        numCols="30"
+        numRows="3"
+        value="FixedPropertyIncident.Description"/>
+      <Input
+        editable="true"
+        id="LossEstimate"
+        label="displaykey.Web.FixedPropertyIncident.LossEstimate"
+        value="FixedPropertyIncident.LossEstimate"/>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="HorseAttributeInputSet(FixedPropertyIncident)"
+        editable="true"/>
+      <!-- by KSO def 528 - use new picker  06/05/2008 - zthomas - Defect 528, Added showSearchInMenu=false to remove search option from picker.  7/24/08 erawe Defect 1283, Trainer/Alternate Trainer options on Injured Animals should not include the Agency or Underwriter.
+			updated the valuerange from FixedPropertyIncident.Claim.RelatedContacts to getClaimContacts() -->
+      <ClaimContactInput
+        available="true"
+        claim="FixedPropertyIncident.Claim"
+        editable="true"
+        id="PrimaryTrainer"
+        label="displaykey.LV.Policy.EditablePropertyTrainers.Trainer"
+        newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+        required="false"
+        showSearchInMenu="false"
+        value="FixedPropertyIncident.PrimaryTrainer"
+        valueRange="getClaimContacts()"
+        visible="Claim.Policy.Verified"/>
+      <!-- by KSO def 528 - use new picker  06/05/2008 - zthomas - Defect 528, Added showSearchInMenu=false to remove search option from picker.  7/24/08 erawe Defect 1283, Trainer/Alternate Trainer options on Injured Animals should not include the Agency or Underwriter.
+			updated the valuerange from FixedPropertyIncident.Claim.RelatedContacts to getClaimContacts() 12/16/08 - kmboyd - defect -->
+      <ClaimContactInput
+        available="true"
+        claim="FixedPropertyIncident.Claim"
+        editable="true"
+        id="AlternateTrainer"
+        label="displaykey.LV.Policy.EditablePropertyTrainers.AltTrainer"
+        newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+        required="false"
+        showSearchInMenu="false"
+        value="FixedPropertyIncident.AlternateTrainer"
+        valueRange="getClaimContacts()"
+        visible="Claim.Policy.Verified"/>
+    </InputColumn>
+    <Code><![CDATA[uses java.util.ArrayList;
+
+function getClaimContacts():List{
+  var contactList = new ArrayList();
+    for(contact in FixedPropertyIncident.Claim.Contacts){
+      if(contact.hasRole("PrimaryTrainer") or contact.hasRole("AlternateTrainer") or
+         exists(role in contact.Roles where role.Role=="coveredparty" and (role.CoveredPartyType=="trainer" or role.CoveredPartyType=="addnltrainer"))) {
+        contactList.add(contact.Contact)
+      }
+    }
+  return contactList;
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

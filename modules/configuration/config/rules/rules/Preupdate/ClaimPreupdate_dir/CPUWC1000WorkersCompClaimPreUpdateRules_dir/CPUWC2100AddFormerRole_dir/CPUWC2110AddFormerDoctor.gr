@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir.CPUWC2100AddFormerRole_dir
+
+@gw.rules.RuleName("CPUWC2110 - Add Former Doctor")
+internal class CPUWC2110AddFormerDoctor {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{  
+  for(exposure in claim.Exposures){
+    if(!exposure.New && !exposure.Closed &&
+      (exposure.OriginalVersion as Exposure).Claim.FirstIntakeDoctor  != null &&
+       (exposure.OriginalVersion as Exposure).Claim.FirstIntakeDoctor != exposure.Claim.FirstIntakeDoctor){
+            claim.removeRole(ContactRole.TC_FRMRFIRSTINTAKEDOCTOR, (Claim.OriginalVersion as Claim).FirstIntakeDoctor)
+            claim.addRole(ContactRole.TC_FRMRFIRSTINTAKEDOCTOR, (Claim.OriginalVersion as Claim).FirstIntakeDoctor)  
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

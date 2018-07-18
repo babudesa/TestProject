@@ -1,0 +1,36 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir.EVXX1240TypeofLossRequired_dir
+
+@gw.rules.RuleName("EVXX1242 - Type of Loss is required")
+internal class EVXX1242TypeofLossisrequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Type of loss is required to go to ability to pay, except for the coverages below
+  which do not have associated sublines
+  Sprint/Maintenance Release: Sprint 10
+  Author: Stephanie Przygocki
+  Date: January 2008
+  Updated: Stephanie Przygocki - 3/6/09 - Moved to All BU, added condition that
+    it is required only for US
+  Updated: Stephanie Przygocki - 9/1/09 - Added a check for the original state on the coverage
+    being null because we don't want this rule firing if the insured's address changes from 
+    foreign to US.
+  Updated: Stephanie Przygocki - 2/20/10 - Type of loss is only required if the subline
+    is not null or 0 AND if the risk state is a US state - had a meeting with Cathy Chatfield this morning
+    Ann Benken and Steve Gerding also attended
+  Updated: Stephanie Przygocki - 5/26/11 - 920 now uses TypeOfLossMostExt
+*/
+exposure.ExposureType != typekey.ExposureType.TC_KR_KIDNAPRANSOM OR
+exposure.New OR (!exposure.New and
+    !(exposure.ReconnectFailExt and exposure.ValidationLevel=="payment") and
+    (exposure.Coverage.OriginalVersion as Coverage).State!=null and 
+    (exposure.Coverage.SublineExt!=null and exposure.Coverage.SublineExt!="0" and exposure.Coverage.SublineExt!="NR") and
+    !exposure.CvgStateChangedExt and !exposure.LossCauseChangedExt)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason:String = displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.TypeOfLoss
+
+if(exposure.typeOfLossIsIncomplete()){
+  exposure.reject("payment", exposure + ": " + reason, null, null)
+}/*end00rule*/
+  }
+}

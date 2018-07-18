@@ -1,0 +1,696 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="An exposure is a discrete piece of a claim that involves a single type of loss (for example, vehicle damage or bodily injury) to a specific claimant."
+  entity="Exposure"
+  exportable="true"
+  extendable="true"
+  javaClass="com.guidewire.cc.domain.exposure.Exposure"
+  platform="false"
+  table="exposure"
+  type="retireable">
+  <implementsEntity
+    name="Validatable"/>
+  <implementsEntity
+    name="Assignable"/>
+  <implementsEntity
+    name="Extractable"/>
+  <implementsEntity
+    name="CCAssignable"/>
+  <implementsInterface
+    iface="gw.api.assignment.CCAssignableMethods"
+    impl="gw.assignment.ExposureAssignableMethodsImpl"/>
+  <fulldescription><![CDATA[
+      A discrete piece of a claim that involves a single type of loss (for example,
+      vehicle damage or bodily injury) to a specific claimant. Contains data to
+      describe the exposure and to track the current status of the exposure. Many
+      exposure fields are specific to certain types of exposures and will be left
+      blank on other types.
+    ]]></fulldescription>
+  <implementsEntity
+    name="ISOReportable"/>
+  <column
+    desc="Order of the exposure on the claim."
+    exportable="true"
+    name="ClaimOrder"
+    nullok="false"
+    soapnullok="true"
+    type="integer"/>
+  <column
+    desc="True if the claimant has additional coverage."
+    name="OtherCoverage"
+    type="bit"/>
+  <column
+    desc="Information regarding additional coverage."
+    name="OtherCoverageInfo"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="255"/>
+  </column>
+  <column
+    desc="Date of settlement."
+    name="SettleDate"
+    type="datetime"/>
+  <column
+    desc="The last time an exposure was reopened. "
+    name="ReOpenDate"
+    type="datetime"/>
+  <typekey
+    desc="Types of exposure."
+    name="ExposureType"
+    nullok="false"
+    typelist="ExposureType"/>
+  <typekey
+    desc="Categorizes the claimant relative to policyholder."
+    name="ClaimantType"
+    typelist="ClaimantType">
+    <keyfilters>
+      <keyfilter
+        name="Claim.LossType"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="Outcome reached when closing the exposure."
+    name="ClosedOutcome"
+    typelist="ExposureClosedOutcomeType"/>
+  <typekey
+    desc="The reason for reopening the exposure."
+    name="ReopenedReason"
+    typelist="ExposureReopenedReason"/>
+  <typekey
+    desc="The coverage subtype."
+    name="CoverageSubType"
+    typelist="CoverageSubtype"/>
+  <typekey
+    desc="State of jurisdiction, if different than location of loss."
+    name="JurisdictionState"
+    typelist="State"/>
+  <typekey
+    desc="Detailed category of the exposure."
+    name="LossCategory"
+    typelist="LossCategory"/>
+  <typekey
+    desc="The loss party; generally either first- or third-party loss."
+    name="LossParty"
+    typelist="LossPartyType">
+    <keyfilters>
+      <keyfilter
+        name="CoverageSubType"/>
+    </keyfilters>
+  </typekey>
+  <typekey
+    desc="ISO category of lost property, for theft losses."
+    name="LostPropertyType"
+    typelist="LostPropertyType"/>
+  <typekey
+    desc="Coverage Type of the coverage on this exposure."
+    name="PrimaryCoverage"
+    nullok="false"
+    typelist="CoverageType"/>
+  <typekey
+    desc="Description of the progress of an open exposure."
+    exportable="false"
+    name="Progress"
+    typelist="ExposureProgressType"/>
+  <typekey
+    desc="Segmentation type of the exposure. Both the claim and exposure may be segmented."
+    name="Segment"
+    typelist="ClaimSegment"/>
+  <typekey
+    desc="Method of settlement."
+    name="SettleMethod"
+    typelist="SettleMethod"/>
+  <typekey
+    default="draft"
+    desc="Internal state of the exposure."
+    exportable="false"
+    name="State"
+    nullok="false"
+    typelist="ExposureState"/>
+  <typekey
+    desc="Strategy type of the exposure. Both the claim and exposure may define a strategy."
+    name="Strategy"
+    typelist="ClaimStrategy"/>
+  <typekey
+    desc="Whether there is other coverage."
+    name="OtherCovgChoice"
+    nullok="true"
+    typelist="YesNo"/>
+  <typekey
+    desc="Validation level the exposure has passed (if any)."
+    name="ValidationLevel"
+    typelist="ValidationLevel"/>
+  <typekey
+    desc="The security level of this exposure."
+    name="SecurityLevel"
+    nullok="true"
+    typelist="ExposureSecurityType"/>
+  <foreignkey
+    columnName="CoverageID"
+    desc="The specific coverage for this exposure."
+    fkentity="Coverage"
+    name="Coverage"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="ClaimID"
+    desc="The Claim for this Exposure."
+    exportable="false"
+    fkentity="Claim"
+    importableagainstexistingobject="false"
+    name="Claim"
+    nullok="false"/>
+  <foreignkey
+    columnName="IncidentID"
+    desc="Incident that caused this exposure."
+    exportable="true"
+    fkentity="Incident"
+    name="Incident"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="StatLineID"
+    desc="Statistical line associated with this exposure."
+    fkentity="StatCode"
+    name="StatLine"
+    nullok="true"
+    ondelete="setnull"
+    triggersValidation="true"/>
+  <onetoone
+    desc="The calculated financials data for this exposure."
+    exportable="false"
+    fkentity="ExposureRpt"
+    ignoreforevents="true"
+    name="ExposureRpt"
+    setterScriptability="doesNotExist"/>
+  <foreignkey
+    columnName="ClaimantDenormID"
+    deletefk="false"
+    desc="The claimant for the exposure, denormalized from the claim's contact array."
+    exportable="false"
+    fkentity="Contact"
+    ignoreforevents="true"
+    name="ClaimantDenorm"
+    nullok="true"
+    ondelete="noaction"
+    overwrittenInStagingTable="true"
+    owner="true"/>
+  <array
+    arrayentity="UserRoleAssignment"
+    desc="The user role assignments for this exposure."
+    exportable="false"
+    name="RoleAssignments"
+    triggersValidation="true"/>
+  <array
+    arrayentity="Document"
+    desc="The documents associated with this exposure; for example, FNOL accord form or police report."
+    name="Documents"
+    triggersValidation="true"/>
+  <array
+    arrayentity="ExposureSynchState"
+    desc="Sync states related to this exposure."
+    exportable="false"
+    name="ExposureSynchStates"
+    owner="true"
+    trackssynchstate="true"/>
+  <array
+    arrayentity="ExposureISOMatchReport"
+    desc="ISO match reports for this exposure."
+    exportable="true"
+    name="ExposureISOMatchReports"/>
+  <array
+    arrayentity="Note"
+    desc="Notes particular to this exposure. Notes can also be associated with the claim in general."
+    name="Notes"
+    triggersValidation="true"/>
+  <array
+    arrayentity="OtherCoverageDetail"
+    desc="Details of other coverage."
+    exportable="true"
+    name="OtherCoverageDet"
+    triggersValidation="true"/>
+  <array
+    arrayentity="ReserveLine"
+    desc="ReserveLines relating to this exposure."
+    exportable="false"
+    name="ReserveLines"/>
+  <array
+    arrayentity="Transaction"
+    deprecated="true"
+    desc="All financial transactions relating to this exposure.  For rules, it is much better to use one of the getXXXIterator() methods and for the UI it is much better to use one of the getXXXQuery() methods to retrieve all transactions or a specific subtype of Transactions for the exposure."
+    exportable="false"
+    name="Transactions"/>
+  <array
+    arrayentity="ExposureText"
+    desc="Large text fields associated with exposure."
+    name="Text"
+    owner="true"
+    triggersValidation="true"/>
+  <array
+    arrayentity="ClaimContactRole"
+    desc="The contacts and their roles associated with this exposure."
+    name="Roles"
+    triggersValidation="true"/>
+  <!-- Exposure Metrics -->
+  <typekey
+    desc="The tier of this exposure, used to decide how to rate the exposure metrics."
+    name="ExposureTier"
+    nullok="true"
+    typelist="ExposureTier"/>
+  <column
+    desc="Generation number, used to identify the limits for this exposure's metrics"
+    name="MetricLimitGeneration"
+    type="integer"/>
+  <array
+    arrayentity="ExposureMetric"
+    desc="Metrics related to this exposure."
+    exportable="false"
+    ignoreforevents="true"
+    name="ExposureMetrics"
+    triggersValidation="false">
+    <link-association>
+      <subtype-map/>
+    </link-association>
+  </array>
+  <!-- loss of use damage -->
+  <foreignkey
+    columnName="TempLocationID"
+    deletefk="true"
+    desc="Temporary location of policy holder. This is for a homeowner's claim."
+    fkentity="Address"
+    name="TempLocation"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <!-- personal property damage -->
+  <column
+    desc="Whether there is evidence of a break-in."
+    name="BreakIn"
+    type="bit"/>
+  <column
+    desc="Depreciated value of property or vehicle."
+    name="DepreciatedValue"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="ClaimCurrency"/>
+  </column>
+  <column
+    desc="Whether the property or vehicle was properly locked."
+    name="Locked"
+    type="bit"/>
+  <column
+    desc="Replacement value of the property or vehicle."
+    name="ReplacementValue"
+    type="nonnegativecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="ClaimCurrency"/>
+  </column>
+  <!-- lost wages -->
+  <column
+    desc="Average weekly wages; this calculation differs by state."
+    name="AverageWeeklyWages"
+    type="positivecurrencyamount">
+    <columnParam
+      name="currencyProperty"
+      value="ClaimCurrency"/>
+  </column>
+  <column
+    desc="Wage Statement sent date."
+    name="WageStmtSent"
+    nullok="true"
+    type="datetime"/>
+  <column
+    desc="Wage Statement received date."
+    name="WageStmtRecd"
+    nullok="true"
+    type="datetime"/>
+  <column
+    desc="Last day worked."
+    name="LastDayWorked"
+    type="datetime"/>
+  <typekey
+    desc="Days in week used for benefit calculation."
+    name="DaysInWeek"
+    typelist="DaysInWeekType"/>
+  <foreignkey
+    columnName="DeathBenefitsID"
+    deletefk="true"
+    desc="Death benefits details."
+    fkentity="Benefits"
+    name="DeathBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="LifePensionBenefitsID"
+    deletefk="true"
+    desc="Life Pension benefits details."
+    fkentity="Benefits"
+    name="LifePensionBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PPDBenefitsID"
+    deletefk="true"
+    desc="PPD benefits details."
+    fkentity="Benefits"
+    name="PPDBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PTDBenefitsID"
+    deletefk="true"
+    desc="PTD benefits details."
+    fkentity="Benefits"
+    name="PTDBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="TPDBenefitsID"
+    deletefk="true"
+    desc="TPD benefits details."
+    fkentity="Benefits"
+    name="TPDBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="TTDBenefitsID"
+    deletefk="true"
+    desc="TTD benefits details."
+    fkentity="Benefits"
+    name="TTDBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="VocBenefitsID"
+    deletefk="true"
+    desc="Vocational benefits details."
+    fkentity="Benefits"
+    name="VocBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <array
+    arrayentity="BenefitPeriod"
+    desc="Periods of time when employee received benefits."
+    name="BenefitPeriods"
+    triggersValidation="true"/>
+  <array
+    arrayentity="Settlement"
+    desc="Settlements with the employee."
+    name="Settlements"
+    triggersValidation="true"/>
+  <!-- WC Injury damage -->
+  <column
+    desc="Date of the Examination."
+    name="ExaminationDate"
+    type="datetime"/>
+  <column
+    desc="Whether the the patient has been treated before."
+    name="TreatedPatientBfr"
+    type="bit"/>
+  <column
+    desc="Whether the diagnostic is consistent."
+    name="DiagnosticCnsistnt"
+    type="bit"/>
+  <column
+    desc="Current conditions."
+    name="CurrentConditions"
+    type="bit"/>
+  <column
+    desc="Whether further treatment is required."
+    name="FurtherTreatment"
+    type="bit"/>
+  <column
+    desc="Date admitted to the hospital."
+    name="HospitalDate"
+    type="datetime"/>
+  <column
+    desc="Estimated days in hospital."
+    name="HospitalDays"
+    type="integer"/>
+  <column
+    default="false"
+    desc="Whether the injured person had a pre-existing disability."
+    name="WCPreexDisblty"
+    type="bit"/>
+  <column
+    desc="Information about the pre-existing disability."
+    name="WCPreexDisbltyInfo"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="255"/>
+  </column>
+  <array
+    arrayentity="MedicalAction"
+    desc="Key medical-related dates."
+    name="MedicalActions"
+    triggersValidation="true"/>
+  <!-- PIP Damages -->
+  <column
+    desc="Whether the exposure is eligible for SSDI."
+    name="SSDIEligible"
+    type="bit"/>
+  <foreignkey
+    columnName="CompBenefitsID"
+    deletefk="true"
+    desc="Compensation benefits details."
+    fkentity="Benefits"
+    name="CompBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="DisBenefitsID"
+    deletefk="true"
+    desc="Disability benefits details."
+    fkentity="Benefits"
+    name="DisBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="NewEmpDataID"
+    deletefk="true"
+    desc="Information about a new job that the claimant has taken."
+    fkentity="EmploymentData"
+    name="NewEmpData"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PIPDeathBenefitsID"
+    deletefk="true"
+    desc="Death benefits details."
+    fkentity="Benefits"
+    name="PIPDeathBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PIPVocBenefitsID"
+    deletefk="true"
+    desc="Vocational rehab benefits details."
+    fkentity="Benefits"
+    name="PIPVocBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="PriorEmpDataID"
+    deletefk="true"
+    desc="Information about the job the claimant had at the time of injury."
+    fkentity="EmploymentData"
+    name="PriorEmpData"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="RSBenefitsID"
+    deletefk="true"
+    desc="Replacement services benefits details."
+    fkentity="Benefits"
+    name="RSBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="SSDIBenefitsID"
+    deletefk="true"
+    desc="Social security disability benefits details."
+    fkentity="Benefits"
+    name="SSDIBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <foreignkey
+    columnName="WCBenefitsID"
+    deletefk="true"
+    desc="Workers' comp benefits details."
+    fkentity="Benefits"
+    name="WCBenefits"
+    ondelete="noaction"
+    owner="true"
+    triggersValidation="true"/>
+  <array
+    arrayentity="IMEPerformed"
+    desc="Independent medical examinations performed."
+    exportable="true"
+    name="IMEPerformed"
+    owner="true"
+    triggersValidation="true"/>
+  <column
+    desc="Whether Workers Compensation benefits are being collected."
+    name="WCBenefit"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether Social Security benefits are being collected."
+    name="SSBenefit"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether wage benefites are being collected."
+    name="WageBenefit"
+    nullok="true"
+    type="bit"/>
+  <column
+    default="true"
+    desc="Whether contact is permitted with the claimant."
+    name="ContactPermitted"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's exposure limit has been exceeded."
+    name="ExposureLimitReached"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's incident limit has been exceeded."
+    name="IncidentLimitReached"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's PIP Non Medical Aggregate limit has been exceeded."
+    name="PIPNonMedAggLimitReached"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's PIP Replacement Services Aggregate limit has been exceeded."
+    name="PIPESSLimitReached"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's PIP Per Person Aggregate limit has been exceeded."
+    name="PIPPersonAggLimitReached"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Whether the exposure's PIP Claim Aggregate limit has been exceeded."
+    name="PIPClaimAggLimitReached"
+    nullok="true"
+    type="bit"/>
+  <!-- med pay -->
+  <events>
+    <event
+      description="Deprecated - test for validity directly in rules.  Fired only if DeprecatedEventGeneration is set to true in config.xml.  This event denotes that a new Exposure is valid or an existing Exposure has become valid. All events raised in this database transaction related to the Exposure, including events related to objects off of the Exposure, will be subsumed into this event."
+      name="ExposureValid"/>
+  </events>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.exposure.dbchecks.DenormalizedExposureClaimantDBCheckBuilder"/>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.exposure.dbchecks.ExposureIncidentTypeDBCheckBuilder"/>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.claim.dbchecks.RequiredRolesDBCheckBuilder"/>
+  <index
+    desc="ClaimID - We need simple index on (claimid) for TeamGroupExposures due to Oracle costing issue"
+    name="exposure13"
+    trackUsage="true">
+    <forceindex
+      oracle="true"/>
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+  </index>
+  <index
+    desc="Enforce uniqueness, exposure claim order should be unique per claim"
+    name="exposure10"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="ClaimOrder"/>
+    <indexcol
+      keyposition="3"
+      name="Retired"/>
+  </index>
+  <index
+    desc="Compound index to speed ActivityCreatedByMeNow"
+    name="exposureu1"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="AssignedUserID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="AssignmentStatus"/>
+    <indexcol
+      keyposition="4"
+      name="State"/>
+    <indexcol
+      keyposition="5"
+      name="ID"/>
+  </index>
+  <index
+    desc="Compound index to speed TeamGroupExposures"
+    name="exposureu2"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="AssignedGroupID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="State"/>
+    <indexcol
+      keyposition="4"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="5"
+      name="ID"/>
+  </index>
+  <!-- Removed exposure11 and exposure12, indices on NewEmpDataID and PriorEmpDataID and ExposureType, Trevor Morris, 5/29/2008 -->
+  <index
+    desc="Compound index to speed claimants on exposures"
+    name="exposureu3"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ClaimantDenormID"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+</entity>

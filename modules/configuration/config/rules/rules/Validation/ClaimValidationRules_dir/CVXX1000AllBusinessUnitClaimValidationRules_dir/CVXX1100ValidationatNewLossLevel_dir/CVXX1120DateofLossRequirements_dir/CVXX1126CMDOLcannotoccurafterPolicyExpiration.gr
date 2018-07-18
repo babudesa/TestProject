@@ -1,0 +1,40 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1120DateofLossRequirements_dir
+
+@gw.rules.RuleName("CVXX1126 - CM - DOL cannot occur after Policy Expiration")
+internal class CVXX1126CMDOLcannotoccurafterPolicyExpiration {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.isPolicyInRefresh( 0 ) and
+claim.ClaimsMadePolicyExt == true and 
+(claim.LossDate !=null and
+( (claim.Policy.ExpirationDate!=null 
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.ExpirationDate) > 0) 
+ or
+  (claim.Policy.EffectiveDate!=null 
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.EffectiveDate) < 0) )
+  or
+   (claim.Policy.CancellationDate != null and claim.Policy.ex_ReinstatementDate == null
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.CancellationDate) > 0))
+
+
+//Defect 6939 - anicely - Date of loss must occur on or before the Policy Expiration Date for Claims Made Claims/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+var lossDate = util.custom_Ext.DateTime.formatDate(claim.LossDate)
+var expDate = util.custom_Ext.DateTime.formatDate(claim.Policy.ExpirationDate)
+var effDate = util.custom_Ext.DateTime.formatDate(claim.Policy.EffectiveDate)
+//print((claim.OriginalVersion as Claim).State)
+if(claim.Policy.CancellationDate != null and claim.Policy.ex_ReinstatementDate == null){
+  msg= displaykey.Libraries.ClassExt.Policy.PolicyUI.LossDateError(lossDate, util.custom_Ext.DateTime.formatDateString(claim.Policy.EffectiveDate, claim.Policy.CancellationDate))
+} else{
+  msg= displaykey.Libraries.ClassExt.Policy.PolicyUI.LossDateError(lossDate, util.custom_Ext.DateTime.formatDateString(claim.Policy.EffectiveDate, claim.Policy.ExpirationDate))
+}
+
+if((claim.OriginalVersion as Claim).State == ClaimState.TC_DRAFT or claim.isFieldChanged("LossDate")){
+  claim.rejectField("LossDate", null, null, ValidationLevel.TC_NEWLOSS, msg)
+}
+  
+/*end00rule*/
+  }
+}

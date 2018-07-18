@@ -1,0 +1,21 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Matter_dir
+
+@gw.rules.RuleName("MatterAdded")
+internal class MatterAdded {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName.equals("MatterAdded")
+&& (messageContext.Root as Matter).MatterAssignmentsExt.size > 0/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.MatterActivator
+
+var activator : MatterActivator = new MatterActivator()
+
+if (activator.isLOBUsingLSS((messageContext.Root as Matter).Claim.LossType)) {
+  for (assignment in (messageContext.Root as Matter).MatterAssignmentsExt){
+    util.gaic.LitAdvisorFunctions.sendNewMatter( messageContext, assignment );
+  }
+}/*end00rule*/
+  }
+}

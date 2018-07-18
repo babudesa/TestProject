@@ -1,0 +1,16 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1700 - Open Activities")
+internal class ECVXX1700OpenActivities {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists( Activity in exposure.Claim.Activities
+  where (Activity.Exposure.ClaimOrder == exposure.ClaimOrder and
+        Activity.Status=="open" and
+        Activity.ActivityPattern != null and
+        Activity.ActivityPattern.ClosedClaimAvlble == false))==true/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.reject( "newloss", "There are open activities related to this feature on Claim: (" + exposure.Claim.ClaimNumber + "). To close the feature, you must first complete or skip these open activities.", null, null )/*end00rule*/
+  }
+}

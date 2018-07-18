@@ -1,0 +1,34 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUSP1000SpecialtyESExposurePreUpdateRules_dir.EPUSP1100ARULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUSP1130A - Bankruptcy Docket Check")
+internal class EPUSP1130ABankruptcyDocketCheck {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(typeof exposure.Claimant == Person &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_BTA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_STA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_TPA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_AL &&
+(exposure.MinorChildExt == false || exposure.MinorChildExt == null) &&
+exposure.Claimant.PrimaryAddress.Country == Country.TC_US &&
+exposure.Claim.UIHelper.IsRESPA == false) &&
+(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code == "bankruptcy_docket_check_spec" 
+&& exposure == act.Exposure))   /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+   
+   var today = gw.api.util.DateUtil.currentDate()
+   var pattern = util.custom_Ext.finders.findActivityPattern("bankruptcy_docket_check_spec")
+   var newAct = exposure.Claim.createActivity(exposure, pattern, pattern.Subject, pattern.Description,
+       pattern.Priority, pattern.Mandatory, today.addBusinessDays(pattern.TargetDays), null)
+        
+    //assign the activity to claim owner
+    newAct.AssignedUser = exposure.Claim.AssignedUser    
+   
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

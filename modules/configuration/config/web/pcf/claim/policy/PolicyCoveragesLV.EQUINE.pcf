@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    id="PolicyCoveragesLV"
+    mode="EQUINE">
+    <Require
+      name="Policy"
+      type="Policy"/>
+    <RowIterator
+      editable="true"
+      elementName="PolicyCoverage"
+      hideCheckBoxesIfReadOnly="true"
+      pickLocation="PolicyCoverageCreateDetailPopup.push(Policy)"
+      toRemove="Policy.removeCoverage(PolicyCoverage)"
+      value="Policy.Coverages">
+      <Row
+        editable="!exists(exp in Policy.Claim.Exposures where exp.Coverage==PolicyCoverage)">
+        <RangeCell
+          action="PolicyCoverageDetailPopup.push(PolicyCoverage)"
+          id="CoverageType"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.CoverageType"
+          optionLabel="PolicyCoverage.covTypeDisplayName()"
+          required="true"
+          sortOrder="1"
+          value="PolicyCoverage.Type"
+          valueRange="PolicyCoverage.getCoverages()"/>
+        <Cell
+          id="REIN"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.REIN"
+          value="PolicyCoverage.showReinsuranceStatus()"/>
+        <Cell
+          id="RiskState"
+          label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+          required="true"
+          sortOrder="2"
+          value="PolicyCoverage.State"/>
+        <Cell
+          formatType="exactNumber"
+          id="Deductible"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.Deductible"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.Deductible) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.Deductible"/>
+        <Cell
+          id="DeductibleBasis"
+          label="displaykey.LV.Policy.EditablePropertyCoverage.DeductibleBasis"
+          value="PolicyCoverage.DeductLimitBasisExt"/>
+        <Cell
+          formatType="exactNumber"
+          id="IncidentLimit"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.CovLimit"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.IncidentLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.IncidentLimit"/>
+        <Cell
+          formatType="exactNumber"
+          id="AggregateLimit"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.AggregateLimit"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.AggregateLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.AggregateLimitExt"/>
+        <!-- <Cell
+          id="CoverageBasis"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.CoverageBasis"
+          value="PolicyCoverage.CoverageBasisExt"/> -->
+        <!-- 6/15/09 erawe - removed CoverageBasis and added DeductibleBasis, per Joe McKay -->
+        <Cell
+          id="EffDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+          sortDirection="descending"
+          sortOrder="3"
+          value="PolicyCoverage.EffectiveDate"/>
+        <Cell
+          id="ExpDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+          value="PolicyCoverage.ExpirationDate"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1400 - Update Claimant on Features")
+internal class CPUWC1400UpdateClaimantonFeatures {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.New && 
+(claim.OriginalVersion as Claim).claimant != null &&
+(claim.OriginalVersion as Claim).claimant != claim.claimant/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+  for (exp in claim.Exposures){
+    var original = exp.Claimant
+    exp.Claimant = claim.claimant
+    exp.addRole(ContactRole.TC_FORMERCLAIMANT, original)  
+  }
+  
+}catch(e) {
+   util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+
+
+/*end00rule*/
+  }
+}

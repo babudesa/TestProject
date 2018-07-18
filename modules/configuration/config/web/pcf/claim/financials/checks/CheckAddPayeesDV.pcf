@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="true"
+    id="CheckAddPayeesDV">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Variable
+      initialValue="Check.Claim"
+      name="Claim"/>
+    <InputColumn>
+      <ListViewInput
+        boldLabel="true"
+        editable="true"
+        label="displaykey.NVV.Financials.Check.Payees"
+        labelAbove="true"
+        visible="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          id="PayeeDVPayeesLV">
+          <RowIterator
+            editable="true"
+            elementName="ChkPayee"
+            toCreateAndAdd="Check.addNewPayee()"
+            toRemove="Check.removeFromPayees(ChkPayee)"
+            value="Check.Payees">
+            <!-- checkBoxVisible="ChkPayee.IsOriginalPayeeExt==false" > -->
+            <Row
+              editable="ChkPayee.New">
+              <!-- || ChkPayee.IsOriginalPayeeExt==false" > -->
+              <ClaimContactCell
+                claim="Check.Claim"
+                editable="true"
+                id="PayeeName"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+                newContactMenu="BlankNewContactPickerMenuItemSet()"
+                onChange="util.financials.CheckFunctions.handleOnPickForAdditionalPayees(Check, ChkPayee)"
+                onPick="util.financials.CheckFunctions.handleOnPickForAdditionalPayees(Check, ChkPayee)"
+                postOnChange="true"
+                required="true"
+                value="ChkPayee.Payee"
+                valueRange="Check.getUnpaidPayableClaimContacts()"/>
+              <Cell
+                id="PayeeType"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+                required="true"
+                validationExpression="ChkPayee.PayeeType == &quot;claimant&quot; &amp;&amp; !ChkPayee.ClaimContact.isClaimant() ? displaykey.Java.NewPayment.Error.PayeeIsNotClaimant : null"
+                value="ChkPayee.PayeeType"/>
+              <RangeCell
+                editable="ChkPayee.PayeeType==&quot;vendor&quot; and chkpayee.claimcontact.new"
+                id="ContactRoleCell"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.ContactRole"
+                optionLabel="ChkPayee.Payee.getContactRoleName(VALUE, ChkPayee.ClaimContact)"
+                required="true"
+                value="ChkPayee.CheckPayeeRoleExt"
+                valueRange="ChkPayee.Payee.getValidRoles()"
+                visible="exists(payee in check.payees where payee.payeetype==&quot;vendor&quot; and payee.claimcontact.new)"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

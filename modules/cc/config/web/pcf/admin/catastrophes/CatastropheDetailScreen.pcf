@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="CatastropheDetailScreen">
+    <Require
+      name="Catastrophe"
+      type="Catastrophe"/>
+    <Require
+      name="showRelatedClaimsFinder"
+      type="boolean"/>
+    <Toolbar
+      visible="perm.Catastrophe.edit">
+      <EditButtons
+        editVisible="perm.Catastrophe.edit and !Catastrophe.hasAssociatedClaims()"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="findRelatedClaims()"
+        available="Catastrophe.Active"
+        id="FindUnmatchedClaimsButton"
+        label="displaykey.Web.Admin.AdminCatastrophe.FindUnmatchedClaims"
+        visible="(showRelatedClaimsFinder and !CurrentLocation.InEditMode)"/>
+    </Toolbar>
+    <PanelRef
+      def="AdminCatastropheDV(Catastrophe)"/>
+    <Code><![CDATA[function findRelatedClaims() {
+  gw.transaction.Transaction.runWithNewBundle(\ bundle -> {
+    bundle.add(Catastrophe).ScheduleBatch = true
+  })
+  util.LocationUtil.addRequestScopedInfoMessage(displaykey.Web.Admin.AdminCatastrophe.MatchedClaimsAvailableNextDay)
+}]]></Code>
+  </Screen>
+</PCF>

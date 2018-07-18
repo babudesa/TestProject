@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    id="WCBenefitPPDInputSet">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim.findWCBeneCalcRef() &lt;&gt; null"
+      name="ReferenceDataAvailable"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Variable
+      initialValue="claim.getLossTimeExposure()"
+      name="exposure"
+      type="Exposure"/>
+    <Label
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD"/>
+    <Input
+      formatType="percentagePoints"
+      id="PPDPercentOfWages"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.PercentOfWages"
+      value="claim.getPPDBenefitsCalculator().PercentOfWages * 100"
+      visible="ReferenceDataAvailable"/>
+    <Input
+      formatType="currency"
+      id="PPD_MaxStateCompRate"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.MaxStateCompRate"
+      value="claim.getPPDBenefitsCalculator().MaxCompRate"
+      visible="ReferenceDataAvailable"/>
+    <Input
+      formatType="currency"
+      id="PPD_MinStateCompRate"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.MinStateCompRate"
+      value="claim.getPPDBenefitsCalculator().MinCompRate"
+      visible="ReferenceDataAvailable"/>
+    <TextAreaInput
+      id="MinStateCompRateAdj"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.MinStateCompRateAdj"
+      numRows="3"
+      value="displaykey.NVV.Exposure.LostWagesBenefits.TPD.MinStateCompRateAdj.Message"
+      visible="claim.getPPDBenefitsCalculator().MinAwwAdjustment "/>
+    <Input
+      formatType="currency"
+      id="PPDRefData"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.ReferenceData"
+      value="displaykey.NVV.Exposure.LostWagesBenefits.PPD.ReferenceData.Message"
+      visible="Not ReferenceDataAvailable"/>
+    <Input
+      formatType="currency"
+      id="PPDCompRateUnavailable"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.NoCompRate"
+      value="displaykey.NVV.Exposure.LostWagesBenefits.PPD.NoCompRate.Message"
+      visible="ReferenceDataAvailable and claim.getPPDBenefitsCalculator().CompRate == null"/>
+    <Input
+      formatType="currency"
+      id="PPDCR"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.WeeklyCompRate"
+      value="claim.getPPDBenefitsCalculator().CompRate"
+      visible="ReferenceDataAvailable and claim.getPPDBenefitsCalculator().CompRate != null"/>
+    <Input
+      editable="true"
+      id="ManualCompRate"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.WeeklyCompRateManual"
+      value="exposure.PPDBenefits.WeeklyCompRate"
+      visible="claim.getPPDBenefitsCalculator().CompRate == null"/>
+    <Input
+      id="PPDWeeks"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.PPDWeeks"
+      value="claim.getPPDBenefitsCalculator().MaxWeeksToPay"
+      visible="claim.getPPDBenefitsCalculator().CompRate != null"/>
+    <Input
+      formatType="currency"
+      id="MaxTotalPPD"
+      label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.MaxTotalPPD"
+      value="claim.getPPDBenefitsCalculator().MaxWeeksToPay * claim.getPPDBenefitsCalculator().CompRate"
+      visible="claim.getPPDBenefitsCalculator().CompRate != null and claim.getPPDBenefitsCalculator().MaxWeeksToPay != null"/>
+  </InputSet>
+</PCF>

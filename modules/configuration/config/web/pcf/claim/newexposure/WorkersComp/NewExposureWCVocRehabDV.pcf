@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewExposureWCVocRehabDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="&quot;&quot;"
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="InjuredWorkerSectionInputSet(Exposure, ExpType)"/>
+      <!-- METHOD OF SETTLEMENT SECTION -->
+      <InputSetRef
+        def="MethodOfSettlementInputSet(Exposure)"/>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- Loss Description Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+      <TextAreaInput
+        id="Description"
+        numCols="45"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <InputSetRef
+        def="WCOtherCarrierInputSet(Exposure)"/>
+      <InputDivider/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.VocationalRehab"/>
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="MedCase_VocRehabSpec"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.VocRehabSpec"
+        newContactMenu="ClaimNewVocRehabSpecialistPickerMenuItemSet"
+        value="Exposure.vocrehabspecialist"
+        valueRange="Exposure.Claim.getVendorContacts()"
+        visible="Exposure.Claim.Policy.Verified"/>
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="MedCase_VocRehabSpec_Unverified"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.VocRehabSpec"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        value="Exposure.vocrehabspecialist"
+        valueRange="Exposure.Claim.getVendorContacts()"
+        visible="!Exposure.Claim.Policy.Verified"/>
+      <TypeKeyInput
+        available="Exposure.vocrehabspecialist!=null"
+        editable="true"
+        filter="Exposure.filterOrgType(VALUE as java.lang.String)"
+        id="VocRehab_OrgType"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.OrgType"
+        value="Exposure.vocrehabspecialist.OrganizationType">
+        <Reflect
+          available="TRIGGER_INDEX ==1 ? VALUE1!=null : VALUE2!=null"
+          triggerIds="MedCase_VocRehabSpec,MedCase_VocRehabSpec_Unverified"
+          value="TRIGGER_INDEX == 1 ? (VALUE1 != null ? VALUE1.OrganizationType : null) : (VALUE2 != null ? VALUE2.OrganizationType : null)"/>
+      </TypeKeyInput>
+      <Input
+        editable="true"
+        id="VocRehab_LimitWeeks"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.VocRehabLimitWeeks"
+        numCols="2"
+        value="Exposure.VocRehabLimitWeeksExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="VocRehab_LimitAmount"
+        label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.MedCase.VocRehabLimitAmt"
+        value="Exposure.VocRehabLimitAmtExt"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

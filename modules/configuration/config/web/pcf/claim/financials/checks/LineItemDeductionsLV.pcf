@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    available="true"
+    editable="true"
+    id="LineItemDeductionsLV"
+    visible="true">
+    <Require
+      name="LineItem"
+      type="TransactionLineItem"/>
+    <RowIterator
+      editable="true"
+      elementName="CurrentDeduction"
+      toAdd="LineItem.addToLineItemDeductions(CurrentDeduction)"
+      toRemove="removeDeduction(CurrentDeduction)"
+      value="LineItem.LineItemDeductions">
+      <Row
+        useHeaderStyle="true">
+        <Cell
+          editable="true"
+          id="DeductionType"
+          label="&quot;Deduction Type&quot;"
+          required="true"
+          value="CurrentDeduction.DeductionType"/>
+        <Cell
+          align="right"
+          editable="true"
+          footerSumValue="CurrentDeduction.Amount"
+          formatType="currency"
+          id="LineItemTest"
+          label="&quot;Deduction Amount&quot;"
+          onChange="LineItem.calculateNetAmount();"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateDeductionAmount(CurrentDeduction)"
+          value="CurrentDeduction.Amount"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException;
+
+/**
+ * Function removes deduction from the line item and forces
+ * a recalulate on the net amount
+ */
+function removeDeduction(deduction : LineItemDeductionExt){
+    LineItem.removeFromLineItemDeductions(deduction)
+    LineItem.calculateNetAmount()
+}
+
+
+/**
+ * Validates deductions are not zero or negative.
+ */
+function validateDeductionAmount(deduction : LineItemDeductionExt) : String {
+  if(deduction.Amount.IsZero){
+    return displaykey.LV.Financials.EditablePaymentLineItems.Deduction.Amtzero
+  }else if(deduction.Amount < 0) {
+   return displaykey.LV.Financials.EditablePaymentLineItems.Deduction.Negative
+  }else{
+    return null
+  }
+}
+
+/**
+ * Validates net amount on the line item isn't negative.
+ */
+function validateNetAmount(item : TransactionLineItem) {
+  if(item.TransactionAmount < 0) {
+   throw new com.guidewire.pl.web.controller.UserDisplayableException(displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.Negative)
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

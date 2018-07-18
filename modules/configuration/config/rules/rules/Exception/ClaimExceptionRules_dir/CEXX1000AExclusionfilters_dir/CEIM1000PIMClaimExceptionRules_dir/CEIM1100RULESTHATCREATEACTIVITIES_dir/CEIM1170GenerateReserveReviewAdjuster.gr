@@ -1,0 +1,40 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEIM1170 - Generate Reserve Review Adjuster")
+internal class CEIM1170GenerateReserveReviewAdjuster {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// Raj Akula
+claim.State == "open" and 
+claim.ReserveLines.length == 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if(!exists(act in claim.Activities where act.Subject == "Reserve Review")){
+  if(gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.currentDate(),gw.api.util.DateUtil.addDays(claim.ReportedDate,100)) >=0){  
+    var ap = util.custom_Ext.finders.findActivityPattern("15_day_reserve")
+    claim.createActivity( null, ap, "Reserve Review", "Reserve Review: File Must Be Reserved at 100 Days", "normal", true, null, null )
+  }
+} else {
+  var lastActivity:Activity = null; 
+  var tempBoolean = false;
+  for(activity in claim.Activities){
+    if(activity.Subject == "Reserve Review" and activity.Status =="complete"){
+      if(lastActivity == null || 
+         gw.api.util.DateUtil.compareIgnoreTime(activity.CreateTime,lastActivity.CreateTime) >=0 ){
+        lastActivity = activity; 
+      }
+      if(lastActivity != null){
+       tempBoolean = true;
+      }
+    }
+  }
+  if(tempBoolean){
+    if(gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.currentDate(),gw.api.util.DateUtil.addDays(lastActivity.CreateTime,100)) >=0 and 
+       (!exists(act in claim.Activities where (act.Subject == "Reserve Review" and act.Status == "open")))){
+      var ap = util.custom_Ext.finders.findActivityPattern("15_day_reserve")
+      claim.createActivity( null, ap, "Reserve Review", "Reserve Review: File Must Be Reserved at 100 Days", "normal", true, null, null )
+    }
+  }
+}/*end00rule*/
+  }
+}

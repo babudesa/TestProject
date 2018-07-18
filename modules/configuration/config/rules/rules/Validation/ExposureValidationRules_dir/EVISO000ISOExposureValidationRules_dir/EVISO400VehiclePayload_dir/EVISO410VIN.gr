@@ -1,0 +1,28 @@
+package rules.Validation.ExposureValidationRules_dir.EVISO000ISOExposureValidationRules_dir.EVISO400VehiclePayload_dir
+
+@gw.rules.RuleName("EVISO410 - VIN")
+internal class EVISO410VIN {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason = ""
+
+if(exposure.ExposureType=="ab_AutoPropDam" || exposure.ExposureType=="ab_PhysicalDamage" ||
+   exposure.ExposureType=="pe_AutoPropDamage" || exposure.ExposureType=="pe_PhysicalDamage"){
+  if(exposure.VehicleIncident!=null and
+     exposure.VehicleIncident.Vehicle!=null and 
+     exposure.VehicleIncident.Vehicle.Vin==null){
+    reason = "VIN is required for ISO Validation"
+    exposure.reject( "iso", reason, null, null )
+  }
+} else if((exposure.ExposureType=="ab_PropertyDamage" || exposure.ExposureType=="pe_PropDamage") and exposure.Coverage.Subtype=="VehicleCoverage"){
+  if(((exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle!=null and 
+     ((exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle.Vin==null){
+    reason = "VIN is required for ISO Validation"
+    exposure.reject( "iso", reason, null, null )
+  }
+}/*end00rule*/
+  }
+}

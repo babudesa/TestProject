@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPU17000Reinsurance_dir
+
+@gw.rules.RuleName("CPU17500 - Create Reinsurance Reason Note")
+internal class CPU17500CreateReinsuranceReasonNote {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isFieldChanged( "ReinsuranceReportable" ) or
+claim.isFieldChanged( "Text" )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/if (claim.isFieldChanged( "ReinsuranceReportable" )) {
+  if (claim.ReinsuranceReportable) {
+    claim.addNote( NoteTopicType.TC_REINSURANCE, displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.ClaimMarkedForReinsurance, claim.ReinsuranceReason )
+  } else {
+    claim.addNote( NoteTopicType.TC_REINSURANCE, displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.ClaimUnmarkedForReinsurance, claim.ReinsuranceReason )
+  }
+} else {
+  claim.addNote( NoteTopicType.TC_REINSURANCE, displaykey.Rules.PreUpdate.Claim.Reinsurance.Note.EditReasonModified, claim.ReinsuranceReason )
+}/*end00rule*/
+  }
+}

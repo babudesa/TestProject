@@ -1,0 +1,228 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCommit="//ClaimLossDetailsForward.go(Claim)"
+    beforeCommit="if(util.WCHelper.isWCorELLossType(Claim)){zipcodeTexas()}; validation.ValidationUtil.clearValidationErrors(); Claim.setFrmrMainContact(); Claim.setFrmrReporter();"
+    canEdit="perm.Claim.edit(Claim)"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewclaimbasics and (Claim.State != ClaimState.TC_DRAFT)"
+    handlesValidationIssue="VALUE typeis entity.Claim or VALUE typeis entity.Incident"
+    id="ClaimLossDetails"
+    title="displaykey.Web.Claim.LossDetails"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="ClaimLossDetails(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="libraries.ISO.showSubmitInfoMessage()"
+      name="messageShown"
+      recalculateOnRefresh="true"/>
+    <Screen
+      id="ClaimLossDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true"
+        visible="util.WCHelper.isWCorELLossType(Claim)">
+        <EditButtons/>
+        <ToolbarButton
+          action="sendToISO()"
+          available="Claim.ISOButtonsAvailable"
+          confirmMessage="((Claim.ISOSendDate &gt; Claim.ISOReceiveDate)||(Claim.ISOSendDate!=null AND Claim.ISOReceiveDate==null))?displaykey.Web.ExposureDetail.SendToISO.ConfirmationMsg:null"
+          hideIfEditable="true"
+          id="ClaimLossDetails_SendToISOButton"
+          label="displaykey.Web.ClaimLossDetails.SendToISO"
+          visible="Claim.ISOButtonsVisible"/>
+        <ToolbarButton
+          action="null"
+          available="Claim.ISOButtonsAvailable"
+          hideIfEditable="true"
+          id="ClaimLossDetails_RefreshButton"
+          label="displaykey.Web.ClaimLossDetails.Refresh"
+          visible="Claim.ISOButtonsVisible"/>
+      </Toolbar>
+      <PanelRef
+        def="LossDetailsPanelSet(Claim)"
+        mode="Claim.Policy.PolicyType">
+        <Toolbar
+          visible="!util.WCHelper.isWCorELLossType(Claim)">
+          <EditButtons/>
+          <ToolbarButton
+            action="sendToISO()"
+            available="Claim.ISOButtonsAvailable"
+            confirmMessage="((Claim.ISOSendDate &gt; Claim.ISOReceiveDate)||(Claim.ISOSendDate!=null AND Claim.ISOReceiveDate==null))?displaykey.Web.ExposureDetail.SendToISO.ConfirmationMsg:null"
+            hideIfEditable="true"
+            id="ClaimLossDetails_SendToISOButton"
+            label="displaykey.Web.ClaimLossDetails.SendToISO"
+            visible="Claim.ISOButtonsVisible"/>
+          <ToolbarButton
+            action="null"
+            available="Claim.ISOButtonsAvailable"
+            hideIfEditable="true"
+            id="ClaimLossDetails_RefreshButton"
+            label="displaykey.Web.ClaimLossDetails.Refresh"
+            visible="Claim.ISOButtonsVisible"/>
+        </Toolbar>
+      </PanelRef>
+      <!-- Holds JavaScript code for WC -->
+      <PanelRef
+        visible="Claim.isWCclaim and CurrentLocation.InEditMode">
+        <PanelRow>
+          <PanelColumn>
+            <TemplatePanel><![CDATA[<script> // WC Defect 8096
+			/* This JavaScript code controls how fields look when entering the screen, and 
+			 * each field manipulated here has corresponding code on the reflection tab/custom
+			 * to handle field changes post page load.
+			 *
+			 * Due the script tag being inside the body, this code should execute only execute
+			 * when the page is fully loaded.
+			 *
+			 * TODO: These should be swapped out for partial post on change when upgrading to
+			 * ClaimCenter 8 or later (assuming performance is decent)
+			 */
+			
+			/*
+			 * Only shows Other Gov't Detail if Type of Employer is "othergovt"
+			 */
+			function updateEmployerTypeDetailVisibility() {
+				var employerTypeDetail = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:LossDetailsDV:EmployerTypeDetail');
+				
+				// prevent the script from firing when on the wrong screen
+				if (employerTypeDetail !== null){
+				
+					var employerTypeField = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:LossDetailsDV:EmployerType');
+					var	employerType = employerTypeField.options[employerTypeField.selectedIndex].value;
+
+					if (employerType != "othergovt"){
+						// Get the Table Row (<tr> tag) for Other Gov't. Detail and set its CSS display style to 'none'
+						employerTypeDetail.parentNode.parentNode.style.display = 'none';
+					} else {
+						employerTypeDetail.parentNode.parentNode.style.display = '';
+					}
+
+					// force the field to always *look* required so it doesn't have to be set on the reflector
+					employerTypeDetail.parentNode.parentNode.className= "required";
+				}
+			}
+
+			
+			/*
+			 * Only show Special Claim Handling Instructions Apply if either Policy Special Claim Handling
+			 * or Claim Special Claim Handling is true.
+			 */
+			function updateSpecialClaimHandlingInstructionsApplysVisibility() {
+				var SCHA_Threshold = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:LossDetailsDV:CLEEInputSet:SCHA_Threshold');
+				
+				// prevent the script from firing when on the wrong screen
+				if (SCHA_Threshold !== null){
+				
+					var policySCHA = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:LossDetailsDV:CLEEInputSet:Policy_SCHA_Indicator') == "true";
+					var claimSCHA = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:LossDetailsDV:CLEEInputSet:SCHA_Indicator').checked;
+
+					if (claimSCHA || policySCHA){
+						SCHA_Threshold.parentNode.parentNode.style.display = '';
+					} else {
+						SCHA_Threshold.parentNode.parentNode.style.display = 'none';
+					}
+				}
+			}
+			
+			/*
+			 * Only shows Date of Death if Is the Claimant Deceased or Injury or Illness Result in Death are true.
+			 * Show Date of Death's required indicator if Claimant Deceased is true.
+			 */
+			function updateDateOfDeathVisibilityAndRequired() {
+				var dateOfDeath = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:InjWorkerInputSet:DateOfDeath');
+
+				// prevent the script from firing when on the wrong screen
+				if (dateOfDeath !== null){
+				
+					var deathIndicator = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:InjWorkerInputSet:DeathIndicator').checked;
+					var injuryDeathIndicator = document.getElementById('ClaimLossDetails:ClaimLossDetailsScreen:LossDetailsPanelSet:LossDetailsCardCV:InjWorkerInputSet:InjuryDeathIndicator').checked;
+
+					if (deathIndicator || injuryDeathIndicator){
+						dateOfDeath.parentNode.parentNode.style.display = '';
+					} else {
+						dateOfDeath.parentNode.parentNode.style.display = 'none';
+					}
+					
+					if (deathIndicator) {
+						dateOfDeath.parentNode.parentNode.className= "required";
+					} else {
+						dateOfDeath.parentNode.parentNode.className= "";
+					}
+				}
+			}
+			
+			/* Call the functions, they also triggered by reflection
+			 * DO NOT ADD THESE AS A window.onload = function(){...} as that will 
+ 			 * break the other scripts for some reason
+			 */ 
+				try {
+					updateEmployerTypeDetailVisibility();
+					updateSpecialClaimHandlingInstructionsApplysVisibility();
+					updateDateOfDeathVisibilityAndRequired();
+				} catch(err){
+					//do nothing...just silently break...
+				}
+			</script>
+		  ]]></TemplatePanel>
+          </PanelColumn>
+        </PanelRow>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[//Defect 7250 & 8110 - check ISO required field before switching ISOEnabled and sending
+function sendToISO(){
+  var messages = ""
+  if (Claim.Exposures  != null){
+    for (exp in Claim.Exposures.where(\ e ->e.InjuryNatureDescExt == null)){
+      if (exp.ExposureType == "sp_bodily_injury" or exp.ExposureType == "sp_medical_payment" or exp.ExposureType == "sp_personal_injury" 
+      or exp.ExposureType == "sp_property_damage" or exp.ExposureType =="ex_excess_BodInjury" or exp.ExposureType =="ex_excess_PropDamage" 
+      or exp.ExposureType =="ab_AGG_auto_BodInjury" or exp.ExposureType =="ab_AGG_auto_PropDamage" or exp.ExposureType =="ab_AGG_gl_BodInjury" 
+      or exp.ExposureType =="ab_AGG_gl_PropDamage" or (exp.ExposureType =="ab_AutoPropDam" and exp.LossParty==LossPartyType.TC_THIRD_PARTY) or exp.ExposureType =="ab_BodilyInjury" or exp.ExposureType == "ab_CCC_pd"
+      or exp.ExposureType =="en_Cleanup" or exp.ExposureType =="ab_MedPay" or exp.ExposureType =="ab_PersonalInjury" or exp.ExposureType =="ab_PIP" 
+      or (exp.ExposureType =="ab_PropertyDamage" and exp.LossParty==LossPartyType.TC_THIRD_PARTY and exp.CoverageSubType !="ab_ORCHVINE_pd")  or exp.ExposureType =="ex_auto_BodInjury" or exp.ExposureType =="ex_auto_PropDamage"){
+        messages += exp + ": A Description of the alleged injuries or damage to the property is required for ISO Validation\n\n"
+      }
+    }
+    
+    for (exp in Claim.Exposures.where(\ e ->e.Claimant typeis Person and e.Claimant.FirstName == null)){
+      messages += exp + ": Claimant must have a first name of at least 1 character.\n\n"
+      }
+      
+    for (exp in Claim.Exposures.where(\ e ->e.Claimant typeis Person and e.Claimant.AddressOwner.Address.AddressLine1 == null)){
+      messages += exp + ": The Claimant's primary address Address Line 1 must not be blank.\n\n"
+      }  
+      
+    for (exp in Claim.Exposures.where(\ e ->e.Claimant typeis Person and e.Claimant.AddressOwner.Address.City == null)){
+      messages += exp + ": The Claimant's primary address City must not be blank.\n\n"
+      }  
+    
+    if (messages != "")
+      GeneralErrorWorksheet.goInWorkspace(messages)
+  }
+    
+  if (messages == ""){
+    if (Claim.ISOEnabled == false){
+      Claim.ISOEnabled = true;
+      Claim.Bundle.commit()
+    }
+  gw.api.claim.ClaimUtil.sendToISO(Claim)
+  }
+}
+function zipcodeTexas()
+{
+  if(Claim.LossLocation.State == typekey.State.TC_TX &&
+     Claim.LossLocation.PostalCode == null && 
+     !gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(Claim.LoadCommandID)){
+  
+    uses com.guidewire.pl.web.controller.UserDisplayableException
+
+    throw new UserDisplayableException("Zip Code : Missing required field \"Zip Code\"")
+       
+  }
+
+}]]></Code>
+  </Page>
+</PCF>

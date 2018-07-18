@@ -1,0 +1,19 @@
+package rules.Validation.MatterClosedValidationRules_dir.MCVXX1000AllBUsMatterClosedValidationRules_dir
+
+@gw.rules.RuleName("MCVXX1300 - Judge Last Name Required")
+internal class MCVXX1300JudgeLastNameRequired {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.CoverageOrExtraContractSuitExt == true and
+matter.JudgeLastNameExt == null/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var strErrorReason="You cannot close this Legal Action ("+ matter.Name+ ") because the Judge's Last Name is required. Please enter Judge's Last Name before closing the Legal Action."
+    matter.rejectField("JudgeLastNameExt", "newloss", strErrorReason, null, null)
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

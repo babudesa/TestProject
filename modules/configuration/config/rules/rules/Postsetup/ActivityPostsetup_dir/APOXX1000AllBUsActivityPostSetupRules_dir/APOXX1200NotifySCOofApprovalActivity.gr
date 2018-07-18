@@ -1,0 +1,36 @@
+package rules.Postsetup.ActivityPostsetup_dir.APOXX1000AllBUsActivityPostSetupRules_dir
+
+@gw.rules.RuleName("APOXX1200 - Notify SCO of Approval Activity")
+internal class APOXX1200NotifySCOofApprovalActivity {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*///Activity.AssignedGroup ==Group( "group:10000" /* SCO */ ) and
+activity.AssignedGroup==util.GlobalParameters.ParameterFinder.getGroupParameter( "gaicclaims", activity.Claim.LossType )and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment") or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change"))
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification to that SCO user
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var body = templates.email.ApprovalActivity.renderToString(activity)
+
+if(java.lang.System.getProperty( "gw.cc.env" ) == "prod"){
+  //Send e-mail to that SCO user
+  gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        activity.AssignedUser.Contact.EmailAddress1, activity.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Approval Activity Notification", body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+else{
+  //Send e-mail to that SCO user
+  gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.ClaimCenterDevEmail, activity.AssignedUser.DisplayName, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Approval Activity Notification", body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+/*end00rule*/
+  }
+}

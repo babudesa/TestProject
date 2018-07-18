@@ -1,0 +1,32 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVBS1000BondsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVBS1100 - Paid Loss Exceeds Penal Sum")
+internal class TVBS1100PaidLossExceedsPenalSum {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet" && transactionSet.New)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var check = (transactionSet as CheckSet).PrimaryCheck;
+  //var totalLoss = 0.0
+  for(payment in check.Payments){
+   if(payment.CostType == CostType.TC_CLAIMCOST){
+     //totalLoss = payment.Amount + totalLoss
+     if(payment.Amount > payment.Exposure.Coverage.AggregateLimitExt){
+       var totalLoss = gw.api.util.StringUtil.formatNumber(payment.Amount as java.lang.Double, "$#,###.00")
+       var bondLimit = gw.api.util.StringUtil.formatNumber(payment.Exposure.Coverage.AggregateLimitExt as java.lang.Double, "$#,###.00")
+       transactionSet.reject(null, null, "loadsave", "Total paid loss " + 
+         totalLoss + " will exceed the Bond Penal Sum of " + bondLimit + ".")
+     }
+   }
+  }
+  
+  
+ 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

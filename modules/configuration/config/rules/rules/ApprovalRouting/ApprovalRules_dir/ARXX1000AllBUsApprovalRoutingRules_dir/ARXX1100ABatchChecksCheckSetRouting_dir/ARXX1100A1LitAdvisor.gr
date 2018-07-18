@@ -1,0 +1,21 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100ABatchChecksCheckSetRouting_dir
+
+@gw.rules.RuleName("ARXX1100A1 - Lit Advisor")
+internal class ARXX1100A1LitAdvisor {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == "lit_advisor"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkSet = transactionSet as CheckSet;
+
+
+//Skip check rules if the check is over $20,000, otherwise head down to
+//regular check approvals
+for(c in checkSet.Checks){
+  if(c.GrossAmountExt<20000){
+    actions.exit();
+  }
+}/*end00rule*/
+  }
+}

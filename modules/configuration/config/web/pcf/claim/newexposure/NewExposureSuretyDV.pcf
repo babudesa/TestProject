@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewExposureSuretyDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.Claim.LossType"
+      name="LossType"/>
+    <Variable
+      initialValue="&quot;bs_surety&quot;"
+      name="ExposureType"
+      type="String"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="matterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Overall"/>
+      <InputSetRef
+        def="ExposureRiskChangeInputSet(Exposure, ExposureType)"/>
+      <Input
+        id="Excess"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Excess"
+        value="Exposure.Coverage.ExcessIndExt"
+        visible="(LossType == &quot;fidcrime&quot;)  || ((LossType == &quot;excessliability&quot; || LossType == &quot;excessliabilityauto&quot;) &amp;&amp; util.custom_Ext.Environmentinfo.showField())"/>
+      <Input
+        id="QuotaShare"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.QuotaShare"
+        value="Exposure.Coverage.QuotaShareIndExt"
+        visible="(LossType == &quot;fidcrime&quot;)  || ((LossType == &quot;excessliability&quot; || LossType == &quot;excessliabilityauto&quot;) &amp;&amp; util.custom_Ext.Environmentinfo.showField())"/>
+      <!-- 10/2/2008 - zthomas - Defect 1066, Change value of Assigned Group Name to use exposures assigned group. -->
+      <Input
+        id="AssignedGroup_Name"
+        label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.AssignedGroup.Name"
+        value="Exposure.getAssignmentGroup()"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClassCode"
+        value="Exposure.Coverage.ClassCodeExt"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClassDesc"
+        value="Exposure.Coverage.ClassCodeDescExt"/>
+      <Input
+        id="FeatureType"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.FeatureType"
+        value="Exposure.ExposureType"/>
+      <TypeKeyInput
+        editable="true"
+        id="FeatureAtt"
+        label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureDetail"
+        labelStyleClass="label_wrap"
+        onChange="Exposure.setFeatureLossParty() "
+        postOnChange="true"
+        required="true"
+        value="Exposure.ExposureDetailsExt"
+        valueWidth="250"/>
+      <Input
+        editable="ExposureType!=&quot;IMProperty&quot;"
+        id="ReservedFile_Ext"
+        label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exposure.ReservedFileExt"
+        required="true"
+        value="Exposure.ReservedFileExt"/>
+      <Input
+        editable="true"
+        id="InLititgation"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InLitigation"
+        onChange="Exposure.NoLegalExpenseTypeExt = null; if (Exposure.ex_InSuit == true &amp;&amp; Exposure.LegalExpenseExt != true) Exposure.LegalExpenseExt = null"
+        postOnChange="true"
+        required="true"
+        value="Exposure.ex_InSuit"/>
+      <Input
+        editable="!Exposure.doesMatterExistForFeature()"
+        id="LegalExpense"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LegalExpense"
+        onChange="Exposure.NoLegalExpenseTypeExt = null"
+        postOnChange="true"
+        required="true"
+        value="Exposure.LegalExpenseExt"
+        visible="matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+      <TypeKeyInput
+        editable="true"
+        id="NoLegalExpenseType"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.NoLegalExpenseType"
+        required="true"
+        value="Exposure.NoLegalExpenseTypeExt"
+        visible="Exposure.ex_InSuit == true and Exposure.LegalExpenseExt == false &amp;&amp; matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+      <Input
+        available="!(Exposure.ExposureType==&quot;im_DataComp&quot;) "
+        id="LossParty"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossParty"
+        required="true"
+        value="Exposure.LossParty"
+        visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;) "/>
+      <TypeKeyInput
+        editable="(Exposure.Coverage.Type.Code==&quot;im_DCBasic&quot;)and (Exposure.ExposureType==&quot;im_DataComp&quot;)? false :true"
+        formatType="general"
+        id="LossPartyType"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossParty"
+        required="true"
+        value="Exposure.LossParty"
+        visible="(Exposure.ExposureType==&quot;im_DataComp&quot;)"/>
+      <!-- Removed Incident County as required by Defect #769 - SLP - 1/21/08
+		 Stat Coding from Initial Release -->
+      <InputDivider/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, ExposureType)"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- LOSS DESCRIPTION SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.FeatureDescription"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <!-- <Label
+        label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.FeatureAttributes"/> -->
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    id="DocumentTemplateSearchPopup"
+    returnType="gw.plugin.document.IDocumentTemplateDescriptor"
+    title="displaykey.Web.TabBar.Search.DocumentTemplates">
+    <LocationEntryPoint
+      signature="DocumentTemplateSearchPopup()"/>
+    <LocationEntryPoint
+      signature="DocumentTemplateSearchPopup(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="lob"
+      type="LossType"/>
+    <Variable
+      initialValue="gaic.plugin.cc.document.EmpowerDocumentTemplateSource.empowerTemplatesNotAvailable()"
+      name="empowerTemplatesNotAvailable"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Screen
+      id="DocumentTemplateSearchScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="cancel"
+          label="displaykey.Button.Cancel"/>
+      </Toolbar>
+      <AlertBar
+        id="empowerTemplatesNotAvailable"
+        label="displaykey.TemplatesNotAvailableErrorMessage"
+        visible="empowerTemplatesNotAvailable"/>
+      <SearchPanel
+        cachingEnabled="false"
+        criteriaName="DocumentTemplateSearchCriteria"
+        maxSearchResults="gw.api.search.MaxSearchResults.forDocumentTemplates()"
+        resultCachingEnabled="false"
+        resultsName="DocumentTemplateSearchResultsList"
+        search="DocumentTemplateSearchCriteria.performSearch(CurrentLocation)"
+        searchCriteria="createSearchCriteria()"
+        searchOnEnter="true"
+        searchResultsType="DocumentTemplateSearchResults[]">
+        <PanelRef
+          def="DocumentTemplateSearchDV(DocumentTemplateSearchCriteria)"/>
+        <PanelRef
+          def="DocumentTemplateSearchResultLV(DocumentTemplateSearchResultsList)">
+          <TitleBar
+            appendListViewPaging="true"
+            title="displaykey.Web.Search.Results"/>
+          <Toolbar/>
+        </PanelRef>
+      </SearchPanel>
+    </Screen>
+    <Code><![CDATA[function createSearchCriteria() : DocumentTemplateSearchCriteria {
+  var rtn = new DocumentTemplateSearchCriteria()
+  rtn.Language = Claim.claimant.PrimaryLanguage
+  if (LossType.TF_WC_EXPORT_LOSSTYPES.TypeKeys.contains(Claim.LossType)){
+    rtn.Lob = LossType.TC_AGRIWC
+  }else{
+    rtn.Lob = Claim.LossType
+  }
+  return rtn
+}]]></Code>
+  </Popup>
+</PCF>

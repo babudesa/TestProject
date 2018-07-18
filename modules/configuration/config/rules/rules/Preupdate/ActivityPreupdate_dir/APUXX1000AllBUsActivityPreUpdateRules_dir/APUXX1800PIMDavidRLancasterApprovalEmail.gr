@@ -1,0 +1,54 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUXX1000AllBUsActivityPreUpdateRules_dir
+
+@gw.rules.RuleName("APUXX1800 - PIM David R Lancaster Approval Email")
+internal class APUXX1800PIMDavidRLancasterApprovalEmail {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*Defect # 5235 - kepage 4/25/2012 - Added this rule to send Email to Don Mueller for approval if the
+* activity is assigned to him. 
+* This rule is related to APUXX1300.  The logic had to be separate from the other rule to reduce confusion
+* since David is not specified as a "unitmanager" in the scriptparameters.xml
+* 
+*/
+
+User.util.CurrentUser!= activity.AssignedUser and
+activity.Claim.LossType=="PIMINMARINE" and
+activity.AssignedUser.DisplayName == "David R Lancaster" and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment"))and activity.Status!="complete"/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var emailBody = templates.email.ApprovalActivity.renderToString(activity)
+
+try{
+  
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+      
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {     
+
+        
+   //Send approval email to David Lancaster
+     gw.api.email.EmailUtil.sendEmailWithBody(null,
+      "dlancaster@gaig.com", "David R Lancaster", "ClaimCenterSupport@gaig.com",
+      "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+      gw.api.email.EmailUtil.sendEmailWithBody(null,
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+        ScriptParameters.ClaimCenterDevEmail, environmentInformation,
+         "Approval Activity Notification", emailBody)   
+    }
+
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

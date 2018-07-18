@@ -1,0 +1,19 @@
+package rules.Validation.ExposureValidationRules_dir.EVAG1000AgriBusinessExposureValidationRules_dir.EVAG1300ValidforAbilitytoPay_dir
+
+@gw.rules.RuleName("EVAG1370 - Car Seat")
+internal class EVAG1370CarSeat {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.Claim.LossType==LossType.TC_ALTMARKETSAUTO OR exposure.Claim.LossType==LossType.TC_SHSAUTO) 
+AND (exposure.ExposureType==ExposureType.TC_AB_PHYSICALDAMAGE OR exposure.ExposureType==ExposureType.TC_AB_AUTOPROPDAM)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(exposure.CarSeatExt==null){
+    exposure.rejectField( "CarSeatExt", "payment", displaykey.Rules.Validaton.Exposure.Agribusiness.AbilityToPay.CarSeat, null, null )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

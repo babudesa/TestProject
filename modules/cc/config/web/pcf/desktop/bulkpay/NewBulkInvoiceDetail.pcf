@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="helper.flushCache(); BulkPay.go()"
+    afterCommit="helper.flushCache(); EditBulkInvoiceDetail.go( bulkInvoice )"
+    beforeCommit="helper.clearUnusedReserveLineWrappers(bulkInvoice); bulkInvoice.verifyChangesAllowed()"
+    beforeValidate="helper.prepBulkInvoiceForSave(bulkInvoice, CostType.TC_UNSPECIFIED, CostCategory.TC_UNSPECIFIED)"
+    canEdit="perm.BulkInvoice.create"
+    canVisit="perm.BulkInvoice.create"
+    id="NewBulkInvoiceDetail"
+    parent="BulkPay()"
+    showUpLink="true"
+    startInEditMode="true"
+    title="displaykey.Web.Financials.BulkPay.Invoice.BulkInvoiceDetail">
+    <LocationEntryPoint
+      signature="NewBulkInvoiceDetail()"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      initialValue="helper.newBulkInvoice()"
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalContactSource"/>
+    <Variable
+      initialValue="bulkInvoice.Payee!=null ? bulkInvoice.Payee.generateLinkStatus() : null"
+      name="payeeLinkStatus"
+      recalculateOnRefresh="true"/>
+    <Screen
+      editable="true"
+      id="BulkInvoiceDetailScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+      </Toolbar>
+      <PanelRef
+        def="BulkInvoiceDetailDV(bulkInvoice, externalContactSource, payeeLinkStatus)"/>
+      <PanelRef
+        def="BulkInvoiceItemsLV(bulkInvoice, helper)">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

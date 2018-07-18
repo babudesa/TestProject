@@ -1,0 +1,28 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1170 - Sync Check Payee for Vendor")
+internal class TVXX1170SyncCheckPayeeforVendor {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.New or 
+(transactionSet as CheckSet).PrimaryCheck.Changed/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkset = transactionSet as CheckSet;
+var payee = checkset.PrimaryCheck.Payees[0].ClaimContact.Contact;
+var linkStatus = payee.generateLinkStatus()
+if((payee typeis PersonVendor and payee.PayableExt) or 
+   (payee typeis CompanyVendor and payee.PayableExt))
+{  
+  for(check in(transactionSet as CheckSet).Checks){
+    if(check.Status=="awaitingsubmission" or check.Status=="pendingapproval"){
+      if(linkStatus.Linked and (!linkStatus.Synced or !linkStatus.SyncedRemote))
+      {   
+        transactionSet.reject("payment","Cannot issue a payment to a payee that is not both a payable vendor and in sync with the address book.", null, null)
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

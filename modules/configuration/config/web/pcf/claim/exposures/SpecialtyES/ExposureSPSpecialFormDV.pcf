@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ExposureSPSpecialFormDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, ExpType)"/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <InputSetRef
+        def="ExposureCertificateInputSet(Exposure)"
+        visible="Exposure.Claim.Policy.PolicyType != PolicyType.TC_PRC and Exposure.Claim.Policy.PolicyType != PolicyType.TC_PRX"/>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- Loss Description Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- THIRD PARTY ONLY  Damage Property Description, Recovery -->
+      <InputSetRef
+        def="ThirdPPropDamInputSet(Exposure)"
+        visible="Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRC or Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRX"/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider
+        visible="Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRC || Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRX || Exposure.Claim.UIHelper.isSIRVisible()"/>
+      <InputSetRef
+        def="SIRInputSet(Exposure)"
+        visible="Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRC || Exposure.Claim.Policy.PolicyType == PolicyType.TC_PRX || Exposure.Claim.UIHelper.isSIRVisible()"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

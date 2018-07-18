@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Late Binding Fields</title>
+    <link rel="StyleSheet" href="css/eventsmessaging.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="eventsmessaging.10.01.html#3946497">Messaging and Events</a> : Late Binding Fields</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="3946497">Late Binding Fields</a></div>
+      <div class="B_-_Body"><a name="3946498">In most cases, capture information for the message payload at the time the Event Fired rule set runs. For </a>example, for an <span class="cv_-_computer_voice">ClaimChanged</span> event, typical messages contain the new information for the account as of the time the event triggers and the Event Fired rule set runs. This often a good thing. However, this prevents <span class="e_-_emphasis">later</span> changes to an object appearing in an <span class="e_-_emphasis">earlier</span> message about that object. This is relevant if there is a large delay in sending the message for whatever reason. </div>
+      <div class="B_-_Body"><a name="3946503">Sometimes you need the latest possible value on an entity as the message leaves the send queue on its way to the </a>destination. For example, imagine sending a new claim to an external system. As part of the acknowledgement, the external system might send back its ID for the new claim. You can set the <span class="e_-_emphasis">public ID</span> in ClaimCenter to that external system’s ID for the claim. </div>
+      <div class="B_-_Body"><a name="4323109">Continuing this example, suppose the next message send a </a><span class="e_-_emphasis">reserve</span> for that claim to the external system. In this message, include the claim’s <span class="s_-_strong">new</span> public ID received from the external system in the acknowledgement. This lets the external system knows to which claim this reserve belongs. If you exported the original public ID value during the original Event Fired rule, the original message cannot contain the new value. In that case, you cannot tell external system which claim belongs with this reserve.</div>
+      <div class="B_-_Body"><a name="3946540">ClaimCenter solves this problem by allowing </a><span class="e_-_emphasis">late binding</span> of properties in the message payload. You can designate certain properties for late binding so they calculate values immediately before the messaging transport sends the message.</div>
+      <div class="B_-_Body"><a name="3946543">As a general rule, Guidewire recommends exporting properties regularly (early bound) unless you have a </a>specific reason why late binding is critical for that message and destination.</div>
+      <div class="B_-_Body"><a name="3946550">For new entities, ClaimCenter entity’s </a><span class="e_-_emphasis">public ID property</span> is typically sent late bound. In typical installations, a message acknowledgement or external system (using web service APIs) could change the public ID between creating (submitting) the message and sending it.</div>
+      <div class="B_-_Body"><a name="3946555">For other properties, decide whether early binding or late binding is most appropriate. </a></div>
+      <div class="B_-_Body"><a name="3946556">At message creation time in Event Fired rules, add your own marker within the message. Your </a><span class="cv_-_computer_voice">MessageRequest</span> plugin code or <span class="cv_-_computer_voice">MessageTransport</span> plugin code can directly find the message root object such as a <span class="cv_-_computer_voice">Claim</span> and substitute the current value. If ClaimCenter calls your <span class="cv_-_computer_voice">MessageRequest</span> plugin, the current value of the property is a late bound value and you can replace the marker with the new value. </div>
+      <div class="B_-_Body"><a name="3946563">For example, a Gosu implementation of </a><span class="cv_-_computer_voice">MessageRequest</span> might do this like the following in its <span class="cv_-_computer_voice">beforeSend</span> method. In this example, the transport assumes the message root object is a <span class="cv_-_computer_voice">Claim</span> and replaces the special marker in the payload with the value of extension property <span class="cv_-_computer_voice">SomeProperty</span>:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="4087587">function beforeSend(m : Message) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4087588">&nbsp;</a>&nbsp;var c = m.MessageRoot as Claim</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4087589">&nbsp;</a>&nbsp;var s = org.apache.commons.lang.StringUtils.replace(m.getPayload(),&nbsp;"&lt;AAAA&gt;",c.SomeProperty)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="3946580">&nbsp;</a>&nbsp;return s</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="3946581">}</a></PRE>
+      <div class="B_-_Body"><a name="3946582">This example assumes that the message contains the string </a><span class="cv_-_computer_voice">"&lt;AAAA&gt;"</span> as a special marker in the message text.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir.PVXX11K0ProducerRequirements_dir
+
+@gw.rules.RuleName("PVXX11K2 - Agency Address Required")
+internal class PVXX11K2AgencyAddressRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{  
+  if (policy.ex_Agency.PrimaryAddress == null) {
+    policy.rejectField( "ex_Agency.PrimaryAddress", "newloss", displaykey.Rules.Validation.Policy.Enterprise.NewLoss.AgentAddress, null, null )
+  }
+  else {
+    if (policy.ex_Agency.PrimaryAddress.PostalCode == null and util.custom_Ext.finders.postCodeRequired(policy.ex_Agency.PrimaryAddress.Country.Code, true)) {
+        policy.rejectField( "ex_Agency.PrimaryAddress.PostalCode", "newloss", displaykey.Rules.Validation.Policy.Enterprise.NewLoss.AgentZip, null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

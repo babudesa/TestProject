@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="!claim.checkDisconnectedFeatures()"
+    canVisit="perm.Claim.view(claim) and perm.Evaluation.view(claim) and perm.System.viewclaimevals"
+    id="ClaimEvaluations"
+    title="displaykey.Web.ClaimPlanOfAction.Evaluations">
+    <LocationEntryPoint
+      signature="ClaimEvaluations(claim : Claim)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Screen
+      id="ClaimEvaluationsScreen">
+      <Toolbar>
+        <!-- <ToolbarButton
+          action="NewEvaluation.go(claim)"
+          hideIfEditable="true"
+          id="CE_Add"
+          label="displaykey.Web.ClaimPlanOfAction.Evaluations.NewEvaluation"
+          shortcut="N"
+          visible="perm.Claim.createevaluation(Claim)"/> -->
+        <!-- Email Dated June 12 to Santosh, Joe, Dan subject UDW.Claims - Defect #1872
+    	 New Evaluation button will be disabled as there are several types of Evaluations -->
+        <IteratorButtons
+          addVisible="false"
+          removeLabel="displaykey.Button.Delete"
+          removeShortcut="D"
+          removeVisible="perm.Evaluation.edit(claim) and !claim.checkDisconnectedFeatures()"/>
+      </Toolbar>
+      <ListDetailPanel
+        lockWhileEditing="true"
+        selectionName="evaluation"
+        selectionType="Evaluation">
+        <PanelRef
+          def="EditableEvaluationsLV(claim.Evaluations, claim)"/>
+        <CardViewPanel>
+          <Card
+            id="DetailViewTitleCard"
+            title="displaykey.Web.ClaimPlanOfAction.Evaluations.DetailViewTitle(evaluation)">
+            <PanelRef
+              def="ClaimEvaluationDetailsDV(evaluation)"
+              mode="claim.LossType">
+              <Toolbar>
+                <EditButtons
+                  cancelVisible="false"
+                  editVisible="isEditable(evaluation)"
+                  showUpdateConfirmMessage="evaluation.EvaluationTypeExt==&quot;liability&quot; ? evaluation.checkReserves() : null"
+                  updateConfirmMessage="displaykey.Web.ClaimPlanOfAction.Evaluations.UpdateMessage"/>
+                <ToolbarButton
+                  action="evaluation.SaveToECFExt = true; CurrentLocation.commit()"
+                  id="ToolbarButton_SaveToECF"
+                  label="displaykey.Button.UpdateSaveToECF"
+                  visible="CurrentLocation.InEditMode"/>
+                <EditButtons
+                  editVisible="false"
+                  showUpdateConfirmMessage="evaluation.EvaluationTypeExt==&quot;liability&quot; ? evaluation.checkReserves() : null"
+                  updateConfirmMessage="displaykey.Web.ClaimPlanOfAction.Evaluations.UpdateMessage"
+                  updateVisible="false"/>
+                <ToolbarButton
+                  action="Evaluation.refreshFields()"
+                  hideIfReadOnly="true"
+                  id="ClaimEvaluations_Refresh"
+                  label="displaykey.Web.ClaimEvaluations.Refresh"
+                  shortcut="F"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+    <Code><![CDATA[// 7.10.15 dcarson2 - Defect 7461 - Adding Craig's code from WorkComp to allow the most recent of each evaluation type 
+//to be editable including those saved to ECF (10.20.15 changed to latest ID to fix multiples created in less than a minute). 
+function isEditable(ev : Evaluation) : boolean {
+return perm.Evaluation.edit(claim) && 
+      !exists(otherEval in ev.Claim.Evaluations where otherEval.EvaluationTypeExt == ev.EvaluationTypeExt && otherEval.ID > ev.ID)
+}]]></Code>
+  </Page>
+</PCF>

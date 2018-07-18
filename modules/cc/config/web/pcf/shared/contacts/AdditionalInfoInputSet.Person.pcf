@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="AdditionalInfoInputSet"
+    mode="Person">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <PrivacyInput
+      editable="true"
+      encryptionExpression="Person.maskTaxId(VALUE)"
+      id="TaxID"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxID"
+      required="false"
+      value="Person.TaxID"/>
+    <Input
+      editable="true"
+      id="TaxFilingStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxFilingStatus"
+      value="Person.TaxFilingStatus"/>
+    <Input
+      editable="true"
+      id="DateOfBirth"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.DateOfBirth"
+      value="Person.DateOfBirth"/>
+    <Input
+      editable="true"
+      id="Gender"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+      value="Person.Gender"/>
+    <Input
+      editable="true"
+      id="MaritalStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MaritalStatus"
+      value="Person.MaritalStatus"/>
+    <ClaimContactInput
+      claim="Claim"
+      editable="true"
+      forceContactSubtype="entity.Person.Type"
+      id="Guardian"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Guardian"
+      newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+      parentContact="Person"
+      value="Person.Guardian"
+      valueRange="Claim.RelatedPersonArray"/>
+    <Input
+      editable="true"
+      id="Currency"
+      label="displaykey.Financials.Multicurrency.PreferredCurrency"
+      value="Person.PreferredCurrency"
+      visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode()"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Company"/>
+    <Input
+      editable="true"
+      id="Occupation"
+      label="displaykey.Web.ContactDetail.Company.Occupation"
+      value="Person.Occupation"/>
+    <ClaimContactInput
+      claim="Claim"
+      editable="true"
+      id="Organization"
+      label="displaykey.Web.ContactDetail.Company.Organization"
+      parentContact="Person"
+      value="Person.Employer"
+      valueRange="Claim.RelatedCompanyArray"/>
+    <Code><![CDATA[
+property get Person() : Person { return contactHandle.Contact as Person; }
+    ]]></Code>
+  </InputSet>
+</PCF>

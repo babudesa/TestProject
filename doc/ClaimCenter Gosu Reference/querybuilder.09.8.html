@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Advanced Queries (Subselects and Joins)</title>
+    <link rel="StyleSheet" href="css/querybuilder.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="querybuilder.09.1.html#2211737">Query Builder</a> : Advanced Queries (Subselects and Joins)</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="2211737">Advanced Queries (Subselects and Joins)</a></div>
+      <div class="B_-_Body"><a name="2211738">You can use Gosu to query from multiple database tables using a SQL feature called </a><span class="e_-_emphasis">table joins</span>. A table join combines records from multiple tables, linking them using columns (each representing entity properties) that exist in more than one table. One table links to another table by containing a column for a foreign key, which is a unique ID column from another table. For example, imagine an address book application with a table of people and each row for a person has a unique ID column. Suppose another table represents students enrolled in courses at a university. The table for classes refer to people only by the unique ID for the person. Consequently, that column exists in both tables. If you want to get a list of names of students in a specific course, you can write a <span class="e_-_emphasis">join query</span> using information from both tables.</div>
+      <div class="B_-_Body"><a name="2209680">Gosu provides two basic ways to join tables and query against the results. The following table compares and </a>contrasts the two methods, <span class="cv_-_computer_voice">subselect</span> and <span class="cv_-_computer_voice">join</span>. To decide which API method to use, you must first determine what type of join you need. </div>
+      <div class="B_-_Body"><a name="2209681">The first question is which table contains the foreign key that links the tables. For the sake of this documentation, </a>we refer to the entity you are searching (and want results for) as the <span class="e_-_emphasis">primary table</span>. The joined table is the <span class="e_-_emphasis">secondary table</span>.</div>
+      <div class="B_-_Body"><a name="2207071">If the foreign key that links the two tables is defined on the secondary table, this is called a </a><span class="e_-_emphasis">reverse join</span>. For example, suppose you search for a set of entities that have child entities:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2207182">If the primary table has a foreign key that link to the secondary table, this is a </a><span class="s_-_strong">forward join</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2207146">If the secondary table has a foreign key that link to the primary table, this is a </a><span class="s_-_strong">reverse join</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2209985">For joins, there is another choice you need to make. You must choose whether you want to get matches on the </a>primary table even if there is no link to the secondary table at all. For example, suppose you search for a set of entities that have child entities. Do you want results in the primary table, even if the parent does not have a child entity? </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2207747">If you do not want an entity to match on the primary table if your inner query on your secondary table does </a>not match items, this is an <span class="s_-_strong">inner join</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2207763">If you want an entity to match on the primary table if your inner query on your secondary table does not </a>match items, this is an <span class="s_-_strong">outer join</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2207390">Refer to the following table to determine which method to use. These are general recommendations only. Due to </a>subtleties in how database optimizers work, your performance might vary with different approaches. You might try multiple approaches under realistic loads to determine real-world performance:</div>
+      <div class="T_-_Table"><a name="2213941">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left;" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="2213920">&nbsp;</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="2213922">Inner joins</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="2213924">Outer joins</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: Arial; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="2213926">Forward joins</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="2213928">Use </a><span class="cvt_-_computer_voice_table">join</span> method. This method never returns duplicates on the primary table. Because it is an inner join, entities on the primary table only match if there is an associated entity on the secondary table.</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="2213930">Use </a><span class="cvt_-_computer_voice_table">outerJoin</span> method. Forward joins never return duplicates in the primary table. Because it is an outer join, entities on the primary table successfully match (is in the results) if the foreign key to the secondary table is <span class="cvt_-_computer_voice_table">null</span>.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: Arial; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="2213932">Reverse joins</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="2213934">Use </a><span class="cvt_-_computer_voice_table">subselect</span> method, generally speaking. This method never returns duplicates on the primary table. Because it is an inner join, entities on the primary table only match if there is an associated entity on the secondary table.</div>
+            <div class="TT_-_Table_Text"><span class="s_-_strong"><a name="2213935">IMPORTANT:</a></span> Every situation is different and in some cases using the <span class="cvt_-_computer_voice_table">join</span> method might perform better. For example, if the secondary table including predicates are not very selective. In other words, if the secondary clause returns lots of results, use <span class="cvt_-_computer_voice_table">join</span> instead. For important queries, Guidewire recommends trying both approaches under performance testing. If you use <span class="cvt_-_computer_voice_table">join</span>, use two-parameter method signature including the table name and column name in the joined table.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="2213937">Use </a><span class="cvt_-_computer_voice_table">join</span> method two-parameter method signature including the table name and column name in the joined table. Because it is an outer join, entities on the primary table successfully match (is in the results) if the foreign key to the secondary table is <span class="cvt_-_computer_voice_table">null</span>. An outer reverse join is susceptible to accidental duplicate rows on the primary table. For example, if you multiple child objects link to the parent, do you want duplicate rows in the parent table for each child that matches. For more discussion on reducing duplicates, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2209051', '');" title="Advanced Queries (Subselects and Joins)">"Duplicates with Reverse Joins"</a>.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="2213942">Both these methods create a SQL join and add additional predicates to the </a><span class="cv_-_computer_voice">HAVING</span> part of a SQL query. In contrast, calling comparison and match predicates <span class="e_-_emphasis">directly </span>on a new query adds predicates to a <span class="cv_-_computer_voice">WHERE</span> clause of the SQL query. If you add predicates to the <span class="cv_-_computer_voice">WHERE</span> part of a SQL query that is the right hand side of a <span class="e_-_emphasis">join,</span> Gosu adds the predicates to the SQL query. The new predicates are in the <span class="cv_-_computer_voice">ON</span> clause of the join.</div>
+      <div class="B_-_Body"><a name="2206989">For maximum performance and query optimization, only use joins if necessary, and always minimize the number </a>of joins you use. If multiple queries operate on the same table, conceptually you can use joins or intersect operators to perform the query. However, generally speaking it is more efficient to collect those predicates altogether in one clause when possible. For example, suppose one query searches table <span class="cv_-_computer_voice">A</span> for a specific value for column <span class="cv_-_computer_voice">Property1</span> and another query searches table <span class="cv_-_computer_voice">A</span> for a specific value for column <span class="cv_-_computer_voice">Property2</span>. Although you could join the two queries together, it is best to create a single query with no joins and just add two compare predicates. That type of database query is easiest to optimize. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.2.html#2180576', '');" title="Query Builder Overview">"Basic Queries"</a> for examples of adding multiple predicates to a single query.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2213603">The </a><span class="cv_-_computer_voice">join</span> method (and its variants) and the <span class="cv_-_computer_voice">subselect</span> method are defined on the <span class="cv_-_computer_voice">IQueryBuilder</span> interface. Queries implement this interface, but so do tables and restrictions objects. This is important because building up complex queries typically involve methods that return one of these other two types of objects (tables and restrictions). You can optionally write your code such that you can take the result of one action and directly call the <span class="cv_-_computer_voice">join</span> or <span class="cv_-_computer_voice">subselect</span> method at the end. This type of direct builder pattern is called <span class="e_-_emphasis">chaining</span>. You can use chaining with any of the methods defined on <span class="cv_-_computer_voice">IQueryBuilder</span>.</div>
+      <div class="H2_-_Heading_2"><a name="2207006">Using Subselect for Reverse Inner Joins</a></div>
+      <div class="B_-_Body"><a name="2206995">The </a><span class="cv_-_computer_voice">subselect</span> method reduces the number of rows returned by a query based on a subquery to other queries using a subselect operation. This method is defined on the <span class="cv_-_computer_voice">Restriction</span> class. Use <span class="cv_-_computer_voice">subselect</span> only if the foreign key that links the two tables is defined on the secondary table. This is called a <span class="e_-_emphasis">reverse join</span>. For example, suppose you search for a set of entities that have child entities. If the foreign is defined on the child entity to link to the parent, this is a <span class="e_-_emphasis">reverse join</span>.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2208254">Every situation is different and in rare cases using the </a><span class="cvt_-_computer_voice_table">join</span> method might perform better. For example, if the secondary table including predicates are not very selective. In other words, if the secondary clause returns lots of results, use <span class="cvt_-_computer_voice_table">join</span> instead. For important queries, Guidewire recommends trying both approaches under performance testing. If you use <span class="cvt_-_computer_voice_table">join</span>, use two-parameter method signature including the table name and column name in the joined table. For more information, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2199921', '');" title="Advanced Queries (Subselects and Joins)">"Join Method"</a>.</div>
+      <div class="B_-_Body"><a name="2199415">A subselect joins a query or table to another query or table in the following ways:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2198935">Join any column on the parent entity with any entity on the child.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2198936">Join using any function on a column on the parent with any function on any column on the child.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2198937">Join with SQL constant functions. For example, using the SQL </a><span class="cv_-_computer_voice">count</span> constant function:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="2199511">where 0 in (select count(ID) from ...))</a></div>
+      <div class="B_-_Body"><a name="2201125">To perform a subselect on a query, call the </a><span class="cv_-_computer_voice">subselect</span> method. There are many different method signatures for this method, which in the following sections are grouped with similar method signatures. </div>
+      <div class="B_-_Body"><a name="2201468">If you have already defined the join table in the query, you can use a set of method signature in the following </a>order:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2201475">a column </a><span class="s_-_strong">in the primary table</span> <span class="e_-_emphasis">or</span> a database function </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2201501">an operation</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2201849">a column </a><span class="s_-_strong">in the join table</span> <span class="e_-_emphasis">or</span> a database function </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2201641">If you pass a column for either the first or third argument, simply pass a </a><span class="cv_-_computer_voice">String</span> version of the column name. The method actually takes a <span class="cv_-_computer_voice">IEntityPropertyInfo</span> object, but Gosu does the coercion to this type automatically at compile time. You can also pass a database function, such as <span class="cv_-_computer_voice">DBFunction.Count(Child,</span><span class="cv_-_computer_voice">&nbsp;</span><span class="cv_-_computer_voice">"ID")</span> or a constant using D<span class="cv_-_computer_voice">BFunction.Constant(2)</span>.<span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt;"> </span>For more information about database functions, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.2.html#2180576', '');" title="Query Builder Overview">"Basic Queries"</a><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt;">.</span> For the first and third arguments, you can pass any combination of columns or database functions: both as columns, both as database functions, or one of each in either argument.</div>
+      <div class="B_-_Body"><a name="2201676">For the operation, pass either </a><span class="cv_-_computer_voice">CompareIn</span> or <span class="cv_-_computer_voice">CompareNotIn</span>, which are enumeration values of the type InOperation. The query generates a SQL <span class="cv_-_computer_voice">IN</span> clause if the operation is <span class="cv_-_computer_voice">CompareIn</span>. The query generates a SQL <span class="cv_-_computer_voice">NOT</span><span class="cv_-_computer_voice">&nbsp;</span><span class="cv_-_computer_voice">EXISTS</span> clause if the operation is <span class="cv_-_computer_voice">CompareNotIn</span>. </div>
+      <div class="B_-_Body"><a name="2201776">For example, suppose you have an entity called </a><span class="cv_-_computer_voice">SampleParent</span> with an ID field and some of those objects have subobjects of type <span class="cv_-_computer_voice">SampleParent</span> that link back in their Parent field. The following subselect joins these two tables:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2201997">query.subselect( "ID", CompareIn, "Parent")</a></div>
+      <div class="B_-_Body"><a name="2201998">You can then add additional predicates by calling predicate methods on this object. For example, call the </a><span class="cv_-_computer_voice">compare</span> predicate. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.2.html#2180576', '');" title="Query Builder Overview">"Basic Queries"</a> for more information.</div>
+      <div class="B_-_Body"><a name="2201999">Example with database function:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2201803">subselect( DBFunction.Constant(2), CompareIn, DBFunction.Count(Child, "ID").</a></div>
+      <div class="B_-_Body"><a name="2201894">Another group of method signatures take an additional argument containing a query that you previously defined. </a>These methods take the following arguments in the following order:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2202096">a column </a><span class="s_-_strong">in the primary table</span> <span class="e_-_emphasis">or</span> a database function </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2202097">an operation</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2202130">a joining query</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2202167">a joining column </a><span class="s_-_strong">in the query</span> <span class="e_-_emphasis">or</span> a database function </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2202168">Just like the previous group of method signature variants, simply pass a </a><span class="cv_-_computer_voice">String</span> version of the column name. Similarly, for the first and fourth arguments, you can pass any combination of columns or database functions. You can pass both as columns, both as database functions, or one of each in either argument.</div>
+      <div class="HS_-_Head_Sub"><a name="2201127">Subselect with Subobjects</a></div>
+      <div class="B_-_Body"><a name="2213635">For example, suppose we have an entity called </a><span class="cv_-_computer_voice">SampleParent</span> and it has a subobject of entity type <span class="cv_-_computer_voice">SampleChild</span>. Suppose the parent object has an <span class="cv_-_computer_voice">ID</span> property as a key, and the subobject links to it with its own <span class="cv_-_computer_voice">Parent</span> property. To find all <span class="cv_-_computer_voice">SampleParent</span> objects that have at least one <span class="cv_-_computer_voice">SampleChild</span> subobject in which the child’s <span class="cv_-_computer_voice">TextField1</span> has the value <span class="cv_-_computer_voice">"Hello"</span>, use the following query:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2213636">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2213637">q.subselect( "ID", CompareIn, SampleChild, "Parent").compare("TextField1", Equals, "Hello")</a></PRE>
+      <div class="B_-_Body"><a name="2198941">This produces the SQL</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198942">Values=[Hello]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198946">SELECT &lt;beans&gt; FROM cc_sampleparent qRoot WHERE qRoot.ID IN (SELECT qRoots0.parentId </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210000">&nbsp;</a>&nbsp;&nbsp;col0 FROM cc_samplechild qRoots0 WHERE qRoots0.TextField1 = ?)</PRE>
+      <div class="HS_-_Head_Sub"><a name="2199650">Subselect with Negation (Not In)</a></div>
+      <div class="B_-_Body"><a name="2213625">In this variant of the previous example, suppose you want to find all </a><span class="cv_-_computer_voice">SampleParent</span> objects that do <span class="s_-_strong">not</span> have <span class="cv_-_computer_voice">SampleChild</span> subobjects in which subobject’s <span class="cv_-_computer_voice">TextField1</span> property has the value <span class="cv_-_computer_voice">"Hello"</span>. You can use the following query:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2213626">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2213627">q.subselect( "ID", CompareNotIn, SampleChild, "parent").compare("TextField1", Equals, "Hello")</a></PRE>
+      <div class="B_-_Body"><a name="2198954">This produces the SQL</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198955">Values=[Hello]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198959">SELECT &lt;beans&gt; FROM cc_sampleparent qRoot WHERE  NOT EXISTS (SELECT qRoots0.ID col0 </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210011">&nbsp;</a>&nbsp;FROM cc_samplechild qRoots0 WHERE qRoots0.parentId = qRoot.ID AND qRoots0.TextField1 = ?)</PRE>
+      <div class="HS_-_Head_Sub"><a name="2198982">Subselect with Boolean Algebra</a></div>
+      <div class="B_-_Body"><a name="2198983">The following example combines joins and Boolean algebra:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198984">    var q = Query.make(TestE)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198985">    q.and(\and1-&gt;{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198986">      and1.or(\or1-&gt;{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198987">        or1.compare("E", Equals, 0)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198988">        or1.compare("E", Equals, 1)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198989">      })</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198990">      and1.or(\or2-&gt;{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198991">        or2.subselect( DBFunction.Constant(2), CompareIn, DBFunction.Count(Child, "ID")).compare("E",</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210029">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Equals, q.getColumnRef("ID"))</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198992">        or2.subselect( DBFunction.Constant(3), CompareIn, DBFunction.Count(Child, "ID")).compare("E",</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210037">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Equals, q.getColumnRef("ID"))</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198993">      })</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198994">    })</a></PRE>
+      <div class="B_-_Body"><a name="2198995">This produces the SQL:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198996">Values=[0, 1]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2199000">SELECT  FROM cc_parent qRoot WHERE ((((qRoot.E = ?) OR (qRoot.E = ?))) AND (((2 IN (SELECT </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210062">COUNT(qRoots0.ID) col0 FROM cc_test_a qRoots0 WHERE qRoots0.EID = qRoot.ID)) </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210072">OR (3 IN (SELECT COUNT(qRoots0.ID) col0 FROM cc_test_a qRoots0 WHERE qRoots0.EID = qRoot.ID)))))</a></PRE>
+      <div class="H2_-_Heading_2"><a name="2199921">Join Method</a></div>
+      <div class="B_-_Body"><a name="2208377">The other Gosu query builder approach for joins is the </a><span class="cv_-_computer_voice">join</span> method defined on all <span class="cv_-_computer_voice">IQueryBuilder</span> types: tables, restrictions, and restrictions. The <span class="cv_-_computer_voice">join</span> method can do SQL join types that the <span class="cv_-_computer_voice">subselect</span> method cannot do. For example, outer joins and self-joins. Additionally, for reverse joins, the <span class="cv_-_computer_voice">join</span> method can return duplicate rows on the primary table due to the way SQL natively handles these types of joins. </div>
+      <div class="B_-_Body"><a name="2213573">See </a><a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2207006', '');" title="Advanced Queries (Subselects and Joins)">"Using Subselect for Reverse Inner Joins"</a> for more information about <span class="cv_-_computer_voice">subselect</span>. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2211737', '');" title="Advanced Queries (Subselects and Joins)">"Advanced Queries (Subselects and Joins)"</a> for more information about the differences. If you have questions about when or how to use the <span class="cv_-_computer_voice">join</span> method, contact Guidewire Customer Support.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2213586">The </a><span class="cv_-_computer_voice">join</span> method and its variants are defined on the <span class="cv_-_computer_voice">IQueryBuilder</span> interface. Queries implement this interface, but so do tables and restrictions objects. This is important because building up complex queries typically involve methods that return one of these other two types of objects (tables and restrictions). You can optionally write your code such that you can take the result of one action and directly call the <span class="cv_-_computer_voice">join</span> method at the end. This type of direct builder pattern is called <span class="e_-_emphasis">chaining</span>. You can use chaining with any of the methods defined on <span class="cv_-_computer_voice">IQueryBuilder</span>.</div>
+      <div class="H3_-_Heading_3"><a name="2208450">Forward Joins</a></div>
+      <div class="B_-_Body"><a name="2208728">If the foreign key is on the primary table linking to the secondary table, use a forward join. </a></div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2209272">This topic uses the terminology </a><span class="e_-_emphasis">inner join</span>, <span class="e_-_emphasis">outer join</span>, <span class="e_-_emphasis">forward join</span>, and <span class="e_-_emphasis">reverse join</span>. For definitions of these terms, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2211737', '');" title="Advanced Queries (Subselects and Joins)">"Advanced Queries (Subselects and Joins)"</a>.</div>
+      <div class="B_-_Body"><a name="2208467">To perform an inner forward join, first determine the property on the primary table that joins to the secondary </a>table. To join one table to another, call the <span class="cv_-_computer_voice">join</span> method and pass the foreign key column as a property name <span class="cv_-_computer_voice">String</span> to the <span class="cv_-_computer_voice">join</span> method. For example, suppose you have an entity <span class="cv_-_computer_voice">SampleParent</span> and each one has a property <span class="cv_-_computer_voice">MyChildObjectProperty</span> that contains a foreign key to the <span class="cv_-_computer_voice">SampleChild</span> table. The following is an example of a simple inner join:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2208468">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2208469">q.join("MyChildObjectProperty")</a></PRE>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2208470">Pass the Gosu version of the property name. Do not pass the actual database column name with the </a><span class="cv_-_computer_voice">cc_</span> prefix, such as <span class="cv_-_computer_voice">cc_mychildobjectproperty</span>.</div>
+      <div class="B_-_Body"><a name="2208586">If you do not add additional predicates to the query </a><span class="cv_-_computer_voice">q</span>, the query returns all <span class="cv_-_computer_voice">SampleParent</span> entity that contain an associated <span class="cv_-_computer_voice">SampleChild</span> entity. Gosu returns one for each match in the <span class="cv_-_computer_voice">SampleChild</span> table. (See notes about duplicates later in this topic.)</div>
+      <div class="B_-_Body"><a name="2208587">You can add predicates to the primary table before or after the join. Adding predicates limits the rows that Gosu </a>returns on the primary table:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2208628">If you add predicates to the outer query, the namespace of the properties is by default the properties on the </a>outer table. (For related information, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2212041', '');" title="Advanced Queries (Subselects and Joins)">"Advanced Inline Views"</a>). For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208690">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208691">q.compareIn("ID", myEntityIDs)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2208692">q.join("MyChildObjectProperty")</a></PRE>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2208643">If you add predicates to the joined table, also referred to as the inner query, the namespace of properties by </a>default is the set properties on the outer table. However, you can also use columns on the outer table by using the <span class="cv_-_computer_voice">getColumnRef</span> method on the original query. Pass the column name on the primary table to the <span class="cv_-_computer_voice">getColumnRef</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2208773">If you want to return result on the primary entity table even if there is no associated entity on the secondary table, </a>use the <span class="cv_-_computer_voice">outerJoin</span> method instead of <span class="cv_-_computer_voice">join</span>. </div>
+      <div class="B_-_Body"><a name="2208802">For example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208837">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208838">q.compareIn("ID", myEntityIDs)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2209022">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2209036">// returns a SampleParent entity even if it has no SampleChild</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2208839">q.outerJoin("MyChildObjectProperty") </a></PRE>
+      <div class="H3_-_Heading_3"><a name="2209306">Reverse Joins</a></div>
+      <div class="B_-_Body"><a name="2209307">In contrast, in some cases the property that links the object on the secondary table to the primary table exists on </a>the secondary table. This is instead called a <span class="e_-_emphasis">reverse join</span>. This is the standard design pattern for Guidewire entities in the data model that appear in Gosu as entities properties containing arrays of entities. At the database level, the child objects link to the parent object with a foreign key on the child. Gosu hides this implementation detail by allowing you to view the reverse join as a read-only array on the parent object.</div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2209336">This topic uses the terminology </a><span class="e_-_emphasis">inner join</span>, <span class="e_-_emphasis">outer join</span>, <span class="e_-_emphasis">forward join</span>, and <span class="e_-_emphasis">reverse join</span>. For definitions of these terms, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2211737', '');" title="Advanced Queries (Subselects and Joins)">"Advanced Queries (Subselects and Joins)"</a>.</div>
+      <div class="B_-_Body"><a name="2236183">For example, from Gosu, a claim contains an array of exposures. The exposures link back to the claim with a </a>foreign key on the exposure that links back to the claim. The <span class="cv_-_computer_voice">Claim.Exposures</span> property in Gosu hides this implementation detail by allowing you to view the reverse join as a read-only array.</div>
+      <div class="B_-_Body"><a name="2205037">If you want to add a reverse join, you must specify the table you want to join to and which property on the joined </a>table links to the primary table. For example, suppose the child object <span class="cv_-_computer_voice">SampleChild</span> contained a property called <span class="cv_-_computer_voice">Parent</span> that linked to the parent table. </div>
+      <div class="B_-_Body"><a name="2208858">Call the join method but with the arguments in this order:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2205065">the </a><span class="cv_-_computer_voice">Table</span> to join to (<span class="cv_-_computer_voice">SampleChild</span>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2205079">the column name </a><span class="e_-_emphasis">on the joined table</span> (<span class="cv_-_computer_voice">Parent</span>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2205108">For example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205123">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208870">var childTable = q.join(SampleChild, "parent")</a></PRE>
+      <div class="B_-_Body"><a name="2208949">If you want to return result on the primary entity table even if there is no associated entity on the secondary table, </a>use the <span class="cv_-_computer_voice">outerJoin</span> method instead of <span class="cv_-_computer_voice">join</span>. </div>
+      <div class="B_-_Body"><a name="2208950">For example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208969">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208994">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2209005">// returns a SampleParent entity even if it has no SampleChild</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2209049">var childTable = q.outerJoin(SampleChild, "parent") </a></PRE>
+      <div class="HS_-_Head_Sub"><a name="2209051">Duplicates with Reverse Joins</a></div>
+      <div class="B_-_Body"><a name="2209052">It is critical to note that it is easy to accidentally create duplicate rows on the primary table by accident using </a>reverse joins with the <span class="cv_-_computer_voice">join</span> or <span class="cv_-_computer_voice">outerJoin</span>. Using the previous example, if more than one <span class="cv_-_computer_voice">SampleChild</span> links to the same <span class="cv_-_computer_voice">SampleParent</span>, that <span class="cv_-_computer_voice">SampleParent</span> is returned twice in the query. One result in the result of the join query exists for each child object of type <span class="cv_-_computer_voice">SampleChild</span>.</div>
+      <div class="B_-_Body"><a name="2209071">This duplicate row in the primary table is desirable in some cases. For example, if you intend to iterate across the </a>result and extract properties from each child object that matches the query, this might be what you want. However, in many cases you likely want to return only maximum one row on the primary table and you must carefully design your query accordingly. </div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2209072">It is extremely important to understand that reverse joins using </a><span class="cv_-_computer_voice">join</span> and <span class="cv_-_computer_voice">outerJoin</span> may generate duplicates on the primary table if there are multiple matches on the secondary table. Design your queries carefully with this in mind. If you do not want duplicates and you want an outer reverse join, consider rewriting to use the <span class="cv_-_computer_voice">subselect</span> method approach instead. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2207006', '');" title="Advanced Queries (Subselects and Joins)">"Using Subselect for Reverse Inner Joins"</a> for details and examples.</div>
+      <div class="B_-_Body"><a name="2209101">Notice that this duplicate issue for reverse joins does not apply to forward joins. The foreign key to the secondary </a>table is unique in the secondary table. Any entity on the primary table that links to the secondary table on the secondary table in the forward direction contains either:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2210117">null</a></span> (matches no items on the secondary table) </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2210143">links to a maximum of one entity on the secondary table.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2210144">For reverse joins, try to reduce duplicates on the primary table. The best way is to ensure that the table you join </a>to only has one row that matches the entity on the primary table. </div>
+      <div class="B_-_Body"><a name="2208891">If that is not possible, there are several approaches for limiting duplicates created because of a join:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2208892">Rewrite to use the </a><span class="cv_-_computer_voice">subselect</span> method approach. For reverse inner joins, the query optimizer often performs better with <span class="cv_-_computer_voice">subselect</span> than using <span class="cv_-_computer_voice">join</span> or <span class="cv_-_computer_voice">outerJoin</span>. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2207006', '');" title="Advanced Queries (Subselects and Joins)">"Using Subselect for Reverse Inner Joins"</a> for details and examples. However, every situation is different and in some cases using the <span class="cv_-_computer_voice">join</span> method might perform better. For example, if the secondary table including predicates are not very selective. In other words, if the secondary clause returns lots of results, consider using <span class="cv_-_computer_voice">join</span>. For important queries, Guidewire recommends trying both approaches under performance testing. If you use <span class="cv_-_computer_voice">join</span> for a reverse join, use the two-parameter method signature including the table name and column name in the joined table.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2208896">Call the </a><span class="cv_-_computer_voice">withDistinct</span> method on <span class="cv_-_computer_voice">Query</span> to limit the results to distinct results from the join. Pass the value <span class="cv_-_computer_voice">true</span> as an argument to limit the query to distinct results. To turn off this behavior later, call the method again and pass <span class="cv_-_computer_voice">false</span> as a parameter. For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208897">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208898">q.withDistinct(true)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2209234">q.join("MyChildObjectProperty")</a></PRE>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2209235">If you add predicates to the subquery, use the </a><span class="cv_-_computer_voice">having</span> method. Suppose you add predicates to a subquery to limit what your query matches. For example, only matching entities on the primary table if a child object has a certain property match a specific value. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="2208901">The following example adds predicates after the join using properties on the joined table: </a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208902">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208903">q.join("MyChildObjectProperty")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208904">q.compare("ChildPriority", Equals, 5)</a></PRE>
+      <div class="LP_-_List_Para"><a name="2208905">When you add predicates after the join, you can control whether the predicates added after the join create </a>duplicates on the primary table using another approach. To do this, call the <span class="cv_-_computer_voice">having</span> method with no arguments. Next, add your predicates to the result of the <span class="cv_-_computer_voice">having</span> method. For example:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208906">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208907">q.join("MyChildObjectProperty")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2208908">q.having().compare("ChildPriority", Equals, 5)</a></PRE>
+      <div class="LP_-_List_Para"><a name="2208909">The addition of the </a><span class="cv_-_computer_voice">having</span> method adds a SQL <span class="cv_-_computer_voice">HAVING</span> keyword. This tells the database that you are interested in determining the set of items on the primary table, not with each match on the secondary table. The result returns no additional duplicates on the primary table (the original query). As mentioned earlier, if you can rewrite to use the <span class="cv_-_computer_voice">subselect</span> method approach instead of using the <span class="cv_-_computer_voice">join</span> method, the query optimizer typically performs better. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2207006', '');" title="Advanced Queries (Subselects and Joins)">"Using Subselect for Reverse Inner Joins"</a> for details and examples. </div>
+      <div class="LP_-_List_Para"><a name="2208913">If you do not add predicates to the join table, you cannot use this approach.</a></div>
+      <div class="H3_-_Heading_3"><a name="2205671">Adding Predicates to Join Queries</a></div>
+      <div class="B_-_Body"><a name="2205723">You can add comparison predicates on the primary table by adding to the original query you created. </a></div>
+      <div class="B_-_Body"><a name="2209359">For example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205724">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205928">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205725">q.compareIn("ID", myEntityIDs)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2205726">q.join("MyChildObjectProperty")</a></PRE>
+      <div class="B_-_Body"><a name="2205702">However, you can also add predicates that use properties on the joined table, by calling the predicate methods on </a>the joined table. The joined table is the result of the join method.</div>
+      <div class="B_-_Body"><a name="2205775">Thus, you can either save the result of the </a><span class="cv_-_computer_voice">join</span> method and add the predicates:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205753">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2205755">var childTable = q.join("MyChildObjectProperty")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205823">childTable.compare("ChildPriority", Equals, 5)</a></PRE>
+      <div class="B_-_Body"><a name="2205785">Alternatively, link them in line as a builder pattern:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205841">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2205842">q.join("MyChildObjectProperty").compare("ChildPriority", Equals, 5)</a></PRE>
+      <div class="B_-_Body"><a name="2205744">You can also add additional predicates to the primary table even after creating the join:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205882">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205917">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205883">var childTable = q.join("MyChildObjectProperty")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205884">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205967">// add predicates to join table -- uses namespace of joined table table for properties</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205955">childTable.compare("ChildPriority", Equals, 5)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205937">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205948">// add predicates to original query -- uses namespace of original table for properties</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2205903">q.compareIn("ID", myEntityIDs) </a></PRE>
+      <div class="B_-_Body"><a name="2209240">For reverse joins, if you add predicates to the join table and you want maximum one entity on the primary table </a>for each match, another API can help. For more information about the <span class="cv_-_computer_voice">having</span> method, see later in this section (<a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2209051', '');" title="Advanced Queries (Subselects and Joins)">"Duplicates with Reverse Joins"</a>).</div>
+      <div class="H3_-_Heading_3"><a name="2206064">Allowing Queries to Find Retired Entities</a></div>
+      <div class="B_-_Body"><a name="2206152">By default, queries do not find retired entities. Retired entities are logically like deleted entities but remain in the </a>database with a <span class="cv_-_computer_voice">Retired</span> flag set to true. Not all entities are retirable. This quality is defined in the data model configuration files. To find retired entities also, set the query’s <span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt;">FindRetired</span> property to <span class="cv_-_computer_voice">true</span>:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206153">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206123">q.compare("ParentProperty1", Equals, 10)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206134">q.FindRetired = true</a></PRE>
+      <div class="H3_-_Heading_3"><a name="2212041">Advanced Inline Views</a></div>
+      <div class="B_-_Body"><a name="2212043">You can optionally create what SQL calls an inline view of these extra columns on the join table. This is an </a>advanced feature which is not normally needed in real-world code. Use this feature only if necessary due to the performance implications. If you have questions about this, contact Guidewire Customer Support.</div>
+      <div class="B_-_Body"><a name="2218837">Inline views allow you to add extra columns to the outer query. In other words, you can add predicates to the </a>outer query that reference those columns.</div>
+      <div class="B_-_Body"><a name="2218899">To create an inline view, call the </a><span class="cv_-_computer_voice">inlineView</span> method on the query. It returns a query with the new inline view and automatically selects all referenced columns from that query in the <span class="cv_-_computer_voice">select</span> statement. It takes the following arguments:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2219235">joinColumnOnThisTable</a></span> - the name of the join column (<span class="cv_-_computer_voice">String</span>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2219252">inlineViewQuery</a></span> - the query (<span class="cv_-_computer_voice">Query</span>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="2219280">joinColumnOnViewTable</a></span> - the name of the join column on the view table (<span class="cv_-_computer_voice">String</span>)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2219290">The method returns a new query with the invline view. Technically the return type of the method is a </a><span class="cv_-_computer_voice">Table</span> object.</div>
+      <div class="B_-_Body"><a name="2219080">For example, suppose you create two queries, a view query and an outer query:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2218934">var viewQuery = Query.make(TestA)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2218936">var outerQuery = Query.make(TestE)</a></PRE>
+      <div class="B_-_Body"><a name="2219089">Next, make an inline view to add the </a><span class="cv_-_computer_voice">E</span> column:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2218937">var inlineView = outerQuery.inlineView("ID", viewQuery, "E")</a></PRE>
+      <div class="B_-_Body"><a name="2219073">Next, use the </a><span class="cv_-_computer_voice">E</span> column from new predicates on the <span class="s_-_strong">outer</span> query:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2218938">outerQuery.compare("E", GreaterThan, inlineView.getColumnRef(DBFunction.Max("A")))</a></PRE>
+      <div class="B_-_Body"><a name="2218940">Test the code:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2219159">print(outerQuery.select().AtMostOneRow.ID)</a></PRE>
+      <div class="B_-_Body"><a name="2218943">This prints the ID of a </a><span class="cv_-_computer_voice">TestE</span> entity where <span class="cv_-_computer_voice">TestE.E</span> is greater than the maximum of all values of A in all TestA's related to this TestE. Thus generates the SQL</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2218945">select * from TestE INNER JOIN (select E, Max(A) MAX_A from TestA) testA_view </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2219197">&nbsp;</a>&nbsp;GROUP BY E ON TestE.ID = testA_view.E AND TestE.E &gt; testA_view.MAX_A</PRE>
+      <div class="B_-_Body"><a name="2206360">Notice that automatically predicates on the join table can use columns on the join table or the primary table.</a></div>
+      <div class="H3_-_Heading_3"><a name="2206384">Additional Join Examples</a></div>
+      <div class="HS_-_Head_Sub"><a name="2200052">Inner Join and Constant Database Functions</a></div>
+      <div class="B_-_Body"><a name="2200044">Suppose you want to find:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2199894">entities of type </a><span class="cv_-_computer_voice">SampleParent</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2198909">only entities that have child subobjects of type </a><span class="cv_-_computer_voice">SampleChild</span>, which have a <span class="cv_-_computer_voice">Parent</span> foreign key column.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2198910">the </a><span class="cv_-_computer_voice">Sample.Priority</span> property has a value between the minimum of the <span class="cv_-_computer_voice">SampleChild.Priority</span> values and the maximum of the <span class="cv_-_computer_voice">SampleChild.Priority</span> properties. (To perform the minimum and maximum commands, use the <span class="cv_-_computer_voice">Min</span> and <span class="cv_-_computer_voice">Max</span> static methods off of the <span class="cv_-_computer_voice">DBFunction</span> object, as shown in the following example.)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2184308">This type of query requires a join between multiple tables. The following example creates this query</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184120">var q = Query.make(SampleParent)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184121">q.compareIn("ID", myEntityIDs)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184127">var childTable = q.join(SampleChild, "parent")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184324">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184128">q.having().between("ParentPriority", DBFunction.Min(childTable.getColumnRef("ChildPriority")), </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2198246">&nbsp;</a>&nbsp;DBFunction.Max(childTable.getColumnRef("ChildPriority")))</PRE>
+      <div class="HS_-_Head_Sub"><a name="2200499">Example Foreign Key and Retirable</a></div>
+      <div class="B_-_Body"><a name="2184473">This query searches for </a><span class="cv_-_computer_voice">User</span> entities with its <span class="cv_-_computer_voice">ExternalUser</span> property <span class="cv_-_computer_voice">false</span> and with a <span class="cv_-_computer_voice">Contact</span> associated with them:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184544">var q = Query.make(User)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184545">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2184546">q.compare("ExternalUser", Equals, false)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206401">q.join("Contact")</a></PRE>
+      <div class="B_-_Body"><a name="2206402">This produces the SQL</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206403">[false]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2206416">SELECT  FROM cc_user qRoot INNER JOIN (cc_contact cc_contact_1) ON cc_contact_1.ID=qRoot.ContactID</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210177">AND cc_contact_1.Subtype = 13 AND cc_contact_1.Retired = 0  WHERE qRoot.ExternalUser = ? AND</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2210190">qRoot.Retired = 0</a></PRE>
+      <div class="B_-_Body"><a name="2206423">Notice that Gosu automatically adds the check for the </a><span class="cv_-_computer_voice">Retired</span> property, since the default is to only find non-retired entities. (See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.8.html#2206064', '');" title="Advanced Queries (Subselects and Joins)">"Allowing Queries to Find Retired Entities"</a>.)</div>
+      <div class="HS_-_Head_Sub"><a name="2180658">&nbsp;</a></div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

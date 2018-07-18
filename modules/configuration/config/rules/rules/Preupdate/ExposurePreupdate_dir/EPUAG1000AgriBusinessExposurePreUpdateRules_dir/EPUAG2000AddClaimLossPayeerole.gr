@@ -1,0 +1,35 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG2000 - Add Claim Loss Payee role")
+internal class EPUAG2000AddClaimLossPayeerole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists(l in exposure.Liens where l.Changed)
+and (exposure.Liens != null)
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{        
+  for(lien in exposure.Liens.where(\ l -> l.Changed)){
+    for (con in exposure.Claim.Contacts){
+      // For each contact that does not have the role
+      if(con.Contact==lien.LienholderExt and con.Roles.where(\ c ->c.Role==ContactRole.TC_CLAIMLOSSPAYEE and c.Exposure==exposure).Count==0){
+        // If the original version of the Lienholder already had this role then we need to remove and add former role
+        if((lien.OriginalVersion as LienDetailsExt).LienholderExt != null){
+          exposure.UIHelper.addFormerRole((lien.OriginalVersion as LienDetailsExt))
+        }
+        // Add the "Claim Loss Payee" role to the NEW value on this exposure
+        var claimContactRole = new ClaimContactRole()
+        claimContactRole.Role = ContactRole.TC_CLAIMLOSSPAYEE
+        claimContactRole.Exposure = exposure
+        con.addToRoles(claimContactRole)
+        // Lienholder changes from one contact to another
+      }
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

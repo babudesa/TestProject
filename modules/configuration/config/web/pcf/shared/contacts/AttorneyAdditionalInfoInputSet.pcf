@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- Defect #6022 - Disabled legal specialty & panel indicator. -->
+  <InputSet
+    id="AttorneyAdditionalInfoInputSet"
+    mode="Attorney">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Input
+      editable="!Attorney.VerifiedPolicyContactExt"
+      id="AttorneyLicense"
+      label="displaykey.Web.ContactDetail.Attorney.AttorneyLicense"
+      value="Attorney.AttorneyLicense"/>
+    <!-- <Input
+      editable="!Attorney.VerifiedPolicyContactExt"
+      id="AttorneySpecialty"
+      label="displaykey.Web.ContactDetail.Attorney.AttorneySpecialty"
+      value="Attorney.AttorneySpecialty"/> -->
+    <Input
+      editable="perm.System.editPanelIndicator"
+      id="PanelIndicatorExt"
+      label="displaykey.Web.ContactDetail.AddidiontalInfo.PanelIndicatorExt"
+      value="Attorney.PanelIndicatorExt"
+      visible="true"/>
+    <ClaimContactInput
+      claim="claim"
+      editable="!Attorney.VerifiedPolicyContactExt"
+      forceContactSubtype="entity.LawFirm"
+      id="AttorneyLawFirmExt"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.AttorneyLawFirm"
+      newContactMenu="ClaimNewLawFirmPickerMenuItemSet"
+      parentContact="Attorney"
+      value="Attorney.AttorneyLawFirmExt"
+      valueRange="claim.RelatedLawFirmArray"/>
+    <Code><![CDATA[
+property get Attorney() : Attorney { return contactHandle.Contact as Attorney; }
+    ]]></Code>
+  </InputSet>
+</PCF>

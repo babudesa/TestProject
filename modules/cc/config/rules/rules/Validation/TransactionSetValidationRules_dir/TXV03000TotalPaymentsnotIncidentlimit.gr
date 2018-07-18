@@ -1,0 +1,73 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleName("TXV03000 - Total Payments not > Incident limit")
+internal class TXV03000TotalPaymentsnotIncidentlimit {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="CheckSet"
+&& transactionSet.New
+&& transactionSet.ApprovalStatus == "unapproved"
+//The transactionset.new condition disallows the rule from executing for all transactions associated
+//with the claim (because we want the rule to execute only for the new transactions that we are trying to add)./*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.financials.CurrencyAmount
+uses java.math.BigDecimal
+uses gw.api.util.CurrencyUtil
+uses gw.api.financials.FinancialsCalculationUtil
+uses org.apache.commons.lang.ObjectUtils
+
+var claim = transactionSet.Claim
+var totalPaymentsIncludingPendingExp = FinancialsCalculationUtil.getTotalPaymentsIncludingPendingExpression()
+var availableReservesExp = FinancialsCalculationUtil.getAvailableReservesExpression()
+var pendingApprovalReservesExp = FinancialsCalculationUtil.getPendingApprovalReservesExpression()
+var committedAndFutureAndPendingApprovalPaymentsAndReservesExpression = totalPaymentsIncludingPendingExp.plus( availableReservesExp ).plus( pendingApprovalReservesExp )
+var coverageSet = new java.util.HashSet<Coverage>() // a set of Coverage to aggregate amt for that coverage
+//Set the following warning parameters (warning1 & warning2) to true if you want to throw a warning, but still permit the end-user to continue with the transaction if he/she desires
+//Set to false if you want to block this transaction
+var warning1 = false 
+var warning2 = true 
+var currency = claim.Currency
+var costType = CostType.TC_CLAIMCOST
+
+for (trans in transactionSet.Transactions) {
+  if (!trans.New and trans.CostType != costType) {
+    continue; // in case a check is changed, and the CheckSet gets re-validated, we don?t want to double count amounts that are already in the cache
+  }
+  coverageSet.add(trans.Exposure.Coverage)
+}
+
+for (coverage in coverageSet) {
+  var incidentLimit = coverage.IncidentLimit
+  var coveragePayments =  transactionSet.evaluateExpressionAsIfSubmitted(totalPaymentsIncludingPendingExp, coverage.Type, costType, null)
+  coveragePayments = ObjectUtils.defaultIfNull(coveragePayments, CurrencyAmount.getStrict(BigDecimal.ZERO, currency )) as CurrencyAmount
+  var combined = transactionSet.evaluateExpressionAsIfSubmitted(committedAndFutureAndPendingApprovalPaymentsAndReservesExpression, coverage.Type, costType, null)
+  combined = ObjectUtils.defaultIfNull( combined, CurrencyAmount.getStrict(BigDecimal.ZERO, currency )) as CurrencyAmount 
+  
+  if (coveragePayments > incidentLimit) {
+    //If Warning1 is set to TRUE, throw a warning, but permit the transaction to go through if the user desires so
+    if (warning1 == true) {    
+      transactionSet.reject(null, null, "payment", 
+        displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingOnCoverageExceedsIncidentLimitWarning(coverage, CurrencyUtil.renderAsCurrency(coveragePayments), CurrencyUtil.renderAsCurrency(coverage.IncidentLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    } else {
+      //If Warning2 is set to FALSE, block the transaction from going through
+      transactionSet.reject("payment", 
+        displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingOnCoverageExceedsIncidentLimitError(coverage, CurrencyUtil.renderAsCurrency(coveragePayments), CurrencyUtil.renderAsCurrency(coverage.IncidentLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)),
+        null, null) 
+    }
+  }
+  if (combined > incidentLimit && not (coveragePayments > incidentLimit)) {      
+    //If Warning1 is set to TRUE, throw a warning, but permit the transaction to go through if the user desires so
+    if (warning2 == true) {
+      transactionSet.reject(null, null, "payment", 
+        displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingPlusAvailableAndPendingReservesOnCoverageExceedsIncidentLimitWarning(coverage, CurrencyUtil.renderAsCurrency(combined), CurrencyUtil.renderAsCurrency(coverage.IncidentLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)))
+    } else {
+      //If Warning2 is set to FALSE, block the transaction from going through
+      transactionSet.reject("payment",
+        displaykey.Rules.Validation.Transaction.TotalPaymentsIncludingPendingPlusAvailableAndPendingReservesOnCoverageExceedsIncidentLimitError(coverage, CurrencyUtil.renderAsCurrency(combined), CurrencyUtil.renderAsCurrency(coverage.IncidentLimit), gw.api.util.StringUtil.substring( actions.getRule().DisplayName,0, 8)),
+        null, null)
+    }
+  }
+}/*end00rule*/
+  }
+}

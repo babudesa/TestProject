@@ -1,0 +1,19 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1800BulkRecovery_dir
+
+@gw.rules.RuleName("TVXX1820 - First and Last Both Checked")
+internal class TVXX1820FirstandLastBothChecked {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="RecoverySet" and transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+var msg = "This bulk recovery is both the first and the last of the group. A bulk recovery must have multiple recoveries. Please edit your selections, or create a single recovery."
+
+for(rec in transactions.Recoveries){
+  if(rec.IsBulkedExt and rec.FirstBulkExt==true and rec.LastBulkExt==true){
+    transactionSet.reject( "payment", msg, null, null )
+  }
+}/*end00rule*/
+  }
+}

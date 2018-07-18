@@ -1,0 +1,34 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1250 - Set Check History")
+internal class TPUXX1250SetCheckHistory {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*Checks all fields on the check that would contain history items, except Tax ID
+because Tax ID can be blank and this shouldn't run if thats the only blank. Everything
+else MUST be filled out. - kmboyd - defect 1294 - 11/10/08
+
+Added a check to see if it has not been issued yet too, because otherwise it wouldn't update
+on editing a check
+
+*****UPDATE: Removed conditions, all thats needed now is the UpdateCheckHistoryExt flag  to be set to true****** kmboyd - 1/19/09 - Defect 1294/
+*/
+exists(check in (transactionSet as CheckSet).Checks where 
+  check.UpdateCheckHistoryExt and check.checkEditable())==true
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(check in (transactionSet as CheckSet).Checks){
+    //Only update if the check history boolean has been set to true
+    //Reset it to false after the history has been updated.
+    if(check.UpdateCheckHistoryExt){
+      check.setCheckHistoryInfo()
+      check.UpdateCheckHistoryExt = false;
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

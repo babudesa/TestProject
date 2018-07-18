@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="LocationDetailPanelSet"
+    mode="Auto">
+    <Require
+      name="LocationBasedRU"
+      type="LocationBasedRU"/>
+    <DetailViewPanel
+      id="LocationDetailDV">
+      <InputColumn>
+        <InputSetRef
+          def="LocationRUInputSet(LocationBasedRU)"/>
+        <InputSetRef
+          def="AddressInputSet(LocationBasedRU.AddressOwner)"
+          mode="LocationBasedRU.AddressOwner.InputSetMode"/>
+        <ListViewInput
+          label="displaykey.NVV.Policy.LocationDetail.Property.Building">
+          <Toolbar>
+            <IteratorButtons
+              addVisible="LocationBasedRU.Building == null"
+              removeVisible="LocationBasedRU.Building != null"/>
+          </Toolbar>
+          <ListViewPanel
+            id="BuildingLV">
+            <RowIterator
+              editable="true"
+              elementName="building"
+              hideCheckBoxesIfReadOnly="true"
+              startChecked="true"
+              toCreateAndAdd="LocationBasedRU.addNewBuilding()"
+              toRemove="LocationBasedRU.removeBuilding()"
+              value="LocationBasedRU.PolicyLocation.Buildings.where( \ b -&gt; b == LocationBasedRU.Building  )">
+              <Row>
+                <Cell
+                  editable="true"
+                  id="Number"
+                  label="displaykey.NVV.Policy.LocationDetail.Property.Building.Number"
+                  sortOrder="1"
+                  value="building.BuildingNumber"/>
+                <Cell
+                  editable="true"
+                  id="Notes"
+                  label="displaykey.NVV.Policy.LocationDetail.Property.Building.Notes"
+                  value="building.Notes"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+      </InputColumn>
+      <InputColumn>
+        <Input
+          editable="true"
+          id="Description"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Description"
+          value="LocationBasedRU.Property.Address.Description"/>
+        <Input
+          editable="true"
+          id="Notes"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Notes"
+          value="LocationBasedRU.Property.Notes"/>
+        <!-- Lienholders -->
+        <InputDivider/>
+        <ListViewInput
+          def="EditablePropertyLienholdersLV(LocationBasedRU.Property, LocationBasedRU.Policy.Claim)"
+          editable="true"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+          validationExpression="LocationBasedRU.Property.validateLienholders()">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+        <!-- High-value items -->
+        <InputDivider/>
+        <ListViewInput
+          def="EditableLocationItemsLV(LocationBasedRU.Property)"
+          editable="true"
+          label="displaykey.NVV.Policy.LocationDetail.Property.ListedItems">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+      </InputColumn>
+    </DetailViewPanel>
+    <!-- Location coverages -->
+    <PanelRef
+      def="LocationCoverageListDetail(LocationBasedRU)"/>
+  </PanelSet>
+</PCF>

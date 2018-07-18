@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>The Validation Graph in Guidewire ClaimCenter</title>
+    <link rel="StyleSheet" href="css/validation_cc.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Rules Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="p-rules_advanced.html#4165683">Advanced Topics</a> : <a class="WebWorks_Breadcrumb_Link" href="validation_cc.13.1.html#4165683">Validation in ClaimCenter</a> : The Validation Graph in Guidewire ClaimCenter</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="4165683">The Validation Graph in Guidewire ClaimCenter</a></div>
+      <div class="BKN_-_Body_002c_Keep_Next"><a name="4141652">During database commit, the Rules engine performs validation on the following:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4142520">Any validatable entity that is itself either updated or inserted.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4142524">Any validatable entity that refers to a entity that is updated, inserted, or removed. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4142451">ClaimCenter gathers the entities that reference a changed entity into a virtual graph. This graph maps all the </a>paths from each type of entity to the top-level validatable entities like <span class="cv_-_computer_voice">Claim</span> and <span class="cv_-_computer_voice">Exposure</span>. ClaimCenter 	queries these paths in the database or in memory to determine which validatable entities (if any) reference the entity that was inserted, updated, or removed. </div>
+      <div class="B_-_Body"><a name="4145908">The Rule engine determines the validation graph by traversing the set of foreign keys and arrays that trigger vali</a>dation. For example, suppose the data model marks the <span class="cv_-_computer_voice">Exposures</span> array on <span class="cv_-_computer_voice">Claim</span> as triggering validation. Therefore, any changes made to an exposure causes the Rules engine to validate the claim as well. </div>
+      <div class="B_-_Body"><a name="4142462">The Rule engine follows foreign keys and arrays that triggers validation through any links and arrays on the </a>referenced entities down the object tree. For example, you might end up with a path like <span class="cv_-_computer_voice">Claim</span> → <span class="cv_-_computer_voice">ClaimContact</span> → <span class="cv_-_computer_voice">ContactAddress</span> → <span class="cv_-_computer_voice">Address</span>. (To actually trigger validation, each link in the chain—<span class="cv_-_computer_voice">Address</span>, <span class="cv_-_computer_voice">ContactAddress</span>, and <span class="cv_-_computer_voice">ClaimContact</span>—must be marked as triggering validation, and <span class="cv_-_computer_voice">Claim</span> must be marked as validatable.)</div>
+      <div class="B_-_Body"><a name="4142463">ClaimCenter stores this path in reverse in the validation graph. Thus, if an address changes, the Rule engine does </a>the following to find any claims that references a changed address. The Rule engine transverses the tree from address to contact address. It then moves to the claim contact, and finally to claim (<span class="cv_-_computer_voice">Address</span> → <span class="cv_-_computer_voice">ContactAddress</span> → <span class="cv_-_computer_voice">ClaimContact</span> → <span class="cv_-_computer_voice">Claim</span>).</div>
+      <div class="H2_-_Heading_2"><a name="4142667">Traversing the Validation Graph</a></div>
+      <div class="BKN_-_Body_002c_Keep_Next"><a name="4142593">If a entity is validatable, the Rule engine applies the pre-update and validation rules any time that you modify the </a>entity contents directly. Suppose, as described previously, you update an object linked to an object. For example, a foreign key links each of the following objects to the <span class="cv_-_computer_voice">User</span> object:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="4729400">Contact</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="4729423">Credential</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="4729430">UserSettings</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4142616">If you update a user's credential, you might reasonably expect the pre-update and validation rules to execute </a>before the Rule engine commits the updates to the database. However, updating a user’s credentials does <span class="s_-_strong">not</span> normally trigger rules to the container object (<span class="cv_-_computer_voice">User</span>, in this case). The reason, implementation (at the metadata level) of a user’s credential is a pointer (link) from a <span class="cv_-_computer_voice">User</span> entity to a <span class="cv_-_computer_voice">Credential</span> entity.</div>
+      <div class="B_-_Body"><a name="4149946">The standard way to trigger the pre-update and validation rules on linked objects is by setting the </a><span class="cv_-_computer_voice">triggersValidation</span> pointer (foreign key) to the object in the metadata XML file. For example, in <span class="cv_-_computer_voice">User.eti</span>, you see the following:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="4726218">&lt;entity xmlns="http://guidewire.com/datamodel" ... entity="User"&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726249">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726232">&nbsp;</a>&nbsp;&lt;implementsEntity name="Validatable"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726290">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726328">&nbsp;</a>&nbsp;&lt;foreignkey columnName="ContactID"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726292">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desc="Contact entry related to the user."</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726293">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fkentity="UserContact"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726294">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name="Contact"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726298">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726346">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;triggersValidation="true"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726299">&nbsp;</a>&nbsp;&lt;foreignkey columnName="CredentialID"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726301">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;desc="Security credential for the user."</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726302">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fkentity="Credential"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726303">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name="Credential"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726304">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726369">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;triggersValidation="true"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="4726377">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="4726416">&lt;/entity&gt;</a></PRE>
+      <div class="B_-_Body"><a name="4145953">Setting the </a><span class="cv_-_computer_voice">triggersValidation</span> attribute to <span class="cv_-_computer_voice">true</span> ensures that the Rule engine runs the pre-update and validation rules on the linked object any time that you modify it. (This is only true if the container object implements the <span class="cv_-_computer_voice">Validatable</span> delegate.)</div>
+      <div class="B_-_Body"><a name="4726746">In the base configuration, Guidewire sets the validation triggers so that modifying a validatable entity in a bundle </a>causes ClaimCenter to validate that entity and all its revisioning parents.</div>
+      <div class="HS_-_Head_Sub"><a name="4726751">Owned Arrays</a></div>
+      <div class="B_-_Body"><a name="4726755">ClaimCenter treats owned arrays (arrays attached to a validatable entity) and marked as </a><span class="cv_-_computer_voice">triggersValidation</span> in a special fashion. ClaimCenter performs validation based on the validation graph. If an entity changes, ClaimCenter follows all the arrays and foreign keys that reference that entity and for which <span class="cv_-_computer_voice">triggersValidation=”true”</span>. It then walks up the graph to find the validatable entities that ultimately references the changed entity. In the case of owned arrays, changes to the array cause ClaimCenter to consider the parent entity to be changed. </div>
+      <div class="B_-_Body"><a name="4468727">Consider, for example, the following data model: </a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4468728">Entity A has an foreign key to B</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4468729">Entity B has an owned array of C</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4468730">Array C has an foreign key to D</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="4468731">Suppose that both A and B are validatable. Essentially, these relationships looks like: </a></div>
+      <div class="CS_-_Code_Single_Line"><a name="4468741">A → B → C[] → D </a></div>
+      <div class="B_-_Body"><a name="4468751">Suppose that you also mark both A → B and C → D as triggering validation. What happens with the B → C link? </a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4468758">If the B → C array is marked as </a><span class="cv_-_computer_voice">triggersValidation=”false”</span>, changes to C cause ClaimCenter to validate B and A. This is because ClaimCenter treats the change as a change to B directly. A change to D, however, does not cause ClaimCenter to validate anything, the graph stops at C. As C is not actually changed, ClaimCenter does not consider B to have changed, and performs no validation. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4468774">If B → C is marked as </a><span class="cv_-_computer_voice">triggersValidation=”true”</span>, changes to either C or D cause ClaimCenter to validate both B and A. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="4141660">Top-level Entities that Trigger Validation</a></div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="4578252">Guidewire places the base entity definition files in </a><span class="pc_-_parameter_in_code">ClaimCenter</span><span class="cv_-_computer_voice">/modules/cc/config/</span><span class="cv_-_computer_voice">metadata</span>. Do <span class="s_-_strong">not</span> modify these files in any way. Any attempt to modify files in this directory can cause damage to the ClaimCenter application sufficiently severe that it prevents the application from starting thereafter.</div>
+      <div class="B_-_Body"><a name="4151086">To be validatable, an entity (or subtype, or delegate, or base object) must implement the </a><span class="cv_-_computer_voice">Validatable</span> delegate by adding the following to the entity definition:</div>
+      <div class="CS_-_Code_Single_Line"><a name="4726810">&lt;implementsEntity name=”Validatable”/&gt;</a></div>
+      <div class="B_-_Body"><a name="4726797">The following table lists those entities that trigger validation in the base ClaimCenter configuration. If a table cell </a>is empty, then there are no additional entities associated with that top-level entity that trigger validation (<span class="cv_-_computer_voice">triggersValidation=”true”</span>) in the base configuration.</div>
+      <div class="T_-_Table"><a name="4151614">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725909">Validatable entity</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725911">Foreign key</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725913">Array</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4727025">One-to-one</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726945">Activity</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726947">&nbsp;</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726949">&nbsp;</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727027">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726939">Claim</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726941">ClaimWorkComp</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">EmploymentData</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">LocationCode</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">LossLocation</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Policy</span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726943">Activity</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ClaimContact</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ClaimText</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ConcurrentEmployment</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ContribFactors</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Document</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Evaluation</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Exposure</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Incident</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Matter</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">MetroReport</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Negotiation</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Note</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Official</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">OtherBenefit</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">SIUAnswerSet</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">UserRoleAssignment</span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4727084">PropertyFireDamage</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PropertyWaterDamage</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">SubrogationSummary</span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726951">Contact</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4731401">PrimaryAddress</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4731403">ContactAddresses</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727031">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; border-bottom-color: none; border-bottom-style: none; border-bottom-width: 0.0pt; border-top-color: none; border-top-style: none; border-top-width: 0.0pt; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726957">Exposure</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: none; border-bottom-style: none; border-bottom-width: 0.0pt; border-top-color: none; border-top-style: none; border-top-width: 0.0pt; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726959">Address</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Benefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">CompBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Coverage</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">DeathBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">DisBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Incident</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">LifePensionBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">NewEmpData</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PIPDeathBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PIPVocBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PPDBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PriorEmpData</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PTDBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">RSBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">SSDIBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">StatLine</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">TempLocation</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">TPDBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">TTDBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">WCBenefits</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">VocBenefits</span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: none; border-bottom-style: none; border-bottom-width: 0.0pt; border-top-color: none; border-top-style: none; border-top-width: 0.0pt; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4728670">BenefitPeriod</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ClaimContactRole</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Document</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ExposureText</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">IMEPerformed</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">MedicalAction</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Note</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">OtherCoverageDetail</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Settlement</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">UserRoleAssignment</span><span class="cvt_-_computer_voice_table"><br /></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: none; border-bottom-style: none; border-bottom-width: 0.0pt; border-top-color: none; border-top-style: none; border-top-width: 0.0pt; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727033">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726969">Group</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726971">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726973">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727035">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726963">Matter</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726965">&nbsp;</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726967">Roles</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">StatusTypeLines</span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727037">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726975">Policy</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726977">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726979">ClaimContact</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ClaimContactRole</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">ClassCode</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Endorsement</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PolicyCoverage</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">PolicyLocation</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">RiskUnit</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">StatCode</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727039">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726987">Region</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726989">&nbsp;</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726991">&nbsp;</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727041">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726981">TransactionSet</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726983">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4726985">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727043">&nbsp;</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726993">User</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726995">Contact</a></span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">Credential</span><span class="cvt_-_computer_voice_table"><br /></span><span class="cvt_-_computer_voice_table">UserSettings</span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4726997">Attributes</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><a name="4727045">&nbsp;</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="H2_-_Heading_2"><a name="4147124">Overriding Validation Triggers</a></div>
+      <div class="B_-_Body"><a name="4149719">In the base configuration, Guidewire sets validation to trigger on many top-level entities and on many of the </a>arrays and foreign keys associated with them. You cannot modify the base metadata XML files in which these configurations are set. However, there can be occasions in which you want to override the default validation behavior. For example:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4149733">You want to trigger validation upon modification of an entity in the ClaimCenter base data model that does </a>not currently trigger validation. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="4149766">You do not want to trigger validation on entities on which ClaimCenter performs validation in the base </a>configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BKN_-_Body_002c_Keep_Next"><a name="4725683">You can only override validation on certain objects associated with a base configuration entity. The following </a>tables lists the data objects for which you can override validation, the XML override element to use, and the location of additional information.</div>
+      <div class="T_-_Table"><a name="4725709">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725816">Data field</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725686">Override element</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="4725688">See</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725818">&lt;array&gt;</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725690">&lt;array-override&gt;</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: Arial; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a href="javascript:WWHClickedPopup('config', 'entities.22.16.html#2649649', '');" title="&lt;array&gt;" name="4725692">“&lt;array&gt;” in the </a></span><span class="bt_-_book_title" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7pt; font-weight: normal"><a href="javascript:WWHClickedPopup('config', 'entities.22.16.html#2649649', '');" title="&lt;array&gt;">Configuration Guide</a></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725820">&lt;foreignkey&gt;</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725698">&lt;foreignkey-override&gt;</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: Arial; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a href="javascript:WWHClickedPopup('config', 'entities.22.21.html#2637861', '');" title="&lt;foreignkey&gt;" name="4725700">“&lt;foreignkey&gt;” in the </a></span><span class="bt_-_book_title" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7pt; font-weight: normal"><a href="javascript:WWHClickedPopup('config', 'entities.22.21.html#2637861', '');" title="&lt;foreignkey&gt;">Configuration Guide</a></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725822">&lt;onetoone&gt;</a></span></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="4725702">&lt;onetoone-override&gt;</a></span></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: Arial; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a href="javascript:WWHClickedPopup('config', 'entities.22.26.html#2653390', '');" title="&lt;onetoone&gt;" name="4725704">“&lt;onetoone&gt;” in the </a></span><span class="bt_-_book_title" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7pt; font-weight: normal"><a href="javascript:WWHClickedPopup('config', 'entities.22.26.html#2653390', '');" title="&lt;onetoone&gt;">Configuration Guide</a></span></div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="4725675">See </a><a href="javascript:WWHClickedPopup('config', 'extenddm.23.05.html#2308851', '');" title="Working with Attribute Overrides">“Working with Attribute Overrides”</a> for details on working with these override elements.</div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="4725623">It is not necessary to override your own extension entities as you simply set </a><span class="cv_-_computer_voice">triggersValidation</span> to the desired value as you define the entity.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

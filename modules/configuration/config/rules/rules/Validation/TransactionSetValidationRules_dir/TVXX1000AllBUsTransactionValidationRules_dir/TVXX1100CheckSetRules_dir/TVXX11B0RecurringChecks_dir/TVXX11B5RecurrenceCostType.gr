@@ -1,0 +1,17 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B5 - Recurrence Cost Type")
+internal class TVXX11B5RecurrenceCostType {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.Payments.HasElements &&
+(transactionSet as CheckSet).PrimaryCheck.Payments.first().CostType != CostType.TC_CLAIMCOST/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {  
+  transactionSet.reject("loadsave", displaykey.Validation.NewCheckWizard.RecurringCostType, null, null)
+}catch(e){
+ util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

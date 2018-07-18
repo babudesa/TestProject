@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="true"
+    id="ClaimTripAccommodationDetailDV">
+    <Require
+      name="aTripAccommodation"
+      type="TripAccommodation"/>
+    <Require
+      name="aTripIncident"
+      type="TripIncident"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.Details"/>
+      <Input
+        editable="true"
+        id="PropertyName"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.AccommodationName"
+        required="true"
+        value="aTripAccommodation.PropertyName"/>
+      <InputSetRef
+        def="AddressInputSet(aTripAccommodation.AddressOwner)"
+        mode="aTripAccommodation.AddressOwner.InputSetMode"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Checkin"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.CheckIn"
+        timeFormat="short"
+        validationExpression="aTripAccommodation.StartDate &gt; aTripAccommodation.TripIncident.TripRU.EndDate ? displaykey.Web.ClaimPolicy.Trips.Accommodations.CheckIn.Validation : null"
+        value="aTripAccommodation.StartDate"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="Checkout"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.CheckOut"
+        timeFormat="short"
+        validationExpression="aTripAccommodation.StartDate &gt; aTripAccommodation.EndDate ? displaykey.Web.ClaimPolicy.Trips.Accommodations.CheckOut.Validation : null"
+        value="aTripAccommodation.EndDate"/>
+      <BooleanRadioInput
+        editable="true"
+        id="AccommodationCancelOnly"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.CancelOnly"
+        postOnChange="true"
+        required="true"
+        validationExpression="aTripAccommodation.CancelOnly and aTripAccommodation.AddnlTripAccommodations.length &gt; 0 ? displaykey.Web.ClaimPolicy.Trips.Accommodations.CancelOnly.Validate : null"
+        value="aTripAccommodation.CancelOnly"/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ClaimPolicy.Trips.Segment.FinancialImpactDetails"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="PaidAmount"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.PaidAmount"
+        value="aTripAccommodation.PaidAmount"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="CancellationFees"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.CancellationFees"
+        value="aTripAccommodation.CancellationFees"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="AgentFees"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.AgentFees"
+        value="aTripAccommodation.AgentFees"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="OtherFees"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.OtherFees"
+        value="aTripAccommodation.OtherFees"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.Approval"/>
+      <Input
+        id="Assessment"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.Approval.Details"
+        value="aTripAccommodation.Assessment"/>
+      <Input
+        formatType="currency"
+        id="FinancialImpact"
+        label="displaykey.Web.ClaimPolicy.Trips.Segment.FinancialImpact"
+        value="aTripAccommodation.getFinancialImpact(  &quot;approve&quot; )"/>
+      <ContentInput
+        hideIfReadOnly="true"
+        id="AssessmentActions"
+        label="displaykey.Web.ClaimPolicy.Trips.Segment.Approval.Actions">
+        <Link
+          action="aTripAccommodation.Assessment = &quot;approve&quot;"
+          hideIfReadOnly="true"
+          id="Approve"
+          label="displaykey.Web.TripIncidentScreen.Approve"
+          styleClass="miniButton"
+          visible="aTripAccommodation.Assessment != &quot;approve&quot; "/>
+        <Link
+          action="aTripAccommodation.Assessment = &quot;Review&quot;"
+          hideIfReadOnly="true"
+          id="Review"
+          label="displaykey.Web.TripIncidentScreen.Review"
+          styleClass="miniButton"
+          visible="aTripAccommodation.Assessment != &quot;Review&quot; "/>
+        <Link
+          action="aTripAccommodation.Assessment = &quot;Deny&quot;"
+          hideIfReadOnly="true"
+          id="Deny"
+          label="displaykey.Web.TripIncidentScreen.Deny"
+          styleClass="miniButton"
+          visible="aTripAccommodation.Assessment != &quot;Deny&quot; "/>
+        <Link
+          action="aTripAccommodation.Assessment = null"
+          hideIfReadOnly="true"
+          id="Clear"
+          label="displaykey.Web.TripIncidentScreen.Clear"
+          styleClass="miniButton"
+          visible="aTripAccommodation.Assessment != null"/>
+      </ContentInput>
+      <TextAreaInput
+        available="aTripAccommodation.ReasonForDenial == null or aTripAccommodation.ReasonForDenial.length == 0"
+        editable="true"
+        id="ReasonForDenial"
+        label="displaykey.Web.ClaimPolicy.Trips.Accommodations.ReasonForDenial"
+        numCols="40"
+        numRows="4"
+        required="aTripAccommodation.Assessment == &quot;Deny&quot; "
+        value="aTripAccommodation.ReasonForDenial"
+        visible="aTripAccommodation.Assessment == &quot;Deny&quot; "/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

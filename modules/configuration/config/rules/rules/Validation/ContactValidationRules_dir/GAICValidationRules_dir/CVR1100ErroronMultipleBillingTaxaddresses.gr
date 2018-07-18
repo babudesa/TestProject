@@ -1,0 +1,38 @@
+package rules.Validation.ContactValidationRules_dir.GAICValidationRules_dir
+
+@gw.rules.RuleName("CVR1100 - Error on Multiple Billing,Tax addresses")
+internal class CVR1100ErroronMultipleBillingTaxaddresses {
+  static function doCondition(contact : entity.Contact) : boolean {
+    return /*start00rule*/(contact typeis PersonVendor) or (contact typeis CompanyVendor)/*end00rule*/
+  }
+
+  static function doAction(contact : entity.Contact, actions : gw.rules.Action) {
+/*start00rule*/var BilCount : int = 0
+var TaxCount : int = 0
+var FeeCount : int = 0
+for(add in contact.AllAddresses)
+{
+  if(add.AddressType =="billing")
+  BilCount++
+  if(add.AddressType =="Tax")
+  TaxCount++
+  if(add.AddressType == AddressType.TC_FEES)
+  FeeCount++
+}
+// Defect 9123: allow multiple billing addresses for most
+//              address types.
+if (contact.Subtype == "LawFirm" or
+    contact.Subtype == "Attorney" or
+    contact.Subtype == "Ex_ForeignCoVenLawFrm" or
+    contact.Subtype == "Ex_ForeignPerVndrAttny"){
+  if(BilCount>1)
+    contact.reject( "loadsave", displaykey.Rules.Validation.Contact.ErrorOnMultipleBillingAddresses , null, null )
+}
+if(TaxCount>1)
+contact.reject( "loadsave", displaykey.Rules.Validation.Contact.ErrorOnMultipleTaxAddresses , null, null )
+// Defect 9378: allow only one Fee Address Type is allowed per contact
+if(FeeCount>1)
+contact.reject( "loadsave", displaykey.Rules.Validation.Contact.ErrorOnMultipleFeeAddresses , null, null )
+/*end00rule*/
+  }
+}

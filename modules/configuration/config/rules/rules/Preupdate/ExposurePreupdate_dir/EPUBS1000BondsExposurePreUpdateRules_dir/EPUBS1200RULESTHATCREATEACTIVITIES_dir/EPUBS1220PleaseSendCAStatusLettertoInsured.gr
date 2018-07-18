@@ -1,0 +1,31 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUBS1000BondsExposurePreUpdateRules_dir.EPUBS1200RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUBS1220 - Please Send CA Status Letter to Insured")
+internal class EPUBS1220PleaseSendCAStatusLettertoInsured {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!exposure.LegalExpenseExt and
+!exposure.ex_InSuit and
+(!exists(act in exposure.Claim.Activities where 
+    act.ActivityPattern.Code == "send_ca_status_letter"))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var policy = exposure.Claim.Policy
+
+if(policy.PolicyStateExt == State.TC_CA){
+  try{
+  var today = gw.api.util.DateUtil.currentDate()
+  var ap = util.custom_Ext.finders.findActivityPattern( "send_ca_status_letter" )
+   
+  var act = exposure.Claim.createActivityFromPattern( exposure, ap)
+    
+  act.TargetDate = today.addDays(ScriptParameters.Activity_BondsSendCAStatusLetterToInsured)
+  act.AssignedUser = exposure.Claim.AssignedUser
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure.Claim, actions.getRule().DisplayName, e, "" )
+}
+  
+}/*end00rule*/
+  }
+}

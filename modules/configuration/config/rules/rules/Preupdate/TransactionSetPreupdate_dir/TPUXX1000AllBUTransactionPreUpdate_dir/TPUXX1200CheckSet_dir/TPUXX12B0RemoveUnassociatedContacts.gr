@@ -1,0 +1,29 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX12B0 - Remove Unassociated Contacts")
+internal class TPUXX12B0RemoveUnassociatedContacts {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.New or transactionSet.Changed/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+for(clmCont in transactionSet.Claim.Contacts){
+  if(!exists(clmCont2 in (transactionSet.Claim.OriginalVersion as Claim).Contacts where clmCont == clmCont2)){
+    for(check in (transactionSet as CheckSet).Checks){
+      if(clmCont.Contact != check.ex_MailTo and 
+         !exists(payee in check.Payees where payee.ClaimContact == clmCont)){
+        transactionSet.Claim.removeFromContacts(clmCont)
+      }
+    }
+  }
+  
+}
+  
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, "" )  
+}/*end00rule*/
+  }
+}

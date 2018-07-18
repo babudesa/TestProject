@@ -1,0 +1,40 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUFC1000FIDCRIMETransactionPreupdateRules_dir.TPUFC1100CheckSet_dir
+
+@gw.rules.RuleName("TPUFC1110 -Large net incurred loss and Note Notification")
+internal class TPUFC1110LargenetincurredlossandNoteNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/((TransactionSet as CheckSet).PrimaryCheck).Status == "requesting" and
+(((TransactionSet.OriginalVersion) as CheckSet).PrimaryCheck).Status != "requesting" and
+!(TransactionSet.New and TransactionSet.LoadCommandID != null) and
+gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNet().getAmount(TransactionSet.Claim) >= 5000000 and
+!exists(ref in TransactionSet.Claim.Notes where ref.Subject=="Large net incurred loss")/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var template = gw.api.util.TemplateUtil.getTemplate( "/templates/notifications", "fidcrimelargepayment.gs" ); 
+var body : String;
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var note : Note
+
+if(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNet().getAmount(transactionSet.Claim) >= 5000000 ) {
+  template.addSymbol( "TransactionSet", transactionSet.IntrinsicType, transactionSet )
+
+  body = template.execute().toString();
+  
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+      //Send email to propertyLgLoss
+      gw.api.email.EmailUtil.sendEmailWithBody(transactionSet,  ScriptParameters.PropertyLgLoss, ScriptParameters.PropertyLgLossEmail, "Claim Center Notification", "ClaimCenterSupport@gaig.com","Large Payment Notification", body);
+      //Send email to Divisional Accounting
+      gw.api.email.EmailUtil.sendEmailWithBody(transactionSet,  ScriptParameters.Divisional_Accounting_Name, ScriptParameters.Divisional_Accounting_Email, "Claim Center Notification", "ClaimCenterSupport@gaig.com","Large Payment Notification", body);
+      //Generate a note
+      transactionSet.Claim.addNote( "general", "Email generated to Incurred of $5,000,000 or greater.")
+      note = transactionSet.Claim.addNote( "Check", "Email generated to Incurred of $5,000,000 or greater.")
+      note.Subject = "Large net incurred loss"
+  } else {
+    gw.api.email.EmailUtil.sendEmailWithBody(transactionSet,  ScriptParameters.Equine_CorporateClaims_Name, ScriptParameters.ClaimCenterDevEmail, environmentInformation,"ClaimCenterSupport@gaig.com", "Large Payment Notification", body); 
+    note = transactionSet.Claim.addNote( "Check", "Email generated to Incurred of $5,000,000 or greater.")
+    note.Subject = "Large net incurred loss"
+  }
+}/*end00rule*/
+  }
+}

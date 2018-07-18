@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="LossDetailsAddressDetailInputSet"
+    mode="Wc">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <!-- <Variable
+      initialValue="new contact.AddressAutoFillHelper()"
+      name="AutoFillHelper"
+      type="contact.AddressAutoFillHelper"/> -->
+    <!-- nscavelli 12/27/07 No longer using the AutoFill functionality -->
+    <Variable
+      initialValue="Claim.LossLocation"
+      name="LossLocation"
+      type="Address"/>
+    <RangeInput
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Name"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Name"
+      newValue="new Address(Claim)"
+      postOnChange="true"
+      sortValueRange="false"
+      value="Claim.LossLocation"
+      valueRange="Claim.Addresses"/>
+    <!-- 11/16/2007 - zthomas - Defect 560, moved country and address type to the top of the address inputs.
+      Modified available on other address inputs to only be visible when a country and address type are selected. -->
+    <TypeKeyInput
+      available="Claim.canEditAddress(Claim.LossLocation)"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Country"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Country"
+      onChange="Claim.LossLocation.PostalCode = null"
+      postOnChange="true"
+      value="Claim.LossLocation.Country"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.Country"/> -->
+    <!-- modified by slp 9/21/07 sprint 7 -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Address1"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Address1"
+      value="Claim.LossLocation.AddressLine1"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.Country != null and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.AddressLine1"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Address2"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Address2"
+      value="Claim.LossLocation.AddressLine2"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.Country != null and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.AddressLine2"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_City"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.City"
+      value="Claim.LossLocation.City"
+      visible="true"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.Country != null and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.City"/> -->
+    <TypeKeyInput
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_State"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.State"
+      value="Claim.LossLocation.State"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.State"/> -->
+    <!-- 11/16/2007 zthomas - Defect 558, replaced requestValidationExpression with validationExpression for postal code using newly create function.  11/16/2007 zthomas - Defect 555, modified validationExpression to use new created function to display proper message depending on country. -->
+    <TextInput
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.new"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_ZIP"
+      inputMask="util.custom_Ext.finders.getPostCodeMask(Claim.LossLocation.Country.Code)"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.ZIP"
+      validationExpression="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? null : util.custom_Ext.finders.postCodeExpression(Claim.LossLocation.Country.Code)"
+      value="Claim.LossLocation.PostalCode"
+      visible="true"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.PostalCode"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_County"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.County"
+      required="Claim.Catastrophe!=null"
+      value="Claim.LossLocation.County"
+      visible="true"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.Country != null and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.County"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.Country != null and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Description"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Description"
+      value="Claim.LossLocation.Description"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.Country != null and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.Description"/> -->
+    <Input
+      editable="(Claim.LossLocation.StandardizedExt == &quot;true&quot;)"
+      id="StandardizationIndicator"
+      label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+      postOnChange="true"
+      value="Claim.LossLocation.StandardizedExt"
+      visible="true"/>
+    <ButtonInput
+      action="StandardizationPopup.push(Claim.LossLocation)"
+      hideIfReadOnly="true"
+      id="StandardizeAddressButton"
+      value="displaykey.Web.ContactDetail.AddressDetail.StandardizeButtonText"
+      visible="true"/>
+  </InputSet>
+</PCF>

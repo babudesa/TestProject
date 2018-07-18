@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="perm.AuthorityLimitProfile.edit"
+    id="UserAuthorityLimitsDV">
+    <Require
+      name="User"
+      type="User"/>
+    <InputColumn>
+      <RangeInput
+        align="left"
+        boldLabel="true"
+        editable="true"
+        id="AuthorityLimitsProfile"
+        label="displaykey.Web.Admin.UserAuthorityLimits.AuthorityLimitProfile"
+        postOnChange="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="AuthorityLimitsProfile"
+        valueRange="gw.api.admin.UserAuthorityLimitUtil.getProfiles(User)"/>
+      <Input
+        align="left"
+        boldLabel="true"
+        id="Description"
+        label="displaykey.NVV.Admin.UserAuthorityLimits.AdminUserDetails.AuthorityLimitProfile.Description"
+        value="User.AuthorityProfile.Description"/>
+      <TypeKeyInput
+        boldLabel="true"
+        editable="true"
+        id="Currency"
+        label="displaykey.NVV.Admin.UserAuthorityLimits.AdminUserDetails.AuthorityLimitProfile.Currency"
+        postOnChange="true"
+        required="true"
+        value="User.AuthorityProfile.Currency"
+        visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode() and User.AuthorityProfile.Custom"/>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableAuthorityLimitsLV(User)"
+        editable="User.AuthorityProfile != null and User.AuthorityProfile.Custom"
+        label="displaykey.NVV.Admin.UserAuthorityLimits.AdminUserDetails.AuthorityLimits"
+        labelAbove="true"
+        validationExpression="User.AuthorityProfile != null and !User.AuthorityProfile.resolveAuthorityLimits() ? displaykey.Java.Admin.User.AuthorityLimitError : null">
+        <Toolbar>
+          <IteratorButtons
+            hideIfReadOnly="true"
+            removeShortcut="E"/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[
+property get AuthorityLimitsProfile() : AuthorityLimitProfile {
+    return User.AuthorityProfile
+  }
+  
+  property set AuthorityLimitsProfile(profile : AuthorityLimitProfile) {
+    User.changeAuthorityProfile(profile)
+  }
+      
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

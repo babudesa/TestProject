@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="BusinessContactInfoInputSet">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.ContactInfo"/>
+    <InputSet
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      visible="claimContact != null">
+      <Input
+        editable="true"
+        id="ContactProhibited"
+        label="displaykey.Web.ContactDetail.ContactProhibited"
+        value="claimContact.ContactProhibited"
+        visible="claimContact.isClaimant()"/>
+    </InputSet>
+    <!-- <ClaimContactInput
+      claim="Claim"
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      forceContactSubtype="entity.Person.Type"
+      id="PrimaryContact"
+      label="displaykey.Web.ContactDetail.PrimaryContact"
+      newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+      parentContact="Contact"
+      value="Contact.PrimaryContact"
+      valueRange="Claim.RelatedContacts"/> -->
+    <!-- GW ADDED -->
+    <Input
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="ContactPerson"
+      label="displaykey.Web.ContactDetail.ContactPerson"
+      value="Contact.ContactPersonExt"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="Work"
+      inputMask="Contact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Work"
+      validationExpression="Contact.isIntlPhoneValid(Contact.WorkPhone) ? (Contact.isPhoneValid(Contact.WorkPhone) ? null : displaykey.Validator.Phone(&quot;Business&quot;)) : displaykey.Validator.IntlPhone(&quot;Business&quot;) "
+      value="Contact.WorkPhone"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="Home"
+      inputMask="Contact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Home"
+      validationExpression="Contact.isIntlPhoneValid(Contact.HomePhone) ? (Contact.isPhoneValid(Contact.HomePhone) ? null : displaykey.Validator.Phone(&quot;Home&quot;)) : displaykey.Validator.IntlPhone(&quot;Home&quot;)"
+      value="Contact.HomePhone"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="Cell"
+      inputMask="Contact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Cell"
+      validationExpression="Contact.isIntlPhoneValid(Contact.CellPhoneExt) ? (Contact.isPhoneValid(Contact.CellPhoneExt) ? null : displaykey.Validator.Phone(&quot;Mobile&quot;)) : displaykey.Validator.IntlPhone(&quot;Mobile&quot;)"
+      value="Contact.CellPhoneExt"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="Toll"
+      inputMask="Contact.getPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Toll"
+      validationExpression="Contact.isIntlPhoneValid(Contact.TollFreeNumberExt) ? (Contact.isPhoneValid(Contact.TollFreeNumberExt) ? null : displaykey.Validator.Phone(&quot;Toll-Free Number&quot;)) : displaykey.Validator.IntlPhone(&quot;Toll-Free Number&quot;)"
+      value="Contact.TollFreeNumberExt"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="Fax"
+      inputMask="Contact.getFaxPhoneMask()"
+      label="displaykey.Web.ContactDetail.Phone.Fax"
+      validationExpression="Contact.isIntlPhoneValid(Contact.FaxPhone) ? (Contact.isPhoneValid(Contact.FaxPhone) ? null : displaykey.Validator.Phone(&quot;Fax Number &quot;)) : displaykey.Validator.IntlPhone(&quot;Fax Number &quot;)"
+      value="Contact.FaxPhone"/>
+    <Input
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      id="PrimaryPhone"
+      label="displaykey.Web.ContactDetail.Phone.PrimaryPhone"
+      validationExpression="if (Contact.PrimaryPhone == null or (Contact.PrimaryPhone == &quot;work&quot; and Contact.WorkPhone != null) or (Contact.PrimaryPhone == &quot;home&quot; and Contact.HomePhone != null) or                     (Contact.PrimaryPhone == &quot;mobile&quot; and Contact.CellPhoneExt != null)) {return null;} else {return displaykey.Web.ContactDetail.Phone.PrimaryPhone.Error;}"
+      value="Contact.PrimaryPhone">
+      <Reflect
+        triggerIds="Work,Home,Cell"
+        value="javascript:getNewPrimaryPhoneValue(REFLECTOR.value, [VALUE1, VALUE2, VALUE3], ['work', 'home', 'mobile'])"/>
+    </Input>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Email"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Primary"
+      label="displaykey.Web.ContactDetail.Email.Primary"
+      value="Contact.EmailAddress1"/>
+    <TextInput
+      editable="(!Contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()) and isEditable()"
+      formatType="email"
+      id="Secondary"
+      label="displaykey.Web.ContactDetail.Email.Secondary"
+      value="Contact.EmailAddress2"/>
+    <Code><![CDATA[property get Contact() : Contact { return contactHandle.Contact; }
+      
+      function validateMOS() : boolean {
+      	var needMsg = false
+        if(exists(exp in Claim.Exposures where exp.InsuranceCoExt==contact)){
+          if(contact.WorkPhone==null and contact.FaxPhone==null and contact.TollFreeNumberExt==null){
+            needMsg = true;
+          }
+        }
+        return needMsg;
+      }
+      
+      function getEntity(contactField: String, claimContField: String):String{
+        if(Contact.Preferred and !User.util.getCurrentUser().hasCreatePreferred()){
+          return "ClaimContact."+claimContField;
+        }else {
+          return "Contact."+contactField;
+        }
+      }
+      function isEditable(): boolean {
+        if((contactHandle.Contact typeis Ex_GAIVendor) and !(User.util.getCurrentUser().hasUserRole("Compliance Accounting")))
+        	return false
+       	else
+       		return true
+      }
+   ]]></Code>
+  </InputSet>
+</PCF>

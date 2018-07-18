@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1AF0 - Set ClaimUpdateTime")
+internal class CPUXX1AF0SetClaimUpdateTime {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.State != "draft" and
+(claim.OriginalVersion as Claim).State != "draft"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  var claimUpdateTime:util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+  
+  claimUpdateTime.setClaimUpdateTime(claim.ClaimNumber, gw.api.util.DateUtil.currentDate())
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

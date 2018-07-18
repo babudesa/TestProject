@@ -1,0 +1,24 @@
+package rules.Validation.ClaimValidationRules_dir
+
+@gw.rules.RuleName("CLV04000 - ClaimContact Role Configuration")
+internal class CLV04000ClaimContactRoleConfiguration {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//* if anything relevant has changed, check for invalid role configurations
+   at the claim level and report each individually on the Contacts array if
+   they exist */
+var b = \ bean : KeyableBean -> bean.IntrinsicType == entity.ClaimContact || bean.IntrinsicType == entity.ClaimContactRole
+if (!claim.isValid("newloss", false)
+    || claim.Bundle.InsertedBeans.toList().hasMatch(b)
+    || claim.Bundle.UpdatedBeans.toList().hasMatch(b)
+    || claim.Bundle.RemovedBeans.toList().hasMatch(b)) {
+  var failures = claim.validateRoles();
+  for (failure in failures) {
+    claim.rejectField("Contacts", "newloss", failure.getMessage().localize(), null, null)
+  }
+}/*end00rule*/
+  }
+}

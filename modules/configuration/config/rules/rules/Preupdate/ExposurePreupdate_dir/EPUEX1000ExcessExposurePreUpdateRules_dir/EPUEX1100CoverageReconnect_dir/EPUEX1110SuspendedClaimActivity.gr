@@ -1,0 +1,40 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEX1000ExcessExposurePreUpdateRules_dir.EPUEX1100CoverageReconnect_dir
+
+@gw.rules.RuleName("EPUEX1110 - Suspended Claim Activity")
+internal class EPUEX1110SuspendedClaimActivity {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Generates activity when claim is suspended
+  This is a copy of rule EPUEQ1600
+  Updated: 2/5/13 - Defect 5890 - Author: Craig Mullin:
+  Corporate Claims added explicit activity pattern "Suspended Claim" (cc:297).
+  Rule changed to reference the new pattern rather than "general_reminder".
+  Updated: 2/13/13 - Defect 5890 - Author: Craig Mullin:
+  Code corrected to allow for dynamic description as before. Activity due date 
+  == current date as specified in the Suspended Claim pattern.
+*/
+exposure.Claim.checkDisconnectedFeatures() and exposure.Claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.ArrayList;
+try{
+  var exposureList : ArrayList = exposure.Claim.Exposures as ArrayList;
+  var disconnectedFeatures : java.lang.StringBuffer = new java.lang.StringBuffer();
+
+  if(exposure == (exposureList.get( exposureList.length - 1 ) as Exposure)){ //If current exposure is the last of the exposures on the claim.
+    for(exp in exposureList){
+      
+      //print((exp as Exposure) + " : " + (exp as Exposure).ReconnectFailExt)
+      if((exp as Exposure).ReconnectFailExt){
+        disconnectedFeatures.append( "\n" + (exp as Exposure).DisplayName )
+      }
+    }  
+    exposure.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("suspended_claim"), null,
+    displaykey.Rules.Preupdate.Claim.Equine.SuspendedClaimBody(exposure.Claim.ClaimNumber, 
+    disconnectedFeatures.toString()), null, null, null, null )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,34 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUWC1000WorkersCompExposurePreUpdateRules_dir.EPUWC1300AddFormerRole_dir
+
+@gw.rules.RuleName("EPUWC1301 - Add Former MedNon-Physician Role")
+internal class EPUWC1301AddFormerMedNonPhysicianRole {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* 3/25/16 - Per Discussion with Danny, Linda and Joe, there shouldn't be former
+   roles on closed exposures. If the exposure is closed and the Voc Rehab 
+   Specialist changes, the previous contact can be deleted if they have no other
+   role - and that is the expected and correct behaivor
+*/
+!exposure.New && !exposure.Closed && (
+  (exposure.OriginalVersion as Exposure) .vocrehabspecialist== null or
+  (exposure.OriginalVersion as Exposure) .vocrehabspecialist != exposure.vocrehabspecialist
+)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+  // WC Defect - 2/29/2016, updated to use for Voc Rehab Specialist role instead
+  var originalVocRehabSpecialist = (exposure.OriginalVersion as Exposure).vocrehabspecialist
+  // 3/10/16 deal with null vocrehabspecialist
+    if(originalVocRehabSpecialist!=null){
+      exposure.addRole(ContactRole.TC_FORMERVOCREHABSPEC, originalVocRehabSpecialist)
+      // remove the org type
+      gw.transaction.Transaction.getCurrent().add(originalVocRehabSpecialist).OrganizationType = null
+    }
+  // Remove any stale Former Voc Rehab Specialist role
+  exposure.Roles.where(\ c -> c.Role == ContactRole.TC_FORMERVOCREHABSPEC
+    and c.ClaimContact.Contact == exposure.vocrehabspecialist)*.removeRoleOnly()
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,27 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1300RecoveryRules_dir
+
+@gw.rules.RuleName("TPOXX1310 - Set Recovery Fields")
+internal class TPOXX1310SetRecoveryFields {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(each in transactionSet.Transactions)
+{
+  var recovery = each as Recovery;
+  if(recovery.ex_CashReceiptNumber == null and recovery.New and !recovery.RecodeExt
+    and (!recovery.IsBulkedExt || (recovery.IsBulkedExt and recovery.FirstBulkExt)))
+  {
+    recovery.ex_CashReceiptNumber =  util.UniqueNumberGenerators.generateCashReceiptNumber();//what does this need to SAY??
+  }
+  if(recovery.New and recovery.IsBulkedExt and recovery.FirstBulkExt){
+    recovery.BulkRecoveryExt.CashReceiptNumberExt = recovery.ex_CashReceiptNumber
+    recovery.BulkRecoveryExt.PayerExt = recovery.Payer
+    recovery.BulkRecoveryExt.RecoveryCheckDateExt = recovery.ex_recoverycheckdate
+    recovery.BulkRecoveryExt.RecoveryCheckNumberExt = recovery.ex_recoveryCheckNumber
+    recovery.BulkRecoveryExt.DateReceivedExt = recovery.CreateTime
+  }
+}/*end00rule*/
+  }
+}

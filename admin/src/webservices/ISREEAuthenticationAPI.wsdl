@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://api.webservices.cc.guidewire.com/" xmlns:intf="http://api.webservices.cc.guidewire.com/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://fault.webservices.cc.guidewire.com/" xmlns:tns2="http://entity.webservices.cc.guidewire.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><wsdl:types><schema targetNamespace="http://api.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="ArrayOf_soapenc_string"><complexContent><restriction base="soapenc:Array"><attribute ref="soapenc:arrayType" wsdl:arrayType="soapenc:string[]"/></restriction></complexContent></complexType></schema><schema targetNamespace="http://fault.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://entity.webservices.cc.guidewire.com/"/><import namespace="http://api.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="SOAPException"><xsd:annotation><xsd:documentation>A generic SOAP exception.</xsd:documentation></xsd:annotation><sequence><element name="Message" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>The message associated with this exception</xsd:documentation></xsd:annotation></element><element name="OtherMessages" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Other messages attached to this exception. This message may contain information
+related to other exceptions that occurred during a SOAP call, but not directly
+associated with this particular exception.</xsd:documentation></xsd:annotation></element></sequence></complexType><complexType name="SOAPSenderException"><xsd:annotation><xsd:documentation>SOAPSenderException is the base class for all exceptions that resulted from
+a sender error. This usually means that required data was not properly encoded
+or was absent. Senders should not send the message again unless some steps have
+been taken to make the encoded data valid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="DataConversionException"><xsd:annotation><xsd:documentation>Thrown by many APIs when they encounter a problem translating a SOAP data object into
+an internal system object.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="BadIdentifierException"><xsd:annotation><xsd:documentation>Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect).</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="PermissionException"><xsd:annotation><xsd:documentation>Thrown when the authenticated SOAP user does not have permission to
+perform the requested operation</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="SOAPServerException"><xsd:annotation><xsd:documentation>SOAPServerException is the base class for all exceptions that resulted from
+a server error. This is something of a catch-all exception type insofar as
+some things which might in fact be considered SOAPSenderExceptions are reported
+as SOAPServerExceptions. Perhaps a rule failed or something else. Generally it
+indicates a problem in the server that is likely retryable at some future time.
+The database being down, an unavailable plugin, etc would fall into this catagory.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="ServerStateException"><xsd:annotation><xsd:documentation>ServerStateException is thrown when a request is made at a time the
+server is in a state that disallows the request. An example is if
+an attempt is made to add a claim and the server is in maintenance
+mode.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="SOAPRetryableException"><xsd:annotation><xsd:documentation>SOAPRetryableException is the class for all exceptions that are retryable
+immediately. The primary example of this is ConcurrentDataChangeException.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPException"><sequence/></extension></complexContent></complexType><complexType name="LoginException"><xsd:annotation><xsd:documentation>Class of exceptions thrown when a user tries to log in and an authentication failure occurs.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:PermissionException"><sequence/></extension></complexContent></complexType><complexType name="EntityStateException"><xsd:annotation><xsd:documentation>Thrown when an attempt is made to manipulate an object that is in a state
+that prevents the operation from being performed. An example is trying to
+modify a Claim that is marked as closed.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType><complexType name="DuplicateKeyException"><xsd:annotation><xsd:documentation>Throws if a duplicate data exception is detected in the database. I.e. a unique index violation.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldConversionException"><xsd:annotation><xsd:documentation>Thrown when a data type cannot be converted into the native data type.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="FieldFormatException"><xsd:annotation><xsd:documentation>Thrown when the input type does not match the format specified in the metadata. I.e. a string is too long.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="RequiredFieldException"><xsd:annotation><xsd:documentation>Thrown when required data is missing from a bean.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="UnknownTypeKeyException"><xsd:annotation><xsd:documentation>Thrown when a typekey value isn't available on the server. This exception can only
+happen if the SOAP WSDL that is being used on the remote side is invalid.</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:DataConversionException"><sequence/></extension></complexContent></complexType><complexType name="BatchProcessException"><xsd:annotation><xsd:documentation>SOAP Exception specific to batch process operations</xsd:documentation></xsd:annotation><complexContent><extension base="tns1:SOAPServerException"><sequence/></extension></complexContent></complexType><complexType name="AlreadyExecutedException"><complexContent><extension base="tns1:SOAPSenderException"><sequence/></extension></complexContent></complexType></schema><schema targetNamespace="http://entity.webservices.cc.guidewire.com/" xmlns="http://www.w3.org/2001/XMLSchema"><import namespace="http://api.webservices.cc.guidewire.com/"/><import namespace="http://fault.webservices.cc.guidewire.com/"/><import namespace="http://schemas.xmlsoap.org/soap/encoding/"/><complexType name="GWSRGroup"><sequence><element name="Groups" nillable="true" type="impl:ArrayOf_soapenc_string"/><element name="Name" nillable="true" type="soapenc:string"/><element name="UserNames" nillable="true" type="impl:ArrayOf_soapenc_string"/></sequence></complexType><complexType name="GWSRRole"><sequence><element name="Description" nillable="true" type="soapenc:string"/><element name="Name" nillable="true" type="soapenc:string"/></sequence></complexType><complexType name="GWSRUser"><xsd:annotation><xsd:documentation>Represents a user for communicating from GW to SR.</xsd:documentation></xsd:annotation><sequence><element name="MemberGroupIDs" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets an array of group Ids that this user is a member of.</xsd:documentation></xsd:annotation></element><element name="Permissions" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets the permissions of this user.</xsd:documentation></xsd:annotation></element><element name="PreferredLanguage" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Gets the preferred language of this user</xsd:documentation></xsd:annotation></element><element name="Reports" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets the reports permitted for this user. This method is now deprecated.
+Please use getResources() instead since more than just Reports are returned.
+@deprecated use getResources() instead since it now returns more than just reports
+</xsd:documentation></xsd:annotation></element><element name="Resources" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets the resources (replets, folders) permitted for this user.</xsd:documentation></xsd:annotation></element><element name="Roles" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets the roles permitted for this user.</xsd:documentation></xsd:annotation></element><element name="SupervisingGroupIDs" nillable="true" type="impl:ArrayOf_soapenc_string"><xsd:annotation><xsd:documentation>Gets an array of group Ids that this user is a manager or supervisor of.</xsd:documentation></xsd:annotation></element><element name="UserID" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Gets the UserID for this user.</xsd:documentation></xsd:annotation></element><element name="Username" nillable="true" type="soapenc:string"><xsd:annotation><xsd:documentation>Gets the username for this user.</xsd:documentation></xsd:annotation></element></sequence></complexType></schema></wsdl:types>
+  <wsdl:message name="validateTicketRequest">
+    <wsdl:part name="ticket" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUserRequest">
+    <wsdl:part name="username" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+    <wsdl:part name="password" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="PermissionException">
+    <wsdl:part name="fault" type="tns1:PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateGWUserResponse">
+    <wsdl:part name="updateGWUserReturn" type="tns2:GWSRUser">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getGroupIDsRequest">
+  </wsdl:message>
+  <wsdl:message name="getDocumentRepletPathsRequest">
+  </wsdl:message>
+  <wsdl:message name="BadIdentifierException">
+    <wsdl:part name="fault" type="tns1:BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getRoleResponse">
+    <wsdl:part name="getRoleReturn" type="tns2:GWSRRole">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUserNamesResponse">
+    <wsdl:part name="getUserNamesReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getRoleRequest">
+    <wsdl:part name="name" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getRoleNamesResponse">
+    <wsdl:part name="getRoleNamesReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateGWUserRequest">
+    <wsdl:part name="username" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUserNamesRequest">
+  </wsdl:message>
+  <wsdl:message name="ServerStateException">
+    <wsdl:part name="fault" type="tns1:ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getGroupIDsResponse">
+    <wsdl:part name="getGroupIDsReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getGroupResponse">
+    <wsdl:part name="getGroupReturn" type="tns2:GWSRGroup">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateTicketResponse">
+    <wsdl:part name="validateTicketReturn" type="tns2:GWSRUser">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentRepletPathsResponse">
+    <wsdl:part name="getDocumentRepletPathsReturn" type="impl:ArrayOf_soapenc_string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getRoleNamesRequest">
+  </wsdl:message>
+  <wsdl:message name="getGroupRequest">
+    <wsdl:part name="id" type="soapenc:string">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">null</wsdl:documentation>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getUserResponse">
+    <wsdl:part name="getUserReturn" type="tns2:GWSRUser">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+      </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="ISREEAuthenticationAPI">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    <wsdl:operation name="getDocumentRepletPaths">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns a set of prefixes. Access to all reports under these paths will be allowed
+when accessed directly through the replet API in InetSoft</wsdl:documentation>
+      <wsdl:input message="impl:getDocumentRepletPathsRequest" name="getDocumentRepletPathsRequest"/>
+      <wsdl:output message="impl:getDocumentRepletPathsResponse" name="getDocumentRepletPathsResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getGroup" parameterOrder="id">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get group by ID or return null</wsdl:documentation>
+      <wsdl:input message="impl:getGroupRequest" name="getGroupRequest"/>
+      <wsdl:output message="impl:getGroupResponse" name="getGroupResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getGroupIDs">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get all group IDs in the system</wsdl:documentation>
+      <wsdl:input message="impl:getGroupIDsRequest" name="getGroupIDsRequest"/>
+      <wsdl:output message="impl:getGroupIDsResponse" name="getGroupIDsResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getRole" parameterOrder="name">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get role by name or return null</wsdl:documentation>
+      <wsdl:input message="impl:getRoleRequest" name="getRoleRequest"/>
+      <wsdl:output message="impl:getRoleResponse" name="getRoleResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getRoleNames">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get all role names in the system</wsdl:documentation>
+      <wsdl:input message="impl:getRoleNamesRequest" name="getRoleNamesRequest"/>
+      <wsdl:output message="impl:getRoleNamesResponse" name="getRoleNamesResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getUser" parameterOrder="username password">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns the GWSRUser if the given user can successfully log in with supplied password.</wsdl:documentation>
+      <wsdl:input message="impl:getUserRequest" name="getUserRequest"/>
+      <wsdl:output message="impl:getUserResponse" name="getUserResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="getUserNames">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Get all user names in the system</wsdl:documentation>
+      <wsdl:input message="impl:getUserNamesRequest" name="getUserNamesRequest"/>
+      <wsdl:output message="impl:getUserNamesResponse" name="getUserNamesResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="updateGWUser" parameterOrder="username">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">return the current GWSRUser with the most up-to-date information such as groupIDs.</wsdl:documentation>
+      <wsdl:input message="impl:updateGWUserRequest" name="updateGWUserRequest"/>
+      <wsdl:output message="impl:updateGWUserResponse" name="updateGWUserResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+    <wsdl:operation name="validateTicket" parameterOrder="ticket">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns GWSRUser if the ticket is associated with the correct service request. Returns null otherwise.</wsdl:documentation>
+      <wsdl:input message="impl:validateTicketRequest" name="validateTicketRequest"/>
+      <wsdl:output message="impl:validateTicketResponse" name="validateTicketResponse"/>
+      <wsdl:fault message="impl:ServerStateException" name="ServerStateException"/>
+      <wsdl:fault message="impl:PermissionException" name="PermissionException"/>
+      <wsdl:fault message="impl:BadIdentifierException" name="BadIdentifierException"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ISREEAuthenticationAPISoapBinding" type="impl:ISREEAuthenticationAPI">
+    <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getDocumentRepletPaths">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getDocumentRepletPathsRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getDocumentRepletPathsResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getGroup">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getGroupRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getGroupResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getGroupIDs">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getGroupIDsRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getGroupIDsResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getRole">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getRoleRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getRoleResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getRoleNames">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getRoleNamesRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getRoleNamesResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getUser">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getUserRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getUserResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getUserNames">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="getUserNamesRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="getUserNamesResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updateGWUser">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="updateGWUserRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="updateGWUserResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="validateTicket">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="validateTicketRequest">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:input>
+      <wsdl:output name="validateTicketResponse">
+        <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:output>
+      <wsdl:fault name="ServerStateException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when a request is made at a time the server is in a state that disallows the request.</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="ServerStateException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="PermissionException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when the authenticated SOAP user does not have permission to perform the requested operation</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="PermissionException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+      <wsdl:fault name="BadIdentifierException">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Thrown when an internal public ID doesn't map to a real bean (problem could be that type was incorrect)</wsdl:documentation>
+        <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="BadIdentifierException" namespace="http://api.webservices.cc.guidewire.com/" use="encoded"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ISREEAuthenticationAPIService">
+<wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    <wsdl:port binding="impl:ISREEAuthenticationAPISoapBinding" name="ISREEAuthenticationAPI">
+      <wsdlsoap:address location="http://dontuse.defaultvalue.com/ISREEAuthenticationAPI"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

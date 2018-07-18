@@ -1,0 +1,313 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewTemplateDocumentDV">
+    <Require
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <Require
+      name="Document"
+      type="Document"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Variable
+      initialValue="&quot;Claim&quot;"
+      name="RelatedToTypeName"
+      type="String"/>
+    <Variable
+      initialValue="Document.Language"
+      name="language"
+      type="LanguageType"/>
+    <Variable
+      initialValue="new util.document.DocumentProduction()"
+      name="DocumentProduction"
+      type="util.document.DocumentProduction"/>
+    <Variable
+      initialValue="true"
+      name="fieldsEditable"
+      type="boolean"/>
+    <Variable
+      initialValue="false"
+      name="isSIUDocument"
+      type="boolean"/>
+    <Variable
+      initialValue="Document.Claim.SIUInvestigationsExt.length&gt;0 ? Document.Claim.SIUInvestigationsExt[0] : null"
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Variable
+      initialValue="DocumentCreationInfo.DocumentTemplateDescriptor !=null ? processOnPick() :null"
+      name="processtemplate"/>
+    <Variable
+      name="sendToRole"
+      type="ContactRole"/>
+    <Variable
+      initialValue="gaic.plugin.cc.document.EmpowerDocumentUtil.isUnFinalizedEmpowerDocument(Document)"
+      name="isEmpowerDocument"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.DocumentCreation.DocumentContents.Header"/>
+      <Label
+        label="displaykey.Java.Document.Creation.Template.Step1"/>
+      <DocumentTemplateInput
+        clearEnabled="false"
+        editable="fieldsEditable"
+        freeInputEnabled="false"
+        id="TemplatePicker"
+        onPick="processOnPick()"
+        pickLocation="DocumentTemplateSearchPopup.push(Claim)"
+        required="true"
+        value="DocumentCreationInfo.DocumentTemplateDescriptor"/>
+      <InputSet
+        visible="DocumentCreationInfo.DocumentTemplateDescriptor != null">
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step2"/>
+        <ClaimContactInput
+          claim="Claim"
+          editable="fieldsEditable"
+          id="SendTo"
+          label="displaykey.Java.Document.Creation.Template.SendToRecipient"
+          onChange="sendToValidationOnChange();"
+          postOnChange="true"
+          requestValidationExpression="Document.MailToExt.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null"
+          required="Document.CentralPrintEnabledExt == true &amp;&amp; !isEmpowerDocument"
+          value="Document.MailToExt"
+          valueRange="Document.getRelatedContacts()"
+          visible="true"/>
+        <RangeInput
+          editable="fieldsEditable"
+          id="Role"
+          label="&quot;Role&quot;"
+          postOnChange="true"
+          required="true"
+          sortValueRange="false"
+          value="sendToRole"
+          valueRange="getValidRoles()"
+          visible="Document.MailToExt!=null and Document.MailToExt.New"/>
+        <RangeInput
+          editable="fieldsEditable"
+          filter="VALUE !=&quot;Claim-level&quot; ? true:false"
+          id="RelatedTo"
+          label="displaykey.NVV.Claim.ClaimDocumentsFilter.RelatedTo"
+          showNoneSelected="false"
+          sortValueRange="false"
+          value="Document.RelatedTo"
+          valueRange="Document.getRelatedToExt()"
+          visible="!isSIUDocument &amp;&amp; !Document.IsMatterRelated"/>
+        <RangeInput
+          editable="fieldsEditable"
+          id="SIURelatedToRangeInput"
+          label="&quot;Related To&quot;"
+          onChange="Document.setInvestigation(Investigation)"
+          postOnChange="true"
+          value="Investigation"
+          valueRange="Document.getRelatedInvestigations()"
+          visible="isSIUDocument and Document.Claim.SIUInvestigationsExt.length&gt;0"/>
+        <!-- Only visible for matter/legal action related documents -->
+        <RangeInput
+          editable="fieldsEditable"
+          id="MatterRelatedToRangeInput"
+          label="&quot;Related To&quot;"
+          postOnChange="true"
+          required="true"
+          value="Document.Matter"
+          valueRange="Document.LegalActionRelatedToValues"
+          visible="Document.IsMatterRelated"/>
+        <TypeKeyInput
+          editable="fieldsEditable"
+          id="SIUReportType"
+          label="displaykey.NVV.SIU.Document.ReportType"
+          postOnChange="true"
+          required="true"
+          value="Document.ReportTypeExt"
+          visible="isSIUDocument"/>
+        <InputSetRef
+          def="DocumentTemplateContextObjectInputSet(DocumentCreationInfo,Document,Claim)"
+          mode="DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId"/>
+        <Input
+          editable="true"
+          id="CentralPrint"
+          label="displaykey.NVV.Claim.DocumentDetails.Document.CentralPrint"
+          required="Document.CentralPrintEnabledExt == true"
+          value="Document.ex_CentralPrint"
+          visible="Document.CentralPrintEnabledExt"/>
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step3"/>
+        <!-- NOTE: If the AllowActiveX configuration setting is set to "false", then the following ButtonInput
+					widget should be changed to DownloadButtonInput instead, since document creation will happen
+					on the client machine -->
+        <ButtonInput
+          action="if(isEmpowerDocument &amp;&amp; Document.CentralPrintEnabledExt==true &amp;&amp;( Document.MailToExt==null||Document.MailToExt.AllAddresses.length==0))sendToValidationEmpower() else createDocument()"
+          available="createDocumentButtonAvailable()"
+          id="CreateDocument"
+          value="displaykey.Java.Document.Creation.CreateDocument"/>
+        <Label
+          hideIfReadOnly="true"
+          label="displaykey.GAIC.Documents.CentralPrint.Validation.NoMailingAdress.SendTo"
+          visible="Document.CentralPrintEnabledExt == true &amp;&amp; Document.MailToExt!=null &amp;&amp; libraries.Document_Entity.Document_Functions.isAddressValid(libraries.Document_Entity.Document_Functions.getAddressToMail(Document.MailToExt))==false"/>
+        <Label
+          label="displaykey.Java.Document.Creation.Template.Step4"
+          visible="!isEmpower()"/>
+        <DocumentFilePathInput
+          editable="fieldsEditable"
+          id="DocumentFilePath"
+          value="DocumentCreationInfo.DocumentFilePath"/>
+        <DocumentScript
+          available="!isEmpower()"
+          editable="true"
+          id="DocumentFile"
+          required="!isEmpower()"
+          value="DocumentCreationInfo.File"
+          visible="!isEmpower()"/>
+      </InputSet>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="DocumentDetailsInputSet(Document, fieldsEditable)"
+        editable="true"/>
+      <InputDivider/>
+      <Label
+        label="&quot;Only parties with a valid address are available for CC&quot;"/>
+      <ListViewInput
+        def="CCUsersLV(DocumentCreationInfo.Document, Claim)"
+        editable="fieldsEditable"
+        id="CCusers_ListView"
+        label="displaykey.ccusers.lv.document.CCUsers">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <Label
+        id="SelfAddressedEnvelope"
+        label="displaykey.GAIC.Documents.CentralPrint.SelfAddressedEnvelope"
+        visible="Document.SASEExt"/>
+    </InputColumn>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+uses libraries.Document_Entity.Document_Functions
+
+function changeLanguage() {
+  var templatePlugin = gw.plugin.Plugins.get(gw.plugin.document.IDocumentTemplateSource)
+  var template = templatePlugin.getDocumentTemplate(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, gw.api.util.LocaleUtil.toLocale(language))
+  if (template == null) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Activity.DocumentTemplate.NotFound(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, language))
+  }
+  else {
+    DocumentCreationInfo.DocumentTemplateDescriptor = template 
+    resetTemplateBasedInfo()
+  }
+}
+
+function resetTemplateBasedInfo() {
+  DocumentCreationInfo.setDocumentFilePath(null);
+  for ( dynamicWidgetInfo in DocumentCreationInfo.getDynamicWidgetInformation()) {
+    DocumentCreationInfo.setDefaultContextObjectValue(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.DefaultValueExpression));
+    DocumentCreationInfo.setPossibleContextObjectValues(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.PossibleValuesExpression) as Object[]);
+  } 
+}
+  
+function populateMailTo(){
+  if(Document.MailToExt == null and Document.ex_Type!="INTERNAL_REPORT" && !Document.IsMatterRelated){
+    //Document.MailToExt = Claim.Insured;
+  }
+}
+
+function setSIUDocType() {
+  if(Document.Name=="Special Investigative Report"){
+    isSIUDocument = true;
+  }
+}
+
+function processOnPick(){
+  resetTemplateBasedInfo();
+
+  Document.ex_Type = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("ex_type") as java.lang.String;
+  Document.ex_SubType = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("ex_subtype") as java.lang.String;
+  Document.CentralPrintEnabledExt = Boolean.valueOf(DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("centralprintenabledext") as java.lang.String);
+  Document.ProcessMethod = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("processmethod") as java.lang.String;
+  Document.Privileged = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("privileged") as java.lang.String;
+  Document.Name = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("name") as java.lang.String;
+  Document.FormIDExt = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("formidext") as java.lang.String;
+  Document.AgentCopyExt = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("agentcopyext") as java.lang.Boolean;
+  // Setting SendTo value from the templates metadata
+  if(DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("sendto") as String == ""|| DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("sendto")==null)
+    Document.DefaultSendToExt=null
+  else
+    Document.DefaultSendToExt = DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("sendto") as String
+  setSIUDocType();
+  Document.setRelatedTo(Investigation);
+  populateMailTo();
+  Document.setSASE(DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("saseext") as java.lang.Boolean);
+  Document.defaultSendTo()
+  Document.defaultCC(DocumentCreationInfo.DocumentTemplateDescriptor.getMetadataPropertyValue("autoccparty") as java.lang.String);
+}
+
+function getValidRoles() : ContactRole[] {
+  var tempList : List = new java.util.ArrayList()
+  
+  for(item in Document.MailToExt.getValidRoles()){
+    if(item.toString()!="leadparalegal"){
+      tempList.add(item)
+    }
+  }
+  return tempList as ContactRole[]
+}
+
+function isEmpower():boolean {
+  return gaic.plugin.cc.document.EmpowerDocumentUtil.isEmpowerTemplate(DocumentCreationInfo);
+}
+
+function createDocument() {
+  if(Document.ex_CCUsers!=null && Document.ex_CCUsers.length>0){
+    for (cc in Document.ex_CCUsers){
+      if(cc.Contact==null){
+        throw new UserDisplayableException("Please remove Carbon Copy or select a contact.")
+      }
+    }
+  }
+  DocumentCreationInfo.Document.Name = DocumentCreationInfo.DocumentTemplateDescriptor.Name.replaceAll(",", ""); 
+  fieldsEditable=false;
+  if(Document.MailToExt.New){
+    Claim.addRole(sendToRole, Document.MailToExt)};
+    var dci = gw.plugin.Plugins.get(gw.plugin.document.IDocumentProduction).createDocumentSynchronously(DocumentCreationInfo.DocumentTemplateDescriptor, gw.document.DocumentsUtil.getDocumentCreationParameters(DocumentCreationInfo), DocumentCreationInfo.Document);
+    //var dci = DocumentProduction.createDocumentSynchronously(DocumentCreationInfo.DocumentTemplateDescriptor.TemplateId, gw.document.DocumentsUtil.getDocumentCreationParameters(DocumentCreationInfo), DocumentCreationInfo.Document);
+    if (!isEmpower()) {
+      gw.document.DocumentsUtil.renderDocumentContents(DocumentCreationInfo, dci);
+    } else {
+      //gw.document.DocumentsUtil.renderDocumentContents(DocumentCreationInfo, dci); //pointless?
+      var sw = new java.io.StringWriter();
+      gw.util.StreamUtil.copy(dci.InputStream, sw);
+      pcf.Empower.push(sw.toString());
+    }
+}
+
+function sendToValidationOnChange(){
+  var mailToAddr = Document_Functions.getAddressToMail(Document.MailToExt)
+  if((Document.CentralPrintEnabledExt==true and Document.MailToExt.AllAddresses.IsEmpty) 
+  || (Document.CentralPrintEnabledExt==true && mailToAddr!=null && Document_Functions.isAddressValid(mailToAddr)==false)){ 
+    GeneralErrorWorksheet.push(displaykey.GAIC.Documents.CentralPrint.Validation.NoMailingAdress.SendTo) 
+  }
+  Document.Matter = null
+}
+
+function sendToValidationEmpower(){
+  if(Document.MailToExt==null){
+    GeneralErrorWorksheet.push(displaykey.GAIC.Documents.CentralPrint.Validation.ValidationError.SendToNull)
+  }
+}
+
+function createDocumentButtonAvailable():boolean{
+  return (isEmpowerDocument && Document.CentralPrintEnabledExt && Document.MailToExt==null) 
+    || ((!Document.CentralPrintEnabledExt || Document_Functions.isAddressValid(Document_Functions.getAddressToMail(Document.MailToExt))) 
+    && (isSIUDocument ? Document.ReportTypeExt!=null : true) 
+    && ((Document.MailToExt!=null && Document.MailToExt.New) ? sendToRole!=null : true) 
+    && ((Document.IsMatterRelated) && (Document.RelatedTo == null || Document.Matter == null))==false)
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,23 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1160 - Motion Close Date cannot be in the future")
+internal class MVXX1160MotionCloseDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("MotionCloseDate") and
+matter.MotionCloseDate != null and
+gw.api.util.DateUtil.compareIgnoreTime( matter.MotionCloseDate, gw.api.util.DateUtil.currentDate() ) > 0
+/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  msg="Please provide a Motion Close Date that is not a future date."
+  matter.rejectField( "MotionCloseDate", "newloss", msg,Null, Null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

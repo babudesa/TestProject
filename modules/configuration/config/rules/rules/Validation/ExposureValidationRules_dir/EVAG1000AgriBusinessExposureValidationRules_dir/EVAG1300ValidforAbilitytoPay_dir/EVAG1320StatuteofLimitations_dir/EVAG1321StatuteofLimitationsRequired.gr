@@ -1,0 +1,25 @@
+package rules.Validation.ExposureValidationRules_dir.EVAG1000AgriBusinessExposureValidationRules_dir.EVAG1300ValidforAbilitytoPay_dir.EVAG1320StatuteofLimitations_dir
+
+@gw.rules.RuleName("EVAG1321 - Statute of Limitations Required")
+internal class EVAG1321StatuteofLimitationsRequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Rule to enforce the Statute of Limitations is populated for ability to pay 
+in cases where exposures are created other than the application, i.e. conversion.
+Sprint : EC Sprint 3    
+Author: Eric Rawe      
+Date: 10/02/08       
+*/
+((exposure.StatuteOfLimitationsExt == null) &&
+(exposure.ExposureType == "ab_AGG_auto_BodInjury" ||
+exposure.ExposureType == "ab_AGG_gl_BodInjury" ||
+exposure.ExposureType == "ab_BodilyInjury"))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  exposure.reject( "payment", displaykey.Rules.Validation.Exposure.Agri.AbilityToPay.StatuteOfLimitationsExt, null, null )
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

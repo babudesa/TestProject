@@ -1,0 +1,44 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX2100 - Auto Ack Rules")
+internal class CEXX2100AutoAckRules {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.AssignmentStatus == AssignmentStatus.TC_ASSIGNED
+//and claim.Policy.Verified  removed per defect 5464
+and !claim.ClaimNumber.startsWith("T")
+and !claim.checkDisconnectedFeatures()
+and !exists(doc in claim.Documents where doc.ex_SubType == "Claim Acknowledgement" and doc.Description == "Auto Acknowledgement Letter")
+and util.document.AutoACKLetter.wasClaimCreatedAfterScriptParam(claim)
+and claim.isConvertedExt() == true
+
+/*
+Update 8/12/13 erawe:  moved from CPUXX to CEXX because we had issues where
+multiple emails and documents where being created if validation corrections
+had to be corrected when finishing the claim.  It would run the CPU rule twice.
+
+  conditions that must be true
+  ----------------------------
+  1)claim is assigned
+  2)claim's policy is verified Removed Per Defect 5464
+  3)claim is not a temporary claim
+  4)claim does not have any disconnected features
+  5)an ack letter does not already exist in the claim's document array
+  6)claim was created after the script parameter was last updated
+*//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///defect 5464 - anicely - Create note on Unverified Claims regardless of whether
+//the Business Unit is set up for Claim-level or Feature-level Ack letters
+
+if(!claim.Policy.Verified 
+    and !exists(var note in claim.Notes where note.Subject=="Acknowledgement Letter Not Generated") 
+    and util.document.AutoACKLetter.autoAckController(claim.LOBCode, null)){
+  var note : Note
+  note = claim.addNote ( "general", "This claim is on an unverified policy; no Automated Acknowledgement Letter was generated.")
+  note.Subject = "Acknowledgement Letter Not Generated";
+  note.Author = util.custom_Ext.finders.getUserOb( "batchsu" )
+}/*end00rule*/
+  }
+}

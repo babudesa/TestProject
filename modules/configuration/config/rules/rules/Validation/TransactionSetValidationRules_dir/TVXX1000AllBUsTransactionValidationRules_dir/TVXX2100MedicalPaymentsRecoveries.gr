@@ -1,0 +1,28 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVXX2100 - Medical Payments - Recoveries")
+internal class TVXX2100MedicalPaymentsRecoveries {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="RecoverySet" and transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+var msgExpCali = displaykey.Validation.MedicalPayments.CaliforniaExpense
+var msgLossOth = displaykey.Validation.MedicalPayments.OtherLoss
+
+for(rec in transactions.Recoveries){
+  if(rec.LineItems!=null){
+    if(rec.Exposure.Coverage.State=="CA" && rec.LineItems[0].LineCategory=="cost_control_vendors" &&
+       rec.CostType=="expense" && rec.Exposure.IsMedicalPaymentExt){
+      transactionSet.reject( "payment", msgExpCali, null, null )
+    }
+    if(rec.Exposure.Coverage.State!="CA" && rec.LineItems[0].LineCategory=="cost_control_vendors" &&
+       rec.CostType=="claimcost" && rec.Exposure.IsMedicalPaymentExt){
+      transactionSet.reject( "payment", msgLossOth, null, null )
+    }
+  }
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="DispositionDV">
+    <Require
+      name="Matter"
+      type="Matter"/>
+    <Require
+      name="assignment"
+      type="MatterAssignmentExt"/>
+    <Variable
+      name="canClose"
+      type="boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Matter.JurisdictionLitigationStatus.DispositionDetails"/>
+      <ListViewInput
+        labelAbove="true">
+        <Toolbar/>
+        <ListViewPanel
+          border="true">
+          <RowIterator
+            editable="true"
+            elementName="matterExposures"
+            value="assignment.UIHelper.ValidAssignmentExposuresForDisposition">
+            <IteratorSort
+              sortBy="matterExposures.ClaimantExt"
+              sortOrder="1"/>
+            <IteratorSort
+              sortBy="matterExposures.Exposure"
+              sortOrder="2"/>
+            <Row>
+              <Cell
+                id="ClaimantRangeCell"
+                label="&quot;Claimant Name&quot;"
+                required="false"
+                value="matterExposures.Exposure.Claimant"/>
+              <Cell
+                id="FeatureRangeCell"
+                label="displaykey.Matter.JurisdictionLitigationStatus.Claimant.Feature"
+                required="false"
+                value="matterExposures.Exposure"/>
+              <RangeCell
+                editable="true"
+                filter="(util.WCHelper.isELLossType(Matter.Claim) &amp;&amp; VALUE==&quot;settledwconly&quot;) ? false : true"
+                id="DispositionTypeKeyCell"
+                label="displaykey.Matter.Disposition"
+                value="matterExposures.DispositionTypeExt"
+                valueRange="assignment.Matter.UIHelper.ValidDispositionTypes"/>
+              <DateCell
+                editable="true"
+                id="DispositionDateCell"
+                label="displaykey.Matter.DispositionDate"
+                value="matterExposures.DispositionDateExt">
+                <Reflect
+                  reflectDirectChangesOnly="true"
+                  triggerIds="DispositionTypeKeyCell"
+                  value="return  (VALUE == DispositionTypeExt.TC_LAWFIRASSIGNEDINERROR ? java.util.Date.CurrentDate : matterExposures.DispositionDateExt)"/>
+              </DateCell>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[function lawError() : java.util.Date {
+  assignment.MatterAssignmentStatusExt = MatterAssignmentStatus.TC_DISABLED
+  assignment.StatusExt = typekey.AssignmentStatusExt.TC_CLOSED
+  assignment.ClosedDate = new java.util.Date();
+  
+  return new java.util.Date()
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

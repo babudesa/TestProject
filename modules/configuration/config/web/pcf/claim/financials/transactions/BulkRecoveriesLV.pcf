@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="BulkRecoveriesLV">
+    <Require
+      name="Recovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="find(x in Recovery where (x.ex_CashReceiptNumber == Recovery.ex_CashReceiptNumber))"
+      name="RecoveryLVQuery"
+      recalculateOnRefresh="true"
+      type="RecoveryQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="RecoveryIterator"
+      value="RecoveryLVQuery">
+      <Row>
+        <Cell
+          action="ClaimSummary.push(RecoveryIterator.Claim)"
+          id="Claim"
+          label="&quot;Claim&quot;"
+          value="RecoveryIterator.Claim.ClaimNumber">
+          <ColumnFooter>
+            <TextCell
+              id="BulkRecoveryTotalLabel"
+              value="&quot;Total:&quot;"/>
+          </ColumnFooter>
+        </Cell>
+        <Cell
+          id="Category"
+          label="displaykey.LV.Financials.DisplayRecoveryDetailLV.RecoveryCat"
+          value="RecoveryIterator.CostCategory"/>
+        <Cell
+          id="Feature"
+          label="displaykey.LV.Financials.DisplayRecoveryDetailLV.RecoveryFeature"
+          value="RecoveryIterator.Exposure"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.DisplayRecoveryDetailLV.RecoveryCostType"
+          value="RecoveryIterator.CostType"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="PaidAmount"
+          label="displaykey.LV.Financials.DisplayRecoveryDetailLV.RecoveryCatPay"
+          value="RecoveryIterator.Amount">
+          <ColumnFooter>
+            <Cell
+              formatType="currency"
+              id="BulkRecoveryTotal"
+              value="getSums(RecoveryLVQuery, Recovery)"/>
+          </ColumnFooter>
+        </Cell>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getSums(query:RecoveryQuery, rec:Recovery) : double {
+  var total : double = 0.00
+  for(x in query){
+   total = total + x.Amount as double
+  }
+  return total
+}]]></Code>
+  </ListViewPanel>
+</PCF>

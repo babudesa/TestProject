@@ -1,0 +1,52 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUSP1000SpecialtyESExposurePreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUSP1200 - Potential Catastrophic Loss Email Notification")
+internal class EPUSP1200PotentialCatastrophicLossEmailNotification {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//* Defect ID : 7297 Production = Turn off Early Potential Catastrophic Loss Notification as soon as possible
+ I have disabled the rule as per defect 7297*/ 
+exposure.Claim.AssignmentStatus == AssignmentStatus.TC_ASSIGNED and
+exposure.Claim.State != ClaimState.TC_CLOSED and
+exposure.Claim.State != ClaimState.TC_DRAFT and
+exposure.Incident.Severity == SeverityType.get("major-gen") and
+!exists(ref in exposure.Claim.Notes where ref.Subject == displaykey.Notes.NoteSubject.PotentialCatLoss)
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+try {
+
+    var noteBody:String
+    var note:Note
+    var body : String = templates.email.specialtyes.EarlyPotentialCatLoss_SPES.renderToString(exposure)
+    var envInfo : String = util.custom_Ext.finders.getEnvironment()
+    var clmNum = exposure.Claim.ClaimNumber
+    
+    var emailHelper = new EmailHelper()
+    
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+      emailHelper.sendEmailWithBodyEcf(exposure.Claim, 
+            "E&SManagement@gaig.com, rlotspeich@gaig.com, alatto@gaig.com, rcorley@gaiG.com", "Specialty E & S", 
+            "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+            displaykey.Email.Subject.PotentialCatLoss, body)
+      gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    } else {
+      emailHelper.sendEmailWithBodyEcf(exposure.Claim, 
+            ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+            "ClaimCenterSupport@gaig.com", envInfo, 
+            displaykey.Email.Subject.PotentialCatLoss, body)
+      gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    }
+
+    noteBody = displaykey.Notes.NoteBody.PotentialCatLoss
+    note = exposure.Claim.addNote(NoteTopicType.TC_POTDEV, noteBody)
+    note.Subject = displaykey.Notes.NoteSubject.PotentialCatLoss
+    
+  }catch(e) {
+      util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

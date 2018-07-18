@@ -1,0 +1,24 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVWC1160 - Body Part Details")
+internal class CVWC1160BodyPartDetails {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!exists(inc in claim.Incidents where inc.Subtype == "InjuryIncident" 
+&& (inc as InjuryIncident).BodyParts.length != 0) &&
+!claim.IncidentReport
+
+// 6.12.15 - cmullin - WC Config: If the claim has any BodyPart attached to any incident (i.e. there is 
+// at least one non-empty BodyParts array), then skip the rule. Otherwise, reject the new 
+// claim because at least one Area of Body/Detailed Body Part is required in Body Part Details LV.
+// 7.9.15 - cmullin - requirements change. Moved from New Loss to Ability To Pay validation level.
+// 10.9.15 - cmullin - Re-enabled rule. Moved back to New Loss validation./*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  claim.reject( "newloss", displaykey.Rules.Validation.Claim.WorkersComp.BodyParts, null, null )    
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

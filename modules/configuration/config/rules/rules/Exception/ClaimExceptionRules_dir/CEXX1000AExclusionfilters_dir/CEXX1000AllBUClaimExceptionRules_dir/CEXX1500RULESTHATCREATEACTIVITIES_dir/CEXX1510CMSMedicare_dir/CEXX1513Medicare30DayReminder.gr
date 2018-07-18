@@ -1,0 +1,114 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir.CEXX1510CMSMedicare_dir
+
+@gw.rules.RuleName("CEXX1513 - Medicare 30 Day Reminder")
+internal class CEXX1513Medicare30DayReminder {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Defect 3771 - sprzygocki - 12/27/10 - Activities for CMS have been changed
+//  This activity will generate whenever CMS information is missing regardless of
+//  the Medicare Eligible flag being filled in or not after 30 days (1 month).
+//  It is due 7 days from creation and has no escalation. It will reoccur every 30 days.    
+//Defect 8181
+claim.ReportedDate != null and  
+gw.api.util.DateUtil.daysSince(claim.ReportedDate) >= 30 and
+exists(exp in claim.Exposures where (exp.Claimant.Subtype == "Person" or 
+exp.Claimant.Subtype=="InjuredWorkerExt") and 
+exp.Claimant.Subtype!="PersonVendor" and
+(exp.ExposureType == "ab_PIP" || 
+ exp.ExposureType == "ab_MedPay" || 
+ exp.ExposureType == "sp_medical_payment" ||  //Added new exposure type
+ exp.ExposureType == "wc_medical_details") and 
+!exists(act in claim.Activities where 
+act.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "cms_med_30reminder" ) and
+ act.Claimant == exp.Claimant and act.Status == "open"))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//**
+ * Defect 8181 - cprakash - 01/20/2016 
+ * this rule will Medicare query 30 day reminder after 30 days
+ * from claim report date and fire for every 30 days if CMS information is missing on the medicare
+ * claimant
+ */
+uses util.gaic.CMS.validation.*
+uses gw.api.util.Logger
+var pattern : ActivityPattern=util.custom_Ext.finders.findActivityPattern( "cms_med_30reminder" )
+Logger.logInfo("CEXX1513 - Medicare 30 Day Reminder Ruled Called...")
+for(exp in claim.Exposures){
+
+ if((exp.Claimant.Subtype == "Person" or 
+       exp.Claimant.Subtype == "InjuredWorkerExt") and 
+       exp.Claimant.Subtype != "PersonVendor" and
+       (exp.ExposureType == "ab_PIP" || 
+        exp.ExposureType == "ab_MedPay" || 
+        exp.ExposureType == "sp_medical_payment" ||
+        exp.ExposureType == "wc_medical_details" ))
+    {
+       
+     Logger.logDebug("Valid Exposure, Checking for CMS information... ")  
+      //Check for the CMS and ORM field information for the given medicare claimant
+      var cmsVal = new GeneralCMSValidation(exp)
+      cmsVal.DoQueryData = true
+      cmsVal.DoReportingData = false
+      CMSValidationUtil.validate(cmsVal)
+
+      if(cmsVal.Fields.HasElements)
+      {   
+        
+       Logger.logDebug("CMS information is missing... Verifying Activity Creation.. ")                               
+    //Check for Any existing activities for the same claimant and in open state                             
+       if(exists (act in claim.Activities where act.ActivityPattern == pattern and act.Exposure.Claimant == exp.Claimant and act.Status=="open" ))
+       {
+         Logger.logDebug("Valid Activity already exists under workplan, skipping firing of activity") 
+         //do nothing
+       }
+       else
+       {
+        Logger.logDebug("No activities in Open state exists.... Looking forward to create new or recurring activity..")
+       
+        var createActivity : boolean = false
+        var daysSinceLastCreatedActivity : int =  0
+        var daysSinceClaimReportDate = gw.api.util.DateUtil.daysSince(claim.ReportedDate)
+        var lastCreatedActivity = claim.Activities.where(\ act -> act.ActivityPattern == pattern and act.Claimant == exp.Claimant ).maxBy(\ a -> a.CreateTime)
+         
+        Logger.logDebug("lastCreatedActivity time, "+lastCreatedActivity.CreateTime)
+         
+       if(lastCreatedActivity.CreateTime != null and daysSinceClaimReportDate >= 30)
+         {
+           daysSinceLastCreatedActivity = gw.api.util.DateUtil.daysSince(lastCreatedActivity.CreateTime)
+           Logger.logDebug("daysSinceLastCreatedActivity, "+daysSinceLastCreatedActivity)
+           Logger.logDebug("daysSinceClaimReportDate, "+daysSinceClaimReportDate)
+           Logger.logDebug("Activity exists...checking for time differnce..if created 30 days ago, will create one")
+             
+           if(daysSinceClaimReportDate >= 30 and daysSinceLastCreatedActivity >= 30 and  daysSinceLastCreatedActivity%30 >= 0 and 
+              daysSinceLastCreatedActivity%30 <= 3)
+             {
+                createActivity = true
+             }
+        }
+        else
+        {
+          Logger.logDebug("No activity exists...Can create new...")
+          if(daysSinceClaimReportDate >= 30)
+          { 
+              createActivity = true
+          }
+        }
+
+         if(createActivity)
+         {
+           var missingInfo = ""
+           var act = claim.createActivityFromPattern(exp , pattern )
+           missingInfo = cmsVal.ValidationMessage 
+           act.Description = displaykey.Rules.Activities.ISO.CMS.MedicareInformationMissing(exp.Claimant, missingInfo)
+          //Defect: 8350 - schandanam - Removed Mapping between Activity and Claimant
+          // act.Claimant = exp.Claimant
+           Logger.logDebug("Medicare Query - 30 Day Reminder Activity is created successfully")
+         }
+        
+       }
+      }
+    }
+  }/*end00rule*/
+  }
+}

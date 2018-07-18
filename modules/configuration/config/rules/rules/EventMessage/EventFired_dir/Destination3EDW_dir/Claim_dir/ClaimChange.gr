@@ -1,0 +1,18 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Claim_dir
+
+@gw.rules.RuleName("ClaimChange")
+internal class ClaimChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ClaimChanged"
+&& messageContext.Root typeis Claim
+&& messageContext.Root.State != "draft"
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var claim = messageContext.Root as Claim;
+var f = util.gaic.EDW.EDWFunctionsFactory.getClaimFunctions();
+f.sendClaimChanges( messageContext, claim );
+/*end00rule*/
+  }
+}

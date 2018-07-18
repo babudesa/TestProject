@@ -1,0 +1,29 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEIM1160 - Supervisor Review Activity Status")
+internal class CEIM1160SupervisorReviewActivityStatus {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!exists(act in claim.Activities where act.ActivityPattern.Code=="review_clm_status_man")
+/*Author: erawe: check for claims that have the No Update on Claim in 30 days
+activity and that have not been changed for 50 days
+By default claim exception will check for claims that have not changed or been
+updated, in this rule we just check the time period
+Date:7/16/10
+Date:2/8/12 - ER - Above statement not altogether true, re-write to match Agri rule
+*/
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    if(!claim.isClaimUpdated(ScriptParameters.AdjusterInactivityThresholdDays)){
+      var ap = util.custom_Ext.finders.findActivityPattern( "review_clm_status_man" )
+      var apdesc = "Review this claim; there has been no activity since the claim was created"
+      claim.createActivity(null, ap, null, apdesc, null, false, null, null)
+    }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

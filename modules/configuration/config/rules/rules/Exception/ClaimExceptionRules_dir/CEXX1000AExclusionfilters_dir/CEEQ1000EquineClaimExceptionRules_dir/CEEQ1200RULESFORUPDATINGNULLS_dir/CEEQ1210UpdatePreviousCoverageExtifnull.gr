@@ -1,0 +1,21 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEQ1000EquineClaimExceptionRules_dir.CEEQ1200RULESFORUPDATINGNULLS_dir
+
+@gw.rules.RuleName("CEEQ1210 - Update PreviousCoverageExt if null")
+internal class CEEQ1210UpdatePreviousCoverageExtifnull {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(exp in claim.Exposures where exp.PreviousCoverageExt == null) == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in claim.Exposures){
+    if(exp.PreviousCoverageExt == null){
+      exp.PreviousCoverageExt = exp.Coverage;
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

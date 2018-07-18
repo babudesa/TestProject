@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="VehicleIncidentTowingDV">
+    <Require
+      name="VehicleIncident"
+      type="VehicleIncident"/>
+    <Variable
+      initialValue="getVehicleTowingCoverage(CoverageType.TC_TOWLABOR)"
+      name="coverageValue"
+      type="String"/>
+    <InputColumn>
+      <InputGroup
+        childrenVisible="VehicleIncident.VehTowedInd"
+        id="TowingInputGroup"
+        label="displaykey.Web.VehicleIncidentTowingDV.Towing.ValueLabel">
+        <InputSet
+          visible="VehicleIncident.VehTowedInd">
+          <Input
+            id="TowingCoverage"
+            label="displaykey.Web.VehicleIncidentTowingDV.TowingCoverage.Label"
+            value="coverageValue == null ? displaykey.Web.VehicleIncidentTowingDV.TowingCoverage.NoCoverage.Value : coverageValue"/>
+          <ClaimContactInput
+            claim="VehicleIncident.Claim"
+            editable="true"
+            id="TowingAgcy_Picker"
+            label="displaykey.Web.VehicleIncidentDV.TowingAgcyPicker"
+            required="false"
+            value="VehicleIncident.TowingAgcy"
+            valueRange="VehicleIncident.Claim.RelatedAutoTowingAgcyArray"/>
+          <Input
+            id="TowingAgcy_Phone"
+            label="displaykey.Web.VehicleIncidentDV.TowingAgcyPhone"
+            value="VehicleIncident.TowingAgcy.PrimaryPhoneValue">
+            <Reflect
+              triggerIds="TowingAgcy_Picker"
+              value="VALUE.PrimaryPhoneValue"/>
+          </Input>
+        </InputSet>
+      </InputGroup>
+    </InputColumn>
+    <Code><![CDATA[
+function getVehicleTowingCoverage(coverageType : CoverageType) : String {
+  var coverageTypes = VehicleIncident.Claim.Policy.getCoveragesByCoverageType( coverageType );
+  if (coverageTypes.length > 0) {
+    return coverageTypes[0].DetailsSummary
+  }
+  else {
+    return null;
+  }
+}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

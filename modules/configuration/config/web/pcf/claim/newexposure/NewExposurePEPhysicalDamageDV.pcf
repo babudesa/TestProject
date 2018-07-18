@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewExposurePEPhysicalDamageDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <InputColumn>
+      <!-- FEATURE SECTION -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, &quot;PhysicalDamage&quot;)"/>
+      <!-- CLAIMANT SECTION -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, &quot;PhysicalDamage&quot;)"/>
+      <!-- RECOVERY SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Exposure.Reinspection"
+        visible="Exposure.TotalLossIndExt==false and Exposure.Claim.LossType==&quot;AGRIAUTO&quot; and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <!-- Total Loss - PHYSICAL DAMAGE, PROPERTY ONLY  Email from 9/1/09 was misunderstood. Total Loss Indicator should show on:
+				-Auto Property Damage 
+				-Auto Physical Damage
+				-AgriGuard Auto Property Damage
+				-All Property LOB Property Feature Types
+			 From email 9/1/09 Total Loss Indicator is required on screen for Auto Property Damage, Auto Physical Damage and AgriGuard Auto Property Damage
+			 Stephanie Przygocki 9/22/09
+			 Updated: tnewcomb 03/18/2011 - Total Loss Indicator is not required until the feature is closed. Moving the totalLossIsRequired() logic to the 
+			 Feature Closed Validation rule. -->
+      <Input
+        id="TotalLoss"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.TotalLoss"
+        postOnChange="true"
+        required="false"
+        value="Exposure.TotalLossIndExt"
+        visible="Exposure.totalLossIsVisible() and Exposure.TotalLossIndExt==false and Exposure.Claim.LossType==&quot;AGRIAUTO&quot; and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <Input
+        editable="true"
+        id="GlassOnlyClaim"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.GlassOnlyClaim"
+        onChange="Exposure.removeGlassOnlyOnchange()"
+        postOnChange="true"
+        value="Exposure.GlassOnlyClaimIndExt"
+        visible="Exposure.TotalLossIndExt==false and Exposure.Claim.LossType==&quot;AGRIAUTO&quot; and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <Input
+        editable="true"
+        id="BodyShopPayment"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.BodyShopPayment"
+        onChange="Exposure.removeBodyPaymentOnchange()"
+        postOnChange="true"
+        value="Exposure.BodyShopPaymentIndExt"
+        visible="Exposure.GlassOnlyClaimIndExt==false and Exposure.TotalLossIndExt==false and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot; and Exposure.Claim.LossType==&quot;AGRIAUTO&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <Input
+        editable="true"
+        id="TotalDamage"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.TotalDamage"
+        onChange="Exposure.removeTotalDamageOnchange()"
+        postOnChange="true"
+        value="Exposure.TotalDamageIndExt"
+        visible="Exposure.GlassOnlyClaimIndExt==false and Exposure.BodyShopPaymentIndExt==true and Exposure.TotalLossIndExt==false and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot;and Exposure.Claim.LossType==&quot;AGRIAUTO&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <Input
+        editable="true"
+        id="Reinspected"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.Reinspected"
+        onChange="Exposure.removeReinspectOnchange()"
+        postOnChange="true"
+        value="Exposure.ReinspectedIndExt"
+        visible="Exposure.GlassOnlyClaimIndExt==false and Exposure.TotalDamageIndExt==true and Exposure.BodyShopPaymentIndExt==true and Exposure.TotalLossIndExt==false and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot; and Exposure.Claim.LossType==&quot;AGRIAUTO&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <!-- Jurisdiction State - Shows on all -->
+      <TypeKeyInput
+        editable="true"
+        id="Reinspectionresults"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.Reinspectionresults"
+        value="Exposure.ReinspectionresultExt"
+        visible="Exposure.GlassOnlyClaimIndExt==false and Exposure.TotalDamageIndExt==true and Exposure.BodyShopPaymentIndExt==true and Exposure.TotalLossIndExt==false and Exposure.ReinspectedIndExt==true and Exposure.ExposureType==&quot;ab_PhysicalDamage&quot; and Exposure.Claim.LossType==&quot;AGRIAUTO&quot;and Exposure.LossParty==&quot;insured&quot;"/>
+      <!-- <InputSetRef
+        def="VehicleSummaryInputSet(Exposure)"
+        visible="Exposure.Coverage.Type ==  &quot;ab_COMP_ma_ny&quot; or Exposure.Coverage.Type == &quot;ab_SPPER_ma_ny&quot;"/> -->
+      <!-- VEHICLE SECTION - Only for OTC-Mutual Aid and SPPER-Mutual Aid policy level coverages 
+ 			 TOTAL LOSS SECTION -->
+      <InputSetRef
+        def="TotalLossInputSet(Exposure)"/>
+    </InputColumn>
+    <InputColumn>
+      <!-- LOSS DESCRIPTION SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossDescBox"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- INCIDENT OVERVIEW SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.IncidentOverview"/>
+      <!-- 3/11/08 - sprzygocki: Added different vehicle values for auto, boat, trailer and engine  1/5/10 erawe: changed engine and trailer values from getEngineName, getTrailerName so not to display the word null and it matches boat display  Vehicle - Risk level -->
+      <Input
+        id="RiskLevelVehicleInfo"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.Model"
+        value="((Exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle"
+        visible="Exposure.Coverage.SubType==&quot;VehicleCoverage&quot; AND Exposure.ExposureType==&quot;ab_PhysicalDamage&quot;"/>
+      <!-- Boat -->
+      <Input
+        id="RiskLevelVehicleInfo_Boat"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Boat.Model"
+        value="((Exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle"
+        visible="Exposure.ExposureType==&quot;ab_BoatDamage&quot;"/>
+      <!-- Engine -->
+      <Input
+        id="RiskLevelVehicleInfo_Engine"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Engine.Model"
+        value="(Exposure.Coverage as VehicleCoverage).EngineExt"
+        visible="Exposure.ExposureType==&quot;ab_EngineDamage&quot;"/>
+      <!-- Trailer -->
+      <Input
+        id="RiskLevelVehicleInfo_Trailer"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Trailer.Model"
+        value="(Exposure.Coverage as VehicleCoverage).TrailerExt"
+        visible="Exposure.ExposureType==&quot;ab_TrailerDamage&quot;"/>
+      <!-- Vehicle - Policy level -->
+      <InputSetRef
+        def="VehicleSummaryInputSet(Exposure)"/>
+      <Input
+        formatType="exactNumber"
+        id="Deductible"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.Deductible"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        value="Exposure.Coverage.Deductible"/>
+      <!-- 6/30/08 erawe - Changed back to ClaimContactInput so new drivers can be added from this screen -->
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="Driver"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.Driver"
+        newContactMenu="NewDriverPickerMenuItemSet"
+        onChange="Exposure.clearDriverType(); Exposure.displayDriverWarning()"
+        postOnChange="true"
+        required="false"
+        showSearchInMenu="false"
+        value="Exposure.DriverExt"
+        valueRange="Exposure.getDrivers()"/>
+      <TypeKeyInput
+        editable="true"
+        id="DriverType"
+        label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.Driver.Type"
+        required="true"
+        value="Exposure.DriverTypeExt"
+        visible="Exposure.DriverExt!=null"/>
+      <Input
+        editable="true"
+        id="Operable"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.Operable"
+        required="false"
+        value="Exposure.VehicleOperableExt"/>
+      <Input
+        editable="true"
+        id="LossEstimate"
+        label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Vehicle.LossEstimate"
+        value="Exposure.Incident.LossEstimate"/>
+      <InputSetRef
+        def="AddressInputSet(Exposure.Claim.AddressOwner)"
+        mode="Exposure.Claim.AddressOwner.InputSetMode"/>
+      <InputDivider/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <!-- RECOVERY SECTION -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Recovery"/>
+      <Input
+        editable="true"
+        id="SalvPotential"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SalvPotential"
+        value="Exposure.SalvagePotentialExt"/>
+      <Input
+        editable="true"
+        id="SubroPotential"
+        label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SubroPotential"
+        value="Exposure.SubrogPotentialExt"/>
+      <InputDivider/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

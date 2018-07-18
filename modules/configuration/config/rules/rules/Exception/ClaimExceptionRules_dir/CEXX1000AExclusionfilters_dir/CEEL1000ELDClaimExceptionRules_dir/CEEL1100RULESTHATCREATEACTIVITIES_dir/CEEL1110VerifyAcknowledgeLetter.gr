@@ -1,0 +1,21 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEEL1110 - Verify Acknowledge Letter")
+internal class CEEL1110VerifyAcknowledgeLetter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="acknowledge_letter") && 
+!exists(document in claim.Documents where document.ex_Type != null && document.ex_Type.toLowerCase().equals("correspondence") &&
+document.ex_SubType == "Claim Acknowledgement"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern("acknowledge_letter")
+try{
+  if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.CreateTime, 15)){
+    claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

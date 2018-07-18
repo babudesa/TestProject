@@ -1,0 +1,34 @@
+package rules.EventMessage.EventFired_dir.Destination16BillReturnExport_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("BulkInvoice")
+internal class BulkInvoice {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis BulkInvoice &&
+messageContext.Root.BulkInvoiceTypeExt == BulkInvoiceType.TC_MITCHELL &&
+messageContext.EventName == "BulkInvoiceStatusChanged" && 
+messageContext.Root.isFieldChanged("Status") &&
+messageContext.Root.Status == BulkInvoiceStatus.TC_ISSUED/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.billreturnexport.gaigbillreturnexport.enums.RecordTypeEnum
+
+var util = util.gaic.billreturnexport.BillReturnExportUtil
+
+try {
+  for(item in (messageContext.Root as BulkInvoice).InvoiceItems){
+    var check = item.BulkInvoiceItemInfo.Check    
+    
+    if(check.SourceSystemExt == SourceSystemExt.TC_MITCHELL_SA_HDL_FEE){
+      var message = util.buildBillReturnExportMessage(check)
+      if(message != null && message != ""){
+        util.sendMessage(messageContext, message)
+      }
+    }
+  }
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

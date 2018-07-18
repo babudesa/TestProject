@@ -1,0 +1,17 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1130 - Reportability Change Warning")
+internal class TVXX1130ReportabilityChangeWarning {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var chk = (transactionSet as CheckSet).PrimaryCheck;
+
+if(chk.Reportability=="notreportable" and (chk.OriginalVersion as Check).Reportability=="reportable"
+   and exists(payee in chk.Payees where payee.PayeeType=="vendor" and payee.Payee.Ex_TaxStatusCode=="B")){
+  transactionSet.reject( null, null, "payment", displaykey.JSP.Check.Modify.ConfirmMsg )
+}/*end00rule*/
+  }
+}

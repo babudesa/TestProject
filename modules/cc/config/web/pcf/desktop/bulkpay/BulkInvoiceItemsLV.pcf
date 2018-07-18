@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="BulkInvoiceItemsLV">
+    <Require
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Require
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      name="claimNumber"
+      type="String"/>
+    <Variable
+      initialValue="bulkInvoice.SortedInvoiceItemsQuery"
+      name="bulkInvoiceItems"
+      recalculateOnRefresh="true"
+      type="BulkInvoiceItemQuery"/>
+    <RowIterator
+      checkBoxVisible="invoiceItem.Editable"
+      editable="true"
+      elementName="invoiceItem"
+      hideCheckBoxesIfReadOnly="true"
+      toCreateAndAdd="bulkInvoice.addNewInvoiceItem()"
+      toRemove="bulkInvoice.removeFromInvoiceItems(invoiceItem)"
+      value="bulkInvoiceItems">
+      <Row
+        editable="invoiceItem.Editable">
+        <Cell
+          editable="true"
+          id="BulkInvoiceItemsLV_ClaimNumber"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.ClaimNumber"
+          onChange="helper.cleanupClaim(invoiceItem); invoiceItem.setClaimByClaimNumber(invoiceItem.ClaimNumber)"
+          postOnChange="true"
+          requestValidationExpression="verifyClaimPermission(VALUE, invoiceItem)"
+          required="true"
+          validationExpression="if(invoiceItem.ClaimNumber != null) { if( invoiceItem.ClaimInfo.ArchiveState != null ) {return displaykey.Web.Financials.BulkPay.InvoiceItem.Alert.ClaimIsArchived(invoiceItem.ClaimNumber)} if(invoiceItem.Claim == null) {return displaykey.Web.Financials.BulkPay.InvoiceItem.Alert.ClaimNotFound(invoiceItem.ClaimNumber)} } return null"
+          value="invoiceItem.ClaimNumber"/>
+        <Cell
+          enableSort="false"
+          id="BulkInvoiceItemsLV_Archived"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Archived"
+          value="invoiceItem.ItemClaimArchived"
+          visible="hasArchivedClaims()"/>
+        <RangeCell
+          available="invoiceItem.Claim != null"
+          editable="true"
+          enableSort="false"
+          id="BulkInvoiceItemsLV_ReserveLine"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.ReserveLine"
+          onChange="invoiceItem.updateRelatedInvoiceItemFields()"
+          optionLabel="helper.getReserveLineDisplayName(VALUE)"
+          postOnChange="true"
+          required="true"
+          value="invoiceItem.ReserveLineWrapper"
+          valueRange="helper.getReserveLines(invoiceItem)"/>
+        <RangeCell
+          available="invoiceItem.ReserveLineWrapper != null and invoiceItem.ReserveLineWrapper.ReserveLine == null"
+          editable="true"
+          enableSort="false"
+          id="BulkInvoiceItemsLV_Exposure"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Exposure"
+          noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+          postOnChange="true"
+          value="invoiceItem.Exposure"
+          valueRange="helper.getExposures(invoiceItem)"/>
+        <!-- <RangeCell id="BulkInvoiceItemsLV_CostType" label="displaykey.Web.Financials.BulkPay.InvoiceItem.CostType" value="invoiceItem.CostType"valueRange="helper.getCostTypes(invoiceItem)" noneSelectedLabel="displaykey.Web.Financials.CostType.None"postOnChange="true" editable="true" required="true"available="invoiceItem.ReserveLineWrapper != null and invoiceItem.ReserveLineWrapper.ReserveLine == null"/><RangeCell id="BulkInvoiceItemsLV_CostCategory" label="displaykey.Web.Financials.BulkPay.InvoiceItem.CostCategory" value="invoiceItem.CostCategory"valueRange="helper.getCostCategories(invoiceItem)" noneSelectedLabel="displaykey.Web.Financials.CostCategory.None"postOnChange="true" editable="true" required="true"available="invoiceItem.ReserveLineWrapper != null and invoiceItem.ReserveLineWrapper.ReserveLine == null"/> -->
+        <TypeKeyCell
+          available="invoiceItem.Claim != null and invoiceItem.ReserveLineWrapper != null"
+          editable="true"
+          filter="helper.isPaymentTypeValidForItem( invoiceItem, VALUE )"
+          footerLabel="displaykey.Web.Financials.BulkPay.InvoiceItem.Total"
+          id="BulkInvoiceItemsLV_PaymentType"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.PaymentType"
+          postOnChange="true"
+          required="true"
+          value="invoiceItem.PaymentType"/>
+        <!-- <Cell id="BulkInvoiceItemsLV_NonEroding" value="invoiceItem.NonEroding" editable="invoiceItem.PaymentType != null and invoiceItem.PaymentType != &quot;supplement&quot;"label="displayKey.Web.Financials.BulkPay.InvoiceItem.NonEroding"/> -->
+        <Cell
+          align="right"
+          available="invoiceItem.Claim != null and invoiceItem.ReserveLineWrapper != null"
+          editable="!invoiceItem.BulkInvoice.SplitEqually and invoiceItem.isEditable()"
+          footerLabel="gw.api.util.CurrencyUtil.renderAsCurrency(bulkInvoice.TotalCurrencyAmount)"
+          formatType="currency"
+          id="BulkInvoiceItemsLV_Amount"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Amount"
+          numCols="8"
+          required="true"
+          sortBy="invoiceItem.Amount"
+          value="invoiceItem.AmountComponent"/>
+        <Cell
+          align="right"
+          footerLabel="gw.api.util.CurrencyUtil.renderAsCurrency(bulkInvoice.DeductionsSum)"
+          formatType="currency"
+          id="BulkInvoiceItemsLV_DeductionsAmount"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.DeductionsAmount"
+          value="invoiceItem.DeductionsAmount"/>
+        <Cell
+          available="invoiceItem.Claim != null"
+          editable="true"
+          id="BulkInvoiceItemsLV_ServiceDate"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.ServiceDate"
+          value="invoiceItem.DateOfService"/>
+        <Cell
+          available="invoiceItem.Claim != null"
+          editable="true"
+          id="BulkInvoiceItemsLV_Description"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Description"
+          value="invoiceItem.Description"/>
+        <Cell
+          id="BulkInvoiceItemsLV_Alerts"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Notes"
+          value="invoiceItem.Explanation"/>
+        <Cell
+          id="BulkInvoiceItemsLV_Status"
+          label="displaykey.Web.Financials.BulkPay.InvoiceItem.Status"
+          value="invoiceItem.Status"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function verifyClaimPermission(claimNum : String, item : BulkInvoiceItem) : String {
+  var claim = find(c in Claim where c.ClaimNumber == claimNum).getFirstResult()  
+  var claimInfo = find(c in ClaimInfo where c.ClaimNumber == claimNum).getFirstResult()  
+  if (claimInfo == null) {
+    return displaykey.Web.Financials.BulkPay.InvoiceItem.Alert.ClaimNotFound(claimNum)
+  }
+  //if archived claim, throw exception, however, if the archived claim is already saved previously, it is okay
+  if (claimInfo.ArchiveState != null and item.ClaimNumber != claimNum) {
+    return displaykey.Web.Financials.BulkPay.InvoiceItem.Alert.ClaimIsArchived( claimNum )
+  }
+  if (claim != null and !perm.Claim.view(claim)) {
+    return displaykey.Web.Financials.BulkPay.Error.NoPermissionForClaim 
+  }
+  return null
+}
+
+function hasArchivedClaims() : boolean {
+  if (bulkInvoice.New) {
+    return false
+  }
+  var query = gw.api.database.Query.make(BulkInvoiceItem)
+  query.compare("BulkInvoice", Equals, bulkInvoice.ID)
+  query.join("ClaimInfo").compare("ArchiveState", NotEquals, null)
+  return query.select().Count > 0
+}]]></Code>
+  </ListViewPanel>
+</PCF>

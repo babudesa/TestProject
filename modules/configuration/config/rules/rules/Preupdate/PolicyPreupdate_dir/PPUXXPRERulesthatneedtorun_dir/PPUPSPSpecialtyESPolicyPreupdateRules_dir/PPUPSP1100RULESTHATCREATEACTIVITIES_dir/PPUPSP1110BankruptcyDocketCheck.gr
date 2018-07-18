@@ -1,0 +1,50 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUPSPSpecialtyESPolicyPreupdateRules_dir.PPUPSP1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("PPUPSP1110 - Bankruptcy Docket Check")
+internal class PPUPSP1110BankruptcyDocketCheck {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.ChangedFields.contains("Account") &&
+policy.isPolicyInRefresh( 0 ) &&
+exists(exposure in policy.Claim.Exposures where(typeof exposure.Claimant == Person &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_BTA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_STA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_TPA &&
+exposure.Claim.Policy.PolicyType != PolicyType.TC_AL &&
+(exposure.MinorChildExt == false || exposure.MinorChildExt == null) &&
+exposure.Claimant.PrimaryAddress.Country == Country.TC_US &&
+exposure.Claim.UIHelper.IsRESPA == false) &&
+(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code == "bankruptcy_docket_check_spec" 
+&& exposure == act.Exposure))) /*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+   
+   var today = gw.api.util.DateUtil.currentDate()
+   var pattern = util.custom_Ext.finders.findActivityPattern("bankruptcy_docket_check_spec")
+   var newAct : Activity
+   
+   policy.Claim.Exposures.each(\ e -> {
+     
+     if(typeof e.Claimant == Person && e.Claim.Policy.PolicyType != PolicyType.TC_BTA &&
+        e.Claim.Policy.PolicyType != PolicyType.TC_STA && e.Claim.Policy.PolicyType != PolicyType.TC_TPA &&
+        e.Claim.Policy.PolicyType != PolicyType.TC_AL && (e.MinorChildExt == false || e.MinorChildExt == null) &&
+        e.Claimant.PrimaryAddress.Country == Country.TC_US && e.Claim.UIHelper.IsRESPA == false &&
+        (!exists(act in e.Claim.Activities where act.ActivityPattern.Code == "bankruptcy_docket_check_spec" 
+         && e == act.Exposure))){
+     
+         newAct = e.Claim.createActivity(e, pattern, pattern.Subject, pattern.Description,
+         pattern.Priority, pattern.Mandatory, today.addBusinessDays(pattern.TargetDays), null)
+     
+         //assign the activity to claim owner
+         newAct.AssignedUser = policy.Claim.AssignedUser  
+     }
+   })        
+
+   
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(policy, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

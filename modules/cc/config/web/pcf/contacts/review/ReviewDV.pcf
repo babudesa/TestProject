@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    border="true"
+    editable="!review.isCompleted() and perm.Review.edit"
+    id="ReviewDV">
+    <Require
+      name="review"
+      type="Review"/>
+    <Variable
+      initialValue="review.CategoryScores != null AND review.CategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Require
+      name="allowClaimEdit"
+      type="boolean"/>
+    <Variable
+      initialValue="getRoleOwnerDisplayNames(review.Claim)"
+      name="roleOwnerStrings"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.Reviews.GeneralInformation"/>
+      <TextInput
+        id="ReviewType"
+        label="displaykey.Web.Reviews.ReviewType"
+        value="review.Name"/>
+      <ClaimPickerInput
+        conversionExpression="(PickedValue as ClaimSearchView).Claim "
+        editable="allowClaimEdit"
+        id="ReviewClaim"
+        label="displaykey.Web.Reviews.Claim"
+        pickLocation="ClaimSearchPopup.push()"
+        postOnChange="true"
+        value="review.Claim"/>
+      <RangeInput
+        editable="true"
+        id="ReviewRelatedTo"
+        label="displaykey.Web.Reviews.RelatedTo"
+        sortValueRange="false"
+        value="review.RelatedTo"
+        valueRange="roleOwnerStrings"/>
+      <TextInput
+        id="ReviewedBy"
+        label="displaykey.Web.Reviews.ReviewedBy"
+        value="review.ReviewedBy"/>
+      <TextInput
+        id="ReviewStatus"
+        label="displaykey.Web.Reviews.Status"
+        value="review.getStatusString()"/>
+      <TextInput
+        id="ReviewScore"
+        label="displaykey.Web.Reviews.ReviewScore"
+        value="review.Score"
+        visible="review.Score != null"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.Reviews.ServiceInformation"/>
+      <TextInput
+        id="ReviewContact"
+        label="displaykey.Web.Reviews.Vendor"
+        value="review.Contact"/>
+      <TextInput
+        editable="true"
+        id="TextInput0"
+        label="displaykey.Web.Reviews.ServicedBy"
+        value="review.Subcontact"/>
+      <DateInput
+        editable="true"
+        id="ReviewServiceDate"
+        label="displaykey.Web.Reviews.ServiceDate"
+        value="review.ServiceDate"/>
+      <TypeKeyInput
+        editable="true"
+        filter="gw.api.contact.ReviewUtil.filterReviewServiceTypesForContact( review.Contact )"
+        id="ReviewServiceType"
+        label="displaykey.Web.Reviews.ServiceType"
+        value="review.ServiceType"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.Reviews.Comments"/>
+      <TextAreaInput
+        editable="true"
+        id="ReviewComments"
+        label="displaykey.Web.Reviews.Comments"
+        numRows="4"
+        value="review.Comments"/>
+      <InputDivider
+        visible="hasCategoryScores"/>
+      <ListViewInput
+        label="displaykey.Web.Reviews.CategoryScores"
+        visible="hasCategoryScores">
+        <Toolbar/>
+        <ListViewPanel
+          id="CategoryScoresLV">
+          <RowIterator
+            editable="false"
+            elementName="categoryScore"
+            hasCheckBoxes="false"
+            pageSize="0"
+            value="review.getSortedCategoryScores()">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="Category"
+                label="displaykey.Web.Reviews.Category"
+                value="categoryScore.ReviewCategory"/>
+              <Cell
+                enableSort="false"
+                id="Score"
+                label="displaykey.Web.Reviews.Score"
+                value="categoryScore.Score"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.Reviews.Category"/>
+      <InputIterator
+        elementName="rqas"
+        id="QuestionAnswerSetIterator"
+        value="review.getSortedQuestionAnswerSets()">
+        <InputSet
+          id="QuestionAnswerSet">
+          <Input
+            boldLabel="true"
+            id="ReviewCategory"
+            label="rqas.ReviewCategory.DisplayName"
+            required="false"
+            value="&quot;&quot;"/>
+          <ListViewInput
+            def="QuestionSetLV(rqas.QuestionSet, rqas)"
+            editable="!review.isCompleted()">
+            <Toolbar/>
+          </ListViewInput>
+        </InputSet>
+      </InputIterator>
+      <InputDivider/>
+    </InputColumn>
+    <Code><![CDATA[
+function getRoleOwnerDisplayNames(claim : Claim) : List<String> {
+  var displayStrings = new java.util.ArrayList<String>();
+  
+  for (roleOwner in claim.RoleOwners) {
+    displayStrings.add( roleOwner.DisplayName );
+  }
+
+  return displayStrings;
+}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

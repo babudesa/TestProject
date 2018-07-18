@@ -1,0 +1,49 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABELD1000ELDActivityBatchRules_dir
+
+@gw.rules.RuleName("ABELD1500 - Upcoming Renewal 120")
+internal class ABELD1500UpcomingRenewal120 {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "upcoming_renewal")) &&
+(claim.Policy.PolicyType.Code == "APL" ||
+claim.Policy.PolicyType.Code == "APX" ||
+claim.Policy.PolicyType.Code == "AUN" ||
+claim.Policy.PolicyType.Code == "CDO" ||
+claim.Policy.PolicyType.Code == "CDX" ||
+claim.Policy.PolicyType.Code == "EPP" ||
+claim.Policy.PolicyType.Code == "NPL" ||
+claim.Policy.PolicyType.Code == "NPX")
+
+// policy symbols for non-profit policies gathered from ELD requirements doc
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/ /*
+Defect 6713 - jjesudhasan - 5/15/14 -Modified not to generate this activity 
+if a Note with the topic of "Underwriter Claim Notes" was created 15 calendar 
+days prior to the 120 day policy expiration day window.
+*/
+try {
+  var latestUpdate:DateTime = claim.CreateTime
+  for(n in claim.Notes){
+    if(n.Topic=="underwriteclaimnote"){
+      latestUpdate=n.CreateTime
+    }
+  }
+  if (gw.api.util.DateUtil.daysBetween(gw.api.util.DateUtil.currentDate(),
+  claim.Policy.ExpirationDate) == ScriptParameters.ELD_UpcomingRenewal120_Policyexpiration
+   && (gw.api.util.DateUtil.daysBetween(claim.Policy.ExpirationDate,
+  latestUpdate)) >= ScriptParameters.ELD_UpcomingRenewal120_Notegeneration) {
+
+    var ap = util.custom_Ext.finders.findActivityPattern("upcoming_renewal")
+    claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+ 
+
+
+/*end00rule*/
+  }
+}

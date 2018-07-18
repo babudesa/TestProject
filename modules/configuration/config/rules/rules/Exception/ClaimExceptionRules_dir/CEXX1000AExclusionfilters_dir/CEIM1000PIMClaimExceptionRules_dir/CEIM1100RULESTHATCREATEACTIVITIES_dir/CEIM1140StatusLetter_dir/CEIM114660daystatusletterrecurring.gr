@@ -1,0 +1,39 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEIM1000PIMClaimExceptionRules_dir.CEIM1100RULESTHATCREATEACTIVITIES_dir.CEIM1140StatusLetter_dir
+
+@gw.rules.RuleName("CEIM1146 - 60 day status letter recurring")
+internal class CEIM114660daystatusletterrecurring {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Author: erawe
+Date:7/23/10
+Update: 9/6/12 - Defect 5609 Josh wanted to check Loss State instead of Insured State
+*/
+(exists(act in claim.Activities where act.ActivityPattern.Code=="mandatory_status_letter") &&
+(claim.AddressOwner.Address.State=="CO" or
+claim.AddressOwner.Address.State=="IL" or
+claim.AddressOwner.Address.State=="GA"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var act_inact_last : Activity = null;
+  for(act in claim.Activities){
+    if(act.ActivityPattern.Code=="mandatory_status_letter" && (act_inact_last == null || 
+      act_inact_last.CreateTime < act.CreateTime)){
+         act_inact_last = act;
+    }
+  }
+  
+  if(act_inact_last != null and act_inact_last.CreateTime!=null){
+    //Defect #5348 -kepage - Changed recurring days from 60 to 30
+    if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(act_inact_last.CreateTime, 30)){
+      var ap = util.custom_Ext.finders.findActivityPattern( "mandatory_status_letter" )
+      //var num_of_days = gw.api.util.DateUtil.daysBetween( claim.ReportedDate, gw.api.util.DateUtil.currentDate());
+      claim.createActivity( null, ap, null, "Send the mandatory status letter for " + claim.AddressOwner.Address.State, null, null, null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+//actions.exit()/*end00rule*/
+  }
+}

@@ -1,0 +1,43 @@
+package rules.BulkInvoiceApproval.BulkInvoiceApprovalRules_dir.BIAXX1000AllBUBulkInvoiceApprovalRules_dir.BIAXX1100ManualBulkInvoice_dir
+
+@gw.rules.RuleName("BIAXX1110 - Require Approval for Draft")
+internal class BIAXX1110RequireApprovalforDraft {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.Status == BulkInvoiceStatus.TC_DRAFT
+
+
+
+/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  if(bulkInvoice.CreateUser == bulkInvoice.UpdateUser){  
+  
+      var authorityLimits = bulkInvoice.CreateUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+
+      //checks if the total of the invoice is higher than the user's authority limit for 
+      //claim payments to date (expense)
+      if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits){
+          bulkInvoice.requireApproval( "Bulk invoice for " + bulkInvoice.Payee.DisplayName + " requires approval." );
+      } else {
+          bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+      }
+      
+  }else {
+      bulkInvoice.requireApproval( "Bulk invoice for " + bulkInvoice.Payee.DisplayName + " requires approval." );
+  }
+  
+  
+    actions.exit()
+
+}catch(aex:gw.rules.AbortExecutionException) {
+    throw aex
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

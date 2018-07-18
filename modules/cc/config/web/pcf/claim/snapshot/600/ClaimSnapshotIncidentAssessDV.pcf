@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ClaimSnapshotIncidentAssessDV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="incidentParam"
+      type="Object"/>
+    <Require
+      name="snapshot"
+      type="Object"/>
+    <Variable
+      initialValue="incidentParam as snapshot.v600.Incident"
+      name="incident"
+      type="snapshot.v600.Incident"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.Summary"/>
+      <Input
+        id="Display_Name"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.Involving"
+        value="incident.DisplayName"/>
+      <Input
+        id="General_Description"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.Description"
+        required="false"
+        value="incident.AssessmentName"/>
+      <Input
+        id="Status"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.Status"
+        postOnChange="true"
+        required="false"
+        value="incident.AssessmentStatus"/>
+      <DateInput
+        dateFormat="short"
+        id="TargetCloseDate"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.TargetCloseDate"
+        value="incident.AssessmentTargetCloseDate"/>
+      <DateInput
+        dateFormat="short"
+        id="CloseDate"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.ActualCloseDate"
+        required="true"
+        value="incident.AssessmentCloseDate"
+        visible=" incident.AssessmentStatus.Code == &quot;closed&quot; "/>
+    </InputColumn>
+    <InputColumn>
+      <Input
+        available="true"
+        id="InternalUser_Name"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.InternalUser"
+        value="incident.InternalUser.DisplayName"/>
+      <Input
+        id="General_Comment"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.Comment"
+        value="incident.AssessmentComment"/>
+      <Input
+        formatType="currency"
+        id="ApproveTotal"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.ApprovedTotal"
+        value="approvedTotal(incident.ItemLine)"/>
+      <Input
+        formatType="currency"
+        id="ReviewTotal"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.ReviewTotal"
+        value="reviewTotal(incident.ItemLine)"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentSource"
+        labelAbove="true">
+        <Toolbar/>
+        <ListViewPanel
+          id="IncidentAssessSourceLV">
+          <RowIterator
+            editable="false"
+            elementName="AssessmentSource"
+            hideCheckBoxesIfReadOnly="true"
+            value="incident.SourceLine">
+            <Row>
+              <Cell
+                id="Name"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentSource.Name"
+                required="true"
+                value="AssessmentSource.SourceName"
+                width="100"/>
+              <Cell
+                id="Source"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentSource.SourceType"
+                value="AssessmentSource.SourceType"/>
+              <ClaimContactCell
+                claim="AssessmentSource.Incident.Claim"
+                id="Assessor"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentSource.ExtAssessor"
+                value="AssessmentSource.Assessor"
+                valueRange="AssessmentSource.Incident.Claim.RelatedContacts"/>
+              <Cell
+                id="Description"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentSource.Description"
+                value="AssessmentSource.Description"
+                width="200"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine"
+        labelAbove="true">
+        <Toolbar/>
+        <ListViewPanel
+          id="IncidentAssessItemLV">
+          <RowIterator
+            editable="false"
+            elementName="assessmentItem"
+            hideCheckBoxesIfReadOnly="true"
+            value="incident.ItemLine">
+            <Row>
+              <Cell
+                id="Category"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine.Category"
+                value="assessmentItem.PropertyCategory"/>
+              <Cell
+                id="Description"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine.Description"
+                required="true"
+                value="assessmentItem.Description"
+                width="200"/>
+              <Cell
+                id="Action"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine.Action"
+                value="assessmentItem.Action"/>
+              <Cell
+                formatType="currency"
+                id="EstimateAmount"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine.EstimateAmount"
+                value="assessmentItem.EstimateAmount"
+                visible="true"/>
+              <Cell
+                id="Comment"
+                label="displaykey.Web.ClaimSnapshot.ClaimSnapshotIncidentAssess.V600.AssessmentLine.Comment"
+                value="assessmentItem.ItemComment"
+                width="200"/>
+              <RangeCell
+                id="AssessmentSource"
+                label="displaykey.Web.Incident.Assessment.AssessmentLine.RelatedSource"
+                value="assessmentItem.AssessmentSource"
+                valueRange="assessmentItem.Incident.SourceLine"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[function approvedTotal(itemLine : snapshot.v600.AssessmentItem[]) : gw.api.financials.CurrencyAmount {
+  var TotalOfApproved: gw.api.financials.CurrencyAmount = 0
+  for (aline in itemLine) {
+    if (aline.Action == "approve") {
+      if (aline.EstimateAmount != Null) {
+        TotalOfApproved = TotalOfApproved + (aline.EstimateAmount as gw.api.financials.CurrencyAmount)
+      }
+    }
+  }
+  return TotalOfApproved;
+}
+
+function reviewTotal(itemLine : snapshot.v600.AssessmentItem[]) : gw.api.financials.CurrencyAmount {
+  var TotalOfInReview: gw.api.financials.CurrencyAmount = 0
+  for (aline in itemLine) {
+    if (aline.Action == "Review" or aline.Action == null) {
+      if (aline.EstimateAmount != Null) {
+        TotalOfInReview = TotalOfInReview + (aline.EstimateAmount as gw.api.financials.CurrencyAmount)
+      }
+    }
+  }
+  return TotalOfInReview;
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

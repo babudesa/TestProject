@@ -1,0 +1,30 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXX1100 - Assign Check Number")
+internal class TPUXX1100AssignCheckNumber {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkSet = transactionSet as CheckSet; 
+var check = checkSet.PrimaryCheck; 
+var payment = check.Payments[0]; 
+
+if (check.Bulked) {
+  check.CheckNumber = check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.CheckNumber;
+  } 
+else if ((check != null && check.CheckNumber == null && !check.ManualCheck && !check.isRecurringCheck)) {
+  //|| (check.isRecurringCheck && (check.Status == "requesting" || check.Status == "notifying"))){ 
+ 
+ // Generating Check Numbers for NationalBank (check number start with 3) and RBC (check number start with 1) -dpenmetsa
+  if(check.BankAccount == "national_city" || check.TypeOfCheckExt=="us_check"){
+  check.CheckNumber = util.UniqueNumberGenerators.generateNationalBankCheckNumber(); 
+  }
+  else if(check.BankAccount =="royal_bank_of_canada" || check.TypeOfCheckExt=="canadian_check"){
+  check.CheckNumber = util.UniqueNumberGenerators.genetateRBCCheckNumber();
+  }
+} 
+ gw.api.util.Logger.logDebug("New check number generated: " + check.CheckNumber); /*end00rule*/
+  }
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Popup
+    canEdit="true"
+    canVisit="true"
+    id="ClaimNewDocumentFromActivityPopup"
+    startInEditMode="true"
+    title="displaykey.Java.PageAction.NewDocument">
+    <LocationEntryPoint
+      signature="ClaimNewDocumentFromActivityPopup(Activity : Activity, Template : gw.plugin.document.IDocumentTemplateDescriptor)"/>
+    <Variable
+      name="Activity"
+      type="Activity"/>
+    <Variable
+      name="Template"
+      type="gw.plugin.document.IDocumentTemplateDescriptor"/>
+    <Variable
+      initialValue="Activity.Claim"
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="getDocumentCreationInfo(Claim, Template)"
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <ScreenRef
+      def="NewDocumentForActivityFromTemplateScreen(DocumentCreationInfo, Activity)"/>
+    <Code><![CDATA[
+function getDocumentCreationInfo(activityClaim : Claim, template1: gw.plugin.document.IDocumentTemplateDescriptor) : gw.document.DocumentCreationInfo {
+        var newDocumentCreationInfo : gw.document.DocumentCreationInfo;
+        newDocumentCreationInfo = gw.document.DocumentsUtil.createDocumentCreationInfo(activityClaim, template1);
+        newDocumentCreationInfo.setDocumentFilePath(null);
+        for ( dynamicWidgetInfo in newDocumentCreationInfo.getDynamicWidgetInformation()) {
+          newDocumentCreationInfo.setDefaultContextObjectValue(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.DefaultValueExpression));
+          newDocumentCreationInfo.setPossibleContextObjectValues(dynamicWidgetInfo.Name, eval(dynamicWidgetInfo.PossibleValuesExpression) as Object[]);
+        }
+        return newDocumentCreationInfo;
+      }
+      
+    ]]></Code>
+  </Popup>
+</PCF>

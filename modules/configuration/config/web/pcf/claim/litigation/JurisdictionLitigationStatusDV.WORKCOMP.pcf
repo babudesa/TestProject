@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="JurisdictionLitigationStatusDV"
+    mode="WORKCOMP|AGRIWC|ALTMARKETSWC|OMWC|PIMINMARINEWC|SPECIALTYESWC|STRATEGICCOMPWC|TRUCKINGWC|ECUWC">
+    <Require
+      name="matter"
+      type="Matter"/>
+    <Variable
+      initialValue="setMatterType()"
+      name="setMatter"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details"/>
+      <TypeKeyInput
+        id="TrialDetails_MatterType"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.LegalActionType"
+        onChange="if(matter.MatterType==&quot;NonLitigated&quot;) matter.CoverageOrExtraContractSuitExt=false else matter.CoverageOrExtraContractSuitExt=null"
+        postOnChange="true"
+        required="true"
+        value="matter.MatterType "/>
+      <TypeKeyInput
+        editable="true"
+        id="CaseTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.CaseType"
+        onChange="matter.UIHelper.setStaffBudgetRequired()"
+        postOnChange="true"
+        required="true"
+        value="matter.CaseTypeExt"/>
+      <TextAreaInput
+        editable="true"
+        id="Matter_Name"
+        label="displaykey.NVV.Matter.SubView.MatterGeneral.Matter.Name"
+        numRows="5"
+        required="true"
+        value="matter.Name"/>
+      <DateInput
+        id="MatterOpenDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.OpenDate"
+        value="matter.CreateTime"/>
+      <RangeInput
+        editable="true"
+        id="CountryTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.Country"
+        onChange="resetJurisdictionRelatedFields()"
+        postOnChange="true"
+        required="true"
+        value="matter.CountryExt"
+        valueRange="{Country.TC_US, Country.TC_CA}"/>
+      <RangeInput
+        editable="true"
+        id="StateTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.StateProvince"
+        postOnChange="true"
+        required="matter.MatterType == &quot;Litigated&quot; &amp;&amp; (matter.CountryExt == Country.TC_US || matter.CountryExt == Country.TC_CA)"
+        value="matter.StateExt"
+        valueRange="getStateRange()"/>
+      <TypeKeyInput
+        editable="true"
+        id="JurisdictionTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.Jurisdiction"
+        postOnChange="true"
+        required="matter.MatterType == &quot;Litigated&quot; &amp;&amp; matter.CountryExt == Country.TC_US"
+        value="matter.CourtType"
+        visible="matter.CountryExt != Country.TC_CA"/>
+      <TextInput
+        id="Jurisdiction_ClaimNumber"
+        label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.JurisdictionClaim"
+        value="matter.Claim.JurisClaimNumberExt"
+        visible="matter.Claim.JurisClaimNumberExt != null"/>
+      <TypeKeyInput
+        editable="true"
+        id="FederalCourtTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.FederalDistrict"
+        required="matter.MatterType == &quot;Litigated&quot; &amp;&amp; matter.CountryExt == Country.TC_US"
+        value="matter.FederalDistrictExt"
+        visible="matter.CourtType == MatterCourtType.TC_FEDERAL"/>
+      <RangeInput
+        editable="true"
+        id="CountyTypeKeyInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.County"
+        required="matter.MatterType == &quot;Litigated&quot; &amp;&amp; matter.CountryExt == Country.TC_US &amp;&amp; matter.CourtType == MatterCourtType.TC_STATE2"
+        value="matter.CourtCounty"
+        valueRange="getCountyValueRange()"
+        visible="matter.CourtType == MatterCourtType.TC_STATE2"/>
+      <TextInput
+        editable="true"
+        id="CourtTextInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.Court"
+        required="false"
+        value="matter.CourtExt"/>
+      <TextInput
+        editable="true"
+        id="JudgeLastNameTextInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.JudgeLastName"
+        value="matter.JudgeLastNameExt"/>
+      <TextInput
+        editable="true"
+        id="JudgeFirstNameTextInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.JudgeFirstName"
+        required="false"
+        value="matter.JudgeFirstNameExt"/>
+      <TextAreaInput
+        editable="true"
+        id="CaseCaptionTextAreaInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.Details.MediationOutcome"
+        maxChars="244"
+        numRows="3"
+        required="false"
+        value="matter.CaseCaption"/>
+      <InputDivider/>
+      <Label
+        id="CoverageLitigationDetailsLabel"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails"/>
+      <BooleanRadioInput
+        editable="true"
+        id="CoverageOrExtraContractualSuitRadioInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.CoverageExtraContractualSuit"
+        onChange="matter.UIHelper.resetExtraContractual()"
+        postOnChange="true"
+        required="true"
+        value="matter.CoverageOrExtraContractSuitExt"/>
+      <RangeInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="GAICompanyRole"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.GAICompanyRole"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.GAICompanyRoleExt"
+        valueRange="{&quot;Plaintiff&quot;,&quot;Defendant&quot;}"
+        visible="matter.CoverageOrExtraContractSuitExt == true"/>
+      <BooleanRadioInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="ECAllegationRadioInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.ExtraContractualAllegation"
+        postOnChange="true"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.ExtraContractualAllegationExt"
+        visible="matter.CoverageOrExtraContractSuitExt == true"/>
+      <BooleanRadioInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="ECOnly"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.ECOnlyAllegation"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.OnlyECAllegationExt"
+        visible="matter.CoverageOrExtraContractSuitExt == true"/>
+      <BooleanRadioInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="ReportedToCorporateLegal"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.ReportedCorporateLegal"
+        onChange="if(!matter.ReportedToCorpLegalExt){matter.CorporateLegalRepresentative = null}"
+        postOnChange="true"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.ReportedToCorpLegalExt"
+        visible="matter.CoverageOrExtraContractSuitExt == true"/>
+      <RangeInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="CorporateLegalRepresentativeRangeInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.CorporateLegalRepresentative"
+        required="matter.ReportedToCorpLegalExt == true"
+        value="matter.CorporateLegalRepresentative"
+        valueRange="find(u in User where exists(gu in User.GroupUsers*.Group where gu.Name == &quot;Corporate Legal&quot;))"
+        visible="matter.ReportedToCorpLegalExt == true &amp;&amp; matter.CoverageOrExtraContractSuitExt"/>
+      <TextInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="KeyCoverageIssuesRangeInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.KeyCoverageIssues"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.KeyCoverageIssues"
+        visible="matter.CoverageOrExtraContractSuitExt"/>
+      <TextAreaInput
+        editable="matter.CoverageOrExtraContractSuitExt"
+        id="SummaryOfStatusTextAreaInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.CoverageLitigationDetails.SummaryStatusIssues"
+        maxChars="300"
+        numRows="3"
+        required="matter.CoverageOrExtraContractSuitExt == true"
+        value="matter.IssuesSummary"
+        visible="matter.CoverageOrExtraContractSuitExt"/>
+      <BooleanRadioInput
+        editable="true"
+        id="ClassActionRadioInput"
+        label="&quot;Class Action Suit&quot;"
+        required="matter.MatterType == &quot;Litigated&quot;"
+        value="matter.ClassActionExt"/>
+      <BooleanRadioInput
+        editable="true"
+        id="DerivativeRadioInput"
+        label="&quot;Derivative Suit&quot;"
+        required="matter.MatterType == &quot;Litigated&quot;"
+        value="matter.DerivativeExt"/>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates"/>
+      <DateInput
+        editable="true"
+        id="SuitFiledDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.PetitionFiled"
+        required="matter.MatterType != &quot;NonLitigated&quot;"
+        value="matter.SuitFiledDate"/>
+      <DateInput
+        editable="true"
+        id="ClaimantRepDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.ClaimantRepDate"
+        value="matter.ClaimantRepDateExt"/>
+      <DateInput
+        editable="true"
+        id="AnswerDueDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.AnswerDue"
+        value="matter.AnswerDueDate"/>
+      <DateInput
+        editable="true"
+        id="ArbitrationDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.ArbitrationDate"
+        value="matter.ArbitrationDate"/>
+      <DateInput
+        editable="true"
+        id="MediationDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.MediationDate"
+        value="matter.MediationDate"/>
+      <DateInput
+        editable="true"
+        id="HearingDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.HearingDate"
+        value="matter.HearingDate"/>
+      <DateInput
+        editable="true"
+        id="AppealFilingDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.AppealFilingDate"
+        value="matter.AppealFilingDateExt"/>
+      <DateInput
+        editable="true"
+        id="AppealResponseDueDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.AppealResponseDate"
+        value="matter.AppealRespDueDateExt"/>
+      <DateInput
+        editable="true"
+        id="FinalHearingDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.FinalHearingDate"
+        value="matter.FinalHearingDateExt"/>
+      <!-- <DateInput
+        editable="true"
+        id="ServiceDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.ServiceDate"
+        value="matter.ServiceDate"/> -->
+      <!-- <DateInput
+        editable="true"
+        id="AnswerFiledDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.LitigationDates.AnswerFiled"
+        value="matter.AnswerFiledDate"/> -->
+      <InputDivider/>
+      <Label
+        label="displaykey.Matter.JurisdictionLitigationStatus.TrialDates"/>
+      <DateInput
+        editable="true"
+        id="DiscoveryCloseDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.TrialDates.DiscoveryClose"
+        value="matter.DiscoveryCloseDate"/>
+      <DateInput
+        editable="true"
+        id="TrialDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.TrialDates.Trial"
+        postOnChange="true"
+        value="matter.TrialDate"/>
+      <DateInput
+        editable="true"
+        id="ExpertCloseDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.TrialDates.ExpertClose"
+        value="matter.ExpertCloseDate"/>
+      <DateInput
+        editable="true"
+        id="MotionCloseDateInput"
+        label="displaykey.Matter.JurisdictionLitigationStatus.TrialDates.MotionClose"
+        value="matter.MotionCloseDate"/>
+    </InputColumn>
+    <Code><![CDATA[function getCountyValueRange() : String[]{
+  if(matter.CourtType != MatterCourtType.TC_STATE2)
+    return new String[]{};
+  else
+    return gw.api.contact.AddressAutocompleteUtil.getValueRange(matter.CountryExt, "county", {"state"}, {matter.StateExt},1) as String[]
+}
+
+function getStateRange() : List<State> {
+  if (matter.CountryExt != null){
+    var x : State[] = gw.api.contact.AddressAutocompleteUtil.getStates(matter.CountryExt);
+    return x.toList()
+  } else{
+    return new java.util.ArrayList<State>();
+  }
+}
+
+function resetJurisdictionRelatedFields(){
+    matter.StateExt = null
+    matter.CourtType= null
+    matter.FederalDistrictExt = null
+    matter.CourtCounty= null
+}
+
+function setMatterType(){
+  if(matter.StatusExt != MatterStatus.TC_CLOSED){
+    if(exists(exp in matter.Claim.Exposures where exp.ex_InSuit)){
+      matter.MatterType = MatterType.TC_LITIGATED
+    }else{ 
+      matter.MatterType = MatterType.TC_NONLITIGATED
+    }
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,23 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1800BulkRecovery_dir
+
+@gw.rules.RuleName("TVXX1810 - Non-existant Cash Ticket Used")
+internal class TVXX1810NonexistantCashTicketUsed {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="RecoverySet" and TransactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+var msg = "The cash ticket number you have entered does not exist."
+
+for(rec in transactions.Recoveries){
+  var recov = find(x in Recovery where (x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber))
+  if(rec.IsBulkedExt and 
+    ((rec.FirstBulkExt==false and rec.LastBulkExt==true) or
+    (rec.FirstBulkExt==false and rec.LastBulkExt==false)) and 
+    recov.getCount()<=0){
+    transactionSet.reject( "payment", msg, null, null )
+  }
+}/*end00rule*/
+  }
+}

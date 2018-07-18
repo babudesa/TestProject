@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCommit="ClaimLossDetailsForward.go(Claim)"
+    beforeCommit="validation.ValidationUtil.clearValidationErrors()"
+    canEdit="perm.Claim.edit(Claim)"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewclaimbasics and (Claim.State != ClaimState.TC_DRAFT)"
+    handlesValidationIssue="VALUE typeis entity.Claim or VALUE typeis entity.Incident"
+    id="ClaimLossDetails"
+    title="displaykey.Web.Claim.LossDetails"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="ClaimLossDetails(Claim : Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="libraries.ISO.showSubmitInfoMessage()"
+      name="messageShown"
+      recalculateOnRefresh="true"/>
+    <Screen
+      id="ClaimLossDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+        <ToolbarButton
+          action="gw.api.claim.ClaimUtil.sendToISO(Claim)"
+          available="Claim.ISOButtonsAvailable"
+          hideIfEditable="true"
+          id="ClaimLossDetails_SendToISOButton"
+          label="displaykey.Web.ClaimLossDetails.SendToISO"
+          visible="Claim.ISOButtonsVisible"/>
+        <ToolbarButton
+          action="null"
+          available="Claim.ISOButtonsAvailable"
+          hideIfEditable="true"
+          id="ClaimLossDetails_RefreshButton"
+          label="displaykey.Web.ClaimLossDetails.Refresh"
+          visible="Claim.ISOButtonsVisible"/>
+      </Toolbar>
+      <PanelRef
+        def="LossDetailsPanelSet(Claim)"
+        mode="Claim.Policy.PolicyType"/>
+    </Screen>
+  </Page>
+</PCF>

@@ -1,0 +1,53 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1260 - Mark check payee roles as former")
+internal class TPUXX1260Markcheckpayeerolesasformer {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*
+*  This rule makes any role removed from the contact a 'former' role.
+*  added 3/3/09
+*/
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var removedElements:Bean[];
+  var changedElements:Bean[];
+  var role:ClaimContactRole;
+  var cRole:ClaimContactRole;
+  var originalRole:ClaimContactRole;
+
+  //loops through the checks contacts to see if any roles were dropped
+  for(cont in (transactionSet as CheckSet).PrimaryCheck.Payees){ 
+  
+    //looks to see if a role was removed, and creates the former if it exists
+    if(cont.ClaimContact.isArrayElementAddedOrRemoved( "roles")){
+      removedElements = cont.ClaimContact.getRemovedArrayElements( "roles" )
+      for(element in removedElements){
+        role = element as ClaimContactRole
+        cont.ClaimContact.Contact.createFormerRole( transactionSet.Claim, role )
+      }
+    }  
+    //This looks to see if the role was changed causing a role to be dropped of the claimcontact
+    //It prevents 'former' roles from appearing in case someone flip flopped two or more existing roles 
+    //and it still exists on the contact. (Why they would do this I don't know)
+    else if(cont.ClaimContact.isArrayElementChanged( "roles")){
+      changedElements = cont.ClaimContact.getChangedArrayElements( "roles" );
+      for(element in changedElements){
+        cRole = element as ClaimContactRole; //new role
+        originalRole = (cRole.OriginalVersion as ClaimContactRole) //previous role
+        if(originalRole.Role != cRole.Role and !exists(aRole in cont.ClaimContact.Roles where aRole.Role == originalRole.Role 
+            and aRole.Exposure == originalRole.Exposure and aRole.Evaluation == originalRole.Evaluation 
+            and aRole.Policy == originalRole.Policy and aRole.Incident == originalRole.Incident )){
+            cont.ClaimContact.Contact.createFormerRole( transactionSet.Claim, originalRole )
+        }
+      }
+    }//end of check changed roles
+  }//end payee loop
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().getDisplayName(), e, "" )  
+}/*end00rule*/
+  }
+}

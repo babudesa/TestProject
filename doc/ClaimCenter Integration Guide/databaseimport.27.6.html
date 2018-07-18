@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Populating the Staging Tables</title>
+    <link rel="StyleSheet" href="css/databaseimport.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="databaseimport.27.1.html#1927272">Importing from Database Staging Tables</a> : Populating the Staging Tables</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1927272">Populating the Staging Tables</a></div>
+      <div class="B_-_Body"><a name="1927274">The first step in importing data using the staging tables is mapping external data in the tables. As described </a>earlier, there is a one-to-one correspondence between ClaimCenter operational tables (prefix: “<span class="cv_-_computer_voice">cc_</span>”) and the staging tables (prefix: “<span class="cv_-_computer_voice">ccst_</span>”). </div>
+      <div class="B_-_Body"><a name="1934118">For example, the ClaimCenter </a><span class="cv_-_computer_voice">cc_claim</span> table would load from the <span class="cv_-_computer_voice">ccst_claim</span> table. </div>
+      <div class="B_-_Body"><a name="1934121">Similarly, the ContactCenter </a><span class="cv_-_computer_voice">ab_address</span> table would load from the <span class="cv_-_computer_voice">abst_address</span> table. </div>
+      <div class="B_-_Body"><a name="1927319">Not all operational tables have a corresponding staging table. For example, ClaimCenter does not import group </a>hierarchies, roles, and system parameters. Also, ClaimCenter excludes internal tables for the message Send&nbsp;Queue, the internal SMTP email queue, and statistics information. However, it does include most data, including user data using the staging tables.</div>
+      <div class="B_-_Body"><a name="1934131">Even between corresponding tables there are differences in the columns. For example, compare the </a><span class="cv_-_computer_voice">cc_claim</span> and <span class="cv_-_computer_voice">ccst_claim</span> tables. There are a number of differences:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927350">The staging version of the table (starts with </a><span class="cv_-_computer_voice">ccst_</span>) contains a row number column and a <span class="cv_-_computer_voice">LUWID</span> column that do not exist in the <span class="cv_-_computer_voice">cc_</span> tables. The purpose of these is described earlier.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927358">The following properties do not exist in the </a><span class="cv_-_computer_voice">ccst_</span> versions of the tables: <span class="cv_-_computer_voice">CreateUserID</span>, <span class="cv_-_computer_voice">UpdateUserID</span>, <span class="cv_-_computer_voice">LoadCommandID</span>, <span class="cv_-_computer_voice">BeanVersion</span>, <span class="cv_-_computer_voice">CreateTime</span>, and <span class="cv_-_computer_voice">UpdateTime</span> properties. ClaimCenter sets these properties automatically during import into the operational tables.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927367">Some properties that track internal system state are not included in staging tables because ClaimCenter itself </a>sets these properties at run time.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1927375">There are internal properties (for example, </a><span class="cv_-_computer_voice">State</span>) that ClaimCenter cannot be certain of the value of the property upon import. Mark the claim’s <span class="cv_-_computer_voice">state</span> as either <span class="e_-_emphasis">open</span> or <span class="e_-_emphasis">closed</span> upon import using the appropriate typelist codes.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1927406">In the ClaimCenter Data Dictionary, you can tell which properties are included in the </a><span class="cv_-_computer_voice">ccst_</span> table by checking if a property is <span class="e_-_emphasis">loadable</span> in the Data Dictionary. Notice that some properties are identified as <span class="cv_-_computer_voice">loadable</span>. </div>
+      <div class="B_-_Body"><a name="1934141">For example, in the Data Dictionary, look at the table </a><span class="cv_-_computer_voice">cc_claim</span>. For example, next to the property <span class="cv_-_computer_voice">AccidentType</span>, it says “<span class="cv_-_computer_voice">(loadable)</span>”, which indicates that this property is included in the staging tables. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1927432">Use load command IDs to tell </a><span class="s_-_strong">whether</span> an entity loaded from database staging tables. See <a href="javascript:WWHClickedPopup('integration', 'databaseimport.27.2.html#1608329', '');" title="Introduction to Database Staging Table Import">“Load Commands and Loadable Entities”</a>.</div>
+      <div class="B_-_Body"><a name="1927436">During database import planning, use the </a><span class="ui_-_UI_element">Conversion View</span> in the Data Dictionary. Get to the conversion view from the main <span class="ui_-_UI_element">Home</span> page of the Data Dictionary, with the links that say:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none"><span class="ui_-_UI_element"><a name="1927437">Data Entities (Conversion View)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none"><span class="ui_-_UI_element"><a name="1927438">Typelists (Conversion View)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1927439">The </a><span class="ui_-_UI_element">Conversion View</span> hides all properties that are not backed by actual database columns or are not importable in staging tables. For example, all virtual properties, which are generated (calculated) from other properties at run time.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1927440">Use the </a><span class="ui_-_UI_element">Conversion View</span> in the Data Dictionary to see the application data model from a conversion engineer perspective. It only shows properties backed by real columns that are also importable.</div>
+      <div class="H2_-_Heading_2"><a name="1927441">Important Properties and Concepts for Database Import</a></div>
+      <div class="B_-_Body"><a name="1927442">Most business data properties are straightforward to populate in the staging tables. You can look at the Data </a>Dictionary to understand the meaning of the properties on the operational tables. Put the right values into the properties by the same name on the staging tables. However, there are some general guidelines for how to populate the staging tables, described in the following subsections.</div>
+      <div class="HS_-_Head_Sub"><a name="1927445">Public IDs and the Retired Property</a></div>
+      <div class="B_-_Body"><a name="1927451">ClaimCenter relies on </a><span class="cv_-_computer_voice">PublicID</span> strings to identify rows in the staging tables. Every row you insert must have a <span class="cv_-_computer_voice">PublicID</span>, which must be unique within both the staging table and its corresponding operational table. For tables with a <span class="cv_-_computer_voice">retired</span> property, the combination of <span class="cv_-_computer_voice">PublicID</span> and <span class="cv_-_computer_voice">Retired</span> must be unique. </div>
+      <div class="B_-_Body"><a name="1927459">In the operational tables, </a><span class="e_-_emphasis">logical deletes</span> are done by setting the <span class="cv_-_computer_voice">Retired</span> property to something other than 0 (in practice, it is set to the ID of the row). This allows more than one row to have the same <span class="cv_-_computer_voice">PublicID</span> as long as only one is currently not retired. ClaimCenter uses this to make sure that you are not inserting duplicate rows and to resolve foreign keys (references between tables). </div>
+      <div class="B_-_Body"><a name="1934149">You must have an algorithm for generating unique </a><span class="cv_-_computer_voice">PublicID</span> strings in the conversion tool. For example, the <span class="cv_-_computer_voice">PublicID</span> for each <span class="s_-_strong">claim</span> could be the company name, then a colon character, then claim number. The <span class="cv_-_computer_voice">PublicID</span> for <span class="s_-_strong">exposures</span> could be the claim number’s public ID, a colon character, and the exposure’s claim order incrementing counter. </div>
+      <div class="B_-_Body"><a name="1927491">Set the retired property (if any) to the value 0, which indicates an active rather than retired row in the operational </a>tables. To retire a row, set the <span class="cv_-_computer_voice">retired</span> property to the object’s public&nbsp;ID. After you retire an object, you cannot revert it to active.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1927492">Guidewire recommends not loading retired data during staging table import.</a></div>
+      <div class="B_-_Body"><a name="1927516">Integration code must </a><span class="s_-_strong">never</span> explicitly set a public&nbsp;IDs to a string that starts with a two-character ID and then a colon because Guidewire reserves all such IDs. If you used the <span class="cv_-_computer_voice">PublicIDPrefix</span> configuration parameter to change the prefix of auto-created public&nbsp;IDs, integration code that sets explicit public IDs also must not conflict with that namespace. Additionally, plan your public ID naming carefully to support large (long) record numbers. Ensure your system can support a significant number of records over time and stay within the 20 character public&nbsp;ID limit. For detailed discussion on these issues, see <a href="javascript:WWHClickedPopup('integration', 'webservices.04.12.html#1401948', '');" title="Public IDs and Integration Code">“Public IDs and Integration Code”</a>.</div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1934163">For </a><span class="cv_-_computer_voice">Transaction</span> and <span class="cv_-_computer_voice">TransactionLineItem</span>, the character length limit for public IDs is 18, not 20.</div>
+      <div class="HS_-_Head_Sub"><a name="1927535">Foreign Key Fields</a></div>
+      <div class="B_-_Body"><a name="1934170">Foreign key fields (for example, the </a><span class="cv_-_computer_voice">ClaimID</span> property on <span class="cv_-_computer_voice">ccst_exposure</span>) must contain the <span class="e_-_emphasis">public ID</span> (<span class="cv_-_computer_voice">publicID</span>) of the entity, such as the claim. To resolve the <span class="cv_-_computer_voice">ClaimID</span> foreign key, ClaimCenter looks in both the <span class="cv_-_computer_voice">ccst_claim</span> and <span class="cv_-_computer_voice">cc_claim</span> tables – another reason why the claim’s <span class="cv_-_computer_voice">PublicID</span> must be unique across both tables. </div>
+      <div class="B_-_Body"><a name="1934179">For ContactCenter, foreign key fields must contain the </a><span class="e_-_emphasis">public ID</span> (<span class="cv_-_computer_voice">publicID</span>) of the target entity. </div>
+      <div class="B_-_Body"><a name="1927558">During the load phase, ClaimCenter looks up the foreign key by public ID and insert its internal ID into the oper</a>ational table.</div>
+      <div class="HS_-_Head_Sub"><a name="1927559">All Columns in the Staging Tables Are Nullable </a></div>
+      <div class="B_-_Body"><a name="1927562">Most columns in the staging tables are </a><span class="e_-_emphasis">nullable</span>, even if the corresponding column in the operational table is not nullable. This is designed to allow you to insert rows and then set default values afterwards, if necessary, while loading the staging tables. </div>
+      <div class="B_-_Body"><a name="1927564">However, if the corresponding column in the operational table has a default value (check the Data Dictionary), </a>then you can leave the staging table column <span class="cv_-_computer_voice">null.</span> In this case, ClaimCenter sets the default value. If the property does not have a default value, you must set some value in the staging table even if merely a default value that your conversion tool chooses.</div>
+      <div class="HS_-_Head_Sub"><a name="1927570">Type Key Columns</a></div>
+      <div class="B_-_Body"><span class="e_-_emphasis"><a name="1927574">Type key columns</a></span> must be loaded by a valid <span class="cv_-_computer_voice">Code</span> value from the type list. During population, ClaimCenter converts this to an internal integer type code ID. </div>
+      <div class="B_-_Body"><a name="1934189">For example, this would apply to the </a><span class="cv_-_computer_voice">AccidentType</span> column on the <span class="cv_-_computer_voice">cc_claim</span> table.</div>
+      <div class="HS_-_Head_Sub"><a name="1927627">Subtyped Tables</a></div>
+      <div class="B_-_Body"><a name="1927630">If the operational table is subtyped, then there is a </a><span class="cv_-_computer_voice">subtype</span> column on the staging table. This property must load by the text name of the subtype. Look in the Data Dictionary for the subtype names. </div>
+      <div class="B_-_Body"><a name="1934198">For example, for </a><span class="cv_-_computer_voice">cc_contact</span> the subtypes are listed as <span class="cv_-_computer_voice">Person</span> and <span class="cv_-_computer_voice">Company</span>.</div>
+      <div class="HS_-_Head_Sub"><a name="1927655">Ignore the Row Number Column</a></div>
+      <div class="B_-_Body"><a name="1927659">Ignore the </a><span class="e_-_emphasis">row number</span> column. This column is automatically populated by ClaimCenter by the database on inserting the row or by the integrity check process, depending on which database management system (DBMS) you are using. The row number property is only used for reporting errors.</div>
+      <div class="HS_-_Head_Sub"><a name="1927666">Populating the Logical Unit of Work ID (LUWID) Column</a></div>
+      <div class="B_-_Body"><a name="1934204">Populate the </a><span class="cv_-_computer_voice">LUWID</span> column with something useful. Typically this is the claim number, but you could use other values. For example, if you insert users, it might appropriate to use the user’s login name (for example, <span class="cv_-_computer_voice">ssmith</span>) since the user is probably related to more than one claim. This way, you can delete all the data related to a user (in other words, <span class="cv_-_computer_voice">ccst_user</span>, <span class="cv_-_computer_voice">ccst_credential</span>, <span class="cv_-_computer_voice">ccst_contact</span>) if the user already exists in ClaimCenter.</div>
+      <div class="HS_-_Head_Sub"><a name="1927704">Overwritten Tables and Columns</a></div>
+      <div class="B_-_Body"><a name="1927705">There are also tables that have staging tables but are always overwritten during import. These are marked within </a>the data model files as <span class="cv_-_computer_voice">overwritteninstagingtables</span> set to <span class="cv_-_computer_voice">true</span>. </div>
+      <div class="B_-_Body"><a name="1927707">Likewise, some </a><span class="e_-_emphasis">columns</span> are defined as with the <span class="cv_-_computer_voice">loadable</span> attribute and also the attribute <span class="cv_-_computer_voice">overwriteinstagingtables</span>. These columns in the staging table are usually cleared and populated by the staging table loader subroutines.</div>
+      <div class="HS_-_Head_Sub"><a name="1927708">Virtual Properties</a></div>
+      <div class="B_-_Body"><a name="1927709">Some Guidewire entities contain properties called virtual properties (virtual fields). They act like regular proper</a>ties in many ways from Gosu such as reading property values. However, virtual properties are <span class="s_-_strong">not</span> backed from columns in the database. Values of these properties generate dynamically if Gosu code requests the property value. In many cases, virtual properties are read-only from Gosu code, from Java plugins, and from Java classes called from Gosu. Some virtual properties are also writable. Refer to <a href="javascript:WWHClickedPopup('gosu', 'classes.11.4.html#2447772', '');" title="Properties">“Properties”</a> for related information.</div>
+      <div class="B_-_Body"><a name="1927713">Generally speaking, ignore all virtual properties for conversion projects using staging tables. </a></div>
+      <div class="B_-_Body"><a name="1927714">To determine where to load data for some virtual property (</a><span class="e_-_emphasis">virtual field</span>), there is no one answer. In some cases the virtual property calls a method that performs a complex calculation that pull from many different properties or even other entities. </div>
+      <div class="B_-_Body"><a name="1927715">As a general rule, to find out what properties the virtual property pulls information from, see the </a><span class="bt_-_book_title">ClaimCenter </span><span class="bt_-_book_title">Data Dictionary</span>. Sometimes the Data Dictionary contains the necessary information for staging table database import for how that virtual property is calculated. However, you are only responsible for populating loadable properties and columns. Use the Conversion View of the Data Dictionary to show only loadable entities and loadable columns that your conversion tool must populate.</div>
+      <div class="H2_-_Heading_2"><a name="1927719">Indexes in Staging Tables</a></div>
+      <div class="B_-_Body"><a name="1927720">All staging tables must contain a unique index on each table before loading the staging tables. The system applies </a>an integrity constraint during load that there is a unique index on all staging tables. If the table has a retired property, the unique index must be on the combined columns <span class="cv_-_computer_voice">(publicID,</span><span class="cv_-_computer_voice">&nbsp;</span><span class="cv_-_computer_voice">retired)</span>. If the table does not have a retired property, the unique index must be on the <span class="cv_-_computer_voice">publicID</span> column.</div>
+      <div class="H2_-_Heading_2"><a name="1934223">Special Requirements for Some ClaimCenter Entities</a></div>
+      <div class="B_-_Body"><a name="1934224">In addition to general guidelines, you must understand the ClaimCenter data model enough to correctly generate </a>rows in all the needed tables and set any important properties. </div>
+      <div class="B_-_Body"><a name="1934225">The following table provides requirements for specific ClaimCenter entities:</a></div>
+      <div class="T_-_Table"><a name="1934296">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1934228">Table</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1934230">Column</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1934232">Requirement</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934235">cc_claim</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934238">State</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934240">This property governs the claim’s open or closed status. Set this to </a><span class="cvt_-_computer_voice_table">open</span> or <span class="cvt_-_computer_voice_table">closed</span> for all claims being imported. If <span class="cvt_-_computer_voice_table">closed</span>, then also set the <span class="cvt_-_computer_voice_table">ClosedDate</span> property.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934243">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934246">PolicyID</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934248">Every claim must have its own copy of policy information. Do not </a>share this value across claims even if more than one claim is associated with the same policy revision. The policy table can contain only minimal information, such as the policy number, however a policy information record must exist for each claim.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934252">cc_transaction</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934255">Status</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934260">ClaimCenter only supports insert of financial transactions that </a>have already been processed. This means that the status must be a post-submission state, such as <span class="cvt_-_computer_voice_table">submitted</span> for a reserve. See the following discussion for more restrictions on loading financial transactions.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934262">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><span class="cvt_-_computer_voice_table"><a name="1934265">CheckID</a></span> <br />(payments only)</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934267">Every payment must be part of a check. Therefore, if importing a </a>payment from an external system, you also need to create a row in the <span class="cvt_-_computer_voice_table">ccst_check</span> table to hold check information, such as the check number.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934270">&nbsp;</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934273">TransactionSetID</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934278">In ClaimCenter, you can enter more than one transaction as part </a>of a set that gets approved as a batch (for example, a set of reserve changes). All imported transactions must be part of a transaction set, even if there is only a single transaction in the set.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934281">cc_contact</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1934284">ABContactID</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1934289">ClaimCenter can store multiple versions of a person or company’s </a>address info. The different versions link together because they share the same <span class="cvt_-_computer_voice_table">ABContact</span>. As you load data, you can provide a public&nbsp;ID of an <span class="cvt_-_computer_voice_table">ABContact</span> to link to an existing record in ClaimCenter. You can also create a new <span class="cvt_-_computer_voice_table">ABContact</span> so that a loaded contact exists both locally for the claim and in the central address book. You can also leave this property <span class="cvt_-_computer_voice_table">null</span>. In that case, the contact is local to the claim and does not appear in the central address book nor is available to other claims.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="H3_-_Heading_3"><a name="1934297">Policy Location Data Import Warning</a></div>
+      <div class="B_-_Body"><a name="1934298">As you load policy location and building data from staging table, you must add risk units to show policy location </a>information from the user interface. Specifically, you must load <span class="cv_-_computer_voice">LocationBasedRU</span> entity data, which is a subtype of the <span class="cv_-_computer_voice">RiskUnit</span> entity. If you do not load this data, ClaimCenter hides the policy location information in the user interface.</div>
+      <div class="H3_-_Heading_3"><a name="1934302">Financial Transaction Importing Restrictions</a></div>
+      <div class="B_-_Body"><a name="1934303">The ClaimCenter web application enforces certain requirements on the data that you enter. For example, you </a>cannot add an additional payment to an existing check. In general, it only makes sense to import entire financial occurrences as a unit. For example, adding a new <span class="cv_-_computer_voice">TransactionLineItem</span> to an existing <span class="cv_-_computer_voice">Transaction</span> or adding another reserve to a reserve set would change the meaning of the original action. </div>
+      <div class="B_-_Body"><a name="1934306">ClaimCenter enforces these restrictions by preventing certain types of imports: </a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934307">No inserting new financials data for a claim that already has financials data on it at all. Through the web-</a>based user interface, checks are recoded by adding onset and offset payment transactions that change the categorization of the payments. Since loading of payments on existing checks is not allowed, an external system could not send recoding transactions to ClaimCenter using table-based import</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934308">No inserting additional transactions into an existing transaction set. For example, do not add another reserve </a>into an approved reserve set. Do not add another check or reserve into a check set. Do not add another recovery into a recovery set. Do not add another recovery reserve into a recovery reserve set.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934309">No inserting an additional payment into an existing check.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934310">No inserting an additional add-on or deduction into an existing check.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934313">No inserting an additional </a><span class="cv_-_computer_voice">TransactionLineItem</span> into an existing <span class="cv_-_computer_voice">Transaction.</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1934314">You must also follow the following rules for financials data:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934316">Do not insert transactions and checks that have not yet been processed because no events would be generated </a>for these, so they would never get processed.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934591">Do not insert </a><span class="s_-_strong">recoded</span> checks.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934616">Do not insert </a><span class="s_-_strong">transferred</span> checks.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934627">Do not insert </a><span class="s_-_strong">multipayee</span> checks.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934318">Only insert approved </a><span class="cv_-_computer_voice">TransactionSets</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934319">For supplemental payments, you must ensure that you do not violate the rules of the system. For example, if </a>the system configuration parameter <span class="cv_-_computer_voice">AllowNoPriorPaymentSupplement</span> is set to <span class="cv_-_computer_voice">false</span>, then do not attempt to load supplemental payments on claims with no other financial transactions. Additionally, never load supplemental payments into open claims or exposures. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934322">Never include more than one </a><span class="cv_-_computer_voice">Recovery</span> in a <span class="cv_-_computer_voice">RecoverySet</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934326">Financial entities of types </a><span class="cv_-_computer_voice">Reserve</span>, <span class="cv_-_computer_voice">Recovery Reserve</span>, or <span class="cv_-_computer_voice">Recovery</span> must have the status <span class="cv_-_computer_voice">submitted</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934332">A </a><span class="cv_-_computer_voice">Payment</span> entity must have the status <span class="cv_-_computer_voice">submitted</span><span class="e_-_emphasis" style="color: #000000; font-family: &quot;Times New Roman&quot;; font-size: 10.0pt; font-weight: normal">, </span><span class="cv_-_computer_voice">voided</span><span class="e_-_emphasis" style="color: #000000; font-family: &quot;Times New Roman&quot;; font-size: 10.0pt; font-weight: normal">, </span><span class="cv_-_computer_voice">stopped</span><span class="e_-_emphasis" style="color: #000000; font-family: &quot;Times New Roman&quot;; font-size: 10.0pt; font-weight: normal">, </span>or<span class="e_-_emphasis"> </span><span class="cv_-_computer_voice">recoded</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934334">A </a><span class="cv_-_computer_voice">Check</span> entity must have the status <span class="cv_-_computer_voice">requested</span>, <span class="cv_-_computer_voice">issued</span>, <span class="cv_-_computer_voice">cleared</span>, <span class="cv_-_computer_voice">voided</span>, or <span class="cv_-_computer_voice">stopped</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934335">A </a><span class="cv_-_computer_voice">Check</span> entity must have at least one payee.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934338">If the </a><span class="cv_-_computer_voice">AllowMultipleLineItems</span> configuration parameter is <span class="cv_-_computer_voice">false</span>, then each <span class="cv_-_computer_voice">Transaction</span> can have only one <span class="cv_-_computer_voice">TransactionLineItem</span>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934342">If the </a><span class="cv_-_computer_voice">AllowMultiplePayments</span> configuration parameter is <span class="cv_-_computer_voice">false</span>, then each <span class="cv_-_computer_voice">Check</span> can have only one <span class="cv_-_computer_voice">Payment</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934344">For defining transactions, there are special rules for multicurrency support. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1934345">If you import transactions through the web service APIs, then you can pass a set of exchange rates. The appli</a>cation creates the complete set of all permutations of <span class="cv_-_computer_voice">ExchangeRate</span> and <span class="cv_-_computer_voice">ExchangeRateSet</span> entities for them. Next, it links <span class="cv_-_computer_voice">Transaction</span> entities in each <span class="cv_-_computer_voice">TransactionSet</span> to them. </div>
+      <div class="LP_-_List_Para"><a name="1934346">In contrast, if you import transactions using staging tables, create an </a><span class="cv_-_computer_voice">ExchangeRate</span> and <span class="cv_-_computer_voice">ExchangeRateSet</span> entity for every <span class="cv_-_computer_voice">Transaction</span>. Create an <span class="cv_-_computer_voice">ExchangeRate</span> and <span class="cv_-_computer_voice">ExchangeRateSet</span> for every <span class="cv_-_computer_voice">Check</span>, noting that the payments for the check share the same <span class="cv_-_computer_voice">ExchangeRateSet</span> entity. Every <span class="cv_-_computer_voice">Transaction</span> imported through staging tables has a <span class="s_-_strong">custom exchange rate</span> in the ClaimCenter user interface. </div>
+      <div class="LP_-_List_Para"><a name="1934347">For importing transactions, there are staging table integrity checks for</a></div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934348">Checking that the payments in a check all point to the same </a><span class="cv_-_computer_voice">ExchangeRate</span> entity.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934349">In relation to the previous item, also that check payments have all </a><span class="cv_-_computer_voice">null</span> or all non-<span class="cv_-_computer_voice">null</span> transaction to claim exchange rates.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934350">The reporting amount equals the claim amount.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934351">The transaction amount’s sign (positive or negative) matches the claim amount.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934352">The claim to reporting exchange rate is </a><span class="cv_-_computer_voice">null</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934353">The transaction to claim exchange rate has the correct currencies. In other words, the </a><span class="cv_-_computer_voice">ExchangeRate</span> entity has its transaction currency as <span class="cv_-_computer_voice">ExchangeRate.BaseCurrency</span> and the claim/default currency is <span class="cv_-_computer_voice">ExchangeRate.PriceCurrency</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><a name="1934354">The check payments have the same currency.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1934358">See </a><a href="javascript:WWHClickedPopup('app', 'multicurrency.22.1.html#4823749', '');" title="Multiple Currencies">“Multiple Currencies” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('app', 'multicurrency.22.1.html#4823749', '');" title="Multiple Currencies">Application Guide</a></span> for more information about multicurrency. See <a href="javascript:WWHClickedPopup('integration', 'financials.11.13.html#3238179', '');" title="Exchange Rate Integration">“Exchange Rate Integration” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'financials.11.13.html#3238179', '');" title="Exchange Rate Integration">Application Guide</a></span> for more information about specifying exchange rates. </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1934362">Separate from the transaction requirements for multicurrency, each transaction’s </a><span class="cv_-_computer_voice">PublicID</span> property must be two or more characters shorter than the maximum property length.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

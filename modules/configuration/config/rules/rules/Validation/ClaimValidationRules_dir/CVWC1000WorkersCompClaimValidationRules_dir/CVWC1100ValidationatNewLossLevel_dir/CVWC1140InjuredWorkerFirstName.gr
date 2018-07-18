@@ -1,0 +1,20 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVWC1140 - Injured Worker First Name")
+internal class CVWC1140InjuredWorkerFirstName {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.claimant.FirstName == null &&
+claim.Policy.isPolicyInRefresh(1) == false &&
+!claim.IncidentReport 
+// 10.26.15 - cmullin - First Name changed to ISO validation. Rule disabled./*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+ claim.rejectField( "claimant.FirstName", "newloss", displaykey.Rules.Validation.Claim.WorkersComp.InjWorkerFirstName, null, null )
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

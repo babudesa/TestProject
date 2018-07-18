@@ -1,0 +1,22 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1500BulkInvoices_dir
+
+@gw.rules.RuleName("TPUXX1560 -Status Change Date")
+internal class TPUXX1560StatusChangeDate {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.isFieldChanged("Status")/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var statusesOfInterest = {BulkInvoiceStatus.TC_INREVIEW,
+                          BulkInvoiceStatus.TC_AWAITINGSUBMISSION,
+                          BulkInvoiceStatus.TC_REQUESTING,
+                          BulkInvoiceStatus.TC_ISSUED,
+                          BulkInvoiceStatus.TC_PENDINGSTOP,
+                         BulkInvoiceStatus.TC_PENDINGVOID}
+ var check = (transactionSet as CheckSet).PrimaryCheck
+ var bulkInvoice = check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice
+if(statusesOfInterest.contains(bulkInvoice.Status)){
+  bulkInvoice.StatusChangeDateExt = gw.api.util.DateUtil.currentDate()
+}/*end00rule*/
+  }
+}

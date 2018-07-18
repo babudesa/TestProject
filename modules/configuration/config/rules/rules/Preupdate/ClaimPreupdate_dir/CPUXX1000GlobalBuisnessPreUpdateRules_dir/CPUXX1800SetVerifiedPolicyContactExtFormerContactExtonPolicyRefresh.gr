@@ -1,0 +1,41 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1800 - Set VerifiedPolicyContactExt/FormerContactExt on Policy Refresh")
+internal class CPUXX1800SetVerifiedPolicyContactExtFormerContactExtonPolicyRefresh {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+  Loops through the contacts on a claim when the policy is being refreshed
+  and sets the VerifiedPolicyContactExt field on all contacts with a role of former to false.  This will allow their roles
+  to be merged.
+  Sprint/Maintenance Release: EM 10 - Defect 1054
+  Author: Zach Thomas
+  Date: 04/29/2008
+  Updated: 07/08/2008 - Modified rule to set FormerVerifiedContactExt on formercontacts on policy refresh.
+*/
+claim.Policy.isPolicyInRefresh( 1 ) and 
+exists(cont in claim.Contacts where exists(role in cont.Roles where role.Role.Code.indexOf( "former" ) != 0))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(cont in claim.Contacts){
+    var isTargetContact = new List()
+    for(role in cont.Roles){
+      if(role.Role == "formerinsured" or role.Role == "formerunderwriter" or role.Role == "formercoveredparty" or
+       role.Role == "formeragent" or role.Role ==  "formerdoingbusinessas" or role.Role ==   "formerexcludedparty" or
+       role.Role == "formerpolicyholder" or role.Role == "formerlienholder" or role.Role == "formeraddintrisk" or
+       role.Role == "formerprimarytrainer" or role.Role == "formeralternatetrainer" or role.Role == "formeragency" or
+       role.Role == "fmrcertificateholder"){
+        if(cont.Contact.VerifiedPolicyContactExt){
+          cont.Contact.VerifiedPolicyContactExt = false;
+        }
+          cont.Contact.FormerVerifiedContactExt = true;
+        
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

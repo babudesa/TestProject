@@ -1,0 +1,28 @@
+#*
+Sample Velocity template for duplicate contact SQL.
+INPUT:  $Util -- an instance of com.guidewire.pl.domain.duplicatesearch.VelocityUtil that can be used to access various util classes.
+        $Contact -- the contact we are testing for duplicates
+OUTPUT: The SQL that should produce a list of contact IDs that match this check, or an empty list of none match
+*#
+Select cc_contact_head.ID col0
+FROM cc_contact cc_contact_head
+WHERE cc_contact_head.Retired = 0
+AND cc_contact_head.SnapshotStatus = $Util.getTypeCodeId("SnapshotStatus", "current")
+AND cc_contact_head.ContactType = $Util.getTypeCodeId("ContactType", "external")
+
+#*
+NOTE: If you change any of the following criteria, please also update
+present/config/addressbook/DuplicateSearchFields.properties to reflect
+the changes. In the future, the UI and server will use the same source
+for determining which fields to search on.
+*#
+
+## If the contact subtype is person (ID=1) than search on the person fields, else search on the company fields
+#if ($Contact.subtype.id == 1)
+AND cc_contact_head.LastNameDenorm = $Util.sql.getSQLStringValue($Contact.lastName).toLowerCase()
+AND cc_contact_head.FirstNameDenorm = $Util.sql.getSQLStringValue($Contact.firstName).toLowerCase()
+AND cc_contact_head.subtype = 1
+#else
+AND cc_contact_head.NameDenorm = $Util.sql.getSQLStringValue($Contact.name).toLowerCase()
+AND cc_contact_head.subtype = 2
+#end

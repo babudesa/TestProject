@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsChecksDetail.go(Claim, Check)"
+    afterCommit="ClaimFinancialsChecksDetail.go(Claim, Check)"
+    canEdit="true"
+    canVisit="perm.Claim.viewpayments(Claim)"
+    countsAsWork="false"
+    id="VoidStopCheck"
+    parent="ClaimFinancialsChecksDetail(Claim, Check)"
+    startInEditMode="true"
+    title="displaykey.JSP.VoidStopCheck.VoidStop.Title">
+    <LocationEntryPoint
+      signature="VoidStopCheck(Claim : Claim, Check : Check)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Check"
+      type="Check"/>
+    <Screen
+      id="VoidStopCheckScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="voidCheck()"
+          available=" Check.Voidable and perm.Payment.void(Check) and Check.Status != &quot;cleared&quot;"
+          confirmMessage="displaykey.JSP.VoidStopCheck.Void.Confirm"
+          id="VoidStopCheck_VoidButton"
+          label="displaykey.Button.Check.Void"
+          visible="perm.Payment.void(Check)"/>
+        <ToolbarButton
+          action="stopCheck()"
+          available=" Check.Stoppable and perm.payment.stop(Check)"
+          confirmMessage="displaykey.JSP.VoidStopCheck.Stop.Confirm"
+          id="VoidStopCheck_StopButton"
+          label="displaykey.Button.Check.Stop"
+          visible="perm.payment.stop(Check) and !Check.Bulked"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="VoidStopCheckDV(Check)"
+        visible="Check.Group == null"/>
+      <PanelRef
+        def="VoidStopCheckGroupDV(Check)"
+        visible="Check.Group != null"/>
+    </Screen>
+    <Code><![CDATA[/* kniese - Defect 2149
+* Added an if statement to the function to check if the total incurred would be 
+* negative after voiding the check.  
+*/
+function voidCheck() {
+  try {
+    // kniese - Added this if statement to the function to check for negative incurred after voiding a check
+    if(Check.Claim.getTotalIncurred() - Check.GrossAmount.Amount < 0.0 and Check.Claim.LossType != typekey.LossType.TC_PERSONALAUTO){
+      throw new gw.api.util.DisplayableException(displaykey.Error.TotalIncurred.NegativeIncurred)
+    }
+    if(Check.ex_CheckVoidStopReasonType == null){
+      throw new gw.api.util.DisplayableException("Enter Reason for Void/Stop")
+  }else if(!User.util.CurrentUser.hasPermission("payvoid")){ 
+    throw new gw.api.util.DisplayableException("Void action unsuccessful. Please cancel the Transaction") 
+    }else{
+     gw.api.util.CCLocationUtil.runAndCommit( \ -> Check.voidCheck(), CurrentLocation )
+    }
+  } catch ( e : com.guidewire.pl.system.exception.IllegalTransactionStatusException ) {
+   throw new gw.api.util.DisplayableException(displaykey.Web.Financials.CheckCancel.Error.IllegalFinancialsStatus, e)
+  
+  }
+}
+
+/* kniese - Defect 2149
+* Added an if statement to the function to check if the total incurred would be 
+* negative after stopping the check.  
+*/
+function stopCheck()  {
+  try {
+    // kniese - Added this if statement to the function to check for negative incurred after stopping a check
+    if(Check.Claim.getTotalIncurred() - Check.GrossAmount.Amount < 0.0 and Claim.Claim.LossType != typekey.LossType.TC_PERSONALAUTO){
+      throw new gw.api.util.DisplayableException(displaykey.Error.TotalIncurred.NegativeIncurred)
+    }
+    if(Check.ex_CheckVoidStopReasonType == null){
+      throw new gw.api.util.DisplayableException("Enter Reason for Void/Stop")
+  }else if(!User.util.CurrentUser.hasPermission("paystop")) {
+    throw new gw.api.util.DisplayableException("Stop action unsuccessful. Please cancel the Transaction") 
+    }else{
+   gw.api.util.CCLocationUtil.runAndCommit( \ -> Check.stopCheck(), CurrentLocation )
+    }
+  } catch ( e : com.guidewire.pl.system.exception.IllegalTransactionStatusException ) {
+   throw new gw.api.util.DisplayableException(displaykey.Web.Financials.CheckCancel.Error.IllegalFinancialsStatus, e)
+  
+  }
+}]]></Code>
+  </Page>
+</PCF>

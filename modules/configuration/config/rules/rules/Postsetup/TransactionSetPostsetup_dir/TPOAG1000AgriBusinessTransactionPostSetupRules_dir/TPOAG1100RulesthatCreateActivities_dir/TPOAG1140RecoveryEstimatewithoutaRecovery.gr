@@ -1,0 +1,79 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOAG1000AgriBusinessTransactionPostSetupRules_dir.TPOAG1100RulesthatCreateActivities_dir
+
+@gw.rules.RuleName("TPOAG1140 - Recovery Estimate without a Recovery")
+internal class TPOAG1140RecoveryEstimatewithoutaRecovery {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype=="RecoveryReserveSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses java.math.BigDecimal;
+uses gw.api.database.Query;
+uses java.util.*;
+
+//Added code for defect#6025 to genarate an activity at exposure level whenever a recovery estimate is closed without doing a recovery 
+//Coded by : Amulya Saikumar Date:01/30/15
+try{
+ var amount:java.math.BigDecimal=0.0
+//Cycle through each exposure on the claim to generate the activity at exposure level
+ for(exposure in transactionSet.Claim.Exposures){
+ var map=new java.util.HashMap()
+  //Query to retrieve all the recovery reserves from the database
+ var reservesQuery = Query.make(RecoveryReserve).compare("Claim", Equals, transactionSet.Claim).select()
+ for(txn in reservesQuery){
+     if(txn.Exposure==exposure){
+        if(txn.CostCategory!=null){
+           if(map.get(txn.CostCategory)!=null){
+           amount=new BigDecimal(map.get(txn.CostCategory))
+           amount=amount+txn.Amount
+           map.put(txn.CostCategory,amount)
+           }
+           else{
+           map.put(txn.CostCategory,txn.Amount)
+           }//end of else
+        }//end of if loop for null check
+     }//end of if loop for exposure check
+  }//end of for loop
+  
+  //Cycle to calculate the recovery reserve from the current transaction     
+  for(txn in transactionSet.Transactions){
+     if(txn.Exposure==exposure){
+        if(txn.CostCategory!=null){
+           if(map.get(txn.CostCategory)!=null){
+           amount=new BigDecimal(map.get(txn.CostCategory))
+           amount=amount+txn.Amount
+           map.put(txn.CostCategory,amount)
+           }
+           else{
+            map.put(txn.CostCategory,txn.Amount)
+           }//end of else
+        }//end of if loop for null check
+     }//end of if loop for exposure check
+  }//end of for loop
+ 
+  if(!map.Empty){
+  var list = map.Keys.toList()
+    for(key in list){             
+      var sumamount=new BigDecimal(map.get(key))
+        if(sumamount.IsZero){
+           var desc="Recovery Estimate ("+typekey.CostCategory.get(key).toString()+") was closed without creating a Recovery."
+            if(!exists(act in exposure.Claim.Activities where (act.ActivityPattern.Code=="ab_recov_est_closed" && act.Description==desc  && act.Exposure.ID==exposure.ID))){
+               var ap = util.custom_Ext.finders.findActivityPattern( "ab_recov_est_closed" )
+               var act1=exposure.Claim.createActivityFromPattern(exposure, ap)
+               act1.Description=desc
+            }//end of if loop for act existance
+         }//end of if loop for amount check
+      }//end of for loop for keys in map
+   }//end of if loop for map length
+   
+ }//end of for loop for exposures in transactionset
+}//end of try
+
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule() as java.lang.String, e, null );
+}
+
+
+/*end00rule*/
+  }
+}

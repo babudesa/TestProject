@@ -1,0 +1,27 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX1100 - MA Mandatory Lien Check")
+internal class ABXX1100MAMandatoryLienCheck {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Exposures.where(\ e -> e.IsExposureIncludedInMALienCheck).HasElements
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*We had to call the condition above also as we loop thru the exposures below because if more
+than 1 exposure is true, the condition above will return true, and they want this activity
+per exposure 5/58/17 erawe.  Not sure if there is another way to do the above condition */
+try {
+  for (exp in claim.Exposures){
+    if (exp.Claimant.AddressOwner.Address.State == State.TC_MA and exp.IsExposureIncludedInMALienCheck){
+      if (exp.Claim.Activities.where(\ a -> a.ActivityPattern.Code == "ma_mandatory_lien" and a.Exposure == exp).IsEmpty){
+        var ap = util.custom_Ext.finders.findActivityPattern( "ma_mandatory_lien" ) 
+        claim.createActivityFromPattern(exp, ap)
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

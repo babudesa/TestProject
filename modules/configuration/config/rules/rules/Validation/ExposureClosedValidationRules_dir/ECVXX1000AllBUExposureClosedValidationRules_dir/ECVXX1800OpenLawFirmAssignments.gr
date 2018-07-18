@@ -1,0 +1,26 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1800 - Open Law Firm Assignments")
+internal class ECVXX1800OpenLawFirmAssignments {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists(ma in exposure.Claim.Matters*.MatterAssignmentsExt where
+         ma.StatusExt == typekey.AssignmentStatusExt.TC_OPEN
+         and ma.AssignmentExposuresExt*.Exposure.contains(exposure)
+         and !exists(exp in ma.AssignmentExposuresExt*.Exposure where
+             exp.State == ExposureState.TC_OPEN and
+             exp != exposure))== true
+         /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  exposure.reject( "newloss", "You cannot close the only Open Feature tied to a Law Firm Assignment.", null, null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}
+
+/*end00rule*/
+  }
+}

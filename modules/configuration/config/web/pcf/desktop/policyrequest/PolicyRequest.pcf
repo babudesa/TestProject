@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    alwaysInEditMode="true"
+    autosaveable="false"
+    canEdit="true"
+    canVisit="gw.plugin.util.CurrentUserUtil.getCurrentUser().User.canVisitPolReqRptScreen() and util.custom_Ext.finders.enablePRO()"
+    countsAsWork="false"
+    id="PolicyRequest"
+    startInEditMode="true"
+    title="displaykey.Web.Admin.PolicyRequest.ConvertedPROPolicyRequests">
+    <Variable
+      name="PolConvStatus"
+      type="com.gaic.claims.dto.PolicyConversionStatusDTO[]"/>
+    <Variable
+      name="PolNum"
+      type="String"/>
+    <Variable
+      initialValue="User.util.currentUser.getGeneralBusinessUnit()"
+      name="busunit"
+      type="String"/>
+    <Variable
+      name="Stat"
+      type="String"/>
+    <Variable
+      name="StartDate"
+      type="DateTime"/>
+    <Variable
+      name="EndDate"
+      type="DateTime"/>
+    <Variable
+      initialValue="util.custom_Ext.finders.enablePRO()"
+      name="enableRestoreFromPro"
+      type="boolean"/>
+    <Screen
+      editable="true"
+      id="MessagingDestinationControlListScreen">
+      <DetailViewPanel
+        editable="true">
+        <InputColumn>
+          <Label
+            label="displayKey.Web.Policy.PolicyConversion.Requests.SearchCriteria"/>
+          <Input
+            available="true"
+            editable="true"
+            id="PolicyNumber"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.PolicyNumber"
+            value="PolNum"/>
+          <RangeInput
+            available="true"
+            editable="true"
+            id="BusinessUnit"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.BusinessUnit"
+            value="busunit"
+            valueRange="addNonBusUnit()"/>
+          <RangeInput
+            available="true"
+            editable="true"
+            id="Status"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.Status"
+            value="Stat"
+            valueRange="getStatusList()"/>
+        </InputColumn>
+        <InputColumn>
+          <Label
+            label="displayKey.Web.Policy.PolicyConversion.Requests.DateRange"/>
+          <DateInput
+            editable="true"
+            id="StartDate"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.StartDate"
+            validationExpression="EndDate != null and StartDate != null and StartDate &lt; EndDate ? &quot;Start Date must be before end date&quot; : null"
+            value="StartDate"/>
+          <DateInput
+            editable="true"
+            id="EndDate"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.EndDate"
+            value="EndDate"/>
+        </InputColumn>
+        <InputFooterSection>
+          <Input
+            id="Space"
+            value=""/>
+          <ContentInput
+            id="SearchButtons">
+            <Link
+              action="processPolConv()"
+              default="true"
+              id="Search"
+              label="displaykey.Button.Search"
+              shortcut="S"
+              styleClass="bigButton"
+              visible="true"/>
+            <Link
+              action="PolConvStatus = null; Stat = null; busunit = null; PolNum = null; StartDate = null; EndDate = null"
+              id="Reset"
+              label="displaykey.Button.Reset"
+              shortcut="R"
+              styleClass="bigButton"
+              visible="true"/>
+          </ContentInput>
+        </InputFooterSection>
+      </DetailViewPanel>
+      <DetailViewPanel>
+        <InputColumn>
+          <Label
+            id="NonSuccessful"
+            label="displayKey.Web.Policy.PolicyConversion.Requests.NonSuccessful(&quot;ClaimCenterSupport@gaig.com&quot;)"/>
+        </InputColumn>
+      </DetailViewPanel>
+      <PanelRef>
+        <Toolbar/>
+        <ListViewPanel
+          id="PolicyConversionStatusLV">
+          <RowIterator
+            editable="true"
+            elementName="PolConvRow"
+            value="PolConvStatus">
+            <Row>
+              <Cell
+                id="PolicyNumber"
+                label="displayKey.Web.Policy.PolicyConversion.Requests.PolicyNumber"
+                sortOrder="1"
+                value="PolConvRow.getPolicyNumber()"/>
+              <Cell
+                id="Created"
+                label="displayKey.Web.Policy.PolicyConversion.Requests.CreateDate"
+                value="PolConvRow.getCreateDate()"/>
+              <Cell
+                id="BusUnit"
+                label="displayKey.Web.Policy.PolicyConversion.Requests.BusinessUnit"
+                value="PolConvRow.getLineOfBusiness()"/>
+              <Cell
+                id="Status"
+                label="displayKey.Web.Policy.PolicyConversion.Requests.CreateStatus"
+                value="showPending(PolConvRow.getStatus())"/>
+              <Cell
+                id="Error"
+                label="displayKey.Web.Policy.PolicyConversion.Requests.ErrorString"
+                value="PolConvRow.getErrorMessage()"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[function getStatusList() : List{
+      		var statusList : List = new java.util.ArrayList();
+      		statusList.add("FAILED")
+      		statusList.add("SUCCESSFUL")
+      		statusList.add("PENDING")
+      		return statusList;
+      	}	
+      	
+      	function processPolConv(){
+      		var tempStatus = ""
+      		
+      		//Pending is just a display value, the database contains "NEW" as its value
+      		if(Stat != null and Stat.equals("PENDING")){
+      			tempStatus = "NEW"
+      		}else{
+      			tempStatus = Stat
+      		}
+      		
+      		//Retrieve information from database based on the picked values, non-filled in information
+      		//will be set to "%" by the function so that the SQL statment will search for it as a wildcard
+      		PolConvStatus = util.PolicyConversion.getPolicyList(PolNum, busunit, tempStatus, StartDate, EndDate)
+      		
+      		//If no policies were found for the selection, display an error worksheet
+      		if(PolConvStatus.length == 0){
+      			if(StartDate != null and EndDate != null and StartDate > EndDate){
+      				GeneralErrorWorksheet.goInWorkspace(displayKey.Web.Policy.PolicyConversion.Requests.DateError)
+      			}else{
+      				GeneralErrorWorksheet.goInWorkspace(displayKey.Web.Policy.PolicyConversion.Requests.NoneFound)
+      			}
+      		}
+      	}
+      	
+      	function showPending(st : String) : String{
+      		var retString : String = "";
+      		if(st.equals("NEW")){
+      			retString = "PENDING";
+      		}else{
+      			retString = st;
+      		}
+      		return retString;
+      	}
+      	
+      	function addNonBusUnit() : List{
+			var tempList = util.custom_Ext.finders.getBusinessUnitList();
+			tempList.add("Non-Business Unit");
+			return tempList;
+		}]]></Code>
+  </Page>
+</PCF>

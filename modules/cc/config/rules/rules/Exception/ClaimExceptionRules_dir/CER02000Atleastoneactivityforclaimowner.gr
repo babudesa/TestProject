@@ -1,0 +1,24 @@
+package rules.Exception.ClaimExceptionRules_dir
+
+@gw.rules.RuleName("CER02000 - At least one activity for claim owner")
+internal class CER02000Atleastoneactivityforclaimowner {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Look for claims where the owner of the claim has no open activities on the claim.
+   If found, add a reminder activity for that person so the claim is not forgotten */
+Claim.State=="open" and
+not exists(act in (Claim.Activities) where
+(Claim.AssignedUser==act.AssignedUser and
+ act.Status=="open") )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/Claim.createActivity( 	null,
+      ActivityPattern.finder.getActivityPatternByCode("general_reminder"),
+      displaykey.Rules.Exception.Claim.ReviewClaim,
+      displaykey.Rules.Exception.Claim.NoOpenDiaryAutoReminder,
+      "low",
+      false,
+      gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ),
+      null);/*end00rule*/
+  }
+}

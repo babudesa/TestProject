@@ -1,0 +1,19 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir.CPUEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CPUEL1130 - Update Potential Development")
+internal class CPUEL1130UpdatePotentialDevelopment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "update_potential")) &&
+claim.PotentialDevelopmentExt >= 100000
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var ap = util.custom_Ext.finders.findActivityPattern("update_potential")
+  claim.createActivityFromPattern(null, ap)
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

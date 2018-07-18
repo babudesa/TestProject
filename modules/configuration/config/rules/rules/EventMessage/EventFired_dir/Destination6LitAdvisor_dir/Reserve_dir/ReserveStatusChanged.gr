@@ -1,0 +1,15 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Reserve_dir
+
+@gw.rules.RuleName("ReserveStatusChanged")
+internal class ReserveStatusChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ReserveStatusChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var reserve = messageContext.Root as Reserve;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==reserve.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendLossReserveChanges( messageContext, reserve );/*end00rule*/
+  }
+}

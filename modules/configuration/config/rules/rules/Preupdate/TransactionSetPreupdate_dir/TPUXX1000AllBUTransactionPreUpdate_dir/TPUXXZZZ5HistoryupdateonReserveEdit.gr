@@ -1,0 +1,26 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXXZZZ5 - History update on Reserve Edit")
+internal class TPUXXZZZ5HistoryupdateonReserveEdit {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis ReserveSet 
+
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses java.text.DecimalFormat
+var transaction  : History
+var openres  = gw.api.financials.FinancialsCalculationUtil.getOpenReserves().getAmount(transactionSet.Exposures[0], (transactionSet as reserveSet).Reserves[0].CostType)+
+                 gw.api.financials.FinancialsCalculationUtil.getPendingReservesForCostCategory((transactionSet as reserveSet).Reserves[0])
+var amount=(new DecimalFormat("$#########0.00;($-#########0.00)")).format(openres.Amount)
+if(!exists(act in transactionSet.claim.Activities where act.ActivityPattern.Code == "approve_reserve_change" 
+     && act.Status == "Complete" and act.Approved ==true and act.TransactionSet.ClaimAmount == (openres)) and 
+     (transactionSet as reserveSet).Reserves[0].Status != "rejected"){
+   transaction = transactionSet.Claim.createCustomHistoryEvent("checkedit", User.util.CurrentUser+" issued a Reserve for "+amount+" on Feature "+transactionSet.Exposures[0].DisplayName);
+   transaction.TransactionSet = transactionSet as ReserveSet 
+}
+/*end00rule*/
+  }
+}

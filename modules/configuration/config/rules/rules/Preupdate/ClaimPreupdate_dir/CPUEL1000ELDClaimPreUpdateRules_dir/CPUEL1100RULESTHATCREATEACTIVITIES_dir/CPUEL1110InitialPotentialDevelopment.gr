@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir.CPUEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CPUEL1110 - Initial Potential Development")
+internal class CPUEL1110InitialPotentialDevelopment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "initial_potential")
+&&  !exists(note in claim.Notes where note.Topic == "potdev"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 - Modified not to generate this activity 
+ if a note topic of "Potential Development" exists on the claim.
+*/
+try {
+  var fintotal = gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(claim)
+
+  if (fintotal + claim.PotentialDevelopmentExt >= 100000 || fintotal >= 100000 || claim.PotentialDevelopmentExt >=100000){
+    var ap = util.custom_Ext.finders.findActivityPattern("initial_potential")
+    claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

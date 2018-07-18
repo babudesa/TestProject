@@ -1,0 +1,38 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1I00 - Update UserAddedIndExt on a Verified Policy")
+internal class CPUXX1I00UpdateUserAddedIndExtonaVerifiedPolicy {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Update useraddedindext field to true if 
+*  user adds an address to a verified policy or
+*  updates an existing address
+*  Sprint/Maintenance Release:Foundation Sprint  
+*  Author: Eric Rawe
+*  Date: 3/18/09
+*/
+claim.Policy.Verified==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+for(contact in claim.Contacts){
+  if(contact.Contact.VerifiedPolicyContactExt and !contact.Contact.New){
+    for(addy in contact.Contact.AllAddresses){
+      if(addy.Changed or addy.New){ 
+        addy.UserAddedIndExt=true;
+        if(claim.State == "draft"){
+          contact.Contact.modifiedFieldNamesNCW( claim )
+        }else{
+          contact.Contact.modifiedFieldNames(claim)
+        }
+      }
+    }
+  }
+}
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Configuring the Database Upgrade</title>
+    <link rel="StyleSheet" href="css/procedure-db-b-c.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_3.html#1938195">Upgrading from 5.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-b-c.10.01.html#1938195">Upgrading the ClaimCenter 5.0.x Database</a> : Configuring the Database Upgrade</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1938195">Configuring the Database Upgrade</a></div>
+      <div class="B_-_Body"><a name="1938202">You can set parameters for the database upgrade in the ClaimCenter 6.0.8 </a><span class="cv_-_computer_voice">config.xml</span> file. The <span class="cv_-_computer_voice">&lt;database&gt;</span> block in config.xml contains parameters for database configuration, such as connection information. The <span class="cv_-_computer_voice">&lt;database&gt;</span> block contains an <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block that contains configuration information for the overall database upgrade. The <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block also contains a <span class="cv_-_computer_voice">&lt;versiontriggers&gt;</span> element for configuring general version trigger behavior and can contain <span class="cv_-_computer_voice">&lt;versiontrigger&gt;</span> elements to configure each version trigger. </div>
+      <div class="B_-_Body"><a name="1938203">This topic describes the parameters you can set for the database upgrade. For general database connection param</a>eters, see <a href="javascript:WWHClickedPopup('install', 'install.6.11.html#1130592', '');" title="Deploying ClaimCenter to the Application Server">“Deploying ClaimCenter to the Application Server” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('install', 'install.6.11.html#1130592', '');" title="Deploying ClaimCenter to the Application Server">Installation Guide</a></span>.</div>
+      <div class="H2_-_Heading_2"><a name="1938207">Configuring Column Removal on Oracle</a></div>
+      <div class="B_-_Body"><a name="1938208">The database upgrade removes some columns. For Oracle, you can configure whether the removed columns are </a>dropped immediately or are marked as unused. Marking a column as unused is a faster operation than dropping the column immediately. However, because these columns are not physically dropped from the database, the space used by these columns is not released immediately to the table and index segments. You can drop the unused columns after the upgrade during off-peak hours to free the space. Or, you can configure the database upgrade to drop the columns immediately during the upgrade. By default, the ClaimCenter database upgrade marks columns as unused.</div>
+      <div class="B_-_Body"><a name="1938215">To configure the ClaimCenter upgrade to drop columns immediately during the upgrade, set the </a><span class="cv_-_computer_voice">oracleMarkColumnsUnused</span> attribute of the <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block to <span class="cv_-_computer_voice">false</span>. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938216">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938217">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938218">&nbsp;</a>&nbsp;&lt;upgrade oracleMarkColumnsUnused="false"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938219">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938220">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938221">&lt;/database&gt;</a></PRE>
+      <div class="H2_-_Heading_2"><a name="1938222">Configuring Index Creation Parallelism on Oracle</a></div>
+      <div class="B_-_Body"><a name="1938223">You can configure the database upgrade to create indexes in parallel on Oracle databases. This can potentially </a>reduce the time to upgrade the database if there are sufficient resources available on the database server. By default, indexes are not created in parallel on Oracle. Enable parallel index creation by setting the <span class="cv_-_computer_voice">createIndexInParallel</span> attribute of the <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block in the <span class="cv_-_computer_voice">&lt;database&gt;</span> block of <span class="cv_-_computer_voice">config.xml</span>. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938224">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938225">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938226">&nbsp;</a>&nbsp;&lt;upgrade createIndexInParallel="2"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938227">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938228">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938229">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1938230">Set a numeric </a><span class="cv_-_computer_voice">value</span> for <span class="cv_-_computer_voice">createIndexInParallel</span> to specify the degree of parallelism for index creation during the upgrade. Or, set <span class="cv_-_computer_voice">value="default"</span> to have Oracle automatic parallel tuning determine the degree to use. Oracle determines the degree based on the number of CPUs and the value set for the Oracle parameter <span class="cv_-_computer_voice">PARALLEL_THREADS_PER_CPU</span>.</div>
+      <div class="H2_-_Heading_2"><a name="1938231">Enabling Collection of Tablespace Usage and Object Size</a></div>
+      <div class="B_-_Body"><a name="1938232">To enable collection of tablespace usage and object size data on Oracle, set the </a><span class="cv_-_computer_voice">collectstorageinstrumentation</span> attribute of the <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block to <span class="cv_-_computer_voice">true</span>. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938233">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938234">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938235">&nbsp;</a>&nbsp;&lt;upgrade collectstorageinstrumentation="true"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938236">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938237">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938238">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1938242">A value of </a><span class="cv_-_computer_voice">true</span> enables ClaimCenter to collect tablespace usage and size of segments such as tables, indexes and LOBs (large object binaries) before and after the upgrade. The values can then be compared to find the utilization change caused by the upgrade.</div>
+      <div class="H2_-_Heading_2"><a name="1938243">Enabling Oracle Logging</a></div>
+      <div class="B_-_Body"><a name="1938244">You can enable logging of direct insert and create index operations during the database upgrade by setting </a><span class="cv_-_computer_voice">allowUnloggedOperations</span> to <span class="cv_-_computer_voice">false</span> in the <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938245">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938246">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938247">&nbsp;</a>&nbsp;&lt;upgrade allowUnloggedOperations="false"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938248">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938249">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938250">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1938251">The default is to run these statements with the </a><span class="cv_-_computer_voice">NOLOGGING</span> option. Although Guidewire recommends that you backup the database before and after the upgrade, there could be reasons to log all operations. Some examples include Reporting, Disaster Recovery through Standby databases and Oracle Dataguard. To enable logging of direct insert and create index operations, set <span class="cv_-_computer_voice">allowUnloggedOperations</span> to <span class="cv_-_computer_voice">false</span>.</div>
+      <div class="H2_-_Heading_2"><a name="1938252">Storing Temporary Sort Results in tempdb</a></div>
+      <div class="B_-_Body"><a name="1938253">For SQL Server databases, you can specify to store temporary sort results in tempdb by setting the </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> attribute of the <span class="cv_-_computer_voice">upgrade</span> block to <span class="cv_-_computer_voice">true</span>. By using tempdb for sort runs, disk input and output is typically faster, and the created indexes tend to be more contiguous. By default, <span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> is <span class="cv_-_computer_voice">false</span> and sort runs are stored in the destination filegroup.</div>
+      <div class="B_-_Body"><a name="1938254">If you set </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> to <span class="cv_-_computer_voice">true</span>, you must have enough disk space available to tempdb for the sort runs, which for the clustered index include the data pages. You must also have sufficient free space in the destination filegroup to store the final index structure, because the new index is created before the old index is deleted. Refer to <span class="cv_-_computer_voice">http://msdn.microsoft.com/en-us/library/ms188281.aspx</span> for details on the requirements to use tempdb for sort results. </div>
+      <div class="H2_-_Heading_2"><a name="1938255">Adjusting Commit Size for Encryption</a></div>
+      <div class="B_-_Body"><a name="1938256">You can adjust the commit size for rows requiring encryption by setting the </a><span class="cv_-_computer_voice">encryptioncommitsize</span> attribute to an integer in the <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> block. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938257">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938258">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938259">&nbsp;</a>&nbsp;&lt;upgrade encryptioncommitsize="5000"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938260">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938261">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938262">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1938269">If ClaimCenter encryption is applied on one or more attributes, the ClaimCenter database upgrade commits </a>batches of encrypted values. The upgrade commits <span class="cv_-_computer_voice">encryptioncommitsize</span> rows at a time in each batch. The default value of <span class="cv_-_computer_voice">encryptioncommitsize</span> varies based on the database type. For Oracle, the default is <span class="cv_-_computer_voice">10000</span>. For SQL Server, the default is <span class="cv_-_computer_voice">100</span>.</div>
+      <div class="H2_-_Heading_2"><a name="1938270">Specifying Filegroup to Store Sort Results for Clustered Indexes</a></div>
+      <div class="B_-_Body"><a name="1938271">For SQL Server databases, a version trigger recreates non-clustered backing indexes for primary keys as clus</a>tered indexes. This change improves the performance of claim archiving and claim purging operations.</div>
+      <div class="B_-_Body"><a name="1938272">Before recreating the indexes, the version trigger automatically drops (and later rebuilds) any referencing foreign </a>keys and drops any clustered indexes on tables with a primary key.</div>
+      <div class="B_-_Body"><a name="1938273">If you are using filegroups, the upgrade recreates the clustered index in the OP filegroup. By default, the upgrade </a>also stores the intermediate sort results that are used to build the index in the OP filegroup. You can configure the upgrade to instead use the tempdb filegroup for the intermediate sort results.</div>
+      <div class="B_-_Body"><a name="1938274">If you want the upgrade to stores the intermediate sort results in the tempbdb filegroup, set the </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> attribute of the <span class="cv_-_computer_voice">upgrade</span> element to <span class="cv_-_computer_voice">true</span>.</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938275">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938276">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938277">&nbsp;</a>&nbsp;&lt;upgrade sqlserverCreateIndexSortInTempDB="true" /&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938278">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938279">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938280">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1938281">This option increases the amount of temporary disk space that is used to create an index. However, it might </a>reduce the time that is required to create or rebuild an index when tempdb is on a different set of disks from that of the user database.</div>
+      <div class="B_-_Body"><a name="1938282">By default, </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> is <span class="cv_-_computer_voice">false</span>.</div>
+      <div class="H2_-_Heading_2"><a name="1938283">Configuring Version Trigger Elements</a></div>
+      <div class="B_-_Body"><a name="1938285">The database upgrade executes a series of version triggers that make changes to the database to upgrade between </a>versions. You can set some configuration options for version triggers in <span class="cv_-_computer_voice">config.xml</span>. Normally, the default settings are sufficient. Change these settings only while investigating a slow database upgrade.</div>
+      <div class="B_-_Body"><a name="1938286">The </a><span class="cv_-_computer_voice">&lt;database&gt; </span>element in <span class="cv_-_computer_voice">config.xml</span> contains an <span class="cv_-_computer_voice">&lt;upgrade&gt;</span> element to organize parameters related to database upgrades. Included in the <span class="cv_-_computer_voice">&lt;upgrade&gt; </span>element is a <span class="cv_-_computer_voice">&lt;versiontriggers&gt;</span> element, as shown below:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1938287">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938288">  &lt;param ... /&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938289">  &lt;upgrade&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938290">    &lt;versiontriggers dbmsperfinfothreshold="600" degreeofparallelismforinsertselects="2"/&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1938291">  &lt;/upgrade&gt;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1938292">&lt;/database&gt;</a></PRE>
+      <div class="BKN_-_Body_002c_Keep_Next"><a name="1938293">The </a><span class="cv_-_computer_voice">&lt;versiontriggers&gt;</span> element configures the instrumentation of version triggers. This element has two attributes: <span class="cv_-_computer_voice">dbmsperfinfothreshold</span> and <span class="cv_-_computer_voice">degreeofparallelismforinsertselects</span>.</div>
+      <div class="B_-_Body"><a name="1938294">The </a><span class="cv_-_computer_voice">dbmsperfinfothreshold</span> attribute specifies for each version trigger the threshold after which the database upgrader gathers performance information from the database. You specify <span class="cv_-_computer_voice">dbmsperfinfothreshold</span> in seconds, with a default of <span class="cv_-_computer_voice">600</span>. If a version trigger takes longer than <span class="cv_-_computer_voice">dbmsperfinfothreshold</span> to execute, ClaimCenter:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938298">queries the underlying database management system (DBMS).</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938299">builds a set of html pages with performance information for the interval in which the version trigger was </a>executing.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938300">includes those html pages in the upgrader instrumentation for the version trigger. </a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1938301">You can completely turn off the collection of database snapshot instrumentation for version triggers by setting </a>the <span class="cv_-_computer_voice">dbmsperfinfothreshold</span> to 0 in <span class="cv_-_computer_voice">config.xml</span>.</div>
+      <div class="B_-_Body"><a name="1938302">The </a><span class="cv_-_computer_voice">degreeofparallelismforinsertselects</span> attribute overrides a global default value (<span class="cv_-_computer_voice">2</span>) for the degree of parallelism for all tables involved in insert and select statements in version triggers that benefit from parallelism. This allows users to take advantage of their hardware when doing an upgrade. This attribute is only applicable for Oracle. Set <span class="cv_-_computer_voice">degreeofparallelismforinsertselects</span> to 1 if running on a single CPU machine.</div>
+      <div class="BKN_-_Body_002c_Keep_Next"><a name="1938303">The </a><span class="cv_-_computer_voice">&lt;versiontriggers&gt; </span>element can contain optional <span class="cv_-_computer_voice">&lt;versiontrigger&gt;</span> elements for each version trigger. Each <span class="cv_-_computer_voice">&lt;versiontrigger&gt;</span> element can contain the following attributes.</div>
+      <div class="T_-_Table"><a name="1938350">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1938306">Attribute</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1938308">Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1938310">Description</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1938312">name</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938314">String</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938316">The case-insensitive name of a version trigger.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1938318">recordcounters</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938320">Boolean</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938322">Controls whether the DBMS-specific counters are retrieved at the </a>beginning and end of the use of the version trigger. Default is <span class="cvt_-_computer_voice_table">false</span>. If <span class="cvt_-_computer_voice_table">true</span>, then ClaimCenter retrieves the current state of the counters from the underlying DBMS at the beginning of execution of the version trigger. If the execution of the version trigger exceeds the <span class="cvt_-_computer_voice_table">dbmsperfinfothreshold</span>, then ClaimCenter retrieves the current state of the counters at the end of the execution of the version trigger. ClaimCenter writes differences to the DBMS-specific instrumentation pages of the upgrade instrumentation.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1938333">extendedquerytracingenabled </a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938335">Boolean</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938337">Oracle only. Controls whether or not to enable extended sql tracing </a>(Oracle event 10046) for the SQL statements that are executed by the version trigger. Default is <span class="cvt_-_computer_voice_table">false</span>. The output can be very useful when debugging certain types of performance problems. Trace files that are generated only exist on the database machine. They are not integrated into the upgrade instrumentation.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1938339">queryoptimizertracingenabled</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938341">Boolean</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938343">Oracle only. Controls whether or not to enable query optimizer tracing </a>(Oracle event 10053) for the SQL statements that are executed by the version trigger. Default is <span class="cvt_-_computer_voice_table">false</span>. The output can be very useful when debugging certain types of performance problems. Trace files that are generated only exist on the database machine. They are not integrated into the upgrade instrumentation.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="1938345">updatejoinhintbody </a></span></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938347">String</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1938349">Oracle only. Used to specify the body of an optimizer hint (without the </a>surrounding <span class="cvt_-_computer_voice_table">/*+ */</span>) for the upgrade of a join in the version trigger. If the update has a default override and the user specifies the empty string <span class="cvt_-_computer_voice_table">""</span> as the value of the attribute, then no hint will be specified. </div>
+          </td>
+        </tr>
+      </table>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

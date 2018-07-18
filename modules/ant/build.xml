@@ -1,0 +1,291 @@
+<project name="ClaimCenter Project Build" xmlns:ac="antlib:net.sf.antcontrib"
+	xmlns:gw="antlib:com.guidewire.ant.task" xmlns:gwm="antlib:com.guidewire.ant.macro"
+  default="help">
+	
+  <property file="${user.name}.build.properties"/>
+  <property file="build.properties"/>
+	<property name="sql.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+    <property name="sql.url" value="jdbc:sqlserver://localhost:1433" />
+    <property name="sql.user" value="sa" />
+    <property name="sql.pass" value="123" />
+    <property name="sql.jar" value="${gw.init.devroot.dir}/admin/lib/sqljdbc.jar" />
+    
+  <import file="init.xml"/>
+	
+  <target name="studio" depends="init, copy-starter-resources, verify-checksum" description="Start Studio">
+    <gw:gosu>new gw.ant.Studio().run()</gw:gosu>
+  </target>
+
+  <target name="dev-deploy" depends="init" description="Deploy resources to dev-mode webapp">
+    <gw:gosu>gw.ant.Deploy.simple()</gw:gosu>
+  </target>
+
+  <target name="dev-start" depends="init, verify-checksum, dev-deploy" description="Start dev-mode webapp">
+    <gw:gosu>gw.ant.WebApp.make.start()</gw:gosu>
+  </target>
+	
+  <target name="dev-restart" depends="dev-stop" description="Start dev-mode webapp">
+	<gw:gosu>gw.ant.WebApp.make.start()</gw:gosu>
+  </target>
+
+  <target name="dev-debug-shmem" depends="init" description="Debug dev-mode webapp using shmem">
+    <gw:gosu>gw.ant.WebApp.make.debugShmem().start()</gw:gosu>
+  </target>
+
+  <target name="dev-suspend-shmem" depends="init" description="Debug dev-mode webapp using shmem, start suspended">
+    <gw:gosu>gw.ant.WebApp.make.debugShmem().suspend().start()</gw:gosu>
+  </target>
+
+  <target name="dev-debug-socket" depends="init" description="Debug dev-mode webapp using socket">
+    <gw:gosu>gw.ant.WebApp.make.debugSocket().start()</gw:gosu>
+  </target>
+
+  <target name="dev-suspend-socket" depends="init" description="Debug dev-mode webapp using socket, start suspended">
+    <gw:gosu>gw.ant.WebApp.make.debugSocket().suspend().start()</gw:gosu>
+  </target>
+
+  <target name="dev-stop" depends="init" description="Stop dev-mode webapp">
+    <gw:gosu>gw.ant.WebApp.stop()</gw:gosu>
+  </target>
+
+  <target name="dev-dropdb" depends="init" description="Drop dev-mode database tables">
+    <gw:gosu>gw.ant.WebApp.dropDb()</gw:gosu>
+  </target>
+
+  <target name="copy-starter-resources" depends="init" description="Copy starter config resources to the configuration module, if applicable">
+    <ac:if>
+      <resourcecount count="0">
+				<fileset dir="${gw.devroot.dir}/modules/configuration"
+					excludes="gwmodule.xml" />
+      </resourcecount>
+      <then>
+				<gw:gosu>gw.ant.ConfigTools.copyStarterConfigResources("${gw.ant.ScriptEnv.get().App}-tools,configuration")
+				</gw:gosu>
+      </then>
+    </ac:if>
+  </target>
+
+  <target name="check-commons" depends="init" description="Check to see if the Commons Directory has been checked out corrrectly">
+  	<ac:if>
+  	  <not>
+  	    <available file="${cc.commonsdir}" type="dir" />
+  	  </not>
+  	  <then>
+  	  	<fail message="Missing Commons directory. Please check out Commmons Project" />
+  	  </then>
+  	</ac:if>
+  </target>
+
+  <target name="build-commons" depends="check-commons,regen-java-api,regen-soap-api">
+  	<mkdir dir="${gw.init.devroot.dir}/dist/zip/" />
+	<zip destfile="${gw.init.devroot.dir}/dist/zip/commons.zip">
+		<fileset dir="${cc.commonsdir}">
+			<include name="*.jar" />
+		</fileset>
+	</zip>
+  </target>
+  
+  <target name="build-deploy" depends="build-commons, build-war" description="This is only for deployment. Not local"/>	
+	
+  <target name="build-war" depends="init,verify-checksum" description="Build war">
+  	<copy todir="${gw.init.devroot.dir}/modules/pl/deploy">
+  		<fileset dir="${gw.init.devroot.dir}/">
+  			<include name="version.txt"/>
+  		</fileset>
+  	</copy> 
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      new gw.ant.WarBuilder(xx)
+        .withTargetModules("${xx}-gunit,configuration")
+        .withDestDir(gw.ant.ScriptEnv.get().RootDir.file("dist/war"))
+        .build()
+    </gw:gosu>
+    <delete file="${gw.init.devroot.dir}/modules/pl/deploy/version.txt" />
+  </target>
+
+  <target name="build-websphere-ear" depends="init, verify-checksum" description="Build WebSphere ear">
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      new gw.ant.EarBuilder(xx)
+        .asType(gw.ant.EarBuilder.EarType.WEBSPHERE)
+        .withDestDir(gw.ant.ScriptEnv.get().RootDir.file("dist/ear"))
+        .withWarBuilder(new gw.ant.WarBuilder(xx)
+          .withTargetModules("${xx}-gunit,configuration"))
+        .build()
+    </gw:gosu>
+  </target>
+
+  <target name="build-weblogic-ear" depends="init, verify-checksum" description="Build WebLogic ear">
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      new gw.ant.EarBuilder(xx)
+        .asType(gw.ant.EarBuilder.EarType.WEBLOGIC)
+        .withDestDir(gw.ant.ScriptEnv.get().RootDir.file("dist/ear"))
+        .withWarBuilder(new gw.ant.WarBuilder(xx)
+          .withTargetModules("${xx}-gunit,configuration"))
+        .build()
+    </gw:gosu>
+  </target>
+
+	<target name="load-fresh-db" depends="init, dev-stop" description="Drop current db and load fresh database that includes all required Admin data.">
+		<echo message="Loading ClaimCenter Database..." />
+		<sequential>
+			<waitfor maxwait="2" maxwaitunit="minute" checkevery="100">
+				<not>
+					<socket server="localhost" port="8080"/>
+				</not>
+			</waitfor>
+			<sql driver="${sql.driver}" url="${sql.url}" userid="${sql.user}" password="${sql.pass}" classpath="${sql.jar}">
+				RESTORE DATABASE ClaimCenter
+	   			FROM DISK = '${cc.fullpath}\ClaimCenter.bkp' WITH REPLACE;
+	   		</sql>
+   		</sequential>
+	</target>
+
+  <target name="regen-datamapping-split" depends="init" description="Build the data mapping files with files split out by table and typelist">
+    <gw:gosu>
+			gw.ant.ConfigTools.buildDataMapping(gw.ant.ScriptEnv.get().BuildDir.file("data-mapping-split"),
+			true, "${gw.ant.ScriptEnv.get().App}-tools,configuration")
+    </gw:gosu>
+  </target>
+
+  <target name="regen-datamapping-together" depends="init" description="Build the data mapping files with all tables and typelists concatenated">
+    <gw:gosu>
+			gw.ant.ConfigTools.buildDataMapping(gw.ant.ScriptEnv.get().BuildDir.file("data-mapping"),
+			false, "${gw.ant.ScriptEnv.get().App}-tools,configuration")
+    </gw:gosu>
+  </target>
+
+  <target name="regen-dictionary" depends="init" description="Build the data dictionary">
+    <gw:gosu>
+			gw.ant.ConfigTools.buildDictionary(gw.ant.ScriptEnv.get().BuildDir.file("dictionary"),
+			"${gw.ant.ScriptEnv.get().App}-tools,configuration")
+    </gw:gosu>
+  </target>
+
+  <target name="regen-gosudoc" depends="init" description="Build the GosuDoc">
+    <gw:gosu>
+			gw.ant.ConfigTools.buildGosudoc(gw.ant.ScriptEnv.get().BuildDir.file("gosudoc"),
+			"${gw.ant.ScriptEnv.get().App}-tools,configuration")
+    </gw:gosu>
+  </target>
+
+  <target name="regen-pcfmapping" depends="init" description="Build the PCF mappings">
+    <gw:gosu>
+			gw.ant.ConfigTools.buildPcfMapping(gw.ant.ScriptEnv.get().BuildDir.file("pcf-mapping"),
+			"${gw.ant.ScriptEnv.get().App}-tools,configuration")
+    </gw:gosu>
+  </target>
+
+  <target name="regen-java-api" depends="check-commons,init" description="Build Java API toolkit">
+    <gw:gosu>
+      gw.ant.JavaToolkit.regenJavaApi()
+    </gw:gosu>
+		<copy
+			todir="${gw.init.devroot.dir}/modules/configuration/plugins/shared/lib">
+  		<fileset dir="${gw.init.devroot.dir}/java-api/lib">
+	    	<include name="gw-entity-cc.jar"/>
+		</fileset>
+  	</copy>  	
+  	<copy todir="${cc.commonsdir}">
+		<fileset dir="${gw.init.devroot.dir}/java-api/lib">
+  			<include name="gw-entity-cc.jar"/>
+  	  	</fileset>
+  	</copy>
+  </target>
+
+  <target name="regen-soap-api" depends="check-commons,init" description="Build SOAP API toolkit">
+    <gw:gosu>
+      gw.ant.JavaToolkit.regenSoapApi()
+    </gw:gosu>
+  	<copy todir="${cc.commonsdir}">
+  		<fileset dir="${gw.init.devroot.dir}/soap-api/lib">
+	    	<include name="gw-soap-cc.jar"/>
+		</fileset>
+  	</copy>
+  </target>
+
+  <target name="regen-xsd" depends="init" description="Build the XSDs for import files">
+    <gw:gosu>
+      gw.ant.ConfigTools.buildXsd(gw.ant.ScriptEnv.get().BuildDir.file("xsd"))
+    </gw:gosu>
+  </target>
+
+  <target name="regen-toolkit">
+		<fail
+			message="Target regen-toolkit removed.  Use regen-java-api or regen-soap-api instead." />
+  </target>
+
+  <target name="regen-rulereport" depends="init" description="Build the rule repository report">
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      var dest = gw.ant.ScriptEnv.get().BuildDir.file("${xx}/rules")
+      var target = "configuration,${xx}-tools"
+      gw.ant.ConfigTools.buildRuleRepoReport(dest, target)
+    </gw:gosu>
+  </target>
+  
+  <target name="version" depends="init" description="Print the product version">
+    <gw:gosu>
+      gw.ant.ConfigTools.printProductVersion()
+    </gw:gosu>
+  </target>
+
+  <target name="verify-checksum" depends="init" description="Verify the module checksums">
+    <gw:gosu>
+      var modulesDir = gw.ant.ScriptEnv.get().RootDir.file("modules")
+			var prog = new
+			gw.ant.Program("com.guidewire.tools.checksum.ModulesChecksumTool",
+			"pl-tools")
+      prog.addArg("-productCode ${gw.ant.ScriptEnv.get().App}")
+      prog.addArg("-modulesDir \"${modulesDir}\"")
+      prog.addArg("-checksumDir \"${modulesDir}\"")
+      var scmRegex = gw.ant.ScriptEnv.get().Project.getProperty("scm.regex")
+      if (scmRegex != null) {
+        prog.addArg("-scmRegex ${scmRegex}")
+      }
+      prog.run()
+    </gw:gosu>
+  </target>
+
+  <target name="verify-types" depends="init" description="Verify all resources and PCF files">
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      var targetModules = "configuration,${xx}-gunit,${xx}-tools"
+      new gw.ant.Studio().verifyTypes(targetModules)
+    </gw:gosu>
+  </target>
+
+	<target name="import-l10ns" depends="init" description="Import localizations, requires -Dimport.file=&lt;translation file&gt; -Dimport.locale=&lt;destination locale&gt;">
+    <gw:gosu>
+      var xx = gw.ant.ScriptEnv.get().App
+      var target = "configuration,${xx}-tools"
+			gw.ant.ConfigTools.importL10Ns(target, "${import.file}",
+			"${import.locale}")
+    </gw:gosu>
+  </target>
+
+  <target name="init" depends="asserts, gw-macros, gw-tasks">
+    <delete file="${gw.init.devroot.dir}/modules/pl/deploy/version.txt" />
+    <echo message="Java version: ${java.version}"/>
+    <echo message=" Ant version: ${ant.version}"/>
+		<gw:gosuInit rootdir="${gw.init.devroot.dir}" builddir="${gw.init.devbuild.dir}"
+                 apps="${gw.app}">
+      <classpath>
+        <pathelement location="${gw.init.devroot.dir}/modules/ant/public"/>
+        <pathelement location="${gw.init.devroot.dir}/modules/gosu-core-api/gsrc"/>
+      </classpath>
+      <dirset dir="${gw.init.devroot.dir}" includes="modules"/>
+    </gw:gosuInit>
+  </target>
+
+  <target name="usage" depends="help"/>
+
+  <target name="help">
+    <java classname="org.apache.tools.ant.Main">
+      <arg value="-projecthelp" />
+      <arg value="-f"/>
+      <arg value="${basedir}/build.xml"/>
+    </java>
+  </target>
+</project>

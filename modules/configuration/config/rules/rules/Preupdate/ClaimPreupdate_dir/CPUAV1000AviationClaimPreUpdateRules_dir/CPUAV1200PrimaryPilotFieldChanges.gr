@@ -1,0 +1,23 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAV1000AviationClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUAV1200 - Primary Pilot Field Changes")
+internal class CPUAV1200PrimaryPilotFieldChanges {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.PrimaryPilotExt != (claim.OriginalVersion as Claim).PrimaryPilotExt) ||
+(claim.PrimaryPilotExt.PilotTypeExt != (claim.OriginalVersion as Claim).PrimaryPilotExt.PilotTypeExt) ||
+(claim.PrimaryPilotExt.PilotsTotalHoursExt != (claim.OriginalVersion as Claim).PrimaryPilotExt.PilotsTotalHoursExt) ||
+(claim.PrimaryPilotExt.PilotsHoursInMakeExt != (claim.OriginalVersion as Claim).PrimaryPilotExt.PilotsHoursInMakeExt) ||
+(claim.PrimaryPilotExt.Pilot65Ext != (claim.OriginalVersion as Claim).PrimaryPilotExt.Pilot65Ext) ||
+(claim.PrimaryPilotExt.PilotTransitionExt != (claim.OriginalVersion as Claim).PrimaryPilotExt.PilotTransitionExt)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///If any of the pilot fields have changed, trigger a claim change to the field EmpQusValidity
+if (claim.EmpQusValidity == null || claim.EmpQusValidity == typekey.YesNo.TC_YES){
+  claim.EmpQusValidity = typekey.YesNo.TC_NO
+} else if (claim.EmpQusValidity == typekey.YesNo.TC_NO || claim.EmpQusValidity == typekey.YesNo.TC_UNKNOWN){
+  claim.EmpQusValidity = typekey.YesNo.TC_YES
+}/*end00rule*/
+  }
+}

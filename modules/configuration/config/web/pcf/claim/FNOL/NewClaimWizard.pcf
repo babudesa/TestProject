@@ -1,0 +1,318 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <NewClaimWizard
+    afterCancel="DesktopActivities.go()"
+    afterFinish="util.claim.GAICClaims.refreshClaimNumber(Claim, Wizard)"
+    canVisit="perm.Claim.create"
+    cancelWarning="displaykey.Wizard.NewClaimWizard.CancelWarning"
+    finishConfirmation="Wizard.getFinishConfirmation()"
+    id="NewClaimWizard"
+    infoBar="ClaimInfoBar(Claim)"
+    menuActions="NewClaimMenuActions(Claim, Wizard)"
+    parent="ClaimTabForward()">
+    <!-- afterFinish="Wizard.goAfterFinish()">  Removed as part of getting Temp Claim in recently viewed claim list -->
+    <LocationEntryPoint
+      signature="NewClaimWizard()"/>
+    <LocationEntryPoint
+      signature="NewClaimWizard(LossType : LossType, QuickClaimMode : String, LossDate : java.util.Date)"/>
+    <LocationEntryPoint
+      signature="NewClaimWizard(Claim : Claim)"/>
+    <Variable
+      initialValue="new claim.NewClaimWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="null"
+      name="BusinessUnit"
+      type="LOBCode"/>
+    <Variable
+      initialValue="null"
+      name="LossType"
+      type="LossType"/>
+    <Variable
+      initialValue="null"
+      name="QuickClaimMode"
+      type="String"/>
+    <Variable
+      initialValue="null"
+      name="LossDate"
+      type="java.util.Date"/>
+    <Variable
+      initialValue="false"
+      name="FatalError"
+      type="boolean"/>
+    <Variable
+      initialValue="false"
+      name="Exiting"
+      type="boolean"/>
+    <!-- <Variable
+      initialValue="com.gaic.claims.cc.plugins.subline.SublinePlugin.getInstance()"
+      name="plugin"
+      type="com.gaic.claims.cc.plugins.subline.SublinePlugin"/> -->
+    <Variable
+      initialValue="Wizard.createClaim(LossType, QuickClaimMode, LossDate)"
+      name="Claim"
+      type="Claim"/>
+    <!-- DEFECT 3218 - sprzygocki - 3/17/2010 - NCW functionality should be trimmed down on unverified policies to include
+         steps 1, 2, 4 and 5 only  STEP ONE: SELECT POLICY TYPE -->
+    <WizardStep
+      id="SelectType"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimSelectType.Label"
+      onExit="Wizard.setPolicy(); Claim.setRelatedMNIDBARelationship()"
+      onFirstEnter="if (Claim.Policy == null) { Wizard.getPolicyDescription().PolicyVerified = false; Wizard.getPolicyDescription().UnverifiedPolicyType = &quot;AMP&quot; } else { Wizard.setPolicyDescription(new com.guidewire.cc.web.newclaim.NewClaimPolicyDescription(Claim.Policy)) }"
+      screen="NewClaimWizard_SelectTypeScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimSelectType.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)">
+      <NextCondition
+        condition="Wizard.UsingVerifiedPolicy and Wizard.QuickClaim == null"
+        destination="MainContacts"/>
+    </WizardStep>
+    <!-- STEP TWO: POLICY GENERAL  def 966 Kotteson Add on exit property to the following step to add agency role -->
+    <WizardStep
+      handlesValidationIssue="VALUE typeis entity.Policy"
+      id="PolicyGeneral"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimPolicyGeneral.Label"
+      onExit="exiting=&quot;true&quot;; getSublineForPolicyCoverages(Claim.Policy);exiting=&quot;false&quot;Claim.Policy.validateDates()"
+      screen="NewClaimWizard_PolicyGeneralScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimPolicyGeneral.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="perm.Policy.view(Claim) and perm.System.viewpolicy">
+      <NextCondition
+        condition="FatalError"
+        destination="SelectType"/>
+      <NextCondition
+        condition="!Claim.Policy.Verified"
+        destination="MainContacts"/>
+    </WizardStep>
+    <!-- STEP THREE: POLICY DETAILS -->
+    <WizardStep
+      id="PolicyDetails"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimPolicyDetails.Label"
+      onExit="exiting=&quot;true&quot;; getSublineForPropertyCoverages(Claim.Policy);exiting=&quot;true&quot;"
+      save="true"
+      screen="NewClaimWizard_PolicyDetailsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimPolicyDetails.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="perm.Policy.view(Claim) and perm.System.viewpolicy and ((Wizard.Claim.Policy.Verified) || (Wizard.Claim.Policy.Verified == null and Wizard.getPolicyDescription().PolicyVerified))">
+      <NextCondition
+        condition="FatalError"
+        destination="SelectType"/>
+    </WizardStep>
+    <!-- STEP FOUR: MAIN CONTACT SELECTION -->
+    <WizardStep
+      handlesValidationIssue="VALUE == Claim.maincontact or VALUE == Claim.reporter"
+      id="MainContacts"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimMainContacts.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="checkForPaymentLevelPolicyMessage(Claim.Policy);Claim.Policy.storeOrigPolicyContacts()"
+      save="true"
+      screen="NewClaimWizard_MainContactsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimMainContacts.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)">
+      <!-- <NextCondition
+        condition="((checkForPaymentLevelPolicy(Claim.Policy) == &quot;payment&quot; || !Claim.Policy.Verified) and !FatalError)"
+        destination="LossDetails"/> -->
+      <!-- defect 2748 blawless - changed the next condition to fix a problem when stepping back and then forward again. -->
+      <NextCondition
+        condition="((checkForPaymentLevelPolicy(Claim.Policy) != &quot;payment&quot; and Claim.Policy.Verified) || FatalError)"
+        destination="SelectType"/>
+    </WizardStep>
+    <!-- STEP FIVE: LOSS DETAILS -->
+    <WizardStep
+      allowFinish="true"
+      handlesValidationIssue="VALUE typeis entity.Claim or VALUE typeis entity.Incident"
+      id="LossDetails"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimLossDetails.Label"
+      onFirstEnter="if (!Claim.areInitialValuesSet()) { Claim.setInitialValues() }"
+      save="true"
+      screen="NewClaimWizard_LossDetailsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimLossDetails.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <!-- STEP SIX: FEATURE CREATION -->
+    <WizardStep
+      allowFinish="true"
+      handlesValidationIssue="VALUE typeis entity.Exposure"
+      id="Exposures"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimExposures.Label"
+      screen="NewClaimWizard_ExposuresScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimExposures.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="Claim.ExposureListChangeable and ((Wizard.Claim.Policy.Verified) || (Wizard.Claim.Policy.Verified == null and Wizard.getPolicyDescription().PolicyVerified))"/>
+    <!-- STEP SEVEN: PARTIES INVOLVED -->
+    <WizardStep
+      allowFinish="true"
+      handlesValidationIssue="VALUE typeis entity.Contact and VALUE != Claim.maincontact and VALUE != Claim.reporter"
+      id="PartiesInvolved"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimPartiesInvolved.Label"
+      screen="NewClaimWizard_PartiesInvolvedScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimPartiesInvolved.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="((Wizard.Claim.Policy.Verified) || (Wizard.Claim.Policy.Verified == null and Wizard.getPolicyDescription().PolicyVerified))">
+      <NextCondition
+        condition="!gw.api.document.DocumentsUtil.claimHasDocuments(Claim)"
+        destination="Assign"/>
+    </WizardStep>
+    <!-- STEP EIGHT: DOCUMENTS -->
+    <WizardStep
+      allowFinish="true"
+      id="Documents"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimDocuments.Label"
+      screen="NewClaimWizard_DocumentsScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimDocuments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="false"/>
+    <!-- STEP NINE: ASSIGN THE CLAIM -->
+    <WizardStep
+      allowFinish="true"
+      id="Assign"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimAssign.Label"
+      screen="NewClaimWizard_AssignScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimAssign.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="((Wizard.Claim.Policy.Verified) || (Wizard.Claim.Policy.Verified == null and Wizard.getPolicyDescription().PolicyVerified))"/>
+    <!-- STEP TEN: CLAIM SUMMARY -->
+    <WizardStep
+      id="Summary"
+      label="displaykey.Wizard.NewClaimWizard.NewClaimSummary.Label"
+      screen="NewClaimWizard_SummaryScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.NewClaimSummary.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="((Wizard.Claim.Policy.Verified) || (Wizard.Claim.Policy.Verified == null and Wizard.getPolicyDescription().PolicyVerified))"/>
+    <QuickClaimStep
+      condition="Claim.LossType == &quot;AUTO&quot;"
+      id="QuickClaimAuto"
+      label="displaykey.Wizard.NewClaimWizard.QuickClaimAuto.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="Claim.setInitialValues()"
+      quickClaimMode="Auto"
+      screen="NewClaimWizard_QuickClaimScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.QuickClaimAuto.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <QuickClaimStep
+      condition="Claim.LossType == &quot;AUTO&quot;"
+      goToCheckWizard="true"
+      id="QuickClaimAutoFirstAndFinal"
+      init="Wizard.addExposure(Claim, null, &quot;COLL&quot;, &quot;coll_vd&quot;).incident.description = displaykey.Web.NewClaimWizard.QuickClaim.Auto.FirstAndFinal.Exposure.Description"
+      label="displaykey.Wizard.NewClaimWizard.AutoFirstAndFinal.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="Claim.setInitialValues()"
+      quickClaimMode="AutoFirstAndFinal"
+      screen="NewClaimWizard_QuickClaimScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.AutoFirstAndFinal.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <QuickClaimStep
+      condition="Claim.LossType == &quot;GL&quot;"
+      id="QuickClaimGL"
+      init="Wizard.addExposure(Claim, null, &quot;GL&quot;, &quot;gl_gd&quot;)"
+      label="displaykey.Wizard.NewClaimWizard.QuickClaimGL.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="Claim.setInitialValues()"
+      quickClaimMode="GL"
+      screen="NewClaimWizard_QuickClaimScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.QuickClaimGL.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <QuickClaimStep
+      condition="Claim.LossType == &quot;PR&quot;"
+      id="QuickClaimPr"
+      init="Wizard.addExposure(Claim, null, &quot;BLDG&quot;, &quot;bldg_pd&quot;).incident.description = displaykey.Web.NewClaimWizard.QuickClaim.Property.Exposure.Description"
+      label="displaykey.Wizard.NewClaimWizard.QuickClaimProperty.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="Claim.setInitialValues()"
+      quickClaimMode="Pr"
+      screen="NewClaimWizard_QuickClaimScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.QuickClaimProperty.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <QuickClaimStep
+      condition="Claim.LossType == &quot;WC&quot;"
+      id="QuickClaimWC"
+      label="displaykey.Wizard.NewClaimWizard.QuickClaimWC.Label"
+      onExit="checkForDuplicates()"
+      onFirstEnter="Claim.setInitialValues()"
+      quickClaimMode="WC"
+      screen="NewClaimWizard_QuickClaimScreen(Claim, Wizard)"
+      title="displaykey.Wizard.NewClaimWizard.QuickClaimWC.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <Code><![CDATA[uses gw.api.util.Logger //Added for logging in Debug - SR
+function checkForDuplicates() {
+      	if (Wizard.checkForNewDuplicateClaims()and Wizard.DuplicateClaims.length > 0) { NewClaimDuplicatesWorksheet.goInWorkspace(Wizard); throw new util.DisplayableException(displaykey.Java.NewClaimWizard.DuplicateClaimWarning); }
+      }
+      function checkForPaymentLevelPolicy(policy : Policy) :String {
+		var policyRes = Claim.Policy.safeValidate();
+      	return policyRes.ValidationLevelPassed as String;
+      }
+      function checkForPaymentLevelPolicyMessage(policy : Policy) :String {
+		var policyRes = Claim.Policy.safeValidate();
+		if (policyRes.ValidationLevelPassed != "payment" and Claim.Policy.Verified) { PolicyNotPaymentLevelWorksheet.goInWorkspace(Wizard); }
+		return policyRes.ValidationLevelPassed as String;
+	  }
+	  function getSublineForPolicyCoverages(policy: Policy) {	  
+    	try {
+    		if(!policy.Verified){
+    			//var plugin: com.gaic.claims.cc.plugins.subline.SublinePlugin = com.gaic.claims.cc.plugins.subline.SublinePlugin.getInstance();
+    			//changed to logging in Debug - SR
+                        Logger.logDebug("entering pol cvgs");
+    			var subline : String;
+    			var required : boolean;
+      			for(coverage in policy.Coverages){
+      		   		if (coverage.Type != null and policy.PolicyType != null and coverage.State != null and policy.EffectiveDate != null and coverage.SublineExt == null) {
+      		   	    	required = util.gaic.subline.Subline.checkAFPLossCauseRequired(coverage);
+        				subline = util.gaic.subline.Subline.getSublineForCoverage(coverage);
+        				if (subline == null and Exiting) {
+        			 		FatalError = true;
+    						SublineCouldNotBeDeterminedWorksheet.goInWorkspace(Wizard);
+        				}
+        				else {
+	        				coverage.SublineExt = subline;
+	        			}
+        			}
+      			}
+    		}
+    	}catch (e) {
+    		//changed to logging in Debug - SR
+                Logger.logDebug("In error: ");
+      		gw.api.util.Logger.logError(e.getMessage());
+      		if (Exiting) {
+        		FatalError = true;
+    			SublineCouldNotBeDeterminedWorksheet.goInWorkspace(Wizard);
+        	}
+    	}
+  	  }
+      function getSublineForPropertyCoverages(policy: Policy) {
+		try {
+			if(!policy.Verified){
+				//var plugin: com.gaic.claims.cc.plugins.subline.SublinePlugin = com.gaic.claims.cc.plugins.subline.SublinePlugin.getInstance();
+				//changed to logging in Debug - SR
+                                Logger.logDebug("entering prop cvgs");
+				var subline : String;
+    			var required : boolean;
+				for(prop in policy.Properties) {
+					for(coverage in prop.Coverages) {
+						if (coverage.Type != null and policy.PolicyType != null and coverage.State != null and policy.EffectiveDate != null and coverage.SublineExt == null) {
+      		   	    		required = util.gaic.subline.Subline.checkAFPLossCauseRequired(coverage);
+        					subline = util.gaic.subline.Subline.getSublineForCoverage(coverage);
+        					if (subline == null and Exiting) {
+        			 			FatalError = true;
+    							SublineCouldNotBeDeterminedWorksheet.goInWorkspace(Wizard);
+        					}
+        					else {
+	        					coverage.SublineExt = subline;
+	        				}
+						}
+					}
+				}
+				for(vehicle in policy.Vehicles){
+					for(coverage in vehicle.Coverages){
+						if (coverage.Type != null and policy.PolicyType != null and coverage.State != null and policy.EffectiveDate != null) {
+    	  		   	    	required = util.gaic.subline.Subline.checkAFPLossCauseRequired(coverage);
+	        				subline = util.gaic.subline.Subline.getSublineForCoverage(coverage);
+        					if (subline == null and Exiting) {
+        			 			FatalError = true;
+    							SublineCouldNotBeDeterminedWorksheet.goInWorkspace(Wizard);
+        					}
+        					else {
+	        					coverage.SublineExt = subline;
+	        				}
+						}
+					}
+				}
+			}
+		}catch (e) {
+			//FatalError = true;
+			//changed to logging in Debug - SR
+                        Logger.logDebug("error occurred in prop covgs");
+			gw.api.util.Logger.logError(e.getMessage());
+			if (Exiting) {
+        		FatalError = true;
+    			SublineCouldNotBeDeterminedWorksheet.goInWorkspace(Wizard);
+        	}
+		}
+	}]]></Code>
+  </NewClaimWizard>
+</PCF>

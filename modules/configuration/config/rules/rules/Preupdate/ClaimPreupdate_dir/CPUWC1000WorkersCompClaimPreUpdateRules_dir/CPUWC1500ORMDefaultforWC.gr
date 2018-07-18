@@ -1,0 +1,25 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1500 - ORM Default for WC")
+internal class CPUWC1500ORMDefaultforWC {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.claimant.New || claim.claimant.Changed) and
+util.WCHelper.isWCLossType(claim)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var claimant = claim.claimant
+  //Default ORM value
+  if(claimant.ContactISOMedicareExt == null){
+    claimant.ContactISOMedicareExt = new ContactISOMedicareExt()
+  }
+  claimant.ContactISOMedicareExt.ORMIndExt = true
+
+  
+
+}catch(e) {
+   util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

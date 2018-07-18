@@ -1,0 +1,17 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Payment_dir
+
+@gw.rules.RuleName("Payment Status Change")
+internal class PaymentStatusChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "PaymentStatusChanged" 
+and (messageContext.Root as Payment).Status == "recoded"
+//and (((MessageContext.Root as Payment).Status == "recoded")
+//or ((MessageContext.Root as Payment).Status == "submitted"))/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgPayment = messageContext.Root as Payment;
+var f = util.gaic.EDW.EDWFunctionsFactory.getFinancialFunctions()
+f.sendPaymentChanges( messageContext, msgPayment.Check);/*end00rule*/
+  }
+}

@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    id="NotesLV">
+    <Require
+      name="NoteList"
+      type="NoteQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="Note"
+      pageSize="5"
+      value="viewNote(NoteList)">
+      <IteratorSort
+        sortBy="Note.CreateTime"
+        sortDirection="descending"
+        sortOrder="1"/>
+      <IteratorSort
+        sortBy="Note.Exposure.ClaimOrder"
+        sortDirection="descending"
+        sortOrder="2"/>
+      <Row>
+        <ContentCell
+          width="25%">
+          <DetailViewPanel>
+            <InputColumn>
+              <!-- <ContentInput
+                labelAbove="true"
+                visible="Note.Confidential">
+                <Link
+                  icon="&quot;alert.png&quot;"
+                  id="ConfidentialIcon"/>
+                <Link
+                  id="ConfidentialLabel"
+                  label="displaykey.Java.Note.Confidential"/>
+              </ContentInput> -->
+              <!-- <ContentInput
+                align="right">
+                <Link
+                  action="EditNote.drilldown(Note, Note.Claim)"
+                  id="EditLink"
+                  label="displaykey.Java.Note.Edit"/>
+              </ContentInput> -->
+              <!-- GW ADDED -->
+              <Input
+                boldLabel="true"
+                id="AuthoringDate"
+                labelAbove="true"
+                value="gw.api.util.StringUtil.formatDate(Note.AuthoringDate, &quot;short&quot;) "/>
+              <!-- <Input
+                boldLabel="true"
+                id="AllowExternalViewing"
+                label="displaykey.NVV.Claim.NoteDetail.Note.AllowExternalViewing"
+                required="true"
+                value="Note.AllowExternalViewing"/> -->
+              <Input
+                action="UserContactDetailPopup.push(Note.Author)"
+                boldLabel="true"
+                id="Author"
+                labelAbove="true"
+                value="Note.Author.DisplayName"/>
+              <!-- <Input
+                align="left"
+                boldLabel="true"
+                id="RelatedTo"
+                label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+                value="Note.getNoteRelatedTo()"/> -->
+              <!-- <Input
+                align="left"
+                boldLabel="true"
+                id="Topic"
+                label="displaykey.NVV.Claim.NoteDetail.Note.Topic"
+                value="Note.Topic"/> -->
+              <Input
+                boldLabel="true"
+                editable="Note.New and Note.SIUInvestigationExt==null"
+                id="Subject"
+                labelAbove="true"
+                value="Note.Subject"
+                visible="Note.Subject != null"/>
+              <!-- <NoteBodyInput
+                boldLabel="true"
+                flatten="true"
+                id="Body"
+                labelAbove="true"
+                value="Note.Body"/> -->
+            </InputColumn>
+          </DetailViewPanel>
+        </ContentCell>
+        <ContentCell>
+          <DetailViewPanel>
+            <InputColumn>
+              <NoteBodyInput
+                align="left"
+                id="Body"
+                labelAbove="true"
+                value="Note.Body"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </ContentCell>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function viewNote(argList:NoteQuery) : Note[] {
+  
+ if(gw.plugin.util.CurrentUserUtil.getCurrentUser().User.underwriterRestrictionsELD()== false){
+    return argList.toTypedArray().where(\ n ->n.Topic=="underwriteclaimnote" and n.Topic != typekey.NoteTopicType.TC_WRONG_FILE)
+  }
+  
+  return argList.toTypedArray().where(\ n -> n.Topic != typekey.NoteTopicType.TC_WRONG_FILE)
+}
+]]></Code>
+  </ListViewPanel>
+</PCF>

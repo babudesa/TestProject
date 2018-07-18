@@ -1,0 +1,46 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleName("CPUAG1260 - Catastrophe")
+internal class CPUAG1260Catastrophe {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/((claim.LossType=="AGRIAUTO" or claim.LossType=="AGRIPROPERTY" OR claim.LossType==LossType.TC_ALTMARKETSAUTO
+ OR claim.LossType==LossType.TC_SHSAUTO OR claim.LossType==LossType.TC_TRUCKINGAUTO) and
+claim.Catastrophe==null and
+claim.WeatherRelated_Ext and
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_possible_Cat_loss")) 
+//1/29/10 erawe - added weather related per defect 2852
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///12/1/09 erawe -re-wrote cat rule per defect 1777
+try{
+ // var catQuery : CatastropheQuery;
+  var found : Boolean = FALSE 
+  
+    var catQuery = gw.api.database.Query.make(Catastrophe);
+    catQuery.and(\ andCriteria -> {
+    andCriteria.compare("Active", Equals, true)
+    andCriteria.compare("Ex_EarliestStartDate", LessThanOrEquals, claim.LossDate)
+    andCriteria.compare("Ex_LatestEndDate", GreaterThanOrEquals, claim.LossDate)
+    andCriteria.or(\ orCriteria -> {
+    orCriteria.compare("Type", Equals, typekey.CatastropheType.TC_ISO)
+    orCriteria.compare("Type", Equals, typekey.CatastropheType.TC_INTERNAL)
+    orCriteria.compare("Type", Equals, typekey.CatastropheType.TC_BUSINESSCAT)   
+    })
+  })  
+  var catResultSet = catQuery.select();
+  if(catResultSet.Count > 0){
+    catResultSet.orderByDescending(\ row -> row.CreateTime)
+    
+    var ap = util.custom_Ext.finders.findActivityPattern( "ab_possible_Cat_loss" )
+    //Defect 5226 added description 
+    var act = claim.createActivityFromPattern( null, ap)
+    act.Description = "This claim meets the criteria for Catastrophe " + catResultSet.FirstResult.Name +" but has not been designated as a Cat Claim. Please verify."
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

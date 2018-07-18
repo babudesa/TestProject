@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_claim.xml -->
+  <DetailViewPanel
+    id="NewVocationalRehabReserveEvaluationDV">
+    <Require
+      name="Evaluation"
+      type="Evaluation"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Evaluation.calculateSpecialDamage()"
+      name="holdSpecDam"/>
+    <Variable
+      initialValue="Evaluation.getReserveLineReserveTotal(Evaluation.RelatedTo,&quot;claimcost&quot;,1 as java.lang.String)"
+      name="holdLossRes"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="setLossLocation()"
+      name="lossLocation"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Evaluation.getReserveLineReserveTotal(Evaluation.RelatedTo,&quot;expense&quot;,1 as java.lang.String)"
+      name="holdExpRes"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Evaluation != null ? Evaluation.calculateReserveChange() : &quot;&quot;"
+      name="reserveChange"
+      recalculateOnRefresh="true"/>
+    <InputHeaderSection>
+      <!-- <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab"/> -->
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="VocRehabPaidToDate"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.PaidToDate"
+        value="getPaymentsToDate()  "/>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        id="NewVocationalRehabReserveEvaluationLV"
+        label="&quot;Rehabilitation&quot;"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel>
+          <RowIterator
+            editable="true"
+            elementName="Rehabilitation"
+            toAdd="Evaluation.addToRehabs(Rehabilitation)"
+            toRemove="Evaluation.removeFromRehabs(Rehabilitation)"
+            value="Evaluation.Rehabs">
+            <Row>
+              <TypeKeyCell
+                editable="true"
+                footerLabel="displaykey.Java.ListView.Sum"
+                id="RehabType"
+                label="displaykey.NVV.Matter.SubView.Matter.RehabType"
+                value="Rehabilitation.RehabType"/>
+              <TextCell
+                editable="true"
+                id="NumberWeeks"
+                label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.Weeks"
+                maxChars="10"
+                numCols="10"
+                postOnChange="true"
+                value="Rehabilitation.NumberWeeks"/>
+              <CurrencyCell
+                editable="true"
+                id="PayRate"
+                label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.Rate"
+                numCols="10"
+                postOnChange="true"
+                value="Rehabilitation.PayRate"/>
+              <TextCell
+                align="left"
+                editable="Rehabilitation.NumberWeeks == null or Rehabilitation.PayRate == null"
+                footerSumValue="Rehabilitation.RehabTotal"
+                formatType="currency"
+                id="Total"
+                label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.Total"
+                numCols="10"
+                postOnChange="true"
+                value="Rehabilitation.RehabTotal"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.EvalTotals"/>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="VocRehabEvalTotal"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.EvalTotalSum"
+        value="Evaluation.getRehabTotal()"/>
+      <InputDivider/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="VocRehabComments"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.VocRehab.Comments"
+        maxChars="4000"
+        numCols="60"
+        numRows="5"
+        value="Evaluation.VocRehabComments"/>
+      <InputDivider/>
+    </InputHeaderSection>
+    <Code><![CDATA[uses gw.api.financials.CurrencyAmount
+uses gw.entity.IEntityType
+
+function setClaimant(){
+     if(Evaluation.RelatedTo!=null and Evaluation.RelatedTo typeis Exposure){
+     	Evaluation.Claimant = (Evaluation.getRelatedToValue() as Exposure).Claimant
+     	Evaluation.ClaimantNameExt = Evaluation.Claimant.DisplayName
+     } else {
+     	Evaluation.Claimant = null
+     	Evaluation.ClaimantNameExt = null
+     }
+    }
+    function setLossLocation(){
+     if(Evaluation.Claim.LossLocation!=null){
+     	Evaluation.LossLocationExt = Evaluation.Claim.LossLocation
+     }
+    }
+    
+function getPaymentsToDate() : CurrencyAmount {
+  var sum : java.math.BigDecimal = 0
+  for(each in Evaluation.Claim.Exposures){
+    if(each.ExposureType == ExposureType.TC_WC_VOCATIONAL_REHAB){
+      sum = gw.api.financials.FinancialsCalculationUtil.getTotalPaymentsIncludingPending().getAmount(each)
+    }
+  }
+  return sum
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir.CPUXX1420NonIncidentClaim_dir
+
+@gw.rules.RuleName("CPUXX1422 - Binder (Unverified) Policy Activity")
+internal class CPUXX1422BinderUnverifiedPolicyActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///1/27/10 erawe - per Karen do not use the actpattern:1066&quot; /* eq_sup_unverifiedpolicy
+claim.State != "closed" &&
+claim.State != "draft" &&
+!claim.Policy.Verified &&
+not exists( 
+ Activity in claim.Activities
+    where Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_adj_unverifiedpolicy"))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///claim.createActivityFromPattern(null,ActivityPattern( "actpattern:1065" /* eq_adj_unverifiedpolicy */ ))
+/* Defect ID : 7669- TECHNICAL: multiple hardcoded activity patterns are causing errors in higher environments, i.e. WC INT. See attached emails.
+Replaced with activity code instead of activity public id by gyemula */
+var actCode = util.custom_Ext.finders.findActivityPattern("eq_adj_unverifiedpolicy")
+
+claim.createActivityFromPattern(null, actCode)/*end00rule*/
+  }
+}

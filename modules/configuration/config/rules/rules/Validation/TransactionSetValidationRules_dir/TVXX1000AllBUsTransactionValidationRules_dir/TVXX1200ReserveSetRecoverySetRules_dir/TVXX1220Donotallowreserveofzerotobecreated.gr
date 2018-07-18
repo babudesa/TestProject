@@ -1,0 +1,22 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1200ReserveSetRecoverySetRules_dir
+
+@gw.rules.RuleName("TVXX1220 - Do not allow reserve of zero to be created")
+internal class TVXX1220Donotallowreserveofzerotobecreated {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="ReserveSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/// KSO def 818  1/30/2008
+// A new reserve with zero amount is not allowed 
+for(trans in transactionSet.Transactions){
+  var reserv = trans as Reserve;
+ 
+  if(reserv.Amount == 0) {
+    transactionSet.reject( "newloss", "Cannot create new available reserve amount of zero, please correct and try again.", null, null); 
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName + ": Rejected Zero Reserves on Claim: " + reserv.Claim.ClaimNumber + " by user: " + transactionSet.RequestingUser);
+    actions.exit();
+  }
+}/*end00rule*/
+  }
+}

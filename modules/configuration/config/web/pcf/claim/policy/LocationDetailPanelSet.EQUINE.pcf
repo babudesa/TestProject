@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="LocationDetailPanelSet"
+    mode="EQUINE">
+    <Require
+      name="LocationBasedRU"
+      type="LocationBasedRU"/>
+    <DetailViewPanel
+      id="LocationDetailDV">
+      <InputColumn>
+        <InputSetRef
+          def="PropertyDetailInputSet(LocationBasedRU)"
+          mode="LocationBasedRU.Policy.Claim.LossType"/>
+        <!-- <InputSetRef
+          def="AddressInputSet(LocationBasedRU.AddressOwner)"
+          mode="LocationBasedRU.AddressOwner.InputSetMode"/> -->
+        <!-- <ListViewInput
+          label="displaykey.NVV.Policy.LocationDetail.Property.Building">
+          <Toolbar>
+            <IteratorButtons
+              addVisible="LocationBasedRU.Building == null"
+              removeVisible="LocationBasedRU.Building != null"/>
+          </Toolbar>
+          <ListViewPanel
+            id="BuildingLV">
+            <RowIterator
+              editable="true"
+              elementName="building"
+              hideCheckBoxesIfReadOnly="true"
+              startChecked="true"
+              toCreateAndAdd="LocationBasedRU.addNewBuilding()"
+              toRemove="LocationBasedRU.removeBuilding()"
+              value="LocationBasedRU.PolicyLocation.Buildings.where( \ b -&gt; b == LocationBasedRU.Building )">
+              <Row>
+                <Cell
+                  editable="true"
+                  id="Number"
+                  label="displaykey.NVV.Policy.LocationDetail.Property.Building.Number"
+                  sortOrder="1"
+                  value="building.BuildingNumber"/>
+                <Cell
+                  editable="true"
+                  id="Notes"
+                  label="displaykey.NVV.Policy.LocationDetail.Property.Building.Notes"
+                  value="building.Notes"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput> -->
+      </InputColumn>
+      <InputColumn>
+        <TypeKeyInput
+          editable="!LocationBasedRU.Policy.Verified"
+          id="AddressType"
+          label="displaykey.NVV.Policy.LocationDetail.Property.AddressType"
+          value="LocationBasedRU.Property.ex_AnimalAddressType"/>
+        <InputSetRef
+          def="AddressInputSet(LocationBasedRU.AddressOwner)"
+          mode="LocationBasedRU.AddressOwner.InputSetMode"/>
+        <InputDivider/>
+        <!-- by KSO def 528 - use new picker  06/05/2008 - zthomas - Defect 528, Added showSearchInMenu=false to remove search option from picker.  7/24/08 erawe Defect 1283, Trainer/Alternate Trainer options on Injured Animals should not include the Agency or Underwriter.
+			updated the valuerange from PolicyProperty.Policy.Claim.RelatedContacts to getClaimContacts() -->
+        <ClaimContactInput
+          claim="LocationBasedRU.Policy.Claim"
+          editable="true"
+          id="PrimaryTrainer"
+          label="displaykey.LV.Policy.EditablePropertyTrainers.Trainer"
+          newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+          required="false"
+          showSearchInMenu="false"
+          value="LocationBasedRU.Property.ex_PrimaryTrainer"
+          valueRange="getClaimContacts()"
+          visible="LocationBasedRU.Policy.Verified"/>
+        <!-- by KSO def 529 - use new picker  06/05/2008 - zthomas - Defect 528, Added showSearchInMenu=false to remove search option from picker.  7/24/08 erawe Defect 1283, Trainer/Alternate Trainer options on Injured Animals should not include the Agency or Underwriter.
+			updated the valuerange from PolicyProperty.Policy.Claim.RelatedContacts to getClaimContacts() -->
+        <ClaimContactInput
+          claim="LocationBasedRU.Policy.Claim"
+          editable="true"
+          id="AlternateTrainer"
+          label="displaykey.LV.Policy.EditablePropertyTrainers.AltTrainer"
+          newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+          required="false"
+          showSearchInMenu="false"
+          value="LocationBasedRU.Property.ex_AlternateTrainer"
+          valueRange="getClaimContacts()"
+          visible="LocationBasedRU.Policy.Verified"/>
+      </InputColumn>
+      <!-- <InputColumn>
+        <Input
+          editable="true"
+          id="Description"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Description"
+          value="LocationBasedRU.PolicyLocation.Address.Description"/>
+        <Input
+          editable="true"
+          id="Notes"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Notes"
+          value="LocationBasedRU.PolicyLocation.Notes"/>
+        <InputDivider/>
+        <ListViewInput
+          def="EditablePropertyLienholdersLV(LocationBasedRU.PolicyLocation, LocationBasedRU.Policy.Claim)"
+          editable="true"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+          validationExpression="LocationBasedRU.PolicyLocation.validateLienholders()">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+        <InputDivider/>
+        <ListViewInput
+          def="EditableLocationItemsLV(LocationBasedRU.Property)"
+          editable="true"
+          label="displaykey.NVV.Policy.LocationDetail.Property.ListedItems">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+      </InputColumn> -->
+      <InputFooterSection>
+        <InputDivider
+          visible="LocationBasedRU.Policy.Verified"/>
+        <ListViewInput
+          def="EditablePropertyLienholdersLV(LocationBasedRU.PolicyLocation, LocationBasedRU.Policy.Claim)"
+          editable="true"
+          id="Lienholders"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+          labelAbove="true"
+          validationExpression="LocationBasedRU.PolicyLocation.validateLienholders()"
+          visible="LocationBasedRU.Policy.Verified">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+        <InputDivider
+          visible="LocationBasedRU.Policy.Verified"/>
+        <ListViewInput
+          def="EditableAdditionalInterestRisksLV(LocationBasedRU, LocationBasedRU.Policy.Claim)"
+          editable="true"
+          id="AdditionalRiskInterests"
+          label="displaykey.NVV.Policy.LocationDetail.Property.AdditionalInterestRisk"
+          labelAbove="true"
+          visible="LocationBasedRU.Policy.Verified">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+        <InputDivider/>
+        <ListViewInput
+          def="PropertyCoveragesLV(LocationBasedRU.Property, LocationBasedRU)"
+          editable="true"
+          id="Coverages"
+          label="displaykey.NVV.Policy.LocationDetail.Property.Coverages"
+          labelAbove="true"
+          mode="LocationBasedRU.Policy.Claim.LossType">
+          <Toolbar>
+            <IteratorButtons/>
+          </Toolbar>
+        </ListViewInput>
+      </InputFooterSection>
+    </DetailViewPanel>
+    <!-- <PanelRef
+      def="LocationCoverageListDetail(LocationBasedRU)"/> -->
+    <Code><![CDATA[function getClaimContacts():List {
+  var contactList = new java.util.ArrayList();
+  for(contact in LocationBasedRU.Policy.Claim.Contacts) {
+    if(!contact.hasRole( "agency" ) and !contact.hasRole( "underwriter" )) {
+      contactList.add(contact.Contact)
+    }
+  }
+  return contactList;
+}]]></Code>
+  </PanelSet>
+</PCF>

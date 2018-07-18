@@ -1,0 +1,61 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEL1150 - Upcoming Renewal 90")
+internal class CEEL1150UpcomingRenewal90 {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code == "upcoming_renewal")) && 
+(claim.Policy.PolicyType.Code == "ASX" || claim.Policy.PolicyType.Code == "AUE" ||
+claim.Policy.PolicyType.Code == "CAX" || claim.Policy.PolicyType.Code == "CEP" ||
+claim.Policy.PolicyType.Code == "CEX" || claim.Policy.PolicyType.Code == "CMP" ||
+claim.Policy.PolicyType.Code == "CMX" || claim.Policy.PolicyType.Code == "CPE" ||
+claim.Policy.PolicyType.Code == "CPX" || claim.Policy.PolicyType.Code == "DFX" ||
+claim.Policy.PolicyType.Code == "DOL" || claim.Policy.PolicyType.Code == "DML" ||
+claim.Policy.PolicyType.Code == "DMX" || claim.Policy.PolicyType.Code == "DPL" ||
+claim.Policy.PolicyType.Code == "DTE" || claim.Policy.PolicyType.Code == "DXL" ||
+claim.Policy.PolicyType.Code == "EPL" || claim.Policy.PolicyType.Code == "EPX" ||
+claim.Policy.PolicyType.Code == "FDP" || claim.Policy.PolicyType.Code == "GPP" ||
+claim.Policy.PolicyType.Code == "GPX" || claim.Policy.PolicyType.Code == "ICL" ||
+claim.Policy.PolicyType.Code == "ICX" || claim.Policy.PolicyType.Code == "IDX" ||
+claim.Policy.PolicyType.Code == "IXX" || claim.Policy.PolicyType.Code == "MEP" ||
+claim.Policy.PolicyType.Code == "MEX" || claim.Policy.PolicyType.Code == "MPL" ||
+claim.Policy.PolicyType.Code == "MPX" || claim.Policy.PolicyType.Code == "NMP" ||
+claim.Policy.PolicyType.Code == "NMX" || claim.Policy.PolicyType.Code == "NSP" ||
+claim.Policy.PolicyType.Code == "NSX" || claim.Policy.PolicyType.Code == "PEP" ||
+claim.Policy.PolicyType.Code == "PEX" || claim.Policy.PolicyType.Code == "SCL" ||
+claim.Policy.PolicyType.Code == "THP" || claim.Policy.PolicyType.Code == "THX" ||
+claim.Policy.PolicyType.Code == "FDX")
+
+// policy symbols of other than non-profit policies gathered from ELD requirements doc/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 - Modified not to generate this activity 
+if a Note with the topic of "Underwriter Claim Notes" was created 15 calendar 
+days prior to the 90 day policy expiration day window.
+*/
+ try {
+      var noteDate:DateTime
+      for(n in claim.Notes){
+    if(n.Topic=="underwriteclaimnote"){
+      noteDate=n.CreateTime
+          }
+   if ((gw.api.util.DateUtil.daysBetween(gw.api.util.DateUtil.currentDate(),
+   claim.Policy.ExpirationDate) == 90
+    && (gw.api.util.DateUtil.daysBetween(claim.Policy.ExpirationDate,
+   noteDate)) >= 105)) {
+
+    var ap = util.custom_Ext.finders.findActivityPattern("upcoming_renewal")
+    claim.createActivityFromPattern(null, ap)
+   
+   }
+      }}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+} 
+
+
+/*end00rule*/
+  }
+}

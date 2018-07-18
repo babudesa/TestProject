@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <EditRecurrenceCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(claim)"
+    afterFinish="ClaimFinancialsChecks.go(claim)"
+    beforeCommit="Wizard.Check.UpdateCheckHistoryExt = true;"
+    cancelWarning="displaykey.Wizard.NewCheckWizard.CancelWarning"
+    id="EditRecurrenceCheckWizard"
+    parent="ClaimFinancialsChecksDetail(claim, check)">
+    <LocationEntryPoint
+      signature="EditRecurrenceCheckWizard(claim : Claim, check : Check)"/>
+    <Variable
+      initialValue="new financials.EditRecurrenceCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.EditRecurrenceCheckWizardInfo"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="check"
+      type="Check"/>
+    <Variable
+      initialValue="new util.custom_Ext.AutomatedCheckInfo()"
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <WizardStep
+      allowFinish="false"
+      allowNext="automatedCheckInfo.ValidPayToAddress"
+      id="NewCheckPayees"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Label"
+      onExit="Wizard.validateAllCheckPayees(); check.updateRecurringChecks(); Wizard.createNewCheckPortionsIfNecessary(); if( !Wizard.showPaymentsStep() ) { Wizard.validatePayments(); }; automatedCheckInfo.InsuredWarningDisplayed = false"
+      screen="CheckWizard_CheckPayeesScreen(claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckPayments"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Label"
+      onExit="Wizard.validatePayments()"
+      screen="CheckWizard_CheckPaymentsScreen(claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"
+      visible="Wizard.showPaymentsStep()"/>
+    <WizardStep
+      id="NewCheckInstructions"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Label"
+      onExit="check.setRecurringServiceDates()"
+      screen="CheckWizard_CheckInstructionsScreen(claim, Wizard, null)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+  </EditRecurrenceCheckWizard>
+</PCF>

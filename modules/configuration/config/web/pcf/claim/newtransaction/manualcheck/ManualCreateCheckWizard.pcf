@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ManualCreateCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(claim)"
+    afterFinish="ClaimFinancialsChecks.go(claim)"
+    beforeCommit="gw.api.system.bundle.BundleCommitCondition.verify(claim);Wizard.Check.UpdateCheckHistoryExt = true"
+    cancelWarning="displaykey.Wizard.NewCheckWizard.CancelWarning"
+    id="ManualCreateCheckWizard"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(claim)"
+    parent="ManualCreateCheckWizardForward(claim)">
+    <LocationEntryPoint
+      signature="ManualCreateCheckWizard(claim : Claim)"/>
+    <Variable
+      initialValue="new financials.ManualCreateCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.ManualCreateCheckWizardInfo"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="new util.custom_Ext.AutomatedCheckInfo()"
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <WizardStep
+      allowFinish="false"
+      id="NewCheckPayees"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Label"
+      onExit="Wizard.validateAllCheckPayees(); Wizard.createNewCheckPortionsIfNecessary()"
+      onFirstEnter="claim.freezeCurrency();displayAwaitingSubFinalPmtWarning()"
+      screen="ManualCheckWizard_CheckPayeesScreen(claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewManualCheckWizard.NewCheckPayees.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckPayments"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Label"
+      onExit="Wizard.validatePayments(); util.financials.Tax1099BoxNumbers.setBoxNumbers(Wizard.Check); Wizard.CheckGroupProxy.setClaimantDuringEdit(); medicarePaymentValidation() Wizard.Check.validateCostTypes();Wizard.Check.validateNetAmounts(); Wizard.Check.checkfinalnonrecurring()"
+      onFirstEnter="Wizard.setPreferredCurrency(Wizard.preferredCurrencyByPayees());checkForPendingApprovalReserves()"
+      screen="ManualCheckWizard_CheckPaymentsScreen(claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckInstructions"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Label"
+      onFirstEnter="setPrintDate(); Wizard.check.setMemo()"
+      screen="ManualCheckWizard_CheckInstructionsScreen(claim, Wizard, automatedCheckInfo)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <Code><![CDATA[uses java.util.HashSet
+
+function medicarePaymentValidation(){
+  if(Wizard.Check.Payments.where(\ pmt -> pmt.PaymentType == PaymentType.TC_FINAL || pmt.PaymentType == PaymentType.TC_SUPPLEMENT).Count > 0){
+    Wizard.Check.validateFinalPayment()
+  }
+}
+
+function checkForPendingApprovalReserves() {
+        if (Claim.hasPendingApprovalReserves()==true) { PendingApprovalReservesWorksheet.goInWorkspace(Claim)}
+      }
+      function setPrintDate(){
+      	Wizard.CheckGroupProxy.ex_dateprinted = gw.api.util.DateUtil.currentDate()
+      }
+      function displayAwaitingSubFinalPmtWarning() {
+      	if(Claim.checkAwaitingSubFinalPayment(null)) {
+      		GeneralErrorWorksheet.goInWorkspace(displaykey.Web.Claim.Check.FinalPaymentAwaitingSubmission)
+      	}
+      }
+      
+ function validateTermDate(){
+    for( payment in Wizard.CheckSet.PrimaryCheck.Payments){
+    var claimant = payment.Exposure.Claimant
+    var exp = payment.Exposure
+    if(((claimant.Subtype == "Person" and claimant.Subtype != "PersonVendor" and (exp.ExposureType == ExposureType.TC_AB_MEDPAY or exp.ExposureType == ExposureType.TC_AB_PIP or exp.ExposureType == ExposureType.TC_MEDPAY) )
+       and(claimant.Person.MedicareEligibleExt != false) and (((payment.CostType=="claimcost") and (payment.Subtype=="Payment")and 
+       (payment.PaymentType!="partial")) or (exists(trans in Claim.getAllTransactions() where trans.Subtype=="Payment" and trans.Exposure==exp and 
+       (trans as payment).CostType=="claimcost") and (payment.CostType=="expense") and (payment.PaymentType=="final")) or (exists(trans in Claim.getAllTransactions() 
+       where trans.Subtype=="Payment" and trans.Exposure==exp and (trans as payment).CostType=="claimcost") and (payment.CostType=="expense") and (payment.PaymentType=="supplement"))))) { 
+       // 3/21/13 - kniese - Added an if statement to check the two values in the SSN / HICN override for Medicare
+       if(!(claimant as Person).BelowThresholdExt and !(claimant as Person).RefuseProvideExt){
+         if(claimant.Person.MedicareEligibleExt and claimant.ContactISOMedicareExt.ORMIndExt){
+           if(claimant.ContactISOMedicareExt.ORMEndDateExt == null and claimant.ContactISOMedicareExt.ExhaustDateExt == null){
+             //throw new com.guidewire.pl.web.controller.UserDisplayableException("ORM is open with Medicare.  Medicare requires ORM to remain open until coverage for " +
+             //"MedPay or PIP has ended.  You should either provide an ORM Termination Date or set a reminder to close ORM when coverage ends.")
+                 ORMTermDateWorksheet.goInWorkspace(exp) 
+           }
+         } 
+       }
+     }
+    }
+  }]]></Code>
+  </ManualCreateCheckWizard>
+</PCF>

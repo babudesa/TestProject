@@ -1,0 +1,2235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Starting the Server to Begin Automatic Database Upgrade</title>
+    <link rel="StyleSheet" href="css/procedure-db-b-c.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_3.html#1938357">Upgrading from 5.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-b-c.10.01.html#1938357">Upgrading the ClaimCenter 5.0.x Database</a> : Starting the Server to Begin Automatic Database Upgrade</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1938357">Starting the Server to Begin Automatic Database Upgrade</a></div>
+      <div class="B_-_Body"><a name="1938358">The database upgrade is an automatic process that occurs as you start the server with the upgraded configuration. </a>The database upgrade normally completes in a few hours or less.</div>
+      <div class="B_-_Body"><a name="1938359">If the database upgrade stops before completing, then restore your database from the backup, correct any issues </a>reported, and repeat the database upgrade.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1938360">Before starting the upgrade, update database server software and operating systems as </a>needed to meet the installation requirements of the target version. See the <span class="e_-_emphasis">Guidewire Platform Support </span><span class="e_-_emphasis">Matrix</span> for current system and patch level requirements. The <span class="e_-_emphasis">Guidewire Platform Support Matrix </span>is available from the Guidewire Resource Portal at <span class="cv_-_computer_voice" style="color: #0b5aa8; font-weight: bold"><a href="https://guidewire.custhelp.com/app/resources/products/platform" target="external_window">https://guidewire.custhelp.com/app/resources/products/platform</a></span>.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1938362">Except for your first database upgrade trials, do not start the server until you have </a>upgraded all rules. Otherwise, default validation rules execute. This could strand objects at a high validation level and make it impossible to edit parts of the object.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1938363">The database upgrade runs a series of version checks prior to making any changes. If any </a>of these checks fail, the upgrade aborts and reports an error message. You can fix the issue, create an updated backup of the database and attempt the upgrade again without restoring from a backup. However, if you experience a failure during the version triggers or upgrade steps portion of the upgrade, refresh the database from a backup before attempting the upgrade again.</div>
+      <div class="H2_-_Heading_2"><a name="1938367">Test the Database Upgrade</a></div>
+      <div class="B_-_Body"><a name="1938368">Prior to attempting the database upgrade on a full-production database clone, test the database upgrade by doing </a>the following:</div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1938369">Connected to the built-in H2 database, successfully start the built-in Quickstart (Jetty) application server with </a>a merged configuration data model, including merged extensions, datatypes, fieldvalidators, and so forth.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938370">Connected to an empty database on an Oracle or SQL Server database server, successfully start the Quickstart </a>application server from the preceding step.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1938371">Connected to a restored backup of a production clone, start either the same Quickstart server from the </a>preceding step or a third-party application server with your custom configuration.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H2_-_Heading_2"><a name="1938372">Integrations and Starting the Server</a></div>
+      <div class="B_-_Body"><a name="1938373">Disable all integrations during the automatic database upgrade. Integration points might require updates due to </a>changes in Guidewire APIs. See the <span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('whatsnew', 'cover-whatsnew.html#1551215', '');" title="ClaimCenter New and Changed Guide">ClaimCenter New and Changed Guide</a></span> for specifics.</div>
+      <div class="B_-_Body"><a name="1938377">It is not necessary to have completely migrated integrations before attempting to start the server for the first time. </a>If you have integrations that rely on non-Guidewire applications, do not expect these integrations to work the first time you start the server.</div>
+      <div class="H2_-_Heading_2"><a name="1938378">Understanding the Automatic Database Upgrade</a></div>
+      <div class="B_-_Body"><a name="1938379">As the database upgrade proceeds, it logs messages to the console as well as the log file describing its progress. </a>The database upgrade process requires thousands of steps, divided into three phases. Due to the relational nature of a database, these phases must execute in a specific order for the upgrade to succeed. </div>
+      <div class="B_-_Body"><a name="1938380">During the first phase, the upgrader uses a set of </a><span class="e_-_emphasis">version triggers</span> to determine the first actions that need to take place. The database upgrader requires version triggers in order to perform the following types of tasks:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938381">changing a datatype (other than just length)</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938382">migrating data from one table or column to another</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938383">dropping a column</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938384">dropping a table</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938385">renaming a column</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1938386">renaming a table</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1938387">Specific version triggers are described in this topic.</a></div>
+      <div class="B_-_Body"><a name="1938388">Many version triggers have version checks associated with them. These checks ensure that the database is ready </a>for the associated version trigger. The database upgrade runs all checks before running any version triggers. If a check detects a problem, it reports the issue, including a sample SQL query to find specific problematic records. If a version check discovers an issue, the database upgrade stops before any version triggers are run. Therefore, it is not necessary to restore the database from a backup if a version check reports an error. Correct the issue and then create a new backup of the database. Then, if you encounter errors after the version check stage, you can restore a version of your database with the issue reported by the version check resolved.</div>
+      <div class="B_-_Body"><a name="1938389">In the second phase, the upgrader compares the target data model and the current database to determine how they </a>differ. The upgrader makes changes to the database that do not require a version trigger during this phase.</div>
+      <div class="B_-_Body"><a name="1938390">Following this process, the third phase runs a subsequent set of version triggers. These triggers create actions that </a>must be run last due to a dependency on an earlier phase. </div>
+      <div class="B_-_Body"><a name="1938391">After the database upgrade concludes, it reports issues that the upgrader encountered and did not complete. </a></div>
+      <div class="B_-_Body"><a name="1938392">You are responsible for correcting these issues. This might involve modifying the data model or altering the table </a>manually. If you do not correct them, the next time you start the server you do <span class="e_-_emphasis">not</span> see a message that the database and the data model are out of sync. You must then use the <span class="cv_-_computer_voice">system_tools</span> command to verify the database schema. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="1938393">Given the complexity of database upgrade, Guidewire does not expose specific upgrade actions/steps </a>to clients either in SQL or Java form. Any manual attempts to recreate or control the upgrade process can result in problems in the ClaimCenter database. Recovery from such attempts is not supported.</div>
+      <div class="H2_-_Heading_2"><a name="1938397">Version Trigger Descriptions</a></div>
+      <div class="B_-_Body"><a name="1938398">The database upgrade uses version triggers to perform the actions described by sections within this topic. If a </a>version trigger has an associated version check, the check is described with the trigger. Review these descriptions to familiarize yourself with some of the changes and to understand version checks. If a version check reports an issue, review the error message and consult the description of the relevant version trigger for more information.</div>
+      <div class="H3_-_Heading_3"><a name="1938526">Dropping Process History Columns</a></div>
+      <div class="B_-_Body"><a name="1938530">This step removes the following columns from </a><span class="cv_-_computer_voice">cc_ProcessHistory</span>:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938531">PhaseInProgress</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938532">PhaseNumber</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938533">PhasesToExecute</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1938534">Renaming Message Sink Columns</a></div>
+      <div class="B_-_Body"><a name="1938543">This step renames the </a><span class="cv_-_computer_voice">MessageSink</span> column on the <span class="cv_-_computer_voice">cc_Message</span> and <span class="cv_-_computer_voice">cc_MessageHistory</span> tables to <span class="cv_-_computer_voice">DestinationID</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1938544">Dropping Message Sink Tables</a></div>
+      <div class="B_-_Body"><a name="1938553">This step drops the </a><span class="cv_-_computer_voice">cc_loadmsgsinkinsertselect</span> table and its shadow table <span class="cv_-_computer_voice">cct_loadmsgsinkinsertselect</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1938554">Creating Subtypes for WorkflowLogEntry</a></div>
+      <div class="B_-_Body"><a name="1938560">ClaimCenter </a>6.0 adds three subtypes of the <span class="cv_-_computer_voice">WorkflowLogEntry</span> entity: <span class="cv_-_computer_voice">WorkflowTextLog</span>, <span class="cv_-_computer_voice">WorkflowActionLog</span>, and <span class="cv_-_computer_voice">WorkflowUserLog</span>.</div>
+      <div class="B_-_Body"><a name="1938564">This step adds a </a><span class="cv_-_computer_voice">cc_workflowlog.subtype</span> column and sets the value for all rows to the <span class="cv_-_computer_voice">WorkflowTextLog</span> subtype. </div>
+      <div class="H3_-_Heading_3"><a name="1938565">Upgrading Data Distribution Report Model</a></div>
+      <div class="B_-_Body"><a name="1938567">This step first removes data distribution reports from the database.</a></div>
+      <div class="B_-_Body"><a name="1938568">Then, it drops the following tables:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938572">cc_revisiondatadist</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938576">cc_revisionsizecntdd</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938580">cct_revisiondatadist</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938584">cct_revisionsizecntdd</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1938588">The upgrader then drops the </a><span class="cv_-_computer_voice">cc_databasedatadist.RevisionDistsCollected</span> column, if it exists.</div>
+      <div class="B_-_Body"><a name="1938593">Finally, the upgrader converts the datatype of the following </a><span class="cv_-_computer_voice">cc_clobcoldatadist</span> columns to decimal with a precision of 19 and scale of 0:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938594">AverageLength</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938595">MaximumLength</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1938596">MinimumLength</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1938597">Dropping Platform Region Type Column</a></div>
+      <div class="B_-_Body"><a name="1938608">This step removes the </a><span class="cv_-_computer_voice">cc_region.regiontype</span> column. Regions in ClaimCenter 6.0.8 are linked to zones through the new <span class="cv_-_computer_voice">RegionZone</span> entity.</div>
+      <div class="H3_-_Heading_3"><a name="1938609">Upgrading Holiday Zone Codes</a></div>
+      <div class="B_-_Body"><a name="1938613">As businesses expand into new geographical areas, there is an increasing chance that a holiday zone code is </a>duplicated. For example, the holiday zone code <span class="cv_-_computer_voice">CA</span> could be used to represent California or Canada. To address this issue, ClaimCenter adds <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">Country</span> properties to <span class="cv_-_computer_voice">HolidayZone</span>, enabling you to more precisely define the holiday zone.</div>
+      <div class="B_-_Body"><a name="1938620">The database upgrader first checks that all holiday zone code records have a </a><span class="cv_-_computer_voice">cc_holiday_zone.code</span> value that exists in <span class="cv_-_computer_voice">cc_zone.code</span>. If any records are found where <span class="cv_-_computer_voice">cc_holiday_zone.code</span> does not exist in <span class="cv_-_computer_voice">cc_zone.code</span>, the upgrader logs a message. This message includes a query to find the violating rows. Use this query to identify the rows and then update the rows to use a zone code that does exist in <span class="cv_-_computer_voice">cc_zone</span>.</div>
+      <div class="B_-_Body"><a name="1938636">This step then adds and populates two non-nullable typekey columns to </a><span class="cv_-_computer_voice">cc_holiday_zone</span>: <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">Country</span>. In cases in which <span class="cv_-_computer_voice">HolidayZone.Code</span> matches a single <span class="cv_-_computer_voice">Zone</span> record, <span class="cv_-_computer_voice">HolidayZone</span> takes its <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">Country</span> values from the <span class="cv_-_computer_voice">Zone</span>. In cases in which <span class="cv_-_computer_voice">HolidayZone.Code</span> matches multiple <span class="cv_-_computer_voice">Zone</span> records, <span class="cv_-_computer_voice">Holiday.ZoneType</span> and <span class="cv_-_computer_voice">Holiday.Country</span> are populated with the typecode <span class="cv_-_computer_voice">unknown</span>. These <span class="cv_-_computer_voice">HolidayZone</span> records could not be conclusively populated with <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">Country</span> values from corresponding <span class="cv_-_computer_voice">Zone</span> records. Manually edit these unknown values to real-world values. For example, you could have two <span class="cv_-_computer_voice">Zone</span> records with <span class="cv_-_computer_voice">Code</span> <span class="cv_-_computer_voice">CA</span>, representing California and Canada. After the upgrade, these <span class="cv_-_computer_voice">HolidayZone</span> records have a <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">County</span> value of <span class="cv_-_computer_voice">unknown</span>. Manually edit these records to set the <span class="cv_-_computer_voice">ZoneType</span> and <span class="cv_-_computer_voice">Country</span> typekeys.</div>
+      <div class="B_-_Body"><a name="1938640">For more information, see </a><a href="javascript:WWHClickedPopup('whatsnew', 'c-configuration.05.02.html#2238865', '');" title="Changes to the Guidewire ClaimCenter Data Model">“Columns Added to HolidayZone Entity” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('whatsnew', 'c-configuration.05.02.html#2238865', '');" title="Changes to the Guidewire ClaimCenter Data Model">New and Changed Guide</a></span></div>
+      <div class="H3_-_Heading_3"><a name="1938641">Adding Hash of Full Path to SREE Reports</a></div>
+      <div class="B_-_Body"><a name="1938643">This step adds a </a><span class="cv_-_computer_voice">HashOfFullPath</span> column to <span class="cv_-_computer_voice">SREEReport</span> and populates it by calculating a sha1 hash of <span class="cv_-_computer_voice">SREEReport.FullPath</span> for each row. ClaimCenter 6.0 calculates the <span class="cv_-_computer_voice">HashOfFullPath</span> value each time the <span class="cv_-_computer_voice">SREEReport.FullPath</span> column is set. This step removes the uniqueness index from <span class="cv_-_computer_voice">FullPath</span> and adds a uniqueness index to <span class="cv_-_computer_voice">HashOfFullPath</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1938647">Checking Activity Pattern Code Uniqueness</a></div>
+      <div class="B_-_Body"><a name="1938649">This step checks that no </a><span class="cv_-_computer_voice">ActivityPattern</span> records have the same <span class="cv_-_computer_voice">Code</span>. If the upgrader finds duplicate activity pattern codes, it writes an error message to the log. This message includes a query to find the duplicate activity codes. Update any duplicate activity pattern codes to unique values before proceeding.</div>
+      <div class="H3_-_Heading_3"><a name="1938650">Dropping ExtractReady from Organization Zone Admin</a></div>
+      <div class="B_-_Body"><a name="1938655">This step removes the </a><span class="cv_-_computer_voice">ExtractReady</span> column from <span class="cv_-_computer_voice">cc_organizationzoneadmin</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1938656">Expanding Geocoding Precision</a></div>
+      <div class="B_-_Body"><a name="1938661">This step expands the precision defined for the </a><span class="cv_-_computer_voice">cc_address</span> <span class="cv_-_computer_voice">latitude</span> and <span class="cv_-_computer_voice">longitude</span> decimal columns.</div>
+      <div class="H3_-_Heading_3"><a name="1938662">Dropping Columns from Contact Category Score</a></div>
+      <div class="B_-_Body"><a name="1938668">This step drops the </a><span class="cv_-_computer_voice">Admin</span> and <span class="cv_-_computer_voice">ExtractReady</span> columns from <span class="cv_-_computer_voice">cc_ContactCategoryScore</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939205">Migrating LodgingProvider</a></div>
+      <div class="B_-_Body"><a name="1939207">Prior versions included extension columns on </a><span class="cv_-_computer_voice">PropertyIncident</span> called <span class="cv_-_computer_voice">LodgingNights </span>and <span class="cv_-_computer_voice">LodgingRate</span>.  In ClaimCenter 6.0, Guidewire eliminated those columns and added a <span class="cv_-_computer_voice">LodgingProvider</span> array.  This step creates <span class="cv_-_computer_voice">cc_LodgingProvider</span> rows where there was data in the two removed columns.  If the <span class="cv_-_computer_voice">LodgingProvider</span> entity does not contain <span class="cv_-_computer_voice">LodgingNights</span> and <span class="cv_-_computer_voice">LodgingRate</span> columns, the trigger does nothing. The trigger drops the source columns from <span class="cv_-_computer_voice">PropertyIncident</span> if they are no longer defined as extensions and the trigger successfully created rows in <span class="cv_-_computer_voice">cc_LodgingProvider</span>.</div>
+      <div class="B_-_Body"><span class="cv_-_computer_voice"><a name="1939220">LodgingProvider.LodgingNights</a></span> exists only for upgrade.  In ClaimCenter 6.0 the number of nights is determined using <span class="cv_-_computer_voice">LodgingProvider.StartDate</span> and <span class="cv_-_computer_voice">LodgingProvider.EndDate</span>.  If either of those dates is null, ClaimCenter checks <span class="cv_-_computer_voice">LodgingProvider.LodgingNights</span> for data from the upgrade and displays it if present. ClaimCenter never writes to the <span class="cv_-_computer_voice">LodgingProvider.LodgingNights</span> field after upgrade.</div>
+      <div class="H3_-_Heading_3"><a name="1939227">Removing instrumentedbatchjobid Column from Work Item Tables</a></div>
+      <div class="B_-_Body"><a name="1939234">This step removes the </a><span class="cv_-_computer_voice">instrumentedbatchjobid</span> column from the following work item tables:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939235">ClaimValidationWorkItem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939236">ContactAutoSyncWorkItem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939237">GeocodeWorkItem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939238">ReviewSyncWorkItem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939239">WorkflowWorkItem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939240">Dropping Profiler Tables</a></div>
+      <div class="B_-_Body"><a name="1939249">This step removes the following tables related to the profiler:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939250">cc_dbProfilerTagPath</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939251">cct_dbProfilerTagPath</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939252">cc_profilerData</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939253">cct_profilerData</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939254">cc_ProfilerPathEdge</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939255">cct_ProfilerPathEdge</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939256">cc_profilerPeriod</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939257">cct_profilerPeriod</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939258">Dropping Temporary Contact Tables</a></div>
+      <div class="B_-_Body"><a name="1939265">This step removes the following tables:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939266">cc_tempaddressmap</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939267">cc_tempcontactcontact</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939268">cc_tempcontactmap</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939269">cct_tempaddressmap</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939270">cct_tempcontactcontact</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939271">cct_tempcontactmap</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939272">Dropping Staging Table Region Type</a></div>
+      <div class="B_-_Body"><a name="1939280">This step removes the </a><span class="cv_-_computer_voice">ccst_region.regiontype</span> column. Regions in ClaimCenter 6.0.8 are linked to zones through the new <span class="cv_-_computer_voice">RegionZone</span> entity.</div>
+      <div class="H3_-_Heading_3"><a name="1939281">Dropping Instrumentation Tables</a></div>
+      <div class="B_-_Body"><a name="1939287">ClaimCenter 6.0 stores batch process performance information in the profiler rather than in instrumentation </a>tables. This step removes the following tables:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939291">cc_instrumentedjob</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939295">cct_instrumentedjob</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939299">cctt_instrumentedjob</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939303">cc_instrumentedjobappserver</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939307">cct_instrumentedjobappserver</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939311">cc_instrumentedjobparam</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939315">cct_instrumentedjobparam</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939319">cc_instrumentedjobtask</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939323">cct_instrumentedjobtask</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939327">cctt_instrumentedjobtask</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939331">cc_instrumentedjobthread</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939335">cct_instrumentedjobthread</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939336">Upgrading Typelist Tables</a></div>
+      <div class="B_-_Body"><a name="1939340">This step first drops all staging tables. Then for each typelist table, this step expands the size of the typecode </a>column from 22 to 50.</div>
+      <div class="H3_-_Heading_3"><a name="1939341">Adding Claim and Policy Currency Columns</a></div>
+      <div class="B_-_Body"><a name="1939343">This step adds a </a><span class="cv_-_computer_voice">Currency</span> column to <span class="cv_-_computer_voice">cc_claim</span> and <span class="cv_-_computer_voice">cc_policy</span> and populates this column with the reporting currency. The reporting currency is the <span class="cv_-_computer_voice">value</span> set to <span class="cv_-_computer_voice">DefaultApplicationCurrency</span> in <span class="cv_-_computer_voice">config.xml</span>.</div>
+      <div class="B_-_Body"><a name="1939347">See </a><a href="javascript:WWHClickedPopup('whatsnew', 'c-app.04.2.html#2320827', '');" title="New in ClaimCenter 6.0">“Policy Currency” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('whatsnew', 'c-app.04.2.html#2320827', '');" title="New in ClaimCenter 6.0">New and Changed Guide</a></span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939348">Checking for Negative Values in Non-Negative Incident Columns</a></div>
+      <div class="B_-_Body"><a name="1939353">A number of columns that were integer datatypes have been updated to only store non-negative integers. This </a>version check reports an error if any of the non-negative columns for Fixed Property, Property or Vehicle incidents contains a negative value. The columns that this version check inspects are listed by incident type:</div>
+      <div class="HS_-_Head_Sub"><a name="1939354">Fixed Property</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939355">NumSprinkler</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939356">NumSprinkOper</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939357">NumStories</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="1939358">Property</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939359">MealsDays</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939360">MealsPeople</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939361">MealsRate</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="1939362">Vehicle</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939363">OdomRead</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939365">Removing Reinsurance Status Typekey and References</a></div>
+      <div class="B_-_Body"><a name="1939376">This step removes the </a><span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey and references to that typekey. In ClaimCenter 6.0, the reinsurance status feature is replaced by support for reinsurance thresholds. You can preserve reinsurance status data by creating a <span class="cv_-_computer_voice">ReinsuranceStatus</span> extension on <span class="cv_-_computer_voice">Claim</span> and a <span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey. This process is described in <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1938069', '');" title="Creating Extensions to Preserve Data">“Reinsurance Status”</a>.</div>
+      <div class="B_-_Body"><a name="1939380">The upgrader first checks if there is data in </a><span class="cv_-_computer_voice">cc_claim.ReinsuranceStatus</span>. If there is data in that column, and no <span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey extension defined on <span class="cv_-_computer_voice">Claim</span>, the upgrader reports a problem. If you do not want the data, drop the data in <span class="cv_-_computer_voice">cc_claim.reinsurancestatus</span> and run the upgrader again. If you do want to keep the data, create a <span class="cv_-_computer_voice">ReinsuranceStatus</span> typekey extension on <span class="cv_-_computer_voice">Claim</span> and a <span class="cv_-_computer_voice">ReinsuranceStatus</span> typelist. If the upgrader detects this extension in the data model, it retains data in <span class="cv_-_computer_voice">cc_claim.reinsurancestatus</span> and does not drop the <span class="cv_-_computer_voice">cctl_reinsurancestatus</span> and <span class="cv_-_computer_voice">cctt_reinsurancestatus</span> tables.</div>
+      <div class="B_-_Body"><a name="1939381">If there is no data in </a><span class="cv_-_computer_voice">cc_claim.ReinsuranceStatus</span>, and there is no <span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span> column extension, the upgrader drops the <span class="cv_-_computer_voice">cc_claim.ReinsuranceStatus</span> column and the <span class="cv_-_computer_voice">cctl_reinsurancestatus</span> and <span class="cv_-_computer_voice">cctt_reinsurancestatus</span> tables.</div>
+      <div class="H3_-_Heading_3"><a name="1939382">Adding Activity Pattern for Reinsurance Review</a></div>
+      <div class="B_-_Body"><a name="1939385">This step adds the Claim Reinsurance Review activity pattern.</a></div>
+      <div class="H3_-_Heading_3"><a name="1939387">Adding Claimant Flag on ClaimContact</a></div>
+      <div class="B_-_Body"><a name="1939392">This step adds a </a><span class="cv_-_computer_voice">ClaimantFlag</span> boolean column to <span class="cv_-_computer_voice">cc_claimcontac</span>t, if <span class="cv_-_computer_voice">cc_claimcontact.ClaimantFlag</span> does not already exist. The upgrader then populates the new column. </div>
+      <div class="B_-_Body"><a name="1939393">For records in </a><span class="cv_-_computer_voice">cc_claimcontact</span> where <span class="cv_-_computer_voice">cc_claimcontact.ID</span> equals <span class="cv_-_computer_voice">cc_claimcontactrole.ClaimContact</span> and <span class="cv_-_computer_voice">cc_claimcontactrole.Role</span> equals <span class="cv_-_computer_voice">claimant</span>, and <span class="cv_-_computer_voice">cc_claimcontactrole.Retired</span> equals 0, the upgrader sets <span class="cv_-_computer_voice">cc_claimcontact.ClaimantFlag</span> to <span class="cv_-_computer_voice">1</span>. Otherwise, the upgrader sets <span class="cv_-_computer_voice">cc_claimcontact.ClaimantFlag</span> to <span class="cv_-_computer_voice">0</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939394">Adding Transaction and Reporting Amount to Deduction</a></div>
+      <div class="B_-_Body"><a name="1939399">This step first renames </a><span class="cv_-_computer_voice">cc_deduction.Amount</span> to <span class="cv_-_computer_voice">cc_deduction.ClaimAmount</span>.</div>
+      <div class="B_-_Body"><a name="1939400">This step then adds a </a><span class="cv_-_computer_voice">cc_deduction.TransactionAmount</span> column, if the column does not already exist. This column was added in ClaimCenter 5.0. </div>
+      <div class="B_-_Body"><a name="1939404">The upgrader then populates </a><span class="cv_-_computer_voice">cc_deduction.TransactionAmount</span> with the value of <span class="cv_-_computer_voice">cc_deduction.ClaimAmount</span>. The upgrader only populates <span class="cv_-_computer_voice">cc_deduction.TransactionAmount</span> if it is null.</div>
+      <div class="B_-_Body"><a name="1939405">This step also adds a </a><span class="cv_-_computer_voice">cc_deduction.ReportingAmount</span> column and populates this new column with the value of <span class="cv_-_computer_voice">cc_deduction.ClaimAmount</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939406">Adding FixedClaimAmount and FixedReportingAmount to CheckPortion</a></div>
+      <div class="B_-_Body"><a name="1939411">This step first renames </a><span class="cv_-_computer_voice">cc_checkportion.FixedAmount</span> to <span class="cv_-_computer_voice">cc_checkportion.FixedTransactionAmount</span>.</div>
+      <div class="B_-_Body"><a name="1939412">The upgrader then adds a </a><span class="cv_-_computer_voice">cc_checkportion.FixedClaimAmount</span> column, if the column does not already exist. This column was added in ClaimCenter 5.0.</div>
+      <div class="B_-_Body"><a name="1939416">The upgrader then populates </a><span class="cv_-_computer_voice">cc_checkportion.FixedClaimAmount</span> with the value of <span class="cv_-_computer_voice">cc_checkportion.FixedTransactionAmount</span>. The upgrader only populates <span class="cv_-_computer_voice">cc_checkportion.FixedClaimAmount</span> if it is null.</div>
+      <div class="B_-_Body"><a name="1939417">The upgrader then adds </a><span class="cv_-_computer_voice">cc_checkportion.FixedReportingAmount</span> and populates this new column with the value of <span class="cv_-_computer_voice">cc_checkportion.FixedClaimAmount</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939419">Removing Unused Deductible Columns</a></div>
+      <div class="B_-_Body"><a name="1939428">ClaimCenter 6.0 changes the data model for deductibles. ClaimCenter includes a new </a><span class="cv_-_computer_voice">Deductible</span> entity. Each deductible is associated with a coverage, and by default gets its initial amount from the <span class="cv_-_computer_voice">Coverage.Deductible</span> field. A coverage can be associated with zero or one deductible. The <span class="cv_-_computer_voice">TransactionLineItem</span> entity includes a foreign key to <span class="cv_-_computer_voice">Deductible</span>. The <span class="cv_-_computer_voice">Deductible</span> entity is not loadable through staging tables. For details on the deductible data model, see <a href="javascript:WWHClickedPopup('config', 'config_deductibles.65.1.html#1037431', '');" title="Configuring Deductibles">“Configuring Deductibles” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'config_deductibles.65.1.html#1037431', '');" title="Configuring Deductibles">Configuration Guide</a></span>. See also <a href="javascript:WWHClickedPopup('app', 'deductible_handling.23.1.html#4664729', '');" title="Deductible Handling">“Deductible Handling” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('app', 'deductible_handling.23.1.html#4664729', '');" title="Deductible Handling">Application Guide</a></span>.</div>
+      <div class="B_-_Body"><a name="1939435">This step checks that the following columns are empty and not defined as extensions in the data model and then </a>removes them:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939436">cc_claim.DeductibleStatus</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939437">cc_transaction.DeductibleAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939438">cc_transaction.DeductiblePaid</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939439">cc_transaction.DeductibleSubtracted</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939440">cc_transaction.NetAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939441">cc_transaction.OriginalAmount</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1939442">If any one of these columns contains data, and is not defined as an extension, the upgrader reports an error, does </a>not remove the data and aborts the upgrade. </div>
+      <div class="B_-_Body"><a name="1939443">If you want to preserve data in any of these columns, define the column as an extension in the data model. If a </a>column is defined as an extension, the upgrader does not remove the column or its data. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1938009', '');" title="Creating Extensions to Preserve Data">“Deductible Fields”</a>.</div>
+      <div class="H3_-_Heading_3"><a name="1939447">Renaming ISO Match Report</a></div>
+      <div class="B_-_Body"><a name="1939449">This step renames the ISO match report table and accompanying staging and shadow tables, as follows:</a></div>
+      <div class="T_-_Table"><a name="1939467"> </a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939452">Old name</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939454">New name</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939456">cc_isomatchreport</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939458">cc_ExposureISOMatchReport</a></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939460">ccst_isomatchreport</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939462">ccst_ExposureISOMatchReport</a></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939464">cct_isomatchreport</a></span></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="1939466">cct_ExposureISOMatchReport</a></span></div>
+          </td>
+        </tr>
+      </table>
+      <div class="H3_-_Heading_3"><a name="1939469">Remapping Incidents</a></div>
+      <div class="B_-_Body"><a name="1939473">This step first checks that:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939474">for any incident with multiple exposures, the upgraded exposure types agree on the incident subtype.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939475">for each required incident type change, the new incident type has the same set or a superset of the fields of the </a>old incident.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939476">for each required incident type change, the new incident type has the same set or a superset of the arrays of </a>the old incident.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939477">for each required incident type change, any references to the incident are still valid with the new type.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1939478">This step then updates </a><span class="cv_-_computer_voice">cc_exposure.ExposureType</span> to match <span class="cv_-_computer_voice">cc_exposure.CoverageSubtype</span> if the <span class="cv_-_computer_voice">CoverageSubtype</span> to <span class="cv_-_computer_voice">ExposureType</span> map has changed.</div>
+      <div class="B_-_Body"><a name="1939479">The upgrader then updates </a><span class="cv_-_computer_voice">Incident</span> subtypes to match the <span class="cv_-_computer_voice">ExposureTypes</span> of referring <span class="cv_-_computer_voice">Exposures</span>.</div>
+      <div class="B_-_Body"><a name="1939483">ClaimCenter 6.0 adds new exposure and incident types for the homeowners policy types. These exposure and </a>incident types are described in the following table, along with their old counterparts for homeowners coverage subtypes.</div>
+      <div class="T_-_Table"><a name="1939543">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939486">New Exposure Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939488">New Incident Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939490">Old Exposure Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939492">Old Incident Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="1939494">Coverage Subtypes</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939496">Dwelling</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939498">Dwelling Incident</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939500">Property</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939502">Fixed Property Incident</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939504">Dwelling - Property</a>Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939505">Earthquake - Dwelling - </a>PropertyDamage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939506">Flood - Dwelling - Prop</a>ertyDamage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939507">Mold - Dwelling - Prop</a>ertyDamage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939509">Living Expenses</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939511">Living Expenses </a>Incident</div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939513">Loss of Use</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939515">Property Incident</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939517">Loss of Use Damage</a></div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939519">Other Structure</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939521">Other Structure </a>Incident</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939523">Property</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939525">Fixed Property Incident</a></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939527">Other Structure - Prop</a>erty Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939528">Earthquake - Other </a>Structure - PropertyDamage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939529">Flood - Other Structure </a>- Property Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939531">Content</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939533">Property Content </a>Incident</div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939535">Personal Property</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="1939537">Mobile Property Incident</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939539">Personal Property </a>Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939540">Scheduled Property - </a>Personal Property Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939541">Earthquake - Personal </a>Property Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="BIT_-_Bullet_Item_Table_outer" style="margin-left: 2.16pt">
+              <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+                <tr style="vertical-align: baseline;">
+                  <td>
+                    <div class="BIT_-_Bullet_Item_Table_inner" style="width: 7.199999999999999pt; white-space: nowrap;">
+                      <span class="but_-_bullet_in_table">•	</span>
+                    </div>
+                  </td>
+                  <td width="100%">
+                    <div class="BIT_-_Bullet_Item_Table_inner"><a name="1939542">Flood Personal Prop</a>erty - Personal Property Damage</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="1939544">The new incidents are subtypes of </a><span class="cv_-_computer_voice">FixedPropertyIncident</span>.</div>
+      <div class="B_-_Body"><a name="1939545">If you do not want to use any of the new relationships, you can change your </a><span class="cv_-_computer_voice">CoverageSubtype</span> to <span class="cv_-_computer_voice">ExposureType</span> map using Studio 6.0 before you run the database upgrade.</div>
+      <div class="B_-_Body"><a name="1939546">You can export line of business relationship information from Studio 5.0 and 6.0.</a></div>
+      <div class="HS_-_Head_Sub"><a name="1939547">To export line of business relationship information</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1939551">From the command line navigate to </a><span class="cv_-_computer_voice">ClaimCenter\bin</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1939552">Enter </a><span class="cv_-_computer_voice">gwcc studio</span> to launch Studio.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1939559">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, click <span class="ui_-_UI_element">configuration</span> → <span class="ui_-_UI_element">Lines of Business→ PolicyType.</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1939566">In the Navigation panel, right-click </a><span class="ui_-_UI_element">Homeowners</span> and select <span class="ui_-_UI_element">Export Branch</span> → <span class="ui_-_UI_element">HTML</span> or <span class="ui_-_UI_element">Export Branch</span> → <span class="ui_-_UI_element">CSV</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1939567">Select a location for the exported HTML or CSV file.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1939568">Click </a><span class="ui_-_UI_element">Save</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939570">Adding Activity Patterns for Homeowner Exposures</a></div>
+      <div class="B_-_Body"><a name="1939573">This step adds the Damaged Items and Living Expenses activity patterns used for the homeowners line of busi</a>ness.</div>
+      <div class="H3_-_Heading_3"><a name="1939576">Converting Catastrophe States to Catastrophe Zones</a></div>
+      <div class="B_-_Body"><a name="1939582">ClaimCenter 6.0 changed from using </a><span class="cv_-_computer_voice">CatastropheStates</span> to <span class="cv_-_computer_voice">CatastropheZones</span>. <span class="cv_-_computer_voice">CatastropheStates</span> were introduced in ClaimCenter 5.0, so this step only applies if upgrading from ClaimCenter 5.0.x.</div>
+      <div class="B_-_Body"><a name="1939589">You can choose to continue to use </a><span class="cv_-_computer_voice">CatastropheState</span> instead of the <span class="cv_-_computer_voice">CatastropheZone</span> functionality. To do so, you create a <span class="cv_-_computer_voice">CatastropheState</span> extension table <span class="cv_-_computer_voice">ccx_catastrophestate</span>. If the upgrader detects this table in the data model, it renames <span class="cv_-_computer_voice">cc_catastrophestate</span> to <span class="cv_-_computer_voice">ccx_catastrophestate</span>, preserving data in the table. In this case, this upgrade step stops after the rename operation.</div>
+      <div class="B_-_Body"><a name="1939592">For instructions to preserve </a><span class="cv_-_computer_voice">CatastropheState</span>, see <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1879359', '');" title="Creating Extensions to Preserve Data">“Retaining Catastrophe States Instead of Catastrophe Zones”</a>.</div>
+      <div class="B_-_Body"><a name="1939594">If there is no </a><span class="cv_-_computer_voice">ccx_catastrophestate</span> extension, this upgrade step checks that each <span class="cv_-_computer_voice">cc_catastrophestate.State</span> code exists as a zone code in <span class="cv_-_computer_voice">cc_zone</span> with zone type of state or province. If this check fails, the upgrader logs an error message, including a query to find the catastrophe states that can not be upgraded.</div>
+      <div class="B_-_Body"><a name="1939595">If each </a><span class="cv_-_computer_voice">cc_catastrophestate.State</span> code exists as a zone code in <span class="cv_-_computer_voice">cc_zone</span>, the upgrader converts each <span class="cv_-_computer_voice">CatastropheState</span> to its <span class="cv_-_computer_voice">CatastropheZone</span> equivalent. The upgrader then deletes the <span class="cv_-_computer_voice">cc_catastrophestate</span> table and its’ staging and shadow tables, <span class="cv_-_computer_voice">ccst_catastrophestate</span> and <span class="cv_-_computer_voice">cct_catastrophestate</span>.</div>
+      <div class="B_-_Body"><a name="1939599">The ClaimCenter 5.0.x version of </a><span class="cv_-_computer_voice">CatastropheState</span> included a <span class="cv_-_computer_voice">Comments</span> column. If there is any data in this column, and there is a <span class="cv_-_computer_voice">Comments</span> column on <span class="cv_-_computer_voice">CatastropheZone</span>, the database upgrader copies the data to the <span class="cv_-_computer_voice">CatastropheZone.Comments</span> column. The <span class="cv_-_computer_voice">CatastropheZone</span> entity does not have a <span class="cv_-_computer_voice">Comments</span> column by default. If you have comments in <span class="cv_-_computer_voice">CatastropheState</span>, and you want those comments moved to the new <span class="cv_-_computer_voice">CatastropheZone</span> entity, create a <span class="cv_-_computer_voice">Comments</span> column extension on <span class="cv_-_computer_voice">CatastropheZone</span>. Or, if you do not want to preserve the comments from <span class="cv_-_computer_voice">CatastropheState</span>, you can alter the <span class="cv_-_computer_voice">cc_catastrophestate</span> table to remove the <span class="cv_-_computer_voice">Comments</span> column before beginning the upgrade. If the upgrader detects data in the <span class="cv_-_computer_voice">CatastropheState.Comments</span> column, and does not detect a <span class="cv_-_computer_voice">Comments</span> column extension on <span class="cv_-_computer_voice">CatastropheZone</span>, it reports an error message and aborts the upgrade.</div>
+      <div class="B_-_Body"><a name="1939603">For instructions, see </a><a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.14.html#1879473', '');" title="Creating Extensions to Preserve Data">“Preserving Comments from Catastrophe State”</a>.</div>
+      <div class="H3_-_Heading_3"><a name="1939604">Adding Currency Column to Authority Limit Profiles</a></div>
+      <div class="B_-_Body"><a name="1939607">This step adds a </a><span class="cv_-_computer_voice">Currency</span> column to <span class="cv_-_computer_voice">cc_authorityprofile</span> and populates the new column with the reporting currency. The reporting currency is the <span class="cv_-_computer_voice">value</span> set to <span class="cv_-_computer_voice">DefaultApplicationCurrency</span> in <span class="cv_-_computer_voice">config.xml</span>.</div>
+      <div class="B_-_Body"><a name="1939611">See </a><a href="javascript:WWHClickedPopup('whatsnew', 'c-app.04.3.html#2321307', '');" title="Changes in ClaimCenter 6.0">“Currency Aware Authority Limit Profile” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('whatsnew', 'c-app.04.3.html#2321307', '');" title="Changes in ClaimCenter 6.0">New and Changed Guide</a></span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939612">Dropping Source File from Question Set Tables</a></div>
+      <div class="B_-_Body"><a name="1939621">This steps drops the </a><span class="cv_-_computer_voice">SourceFile</span> column from the following tables:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939625">cc_question</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939629">cc_questionchoice</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939633">cc_questionfilter</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939637">cc_questionset</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939641">cc_questionsetfilter</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939642">Dropping extractready Column from Certain Tables</a></div>
+      <div class="B_-_Body"><a name="1939643">This step removes the </a><span class="cv_-_computer_voice">extractready</span> column from the following tables:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939647">cc_bulkinvoiceitem</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939651">cc_claimassociation</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939655">cc_claiminassociation</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939659">cc_claiminfo</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939663">cc_claiminfoaccess</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939667">cc_contactinfo</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939671">cc_exposureisomatchreport</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939675">cc_isomatchreport</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939679">cc_locationinfo</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939683">cc_message</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939687">cc_periodpolicy</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939691">cc_tmpclaimaccess</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939695">cc_tmpstclaimaccess</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939699">cc_tmpsteclaimaccess</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939703">cc_wcbenefitfactordetail</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939704">Checking Payment Type</a></div>
+      <div class="B_-_Body"><a name="1939706">This version check looks for </a><span class="cv_-_computer_voice">Payments</span> with a null <span class="cv_-_computer_voice">PaymentType</span>. If the version check finds <span class="cv_-_computer_voice">Payments</span> with a null <span class="cv_-_computer_voice">PaymentType</span>, it reports an error. The error message includes a SQL query to identify the <span class="cv_-_computer_voice">Payments</span> with a null <span class="cv_-_computer_voice">PaymentType</span>. You must set a <span class="cv_-_computer_voice">PaymentType</span> for each <span class="cv_-_computer_voice">Payment</span> that this version check reports.</div>
+      <div class="H3_-_Heading_3"><a name="1939707">Removing Availability Script from Question Set</a></div>
+      <div class="B_-_Body"><a name="1939712">This trigger removes the </a><span class="cv_-_computer_voice">cc_questionset.availabilityscript</span> column. This column was not used by ClaimCenter.</div>
+      <div class="H3_-_Heading_3"><a name="1939716">Removing Example Cost Category and Extension Array Entities</a></div>
+      <div class="B_-_Body"><a name="1939723">This step first checks for any data in the </a><span class="cv_-_computer_voice">ccx_costcats</span> and <span class="cv_-_computer_voice">ccx_extarray</span> tables. These tables are examples and are not supported for upgrade. If the check finds any records in one of these tables, then it reports an error. If the check passes, this step runs a version trigger to drop the following tables:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939727">cct_costcats</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939731">ccst_costcats</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939735">ccx_costcats</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939739">cct_extarray</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939743">ccst_extarray</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939747">ccx_extarray</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="H3_-_Heading_3"><a name="1939748">Checking Claim Stubs for Removed Archive States</a></div>
+      <div class="B_-_Body"><a name="1939749">This version check looks for </a><span class="cv_-_computer_voice">ClaimInfo</span> records with an <span class="cv_-_computer_voice">ArchiveState</span> of either <span class="cv_-_computer_voice">archiving</span> or <span class="cv_-_computer_voice">markedforarchive</span>. If the version check finds any such records, then it aborts the upgrade and prints a warning message. The database cannot be upgraded when there are items being archived.</div>
+      <div class="H3_-_Heading_3"><a name="1939750">Ensuring Claim Loss Locations Are Unique</a></div>
+      <div class="B_-_Body"><a name="1939752">This version check looks for loss location addresses shared by multiple claims. This version check reports an </a>error if it detects loss location addresses shared by multiple claims. The error message includes an SQL query to identify these claims. If you want multiple claims to share a loss location, update each claimto refer to its own copy of the shared address.</div>
+      <div class="H3_-_Heading_3"><a name="1939753">Checking History Records</a></div>
+      <div class="B_-_Body"><a name="1939755">This version check looks for </a><span class="cv_-_computer_voice">History</span> rows that have a <span class="cv_-_computer_voice">HistoryType</span> of <span class="cv_-_computer_voice">markedforarchive</span>. The <span class="cv_-_computer_voice">markedforarchive</span> <span class="cv_-_computer_voice">HistoryType</span> is removed in ClaimCenter 6.0.  If this version check finds any <span class="cv_-_computer_voice">History</span> rows that have a <span class="cv_-_computer_voice">HistoryType</span> of <span class="cv_-_computer_voice">markedforarchive</span>, it reports an error and provides an SQL query to find the rows. You must manually remove these rows or add the <span class="cv_-_computer_voice">markedforarchive</span> typecode back to perform the upgrade.</div>
+      <div class="H3_-_Heading_3"><a name="1939772">Checking for Claims That Were Archived Incorrectly</a></div>
+      <div class="B_-_Body"><a name="1939774">This version check looks for the following issues with archived claims:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939775">transferred check exists in the archive database</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="1939776">Claim</a></span> referenced by a <span class="cv_-_computer_voice">BulkInvoiceItem</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1939777">primary database contains </a><span class="cv_-_computer_voice">BulkInvoiceItemInfo</span> of an archived <span class="cv_-_computer_voice">Claim</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1939778">This version check reports an error if it discovers any of these conditions. Contact Guidewire Support for assis</a>tance fixing any issues reported by this version check.</div>
+      <div class="H3_-_Heading_3"><a name="1939779">Adding Claim Column to BulkInvoiceItemInfo</a></div>
+      <div class="B_-_Body"><a name="1939781">This version trigger adds a </a><span class="cv_-_computer_voice">ClaimID</span> column to <span class="cv_-_computer_voice">cc_biiteminfo</span>. The trigger populates this column based on the <span class="cv_-_computer_voice">ClaimID</span> of the <span class="cv_-_computer_voice">ClaimInfo</span> for the <span class="cv_-_computer_voice">BulkInvoiceItem</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939782">Adding Reporting Columns to Claim and Exposure Report Tables</a></div>
+      <div class="B_-_Body"><a name="1939784">This version trigger adds and populates the following columns on </a><span class="cv_-_computer_voice">cc_claimrpt</span> and <span class="cv_-_computer_voice">cc_exposurerpt</span>:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939785">AvailableReservesReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939786">FuturePaymentsReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939787">OpenRecoveryReservesReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939788">OpenReservesReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939789">RemainingReservesReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939790">TotalPaymentsReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939791">TotalRecoveriesReporting</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1939792">The trigger populates the columns with the values contained in the non-reporting versions of these columns. For </a>example, the trigger populates <span class="cv_-_computer_voice">cc_claimrpt.AvailableReservesReporting</span> with the value of <span class="cv_-_computer_voice">cc_claimrpt.AvailableReserves</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1939793">Dropping Reporting Tables</a></div>
+      <div class="B_-_Body"><a name="1939798">This version trigger drops tables for the following entities:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939799">FinancialsRptUpgrade</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939800">TmpExposureRptStaging</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1939801">TmpStagingExposureRpt</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1939805">After the database upgrade, ClaimCenter creates new tables for these entities upon server startup.</a></div>
+      <div class="T_-_Table" style="color: #000000; font-family: &quot;Trebuchet MS&quot;; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none; vertical-align: baseline"><a name="1939835">&nbsp;</a></div>
+      <div class="H3_-_Heading_3"><a name="1941508">Converting Primary Key Indexes to Clustered Indexes</a></div>
+      <div class="B_-_Body"><a name="1941510">For SQL Server databases, this version trigger recreates non-clustered backing indexes for primary keys as clus</a>tered indexes. This change improves the performance of claim archiving and claim purging operations.</div>
+      <div class="B_-_Body"><a name="1941511">Before recreating the indexes, the version trigger automatically drops (and later rebuilds) any referencing foreign </a>keys and drops any clustered indexes on tables with a primary key.</div>
+      <div class="B_-_Body"><a name="1941512">If you are using filegroups, the upgrade recreates the clustered index in the OP filegroup. By default, the upgrade </a>also stores the intermediate sort results that are used to build the index in the OP filegroup. You can configure the upgrade to instead use the tempdb filegroup for the intermediate sort results.</div>
+      <div class="B_-_Body"><a name="1941513">If you want the upgrade to stores the intermediate sort results in the tempdb filegroup, set the </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> attribute of the <span class="cv_-_computer_voice">upgrade</span> element to <span class="cv_-_computer_voice">true</span>.</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941514">&lt;database ...&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941515">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941516">&nbsp;</a>&nbsp;&lt;upgrade sqlserverCreateIndexSortInTempDB="true" /&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941517">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941518">&nbsp;</a>&nbsp;&lt;/upgrade&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941519">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1941520">This option increases the amount of temporary disk space that is used to create an index. However, it might </a>reduce the time that is required to create or rebuild an index when tempdb is on a different set of disks from that of the user database.</div>
+      <div class="B_-_Body"><a name="1941521">By default, </a><span class="cv_-_computer_voice">sqlserverCreateIndexSortInTempDB</span> is <span class="cv_-_computer_voice">false</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1941965">Renaming ClaimInfo Columns</a></div>
+      <div class="B_-_Body"><a name="1941976">This step renames </a><span class="cv_-_computer_voice">cc_ClaimInfo.ArchiveFailure</span> to <span class="cv_-_computer_voice">cc_ClaimInfo.ArchiveFailureID</span> and <span class="cv_-_computer_voice">cc_ClaimInfo.ArchiveFailureDetails</span> to <span class="cv_-_computer_voice">cc_ClaimInfo.ArchiveFailureDetailsID</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1941983">Enforcing Contact Address Uniqueness</a></div>
+      <div class="B_-_Body"><a name="1941987">This trigger eliminates duplicate </a><span class="cv_-_computer_voice">Address</span> records in <span class="cv_-_computer_voice">ContactContact.Address</span> and <span class="cv_-_computer_voice">Contact.PrimaryAddress</span>. For duplicate <span class="cv_-_computer_voice">Address</span> records, the trigger creates a unique <span class="cv_-_computer_voice">Address</span> record and relinks the duplicate references to the unique <span class="cv_-_computer_voice">Address</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1941988">Changing Datatype of ArchiveTransitionRec.InternalDesc</a></div>
+      <div class="B_-_Body"><a name="1941991">This step alters the datatype of the </a><span class="cv_-_computer_voice">cc_archivetransitionrec.internaldesc</span> column from <span class="cv_-_computer_voice">Text</span> to <span class="cv_-_computer_voice">MediumText</span>.</div>
+      <div class="H3_-_Heading_3"><a name="1941992">Changing Precision of Metric Percent Columns</a></div>
+      <div class="B_-_Body"><a name="1941993">This step alters the precision of the following metric percent columns to eight, with a scale of zero:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1941997">cc_claimmetric.PercentValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942001">cc_claimmetriclimit.PercentRedValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942005">cc_claimmetriclimit.PercentTargetValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942009">cc_claimmetriclimit.PercentYellowValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942013">cc_exposuremetric.PercentValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942017">cc_exposuremetriclimit.PercentRedValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942021">cc_exposuremetriclimit.PercentTargetValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1942025">cc_exposuremetriclimit.PercentYellowValue</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1942029">This trigger only runs if the </a><span class="cv_-_computer_voice">cc_claimmetric</span> table exists already, so it only runs if the database is being upgraded from ClaimCenter 6.0. For database upgrades from earlier versions, the metric percent columns are defined in the data model with the correct precision.</div>
+      <div class="H3_-_Heading_3"><a name="1942033">Adding Encryption to Claim Snapshots</a></div>
+      <div class="B_-_Body"><a name="1942040">ClaimCenter 6.0.8 provides encryption of sensitive data, such as tax IDs, on claim snapshots.</a></div>
+      <div class="B_-_Body"><a name="1942047">This step adds an </a><span class="cv_-_computer_voice">EncryptionVersion</span> integer column to <span class="cv_-_computer_voice">cc_claimsnapshot</span>. As of ClaimCenter 6.0.1, you can create multiple versions of IEncryption plugins. The <span class="cv_-_computer_voice">cc_claimsnapshot.EncryptionVersion</span> column stores a number representing the version of the <span class="cv_-_computer_voice">IEncryption</span> plugin used to encrypt the snapshot fields. ClaimCenter also stores the current encryption version. If the encryption metadata or plugin algorithm change, ClaimCenter increments this version number. </div>
+      <div class="B_-_Body"><a name="1942057">The Encryption Upgrade work queue recalculates encrypted field values for any </a><span class="cv_-_computer_voice">ClaimSnapshot</span> that has an <span class="cv_-_computer_voice">EncryptionVersion</span> less than the current encryption version. ClaimCenter decrypts the encrypted value using the original plugin implementation. Then, ClaimCenter encrypts the value with the new plugin implementation. Finally, ClaimCenter updates the <span class="cv_-_computer_voice">EncryptionVersion</span> of the snapshot to mark it current. </div>
+      <div class="B_-_Body"><a name="1942073">During the upgrade to ClaimCenter 6.0.8, an upgrade trigger increments the global encryption version number. </a>So, when the Encryption Upgrade work queue runs, it will encrypt fields in the snapshot. This trigger does not fire if encryption is not enabled, and there are no encrypted fields defined on the claim snapshot.</div>
+      <div class="B_-_Body"><a name="1942076">For more information about the encryption plugin, see </a><a href="javascript:WWHClickedPopup('integration', 'encryption.24.1.html#2358131', '');" title="Encryption Integration">“Encryption Integration” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('integration', 'encryption.24.1.html#2358131', '');" title="Encryption Integration">Integration Guide</a></span>.</div>
+      <div class="B_-_Body"><a name="1942080">For more information about the Encryption Upgrade work queue, see </a><a href="javascript:WWHClickedPopup('admin', 'batch.13.06.html#1631743', '');" title="Batch Processes and Distributed Work Queues">“Batch Processes and Distributed Work Queues” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('admin', 'batch.13.06.html#1631743', '');" title="Batch Processes and Distributed Work Queues">System Administration Guide</a></span>.</div>
+      <div class="H3_-_Heading_3"><a name="1942082">Refactoring Claim and Exposure Staging Tables</a></div>
+      <div class="B_-_Body"><a name="1942086">This step drops the </a><span class="cv_-_computer_voice">ccst_claim</span> and <span class="cv_-_computer_voice">ccst_exposure</span> tables. ClaimCenter 6.0.2 and higher define <span class="cv_-_computer_voice">Claim.ClaimantDenorm</span>, <span class="cv_-_computer_voice">Claim.InsuredDenorm</span> and <span class="cv_-_computer_voice">Exposure.ClaimantDenorm</span> with the attribute <span class="cv_-_computer_voice">overwrittenInStagingTable</span> set to <span class="cv_-_computer_voice">true</span>. ClaimCenter automatically populates these columns when you load records into the staging tables. Previous versions of ClaimCenter populated these columns after the staging table records were moved into the main repository. In some cases, this caused performance issues. To remedy this, ClaimCenter 6.0.2 and higher populate these columns when you load the staging table rather than when you move data from the staging tables to the main repository.</div>
+      <div class="B_-_Body"><a name="1942099">Claim and exposure entities are defined as loadable, so ClaimCenter creates new </a><span class="cv_-_computer_voice">ccst_claim</span> and <span class="cv_-_computer_voice">ccst_exposure</span> tables when the server starts.</div>
+      <div class="H3_-_Heading_3"><a name="1942100">Cleaning up Cross-Claim ReserveLineWrapper.ReserveLine References</a></div>
+      <div class="B_-_Body"><a name="1942101">The trigger finds instances in which the </a><span class="cv_-_computer_voice">BulkInvoiceItemInfo</span> of a <span class="cv_-_computer_voice">ReserveLineWrapper</span> points to a different <span class="cv_-_computer_voice">Claim</span> than the <span class="cv_-_computer_voice">Claim</span> pointed to by the <span class="cv_-_computer_voice">ReserveLine</span>. The trigger updates those <span class="cv_-_computer_voice">ReserveLineWrapper</span> entities by repointing a given <span class="cv_-_computer_voice">ReserveLineWrapper</span> to a particular <span class="cv_-_computer_voice">ReserveLine</span> on its own <span class="cv_-_computer_voice">Claim</span>.</div>
+      <div class="B_-_Body"><a name="1942102">The trigger selects the </a><span class="cv_-_computer_voice">ReserveLine</span> belonging to the <span class="ui_-_UI_element">Transaction</span> of the transferred <span class="cv_-_computer_voice">Check</span>. Typically, a <span class="cv_-_computer_voice">BulkInvoice</span> <span class="cv_-_computer_voice">Check</span> has only one <span class="cv_-_computer_voice">Transaction</span>. However, in this case, cross-claim linkage occurs when the <span class="cv_-_computer_voice">BulkInvoice</span> <span class="cv_-_computer_voice">Check</span> is transferred between <span class="cv_-_computer_voice">Claims</span>. In that case, the <span class="cv_-_computer_voice">Check</span> has two <span class="cv_-_computer_voice">Transactions</span>, an offset on the first <span class="cv_-_computer_voice">Claim</span> and an onset on the second. The trigger selects the onset <span class="cv_-_computer_voice">Transaction</span> on the original <span class="cv_-_computer_voice">Claim</span>.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

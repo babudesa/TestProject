@@ -1,0 +1,38 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX1420 - Verify ALL Vendors are payable")
+internal class TVXX1420VerifyALLVendorsarepayable {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Modified by Rhathaway: 
+//Defect 149: djohnson :error message change ommittied the word expense 
+//Defect 424: djohnson : Correct Message, was not coming out due to the payable ext being set to null.
+//If the payee is a vendor the PayableExt must be yes to create a check.
+transactionSet.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(trans in transactionSet.Transactions){
+    var payment = trans as Payment
+    if(payment.Check.Status!="voided" and payment.Check.Status!="pendingvoid" and
+       payment.Check.Status!="transferred" and payment.Check.Status!="pendingtransfer" and
+       payment.Check.Status!="stopped" and payment.Check.Status!="pendingstop" and
+       payment.Check.Status!="issued" and payment.Check.Status!="cleared"){
+      for (payee in payment.Check.Payees)
+      {
+        if(payee.PayeeType == "vendor") {
+          var payable = false
+          if(payee.ClaimContact.Contact typeis CompanyVendor) {
+            payable = payee.ClaimContact.Contact.PayableExt
+          }
+          else if (payee.ClaimContact.Contact typeis PersonVendor) {
+             payable = payee.ClaimContact.Contact.PayableExt
+          }
+          if (!payable) {
+            transactionSet.reject( "payment", "Cannot issue a payment to a payee that is not a payable vendor.", null, null );
+          }
+       }
+      }
+   }
+}/*end00rule*/
+  }
+}

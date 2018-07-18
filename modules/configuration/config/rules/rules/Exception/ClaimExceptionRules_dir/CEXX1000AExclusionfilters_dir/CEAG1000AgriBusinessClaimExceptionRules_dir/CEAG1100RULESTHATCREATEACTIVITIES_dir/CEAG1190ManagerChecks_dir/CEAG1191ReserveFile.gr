@@ -1,0 +1,58 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir.CEAG1190ManagerChecks_dir
+
+@gw.rules.RuleName("CEAG1191 - Reserve File")
+internal class CEAG1191ReserveFile {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///below is for creating activity at an exposure level
+/*update 2/27/10 erawe -defect 3140 remove condition for adjuster
+activity needing be complete and changed days from 29 to 35
+*/
+claim.Exposures.length!=0 && (exists(exposure in claim.Exposures where exposure.getFeatureStatus()=="Open"))
+   && //means a feature does exist
+(exists(exposure in claim.Exposures where exposure.ReservedFileExt))
+
+
+//comment out !exist and exist for exposure level activity creation/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_reserve_manager" )
+try{
+for (exp in claim.Exposures) {
+ if(exp.ReservedFileExt) {
+   if(exp.getFeatureStatus()=="Open"){
+   if(exp.ReserveLines.length == 0){
+  //  if (exp.res.getCount() == 0){
+      if(!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_reserve_manager" and act.Exposure==exp )  and
+        //(exists(act in Claim.Activities where act.ActivityPattern.Code=="ab_check_res_adj23" and act.Status=="complete" and act.Exposure==exp)and
+        (gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays( claim.ReportedDate, 35))){ 
+        claim.createActivityFromPattern(exp, ap)
+      }
+    }
+ }
+}
+}
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*end00rule*/
+  }
+}

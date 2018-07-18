@@ -1,0 +1,15 @@
+package rules.Validation.ClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCV06000 - if Third party Liability indicated, then")
+internal class CCV06000ifThirdpartyLiabilityindicatedthen {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.FaultRating == "thirdparty" or 
+      (claim.FaultRating == "1" and (claim.Fault != 100 and claim.Fault != Null))) and
+claim.SubrogationStatus == null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var reason = displaykey.Subrogation.Validation.ClaimClosed.NullSubroStatus(gw.api.util.StringUtil.substring( actions.getRule() as java.lang.String, 0,8));
+claim.reject( "newloss",  reason, null, null)/*end00rule*/
+  }
+}

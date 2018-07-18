@@ -1,0 +1,76 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("PPUXX1300 - Update Former Contacts on Policy Refresh")
+internal class PPUXX1300UpdateFormerContactsonPolicyRefresh {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*
+  Loops through the contacts on a claim when the policy is being refreshed
+  and sets current lienholders, additional interest risks, alternate trainer and primary trainer to their
+  former states.  Sets current agency contact to its former state.
+  Sprint/Maintenance Release: EM 10 - Defect 1054
+  Author: Zach Thomas
+  Date: 07/22/2008
+  Updated: 02/24/2009 - Modified rule to loop through the original contact on the claim
+    and add the former roles to those original contacts.
+  Updated: 11/04/2010 - sprzygocki - Defect 3661 - Removed the check for the role owner being the
+    policy (line 26)
+*/
+policy.isPolicyInRefresh( 1 )==true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(origCont in (policy.Claim.OriginalVersion as Claim).Contacts){
+    if(origCont.Contact.VerifiedPolicyContactExt and exists(cont in policy.Claim.Contacts where cont.Contact.PublicID != origCont.Contact.PublicID and origCont.Contact.PublicID != null)){
+      for(role in origCont.Roles){
+        if(role.Role == "lienholder" and role.getOwnerExt() typeis Policy){
+          var CCR = policy.Claim.addRole( "formerlienholder", origCont.Contact );
+          CCR.CoveredPartyType = role.CoveredPartyType
+          CCR.Comments = role.Comments;
+          policy.Claim.removeRole( "lienholder", origCont.Contact )
+        }
+        if(role.Role == "AdditionalInterestRisk" and role.getOwnerExt() typeis Policy){
+          var CCR = policy.Claim.addRole( "formeraddintrisk", origCont.Contact );
+          CCR.CoveredPartyType = role.CoveredPartyType
+          CCR.Comments = role.Comments;
+          policy.Claim.removeRole( "AdditionalInterestRisk", origCont.Contact )
+        }
+        if(role.Role == "PrimaryTrainer" and role.getOwnerExt() typeis Policy){
+          policy.Claim.addRole( "formerprimarytrainer", origCont.Contact );
+          policy.Claim.removeRole( "PrimaryTrainer", origCont.Contact )
+        }
+        if(role.Role == "AlternateTrainer" and role.getOwnerExt() typeis Policy){
+          policy.Claim.addRole( "formeralternatetrainer", origCont.Contact );
+          policy.Claim.removeRole( "AlternateTrainer", origCont.Contact )
+        }
+        
+        if(role.Role == "coveredparty"){
+          for(currentCont in policy.Claim.Contacts){
+            if(currentCont.PublicID == origCont.PublicID){
+              for(role2 in currentCont.Roles){
+                if(role2.Role == "formercoveredparty"){
+                  role2.CoveredPartyType = role.CoveredPartyType;
+                  role2.Comments = role.Comments;
+                }
+              }
+              break;
+            }
+          }          
+        }
+      }
+    }
+  }
+  
+  if(policy.ex_Agency.PublicID != (policy.Claim.OriginalVersion as Claim).Policy.ex_Agency.PublicID and (policy.Claim.OriginalVersion as Claim).Policy.ex_Agency.PublicID != null){
+    for(role in (policy.Claim.OriginalVersion as Claim).getClaimContact( (policy.Claim.OriginalVersion as Claim).Policy.ex_Agency ).Roles){
+      if(role.Role == "Agency" and role.getOwnerExt() typeis Policy){
+        policy.Claim.addRole( "formeragency", (policy.Claim.OriginalVersion as Claim).Policy.ex_Agency );
+        policy.Claim.removeRole( "Agency", (policy.Claim.OriginalVersion as Claim).Policy.ex_Agency )
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy.Claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

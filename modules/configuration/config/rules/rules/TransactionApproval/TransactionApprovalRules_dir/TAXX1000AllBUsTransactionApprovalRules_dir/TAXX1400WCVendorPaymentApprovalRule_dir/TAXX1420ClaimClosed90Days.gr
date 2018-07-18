@@ -1,0 +1,16 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir.TAXX1000AllBUsTransactionApprovalRules_dir.TAXX1400WCVendorPaymentApprovalRule_dir
+
+@gw.rules.RuleName("TAXX1420 - Claim Closed 90 Days")
+internal class TAXX1420ClaimClosed90Days {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.State == ClaimState.TC_CLOSED && 
+transactionSet.Claim.CloseDate <= gw.api.util.DateUtil.currentDate().addDays(-90)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/transactionSet.requireApproval("Vendor payment on a Claim closed for 90 days requires approval.")
+transactionSet.RequestingUser = util.custom_Ext.finders.getUserOb("batchsu")
+actions.exit()
+/*end00rule*/
+  }
+}

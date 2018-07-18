@@ -1,0 +1,18 @@
+package rules.Validation.ExposureValidationRules_dir
+
+@gw.rules.RuleName("EXV06000 - Settlement Date is Valid")
+internal class EXV06000SettlementDateisValid {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.Claim.LossType == "WC"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var settleDate = Exposure.SettleDate;
+if (null != settleDate) {
+  var today = gw.api.util.DateUtil.currentDate();
+  if (gw.api.util.DateUtil.compareIgnoreTime(today, settleDate ) < 0) {
+    Exposure.rejectField("SettleDate", "newloss", displaykey.Rules.Validation.Exposure.SettlementDateInTheFuture, null, null);
+  }
+}/*end00rule*/
+  }
+}

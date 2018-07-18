@@ -1,0 +1,33 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir.CEAG1190ManagerChecks_dir
+
+@gw.rules.RuleName("CEAG1192 - 30 Day No Activity")
+internal class CEAG119230DayNoActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*12/14/09 erawe: check for claims that have the No Update on Claim in 30 days
+activity and that have not been changed for 50 days
+By default claim exception will check for claims that have not changed or been
+updated, in this rule we just check the time period
+Updated 2/26/10 erawe - defect 3139 Make manager no activity a stand alone activity
+so I removed condition that ad_inactivity_adj exist
+*/
+//(exists(act in Claim.Activities where act.ActivityPattern.Code=="ab_inactivity_adj")&&
+//!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_no_activity_manager")
+true
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(claim.isClaimIdle(ScriptParameters.AgriManagerInactiveThresholdDays)){
+    var ap = util.custom_Ext.finders.findActivityPattern("ab_no_activity_manager")
+    var clmUpdated :util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+    var updateTime = clmUpdated.getClaimUpdateTime(claim.ClaimNumber).LastUpdateTime
+       
+    claim.createActivityFromPattern( null, ap)
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

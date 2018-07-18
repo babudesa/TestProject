@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ManualCreateCheckWizard
+    afterCancel="ClaimFinancialsChecks.go(claim)"
+    afterFinish="ClaimFinancialsChecks.go(claim)"
+    beforeCommit="gw.api.system.bundle.BundleCommitCondition.verify(claim)"
+    cancelWarning="displaykey.Wizard.NewCheckWizard.CancelWarning"
+    id="ManualCreateCheckWizard"
+    onResume="gw.api.system.bundle.BundleCommitCondition.verify(claim)"
+    parent="ManualCreateCheckWizardForward(claim)">
+    <LocationEntryPoint
+      signature="ManualCreateCheckWizard(claim : Claim)"/>
+    <Variable
+      initialValue="new financials.ManualCreateCheckWizardInfo(CurrentLocation)"
+      name="Wizard"
+      type="financials.ManualCreateCheckWizardInfo"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <WizardStep
+      allowFinish="false"
+      id="NewCheckPayees"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Label"
+      onExit="Wizard.validateAllCheckPayees(); Wizard.createNewCheckPortionsIfNecessary()"
+      onFirstEnter="claim.freezeCurrency()"
+      screen="ManualCheckWizard_CheckPayeesScreen(claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayees.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckPayments"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Label"
+      onExit="Wizard.validatePayments();"
+      onFirstEnter="Wizard.setPreferredCurrency(Wizard.preferredCurrencyByPayees())"
+      screen="ManualCheckWizard_CheckPaymentsScreen(claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckPayments.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+    <WizardStep
+      id="NewCheckInstructions"
+      label="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Label"
+      screen="ManualCheckWizard_CheckInstructionsScreen(claim, Wizard)"
+      title="displaykey.Wizard.NewCheckWizard.NewCheckInstructions.Step( Wizard.CurrentStepNumber ,  Wizard.TotalNumberOfSteps)"/>
+  </ManualCreateCheckWizard>
+</PCF>

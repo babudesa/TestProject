@@ -1,0 +1,267 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="LossDetailsAddressDetailInputSet"
+    mode="default">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <!-- <Variable
+      initialValue="new gw.api.address.AddressAutofillHelper()"
+      name="AutoFillHelper"
+      type="gw.api.address.AddressAutofillHelper"/> -->
+    <!-- Commented out AutoFill to get NCW going for initial new claim entry
+    
+     Hack to change a space to a hyphen to fix AutoFill and Standardized without going through integration -->
+    <Variable
+      initialValue="(Claim.LossLocation != null) ? Claim.LossLocation.zipFix() : false"
+      name="fixZip"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="Claim.getLossLocationAddresses()"
+      name="LossLocations"
+      type="Address[]"/>
+    <!-- 09/21/2007 - Defect# 323 zthomas - Created variable to store current loss location -->
+    <Variable
+      initialValue="Claim.storeFormerLossLocation(Claim.LossLocation)"
+      name="storedLossLocation"/>
+    <Variable
+      name="lastState"
+      type="State"/>
+    <!-- 09/21/2007 - Defect# 323 zthomas - Modified valueRange to use stored previous loss locations in addition to related addresses.  6/9/2008 - Defect 1187 kmboyd - Modified the valueRange even farther to prevent the function from running multiple times and clearing out the zip code -->
+    <RangeInput
+      editable="true"
+      id="LossLocation_Name"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Name"
+      newValue="new Address(Claim)"
+      onChange="claim.getCatastropheWarning()"
+      postOnChange="true"
+      required="false"
+      sortValueRange="false"
+      value="Claim.LossLocation"
+      valueRange="Claim.getLossLocationAddresses()"/>
+    <!-- 11/20/2007 - zthomas - Defect 560, moved country and address type to the top of the address inputs.  
+            Modified available on other address inputs to only be visible when a country and address type are selected. -->
+    <TypeKeyInput
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Country"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Country"
+      onChange="Claim.LossLocation.clearCityStateZipCounty()"
+      postOnChange="true"
+      required="true"
+      value="Claim.LossLocation.Country"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New"
+      triggerIds="LossLocation_Name"
+      value="VALUE.Country"/> -->
+    <!-- modified by slp 9/21/07 sprint 7 -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Address1"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Address1"
+      value="Claim.LossLocation.AddressLine1"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New and VALUE.Country != null"
+      triggerIds="LossLocation_Name"
+      value="VALUE.AddressLine1"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_Address2"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.Address2"
+      value="Claim.LossLocation.AddressLine2"/>
+    <!-- <Reflect
+      available="Claim.canEditAddress(VALUE) and VALUE.New and VALUE.Country != null"
+      triggerIds="LossLocation_Name"
+      value="VALUE.AddressLine2"/> -->
+    <Input
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_City"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.City"
+      value="Claim.LossLocation.City"/>
+    <!-- <AddressAutoFillTextInput
+      action="AutoFillHelper.enterCityAutoFill(Claim.LossLocation)"
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_City"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.City"
+      validationExpression="AutoFillHelper.validateCityState(Claim.LossLocation)"
+      value="Claim.LossLocation.City"
+      visible="Claim.LossLocation.Country == &quot;US&quot; and (!AutoFillHelper.UseAutoFill or !AutoFillHelper.ZipToCityFill)"/> -->
+    <!-- <AddressAutoFillRangeInput
+      action="AutoFillHelper.exitAutoFill()"
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.new and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_CityChoice"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.City"
+      validationExpression="AutoFillHelper.validateCityState(Claim.LossLocation); AutoFillHelper.exitAutoFill();; return null"
+      value="Claim.LossLocation.City"
+      valueRange="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? AutoFillHelper.getCitiesFromZip(Claim.LossLocation) : null"
+      visible="AutoFillHelper.UseAutoFill and AutoFillHelper.ZipToCityFill"/> -->
+    <!-- visible="Claim.LossLocation.Country != "US" and (!AutoFillHelper.UseAutoFill or !AutoFillHelper.ZipToCityFill)"/> -->
+    <TypeKeyInput
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_State"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.State"
+      onChange="util.custom_Ext.addressFunctions.getValidCountyForState(Claim.LossLocation.State); claim.getCatastropheWarning()"
+      postOnChange="true"
+      required="util.custom_Ext.finders.stateRequired(Claim.LossLocation.Country.Code, true)"
+      value="Claim.LossLocation.State"
+      visible="false">
+      <!-- <Reflect
+        triggerIds="LossLocation_CityChoice"
+        valueRange="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? AutoFillHelper.getStatesFromCityZip(VALUE, Claim.LossLocation) : null"/> -->
+    </TypeKeyInput>
+    <TextInput
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.new and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_ZIP"
+      inputMask="util.custom_Ext.finders.getPostCodeMask(Claim.LossLocation.Country.Code)"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.ZIP"
+      postOnChange="true"
+      validationExpression="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? null : util.custom_Ext.finders.postCodeExpression(Claim.LossLocation.Country.Code)"
+      value="Claim.LossLocation.PostalCode"
+      visible="Claim.LossLocation.Country.Code != &quot;US&quot;"/>
+    <!-- <AddressAutoFillTextInput
+      action="Claim.LossLocation.State = null; AutoFillHelper.enterZipAutoFill(Claim.LossLocation)"
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.New and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_ZIP"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.ZIP"
+      validationExpression="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? null : util.custom_Ext.finders.postCodeExpression(Claim.LossLocation.Country.Code)"
+      value="Claim.LossLocation.PostalCode"
+      visible="(!AutoFillHelper.UseAutoFill or AutoFillHelper.ZipToCityFill) and Claim.LossLocation.Country.Code == &quot;US&quot;"/> -->
+    <!-- <AddressAutoFillRangeInput
+      action="AutoFillHelper.exitAutoFill()"
+      available="Claim.canEditAddress(Claim.LossLocation) and Claim.LossLocation.new and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_ZIPChoice"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.ZIP"
+      validationExpression="AutoFillHelper.validateZip(Claim.LossLocation); AutoFillHelper.exitAutoFill();; return null"
+      value="Claim.LossLocation.PostalCode"
+      valueRange="AutoFillHelper.getZipCodesFromCityState(Claim.LossLocation)"
+      visible="AutoFillHelper.UseAutoFill and !AutoFillHelper.ZipToCityFill and Claim.LossLocation.Country.Code == &quot;US&quot;"/> -->
+    <Input
+      available="Claim.LossLocation != null and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_County"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.County"
+      required="Claim.LossLocation.Country.Code == &quot;US&quot; and Claim.Catastrophe!=null"
+      value="Claim.LossLocation.County"
+      visible="Claim.LossLocation.Country.Code != &quot;US&quot;"/>
+    <!-- visible="!AutoFillHelper.UseAutoFill and Claim.LossLocation.Country.Code != &quot;US&quot;"/> -->
+    <RangeInput
+      available="Claim.LossLocation != null and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="LossLocation_CountyChoiceFromState"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.County"
+      required="Claim.LossLocation.Country.Code == &quot;US&quot; and Claim.Catastrophe != null"
+      value="Claim.LossLocation.County"
+      valueRange="Claim.LossLocation.Country.Code == &quot;US&quot; ? util.custom_Ext.addressFunctions.getValidCountyForState(Claim.LossLocation.State):null"
+      visible="(Claim.LossLocation.Country.Code == &quot;US&quot;) or Claim.LossLocation.StandardizedExt"/>
+    <!-- <RangeInput
+      available="Claim.LossLocation != null and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="CountyChoiceFromCity"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.County"
+      required="Claim.LossLocation.Country.Code == &quot;US&quot; and Claim.Catastrophe != null"
+      value="Claim.LossLocation.County"
+      valueRange="AutoFillHelper.getCountiesFromCityState(Claim.LossLocation)"
+      visible="AutoFillHelper.UseAutoFill and !AutoFillHelper.ZipToCityFill and Claim.LossLocation.Country.Code == &quot;US&quot; and !Claim.LossLocation.StandardizedExt">
+      <Reflect
+        triggerIds="LossLocation_CityChoice"
+        valueRange="AutoFillHelper.getCountiesFromCityState(Claim.LossLocation)"/>
+    </RangeInput> -->
+    <!-- <RangeInput
+      available="Claim.LossLocation != null and Claim.LossLocation.Country != null"
+      editable="!(Claim.LossLocation.StandardizedExt)"
+      id="CountyChoiceFromZip"
+      label="displaykey.NVV.Claim.SubView.LossDetails.Claim.LossLocation.County"
+      required="Claim.LossLocation.Country.Code == &quot;US&quot; and Claim.Catastrophe != null"
+      validationExpression="AutoFillHelper.validateCounty(Claim.LossLocation)"
+      value="Claim.LossLocation.County"
+      valueRange="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? AutoFillHelper.getCountiesFromZip(Claim.LossLocation) : null"
+      visible="AutoFillHelper.UseAutoFill and AutoFillHelper.ZipToCityFill and Claim.LossLocation.Country.Code == &quot;US&quot; and !Claim.LossLocation.StandardizedExt">
+      <Reflect
+        triggerIds="LossLocation_ZIPChoice"
+        valueRange="util.custom_Ext.finders.postCodeValidation(Claim.LossLocation) ? AutoFillHelper.getCountiesFromZip(Claim.LossLocation) : null"/>
+    </RangeInput> -->
+    <!-- visible="(!AutoFillHelper.UseAutoFill and Claim.LossLocation.Country.Code == "US") or Claim.LossLocation.StandardizedExt"/>
+    
+     7/28/10 erawe Task to add Longitude and Latitude to Loss Details screen
+        and require if loss cause is sinkholecollapse and at ability to pay validation level -->
+    <Input
+      editable="true"
+      id="Latitude"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Latitude"
+      required="requireCoordinates()"
+      value="Claim.LossLocation.Latitude"/>
+    <Input
+      editable="true"
+      id="Longitude"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Longitude"
+      required="requireCoordinates()"
+      value="Claim.LossLocation.Longitude"/>
+    <Input
+      editable="(Claim.LossLocation.StandardizedExt == &quot;true&quot;)"
+      id="StandardizationIndicator"
+      label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+      postOnChange="true"
+      value="Claim.LossLocation.StandardizedExt"
+      visible="true"/>
+    <ButtonInput
+      action="StandardizationPopup.push(Claim.LossLocation)"
+      hideIfReadOnly="true"
+      id="StandardizeAddressButton"
+      value="displaykey.Web.ContactDetail.AddressDetail.StandardizeButtonText"
+      visible="true"/>
+    <!-- <Input
+      editable="true"
+      id="Claim_JurisdictionState"
+      label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.JurisdictionState"
+      value="Claim.JurisdictionState">
+      <Reflect
+        triggerIds="LossLocation_State">
+        <ReflectCondition
+          condition="true"
+          value="VALUE"/>
+        <ReflectCondition
+          condition="true"
+          value="&quot;&quot;"/>
+      </Reflect>
+    </Input> -->
+    <!-- GW ADDED -->
+    <Code><![CDATA[
+/*Added function to do an onChange for the LossLocation range input
+      	  It sets the temperary LossLocations variable and also does a check to see if the 
+      	  state has been moved from or to TX if exposures exist on this claim.
+      	  kmboyd - Defect 884
+      	  Defect 1479 - djohnson corrected I tested this on an ECCC claim in Agri Int and  need to get an message 	*/
+      	function runChange(){
+      		LossLocations = Claim.getLossLocationAddresses()
+      		if ((Claim.LossType == "AGRILIABILITY"  and exists (exp in Claim.Exposures where exp.Coverage.Type.Code == "ab_EQCCC") )
+            or (Claim.LossType == "EQUINE" )){      		
+      		if(Claim.Exposures.length > 0){
+	      		lastState = (claim.OriginalVersion.getFieldValue( "LossLocation" ) as Address).State
+	      		if(lastState != Claim.LossLocation.State and ((lastState == "TX" and Claim.LossLocation.State != null) or Claim.LossLocation.State == "TX")){
+	      			GeneralErrorWorksheet.goInWorkspace(displayKey.Rules.Validation.Claim.Equine.NewLoss.ChangedState)
+	      		}
+      		}
+      		}
+      	}
+      	function requireCoordinates() :boolean {
+  			if(Claim.LossCause=="sinkholecollapse" and Claim.ValidationLevel=="payment"){
+  				return true;
+     		}
+     			return false;
+     	}
+    ]]></Code>
+  </InputSet>
+</PCF>

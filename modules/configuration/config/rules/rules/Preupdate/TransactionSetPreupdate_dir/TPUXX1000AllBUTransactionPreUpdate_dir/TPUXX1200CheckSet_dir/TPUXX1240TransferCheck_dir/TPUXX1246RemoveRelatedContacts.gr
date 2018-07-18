@@ -1,0 +1,41 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1240TransferCheck_dir
+
+@gw.rules.RuleName("TPUXX1246 - Remove Related Contacts")
+internal class TPUXX1246RemoveRelatedContacts {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/// 7/30/13 - kniese - This function searches for the transfered contact on the new claim and removes
+// all of the related contacts from the previous claim.
+
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(check in (transactionSet as CheckSet).Checks){
+  //Find the transfer check
+  if(check.Transferred and check.TransferredToCheck.New){
+    //Loop through all the payees on this check
+    for(payee in check.Payees){
+      //Loop through all the contacts of the transfer to claim
+      for(transContact in check.TransferredToCheck.Claim.Contacts){
+        // Checks if contacts are matching    
+    	if(util.custom_Ext.PolicyRefreshFunctions.isMatchingContact(payee.ClaimContact, transContact)){
+    	  // Checks if there are any Target Related Contacts
+    	  if(transContact.Contact.TargetRelatedContacts.Count != 0){
+    	    for(cc in transContact.Contact.TargetRelatedContacts){
+    	      // Removes Target Related Contact
+    	      transContact.Contact.removeFromTargetRelatedContacts(cc)
+    	     }   
+    	   }
+    	   // Checks if there are any Source Related Contacts
+    	   if(transContact.Contact.SourceRelatedContacts.Count != 0){
+    	     for(cc in transContact.Contact.SourceRelatedContacts){
+    	       transContact.Contact.removeFromSourceRelatedContacts(cc) 
+    	     }
+    	   }
+    	}
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

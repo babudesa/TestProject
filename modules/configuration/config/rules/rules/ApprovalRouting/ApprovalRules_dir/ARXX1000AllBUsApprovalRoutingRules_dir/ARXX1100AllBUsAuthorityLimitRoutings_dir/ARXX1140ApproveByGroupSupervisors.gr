@@ -1,0 +1,36 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100AllBUsAuthorityLimitRoutings_dir
+
+@gw.rules.RuleName("ARXX1140 - Approve By Group Supervisors")
+internal class ARXX1140ApproveByGroupSupervisors {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/((transactionSet.LastApprovingUser == transactionSet.CreateUser ||
+transactionSet.LastApprovingUser != transactionSet.CreateUser) ||
+(util.user.GroupsHelper.isAGroupSupervisor(transactionSet.LastApprovingUser))) &&
+(!util.user.GroupsHelper.isClaimManager(transactionSet.LastApprovingUser) and
+transactionSet.LastApprovingUser != transactionSet.getSCOAssistUser() and
+!util.user.SCOHelper.isAnSCO(transactionSet.LastApprovingUser) and
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser) 
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var nextApprovingUser = util.user.GroupsHelper.getDirectSupervisor(transactionSet.LastApprovingUser)
+  if(nextApprovingUser == null) {
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+  } else {
+    var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+    transactionSet.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+  }
+} catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

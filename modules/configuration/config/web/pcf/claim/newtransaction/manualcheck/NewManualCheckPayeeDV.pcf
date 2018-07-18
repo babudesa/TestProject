@@ -1,0 +1,403 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="NewManualCheckPayeeDV">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <Require
+      name="automatedCheckInfo"
+      type="util.custom_Ext.AutomatedCheckInfo"/>
+    <Variable
+      name="CheckPayToHidden"
+      type="String"/>
+    <Variable
+      initialValue="resetPayToFlag()"
+      name="CopyPayToAddy"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <!-- Hack to change a space to a hyphen to fix AutoFill and Standardized without going through integration -->
+    <Variable
+      initialValue="(Check.ex_PayToAddress != null) ? Check.ex_PayToAddress.zipFix() : false"
+      name="fixZip"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="(Check.ex_MailToAddress != null) ? Check.ex_MailToAddress.zipFix() : false"
+      name="fixZip2"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="Check.setCheckData(CopyPayToAddy)"
+      name="setCheckData"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="false"
+      name="showFullCoName"
+      type="Boolean"/>
+    <Variable
+      initialValue="Check.getPayeeClaimContacts()"
+      name="payeeList"
+      type="List"/>
+    <InputColumn>
+      <!-- <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.TaxReporting"/> -->
+    </InputColumn>
+    <InputColumn>
+      <!-- Customization Warning: the following fields are explicitly used by the code
+      and they should not be removed or have their names changed:
+      Check.PrimaryPayee.Type:    is used to decide on Check.Reportability
+      Check.JointPayee.Name:    is used to check that PrimaryPayee and JointPayee are not equal
+      Check.JointPayee.Type:    is used to decide on Check.Reportability
+      In general this NVV has a very high concentration of custom tags and it
+      will be hard to remove or change any of the existing items. Check.handleOnPickForPayee(Check.FirstPayee) was used a lot here but removed for our functiond...maybe revisit? -->
+      <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee"
+        visible="Check.Payees.Length &lt;= 1"/>
+      <ClaimContactInput
+        claim="Check.Claim"
+        editable="true"
+        id="PrimaryPayee_Name"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+        newContactMenu="BlankNewContactPickerMenuItemSet()"
+        onChange="Check.throwClosedDateError(Check.FirstPayee);Check.FirstPayee.Payee.syncToAB(); hasWithholdingsError(Check.FirstPayee); Check.FirstPayee.CheckPayeeRoleExt = null; Check.checkForSameAddy(CopyPayToAddy); util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, showFullCoName); "
+        onPick="hasWithholdingsError(Check.FirstPayee); Check.FirstPayee.CheckPayeeRoleExt = null; util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, showFullCoName)"
+        postOnChange="true"
+        required="true"
+        validationExpression="Check.FirstPayee.Payee.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+        value="Check.FirstPayee.Payee"
+        valueRange="payeeList"
+        visible="Check.Payees.length &lt;= 1"/>
+      <BooleanRadioInput
+        editable="true"
+        id="FullName"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.ShowFullName"
+        onChange="util.financials.CheckFunctions.handleOnPickForPrimaryPayee(Check, automatedCheckInfo.showFullCoName)"
+        postOnChange="true"
+        required="false"
+        value="automatedCheckInfo.ShowFullCoName"
+        visible="Check.FirstPayee.Payee.Name.length &gt; 60"/>
+      <!-- 2/26/2008 - zthomas - Defect 783, Remove reflect to use postOnChange from PayeeName, set editable to false. -->
+      <Input
+        id="PrimaryPayee_Type"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+        required="true"
+        value="(Check.FirstPayee!=null and Check.FirstPayee.Payee!=null) ? Check.FirstPayee.Payee.getContactRoleName(Check.FirstPayee.PayeeType.Code, Check.FirstPayee.ClaimContact) : null"
+        visible="Check.Payees.Length &lt;= 1"/>
+      <!-- <Reflect
+        triggerIds="PrimaryPayee_Name"
+        value="Check.getSuggestedPayeeType(VALUE)"
+        valueRange="Check.getAllowedPayeeTypes(VALUE)"/> -->
+      <RangeInput
+        editable="true"
+        id="VendorType"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.ContactRole"
+        optionLabel="Check.FirstPayee.Payee.getContactRoleName(VALUE.toString(), Check.FirstPayee.ClaimContact)"
+        required="true"
+        value="Check.FirstPayee.CheckPayeeRoleExt"
+        valueRange="Check.FirstPayee.Payee.getValidRoles()"
+        visible="Check.FirstPayee.PayeeType==&quot;vendor&quot; and Check.Payees.length &lt;= 1 and Check.FirstPayee.ClaimContact.New"/>
+      <ButtonInput
+        action="Check.addNewPayee()"
+        id="AddJointPayees"
+        value="displaykey.NVV.Financials.Check.AddJointPayees"
+        visible="Check.Payees.Length &lt;= 1"/>
+      <ListViewInput
+        boldLabel="true"
+        editable="true"
+        label="displaykey.NVV.Financials.Check.Payees"
+        labelAbove="true"
+        visible="Check.Payees.Length &gt; 1">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          id="NewCheckPayeeDVPayeesLV"
+          validationExpression="Wizard.validateCheckPayees(Check)">
+          <RowIterator
+            editable="true"
+            elementName="CheckPayee"
+            toCreateAndAdd="Check.addNewPayee()"
+            toRemove="Check.removeFromPayees(CheckPayee); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, null, showFullCoName); Check.checkForSameAddy(CopyPayToAddy);"
+            value="Check.Payees">
+            <Row>
+              <ClaimContactCell
+                claim="Check.Claim"
+                editable="true"
+                id="PayeeName"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Name"
+                newContactMenu="BlankNewContactPickerMenuItemSet()"
+                onChange="Check.throwClosedDateError(CheckPayee);CheckPayee.Payee.syncToAB();hasWithholdingsError(CheckPayee); CheckPayee.CheckPayeeRoleExt = null; Check.checkForSameAddy(CopyPayToAddy); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, CheckPayee, showFullCoName)"
+                onPick="hasWithholdingsError(CheckPayee); util.financials.CheckFunctions.handleOnPickForJointPayees(Check, CheckPayee, showFullCoName)"
+                postOnChange="true"
+                required="true"
+                validationExpression="CheckPayee.Payee.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+                value="CheckPayee.Payee"
+                valueRange="payeeList"/>
+              <!-- 2/26/2008 - zthomas - Defect 783, Set editable to false. -->
+              <Cell
+                id="PayeeType"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.Type"
+                required="true"
+                validationExpression="CheckPayee.PayeeType == &quot;claimant&quot; &amp;&amp; !CheckPayee.ClaimContact.isClaimant() ? displaykey.Java.NewPayment.Error.PayeeIsNotClaimant : null"
+                value="(CheckPayee.Payee!=null and CheckPayee.Payee!=null) ? CheckPayee.Payee.getContactRoleName(CheckPayee.PayeeType.Code, CheckPayee.ClaimContact) : null"/>
+              <RangeCell
+                editable="CheckPayee.PayeeType==&quot;vendor&quot; and checkpayee.claimcontact.new"
+                id="ContactRoleCell"
+                label="displaykey.NVV.Financials.NewCheckPayee.Check.PrimaryPayee.ContactRole"
+                optionLabel="CheckPayee.Payee.getContactRoleName(VALUE, CheckPayee.ClaimContact)"
+                required="true"
+                value="CheckPayee.CheckPayeeRoleExt"
+                valueRange="CheckPayee.Payee != null ? CheckPayee.Payee.getValidRoles() : {}"
+                visible="exists(payee in check.payees where payee.payeetype==&quot;vendor&quot; and payee.claimcontact.new)"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <!-- <Reflect
+        triggerIds="PrimaryPayee_Name"
+        valueRange="VALUE.AllAddresses"/> -->
+      <InputSetRef
+        def="AddressInputSet(Check.PayToAddressOwner)"
+        id="PayToAddress"
+        mode="Check.PayToAddressOwner.InputSetMode"/>
+      <!-- end of Standardize button -->
+      <InputDivider/>
+      <!-- <HiddenInput
+        id="CheckPayToHidden"
+        value="CheckPayToHidden">
+        <Reflect
+          triggerIds="PrimaryPayee_Name"
+          value="VALUE.DisplayName"/>
+      </HiddenInput> -->
+      <!-- <HiddenInput
+        id="CheckPayTo"
+        value="Check.checkPayTo()"/> -->
+      <!-- REMOVED BY GAIC Fixed with gscript function
+      
+        PJR Removing Hidden Function call as per defect 1529 -->
+      <TextInput
+        boldLabel="true"
+        editable="true"
+        id="PayTo_Line1"
+        label="displayKey.NVV.Financials.NewCheckPayee.Check.PayTo"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        required="true"
+        value="Check.PayToLine1Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line2"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine2Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line3"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine3Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line4"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine4Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line5"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine5Ext"/>
+      <TextInput
+        editable="true"
+        id="PayTo_Line6"
+        label="&quot;&quot;"
+        numCols="40"
+        onChange="Check.setCheckPayTo()"
+        postOnChange="true"
+        value="Check.PayToLine6Ext"/>
+      <!-- <TextAreaInput label="displaykey.GAIC.Financials.NewCheckPayee.Check.PayTo" id="Check_PayTo" value="Check.PayTo" required="true" boldLabel="true" numCols="100" numRows="1" editable="true"/> REMOVED BY GAIC
+        <Reflect triggerIds="CheckPayToHidden" value="javascript:VALUE == '' ? '' : VALUE"/>
+        </TextAreaInput> -->
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Financials.NewCheckPayee.Manual.Check.MailTo"/>
+      <CheckBoxInput
+        available="Check.Payees.length &gt; 0 and Check.ex_PayToAddress != null"
+        editable="true"
+        id="CopyPayTo"
+        label="displaykey.GAIC.Financials.Check.CopyPayTo"
+        onChange="Check.checkMailToAddy(CopyPayToAddy); throwLongNameMailToWarning()"
+        postOnChange="true"
+        value="CopyPayToAddy"/>
+      <Input
+        id="Check_DeliveryMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.DeliveryMethod"
+        value="Check.DeliveryMethod"
+        visible="false"/>
+      <ClaimContactInput
+        claim="Check.Claim"
+        editable="!CopyPayToAddy"
+        id="Check_MailToContact"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact"
+        onChange="throwLongNameMailToWarning()"
+        postOnChange="true"
+        required="true"
+        value="Check.ex_MailTo"
+        valueRange="Check.Claim.getRelatedContacts()"/>
+      <RangeInput
+        editable="!CopyPayToAddy"
+        id="MailToRoleRangeInput"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact.ContactRole"
+        optionLabel="VALUE != null ? Check.ex_MailTo.getContactRoleName(VALUE.toString(), Check.Claim.getClaimContact(Check.ex_MailTo)) : null"
+        required="true"
+        value="Check.MailToRole"
+        valueRange="Check.ex_MailTo.getValidRoles()"
+        visible="Check.ex_MailTo != null and Check.Claim.getClaimContact(Check.ex_MailTo).Roles.Count == 0 and Check.DeliveryMethod != &quot;hold&quot;"/>
+      <Input
+        editable="true"
+        id="Attention"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.MailToContact.Attention"
+        required="false"
+        value="Check.AttentionMailToExt"/>
+      <InputSetRef
+        def="AddressInputSet(Check.MailToAddressOwner)"
+        editable="!CopyPayToAddy"
+        id="MailToAddress"
+        mode="Check.MailToAddressOwner.InputSetMode"/>
+      <!-- <HiddenInput
+        id="Recipient"
+        value="Check.setInitialValues()"/> -->
+      <!-- <Reflect
+        triggerIds="PrimaryPayee_Name">
+        <ReflectCondition
+          condition="VALUE != null"
+          value="VALUE.DisplayName"/>
+        <ReflectCondition
+          condition="true"
+          value="&quot;&quot;"/>
+      </Reflect> -->
+      <!-- end of Standardize button   Commented out due to MailTo being used once again - kmboyd - Defect 1293 - 7/16/08
+       Removed by GAIC
+        
+       Removed by GAIC -->
+      <InputDivider/>
+      <!-- <InputDivider/> -->
+      <Label
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.Issuance"/>
+      <TypeKeyInput
+        editable="true"
+        id="PaymentMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.PaymentType"
+        postOnChange="true"
+        required="true"
+        value="Check.PaymentMethod"
+        visible="false"/>
+      <TypeKeyInput
+        editable="true"
+        filter="Check.filterManualPaymentMethod(VALUE)"
+        id="ManualPayMethod"
+        label="displaykey.NVV.Financials.NewCheckPayee.Check.ManualMethod"
+        onChange="Check.PrefixExt=null; Check.ex_DraftRegion=null; if(Check.ex_ManualPaymentMethod==&quot;eft&quot; or Check.ex_ManualPaymentMethod==&quot;voucher&quot;){Check.PrefixExt=&quot;991&quot;}"
+        postOnChange="true"
+        required="true"
+        value="Check.ex_ManualPaymentMethod"/>
+      <Input
+        editable="Check.New"
+        id="Check_IssueDate"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.IssueDate"
+        required="true"
+        validationExpression="Check.IssueDate == NULL || Check.IssueDate &lt;= util.DateUtil.currentDate() ? null : displaykey.Java.NewPayment.Error.IssueDate"
+        value="Check.IssueDate"/>
+      <Input
+        editable="Check.New"
+        id="Check_CheckNumber"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.CheckNumber"
+        required="true"
+        validationExpression="Check.validateManualCheckNumber()"
+        value="Check.CheckNumber"/>
+      <TypeKeyInput
+        editable="true"
+        id="ADIS"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.ADIS "
+        required="true"
+        value="Check.PrefixExt"
+        visible="Check.isCheckPrefixVisible"/>
+      <TypeKeyInput
+        editable="true"
+        id="Draft_Region"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.DraftRegion "
+        required="true"
+        value="Check.ex_DraftRegion"
+        visible="Check.isDraftRegionVisible"/>
+      <HiddenInput
+        id="SetBankAccount"
+        value="Check.setBankAccount()"/>
+      <TypeKeyInput
+        available="false"
+        id="Check_BankAccount"
+        label="displaykey.NVV.Financials.ManualPaymentInstructions.Check.BankAccount"
+        value="Check.BankAccount"/>
+    </InputColumn>
+    <Code><![CDATA[function formatOwner(owner : KeyableBean) : String {
+  var result : String;
+  // If it's a draft claim (i.e., a "new claim wizard" claim), then just print out the "DraftClaim" display key;
+  // otherwise, just use the default label (DisplayName).
+  if (owner typeis Claim) {
+    var claim = owner;
+    if (claim.State == "draft") {
+      result = displaykey.LV.Claim.EditableClaimContactRoles.DraftClaim;
+    } else {
+      result = owner.toString();
+    }
+  } else {
+    result = owner.toString();
+  }
+  return result;
+}
+function hasWithholdingsError(cPayee : CheckPayee){
+  if(Check.hasTaxWithholdings(cPayee)){
+    TaxWithholdingWorksheet.goInWorkspace(cPayee.Payee.Ex_TaxStatusCode)
+  } 
+}
+/**Same as Functionality*/
+ //determines whether or not the paytoflag should be reset, this is in case they decide to come back to the screen after leaving it
+function resetPayToFlag():boolean{
+	if(CopyPayToAddy == null){
+          if(Check.Payees.length > 0 and Check.ex_PayToAddress != null and Check.ex_MailToAddress != null and Check.ex_PayToAddress.compareTo(Check.ex_MailToAddress) == 0 and Check.Payees[0].Payee == Check.ex_MailTo){
+        	return true;
+          }
+     	}
+	else if(CopyPayToAddy and (Check.Payees[0].Payee !=null && Check.ex_MailTo==null )){
+         CopyPayToAddy=false        
+         Check.checkMailToAddy(CopyPayToAddy)
+       } else if(CopyPayToAddy and Check.ex_MailToAddress.compareTo(Check.ex_PayToAddress) != 0){
+         CopyPayToAddy=false        
+         Check.checkMailToAddy(CopyPayToAddy)
+       }
+	return CopyPayToAddy;
+}
+
+function throwLongNameMailToWarning(){
+ if(Wizard.Check.ex_MailTo.Name.length > 60){
+   GeneralErrorWorksheet.goInWorkspace(displaykey.Validator.Check.FullCoName)
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

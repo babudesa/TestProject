@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUAG1700 - Vehicle Theft Activity")
+internal class CPUAG1700VehicleTheftActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType == LossType.TC_ALTMARKETSAUTO OR claim.LossType == LossType.TC_SHSAUTO OR claim.LossType==LossType.TC_TRUCKINGAUTO 
+OR claim.LossType==LossType.TC_AGRIAUTO) AND
+exists(exp in claim.Exposures where (exp.ExposureType==ExposureType.TC_AB_AUTOPROPDAM AND exp.LossParty=="insured")
+OR exp.ExposureType==ExposureType.TC_AB_PHYSICALDAMAGE) AND claim.LossLocation.State == State.TC_CA AND
+claim.LossCause==LossCause.TC_THEFT AND !exists(act in claim.Activities where act.ActivityPattern.Code == "vehicle_theft_affidavit")
+AND !claim.Closed/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exposure in claim.Exposures){
+    if((exposure.ExposureType==ExposureType.TC_AB_AUTOPROPDAM AND exposure.LossParty=="insured")
+    OR exposure.ExposureType==ExposureType.TC_AB_PHYSICALDAMAGE){
+      var ap = util.custom_Ext.finders.findActivityPattern("vehicle_theft_affidavit")
+      var act = claim.createActivityFromPattern(exposure, ap)
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

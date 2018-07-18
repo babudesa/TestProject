@@ -1,0 +1,319 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- tnewcomb 11-11-11: Changed City and Zip Code widget types to regular text inputs so that don't have autofill, which isn't needed at this time. I've disabled the originals so they can be restored later, if required. -->
+  <InputSet
+    editable="addressOwner.InputSetEditable"
+    id="Address2InputSet"
+    mode="CA">
+    <Require
+      name="addressOwner"
+      type="gw.api.address.CCAddressOwner"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;city&quot;,&quot;country,city,state,postalcode&quot;,true)"
+      name="cityhandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;postalcode&quot;,&quot;country,city,state,postalcode&quot;,true)"
+      name="pchandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;county&quot;,&quot;country,city,county,state,postalcode&quot;,true)"
+      name="countyHandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="(addressOwner typeis gw.api.address.ExposureAddressOwner) ? (addressOwner as gw.api.address.ExposureAddressOwner).resetInitial() :false"
+      name="initialExposure"
+      type="Boolean"/>
+    <Input
+      hideIfEditable="true"
+      id="Address_Name2"
+      label="addressOwner.AddressNameLabel != null ? addressOwner.AddressNameLabel : displaykey.Web.Address.CA.Name"
+      value="addressOwner.Address"
+      visible="addressOwner.ShowAddressSummary"/>
+    <RangeInput
+      available="!addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.ADDRESS_NAME)"
+      editable="true"
+      hideIfReadOnly="true"
+      id="Address_Picker2"
+      label="addressOwner.AddressNameLabel != null ? addressOwner.AddressNameLabel : displaykey.Web.Address.CA.Name"
+      newValue="addressOwner.getOrCreateNewAddress()"
+      onChange="if(addressOwner typeis gw.api.address.CheckPayToAddressOwner and (addressOwner.Owner as Check).New){(addressOwner.Owner as Check).setBankAccount()}; addressOwner.canCreateNewAddress()"
+      optionLabel="gw.util.RangeInputUtil.formatLabel(addressOwner.getOrCreateNewAddress(), ((addressOwner typeis gw.api.address.BulkInvoiceRelatedAddressOwner or addressOwner typeis gw.api.address.CheckRelatedAddressOwner) and VALUE.DisplayName.length != 0) ? VALUE.showAddressName() : VALUE)"
+      postOnChange="true"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESS_NAME)"
+      sortValueRange="false"
+      value="addressOwner.Address"
+      valueRange="addressOwner.Claim != null ? addressOwner.Claim.getLossLocationAddresses() : gw.util.AddressUtil.getOwnerAddresses(addressOwner.Addresses)"
+      visible="addressOwner.canCreateNewAddress() &amp;&amp; (!(addressOwner typeis gw.api.address.PolicyLocationAddressOwner) &amp;&amp; (addressOwner.Addresses != null || (addressOwner typeis gw.api.address.CheckRelatedAddressOwner) || (addressOwner typeis gw.api.address.BulkInvoiceRelatedAddressOwner)))"/>
+    <!-- Defect #5831 - This field will only show up when canCreateNewAddress() returns false. The visibility of this field is controlled by the canCreateNewAddress() funciton within this PCF.  Place additional conditions there if it is necessary to limit the creation of a New address.  The standard Address_Picker2 field will be hidden when this field is visible. -->
+    <RangeInput
+      available="!addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.ADDRESS_NAME)"
+      editable="true"
+      hideIfReadOnly="true"
+      id="Address_Picker2NoNewAllowed"
+      label="addressOwner.AddressNameLabel != null ? addressOwner.AddressNameLabel : displaykey.Web.Address.Default.Name"
+      onChange="if( addressOwner typeis  gw.api.address.CheckPayToAddressOwner) { (addressOwner.Owner as Check).canadianAddressFieldCheckForMailTo()}; if( addressOwner typeis  gw.api.address.CheckMailToAddressOwner) { (addressOwner.Owner as Check).canadianAddressFieldCheckForPrimaryPayee()}; if(addressOwner typeis gw.api.address.ClaimAddressOwner) {addressOwner.Claim.getCatastropheWarning()};if(addressOwner typeis gw.api.address.CheckPayToAddressOwner and (addressOwner.Owner as Check).New){(addressOwner.Owner as Check).setBankAccount()};if(addressOwner typeis gw.api.address.CheckPayToAddressOwner and (addressOwner.Owner as Check).New){(addressOwner.Owner as Check).setBankAccount()}; addressOwner.canCreateNewAddress()"
+      optionLabel="gw.util.RangeInputUtil.formatLabel(addressOwner.getOrCreateNewAddress(), ((addressOwner typeis gw.api.address.BulkInvoiceRelatedAddressOwner or addressOwner typeis gw.api.address.CheckRelatedAddressOwner) and VALUE.DisplayName.length != 0) ? VALUE.showAddressName() : VALUE)"
+      postOnChange="true"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESS_NAME)"
+      sortValueRange="false"
+      value="addressOwner.Address"
+      valueRange="addressOwner.Claim != null ? addressOwner.Claim.getLossLocationAddresses() : gw.util.AddressUtil.getOwnerAddresses(addressOwner.Addresses)"
+      visible="!addressOwner.canCreateNewAddress() &amp;&amp; (!(addressOwner typeis gw.api.address.PolicyLocationAddressOwner) &amp;&amp; (addressOwner.Addresses != null || (addressOwner typeis gw.api.address.CheckRelatedAddressOwner) || (addressOwner typeis gw.api.address.BulkInvoiceRelatedAddressOwner)))"/>
+    <TypeKeyInput
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.COUNTRY)"
+      confirmMessage="displaykey.RangeInputAddress.CountryChangeWarning"
+      editable="!addressOwner.Address.StandardizedExt"
+      filter="addressOwner.isOkCountryValue(VALUE as java.lang.String)"
+      id="Address_Country2"
+      label="displaykey.Web.Address.CA.Country"
+      onChange="if(addressOwner.Address != null){addressOwner.Address.clearCityStateZipCounty()};if(addressOwner typeis gw.api.address.CheckPayToAddressOwner and (addressOwner.Owner as Check).New){(addressOwner.Owner as Check).setBankAccount()};"
+      postOnChange="true"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.COUNTRY)"
+      showConfirmMessage="false"
+      validationExpression="addressOwner.isUSCntryValidation()//addressOwner typeis gw.api.address.ContactHandleAddressOwner?addressOwner.Owner.validateCountryForVendors(addressOwner.Address.Country.Code):null"
+      value="addressOwner.Address.Country"
+      valueWidth="228"
+      visible="(!addressOwner.ShowAddressSummary &amp;&amp; !addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.COUNTRY) ) &amp;&amp; ! addressOwner.getPolicySearchHiddenFields().contains(gw.api.address.CCAddressOwnerFieldId.COUNTRY)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.Country != null ? VALUE.Country : (VALUE.DisplayName != null ? addressOwner.DefaultCountry : null)"/>
+    </TypeKeyInput>
+    <TypeKeyInput
+      available="addressOwner.AddressTypeAvailable"
+      editable="true"
+      filter="addressOwner.filterAddressTypes(VALUES)"
+      id="Address_AddressType2"
+      label="displaykey.Web.Address.CA.AddressType"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSTYPE)"
+      value="addressOwner.Address.AddressType"
+      visible="not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSTYPE)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.AddressType"/>
+    </TypeKeyInput>
+    <Input
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE1)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_AddressLine12"
+      label="displaykey.Web.Address.CA.Address1"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE1)"
+      value="addressOwner.Address.AddressLine1"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE1)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.AddressLine1"/>
+    </Input>
+    <Input
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE2)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_AddressLine22"
+      label="displaykey.Web.Address.CA.Address2"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE2)"
+      value="addressOwner.Address.AddressLine2"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.ADDRESSLINE2)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.AddressLine2"/>
+    </Input>
+    <!-- <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(addressOwner.Address, &quot;city&quot;)"
+      autoComplete="cityhandler"
+      autoCompleteArgIds="Address_Country,Address_City,Address_State,Address_PostalCode"
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.CITY)"
+      editable="true"
+      id="Address_City"
+      label="displaykey.Web.Address.CA.City"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.CITY)"
+      tooltip="displaykey.AutoFill.OverrideUsingCityProvince"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(addressOwner.Address, &quot;city&quot;)"
+      value="addressOwner.Address.City"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.CITY)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE1)"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name,Address_City,Address_PostalCode,Address_State"
+        value="TRIGGER_INDEX == 1 ? VALUE1.City : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;city&quot;, {&quot;city&quot;,&quot;postalcode&quot;,&quot;state&quot;}, {VALUE2,VALUE3,VALUE4}) as java.lang.String"/>
+    </AddressAutoFillInput> -->
+    <TextInput
+      autoComplete="cityhandler"
+      autoCompleteArgIds="Address_Country2,Address_City2,Address_State2,Address_PostalCode2"
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.CITY)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_City2"
+      label="displaykey.Web.Address.CA.City"
+      maxChars="25"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.CITY)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(addressOwner.Address, &quot;city&quot;)"
+      value="addressOwner.Address.City"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.CITY)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE1)"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name2,Address_City2,Address_PostalCode2,Address_State2"
+        value="TRIGGER_INDEX == 1 ? VALUE1.City : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;city&quot;, {&quot;city&quot;,&quot;postalcode&quot;,&quot;state&quot;}, {VALUE2,VALUE3,VALUE4}) as java.lang.String"/>
+    </TextInput>
+    <RangeInput
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.STATE)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_State2"
+      label="displaykey.Web.Address.Default.State"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.STATE)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(addressOwner.Address, &quot;state&quot;)"
+      value="addressOwner.Address.State"
+      valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(addressOwner.InputSetMode)"
+      valueWidth="228"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.STATE)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE1)"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name2,Address_State2,Address_PostalCode2"
+        value="TRIGGER_INDEX == 1 ? gw.api.contact.AddressAutocompleteUtil.getStates(VALUE1.Country).firstWhere(\ s -&gt; s == VALUE1.State) : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;state&quot;, {&quot;state&quot;,&quot;postalcode&quot;}, {VALUE2,VALUE3}) as typekey.State"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(VALUE1.Country)"/>
+    </RangeInput>
+    <!-- <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(addressOwner.Address, &quot;postalcode&quot;)"
+      autoComplete="pchandler"
+      autoCompleteArgIds="Address_Country,Address_City,Address_State,Address_PostalCode"
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)"
+      editable="true"
+      id="Address_PostalCode"
+      inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(addressOwner.Address, &quot;postalcode&quot;)"
+      label="displaykey.Web.Address.CA.Zip"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)"
+      tooltip="displaykey.AutoFill.OverrideUsingZipCode"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(addressOwner.Address, &quot;postalcode&quot;)"
+      value="addressOwner.Address.PostalCode"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE1)"
+        inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(VALUE1, &quot;postalcode&quot;)"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name,Address_PostalCode,Address_City"
+        value="TRIGGER_INDEX == 1 ? VALUE1.PostalCode : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;postalcode&quot;, {&quot;postalcode&quot;,&quot;city&quot;}, {VALUE2,VALUE3}) as java.lang.String"/>
+    </AddressAutoFillInput> -->
+    <TextInput
+      autoComplete="pchandler"
+      autoCompleteArgIds="Address_Country2,Address_City2,Address_State2,Address_PostalCode2"
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_PostalCode2"
+      inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(addressOwner.Address, &quot;postalcode&quot;)"
+      label="displaykey.Web.Address.CA.Zip"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)"
+      validationExpression="util.custom_Ext.finders.postCodeValidation(addressOwner.Address)? null : util.custom_Ext.finders.postCodeExpression(addressOwner.Address.Country.Code)"
+      value="addressOwner.Address.PostalCode"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.POSTALCODE)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE1)"
+        inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(VALUE1, &quot;postalcode&quot;)"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name2,Address_PostalCode2,Address_City2"
+        value="TRIGGER_INDEX == 1 ? VALUE1.PostalCode : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;postalcode&quot;, {&quot;postalcode&quot;,&quot;city&quot;}, {VALUE2,VALUE3}) as java.lang.String"/>
+    </TextInput>
+    <TextInput
+      autoComplete="countyHandler"
+      autoCompleteArgIds="Address_Country2,Address_City2,Address_County2,Address_State2,Address_PostalCode2"
+      available="!addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.COUNTY)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Address_County2"
+      label="displaykey.Web.Address.US.County"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.COUNTY)"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(addressOwner.Address, &quot;county&quot;)"
+      value="addressOwner.Address.County"
+      visible="not addressOwner.ShowAddressSummary and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.COUNTY)">
+      <Reflect
+        available="true"
+        reflectDirectChangesOnly="true"
+        triggerIds="Address_Name2,Address_County2,Address_PostalCode2,Address_City2"
+        value="TRIGGER_INDEX == 1 ? VALUE1.County : gw.api.contact.AddressAutocompleteUtil.getAutofillValue(addressOwner.InputSetMode, &quot;county&quot;, {&quot;county&quot;,&quot;postalcode&quot;,&quot;city&quot;}, {VALUE2,VALUE3,VALUE4}) as java.lang.String"/>
+    </TextInput>
+    <!-- visible="(!AutoFillHelper.UseAutoFill and Claim.LossLocation.Country.Code == "US") or Claim.LossLocation.StandardizedExt"/>
+    
+     7/28/10 erawe Task to add Longitude and Latitude to Loss Details screen
+        and require if loss cause is sinkholecollapse and at ability to pay validation level -->
+    <Input
+      available="addressOwner typeis gw.api.address.ClaimAddressOwner  ? true :  !addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.LATITUDE)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Latitude2"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Latitude"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.LATITUDE)"
+      value="addressOwner.Claim.LossLocation.Latitude"
+      visible="(!addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.LATITUDE) ) &amp;&amp; ! addressOwner.getPolicySearchHiddenFields().contains(gw.api.address.CCAddressOwnerFieldId.LATITUDE)"/>
+    <Input
+      available="addressOwner typeis gw.api.address.ClaimAddressOwner  ? true :  !addressOwner.NonEditableAddresses.contains(addressOwner.Address) &amp;&amp; !addressOwner.getUnavailableFields().contains(gw.api.address.CCAddressOwnerFieldId.LONGTITUDE)"
+      editable="!addressOwner.Address.StandardizedExt"
+      id="Longitude2"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Longitude"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.LONGTITUDE)"
+      value="addressOwner.Claim.LossLocation.Longitude"
+      visible="(!addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.LONGTITUDE) ) &amp;&amp; ! addressOwner.getPolicySearchHiddenFields().contains(gw.api.address.CCAddressOwnerFieldId.LONGTITUDE)"/>
+    <BooleanRadioInput
+      available="addressOwner.Address.Country != null and addressOwner.showStandardizeButton()"
+      editable="addressOwner.Address.StandardizedExt == true"
+      id="StandardizationIndicator2"
+      label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+      postOnChange="true"
+      value="addressOwner.Address.StandardizedExt"
+      visible="(((!addressOwner.Claim.Policy.Verified ) &amp;&amp; addressOwner.isStandardizingNeeded()) || (addressOwner typeis gw.api.address.ClaimAddressOwner)) &amp;&amp; !(addressOwner typeis gw.api.address.PolicySearchAddressOwner)"/>
+    <ButtonInput
+      action="StandardizationPopup.push(addressOwner.Address)"
+      available="addressOwner.Address.Country != null and addressOwner.showStandardizeButton()"
+      hideIfDisabled="false"
+      hideIfReadOnly="true"
+      id="StandardizeAddressButton2"
+      value="displaykey.Web.ContactDetail.AddressDetail.StandardizeButtonText"
+      visible="!addressOwner.Address.StandardizedExt &amp;&amp; addressOwner.isStandardizingNeeded()"/>
+    <Input
+      available="not addressOwner.NonEditableAddresses.contains(addressOwner.Address)"
+      editable="true"
+      id="Address_Description2"
+      label="displaykey.Web.Address.CA.Description"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.DESCRIPTION)"
+      value="addressOwner.Address.Description"
+      visible="not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.DESCRIPTION) &amp;&amp;  (addressOwner typeis gw.api.address.ContactAddressOwner)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.Description"/>
+    </Input>
+    <DateInput
+      available="not addressOwner.NonEditableAddresses.contains(addressOwner.Address)"
+      dateFormat="short"
+      editable="true"
+      id="Address_ValidUntil2"
+      label="displaykey.Web.Address.CA.ValidUntil"
+      required="addressOwner.RequiredFields.contains(gw.api.address.CCAddressOwnerFieldId.VALIDUNTIL)"
+      value="addressOwner.Address.ValidUntil"
+      visible="not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.VALIDUNTIL)  &amp;&amp;  (addressOwner typeis gw.api.address.ContactAddressOwner)">
+      <Reflect
+        available="not addressOwner.NonEditableAddresses.contains(VALUE)"
+        triggerIds="Address_Name2"
+        value="VALUE.ValidUntil"/>
+    </DateInput>
+    <!-- <Input
+      editable="true"
+      id="Claim_LocationCode"
+      label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.LocationCode"
+      value="addressOwner.Claim.LossLocationCode"
+      visible="addressOwner.Claim != null and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.LOCATIONCODE)"/> -->
+    <!-- <RangeInput
+      editable="true"
+      id="Claim_JurisdictionState"
+      label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.JurisdictionState"
+      value="addressOwner.Claim.JurisdictionState"
+      valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(addressOwner.InputSetMode)"
+      visible="addressOwner.Claim != null and not addressOwner.HiddenFields.contains(gw.api.address.CCAddressOwnerFieldId.JURISDICTIONSTATE)">
+      <Reflect
+        triggerIds="Address_Picker,Address_State"
+        value="TRIGGER_INDEX == 1 ? VALUE1.State : VALUE2"
+        valueRange="gw.api.contact.AddressAutocompleteUtil.getStates(VALUE1.Country)"/>
+    </RangeInput> -->
+  </InputSet>
+</PCF>

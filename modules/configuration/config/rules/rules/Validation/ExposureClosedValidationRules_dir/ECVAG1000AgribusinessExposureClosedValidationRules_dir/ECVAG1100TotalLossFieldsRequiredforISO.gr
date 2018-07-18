@@ -1,0 +1,30 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVAG1000AgribusinessExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVAG1100 - Total Loss Fields Required for ISO")
+internal class ECVAG1100TotalLossFieldsRequiredforISO {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*  Check that all of the required Total Loss fields are completed before
+ *  closing the exposure.
+ *  Sprint: EM29
+ *  Author: tnewcomb
+ *  Date: 03/18/2011
+ */
+(exposure.totalLossIsRequired() && exposure.TotalLossIndExt == null) ||
+((exposure.totalLossIsRequired() && exposure.TotalLossIndExt == true)
+      && (exposure.Claim.LossType =="AGRIAUTO" OR exposure.Claim.LossType==LossType.TC_ALTMARKETSAUTO 
+      OR exposure.Claim.LossType==LossType.TC_SHSAUTO OR exposure.Claim.LossType==LossType.TC_TRUCKINGAUTO)
+      && (exposure.VehicleIncident.OwnLienAtAccidentExt == null 
+      ||  exposure.VehicleIncident.OwnLienAtAccidentExt.PrimaryAddress == null
+      ||  exposure.VehicleIncident.OwnLienAtClaimCloseExt == null 
+      ||  exposure.VehicleIncident.OwnLienAtClaimCloseExt.PrimaryAddress == null
+      ||  exposure.VehicleIncident.IsOwnerRetainingExt == null
+      ||  exposure.VehicleIncident.Vehicle.Vin == null
+      ||  exposure.VehicleIncident.Vehicle.Make == null 
+      ||  (exposure.isVehicleAListedPolicyVehicle() && exposure.VehicleIncident.Vehicle.Model == null) 
+      ||  exposure.VehicleIncident.Vehicle.Year == null))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.reject(ValidationLevel.TC_ISO, displaykey.Rules.Validation.ExposureClosed.TotalLoss.TotalLossFieldsRequired, null, null)/*end00rule*/
+  }
+}

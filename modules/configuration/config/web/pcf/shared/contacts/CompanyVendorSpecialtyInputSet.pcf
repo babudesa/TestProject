@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+  possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+  a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+  become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+  contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+  the new contact.
+
+  As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+  access the most current value of the contact.  Defect 424 add additional foriegn companys -->
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="Ex_ForeignCoVenMedOrg">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Input
+      editable="!Ex_ForeignCoVenMedOrg.VerifiedPolicyContactExt"
+      id="MedicalSpecialty"
+      label="displaykey.Web.ContactDetail.MedicalCareOrg.MedicalSpecialty"
+      value="Ex_ForeignCoVenMedOrg.MedicalOrgSpecialty"/>
+    <Code><![CDATA[
+property get Ex_ForeignCoVenMedOrg() : Ex_ForeignCoVenMedOrg { return contactHandle.Contact as Ex_ForeignCoVenMedOrg; }
+    ]]></Code>
+  </InputSet>
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="MedicalCareOrg">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Input
+      editable="!MedicalCareOrg.VerifiedPolicyContactExt"
+      id="MedicalSpecialty"
+      label="displaykey.Web.ContactDetail.MedicalCareOrg.MedicalSpecialty"
+      value="MedicalCareOrg.MedicalOrgSpecialty"/>
+    <Code><![CDATA[
+property get MedicalCareOrg() : MedicalCareOrg { return contactHandle.Contact as MedicalCareOrg; }
+    ]]></Code>
+  </InputSet>
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="AutoRepairShop">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <TextInput
+      editable="true"
+      id="DMVFacilityNumber"
+      label="displaykey.Web.ContactDetail.AutoRepairShop.DMVFacilityNumberExt"
+      maxChars="7"
+      required="contactHandle.Contact.isNewYorkRepairShop()"
+      validationExpression="contactHandle.Contact.isValidDMVFacNumber() ? null : displaykey.Web.ContactDetail.AutoRepairShop.InvalidDMVFacilityNumber"
+      value="(contactHandle.Contact as AutoRepairShop).DMVFacilityNumberExt"/>
+    <TextInput
+      editable="true"
+      id="TaxCertificateNumber"
+      label="displaykey.Web.ContactDetail.AutoRepairShop.TaxCertificateNumberExt"
+      maxChars="11"
+      required="(contactHandle.Contact as AutoRepairShop).isNewYorkRepairShop()"
+      validationExpression="(contactHandle.Contact as AutoRepairShop).isValidSalesTaxNumber() ? null : displaykey.Web.ContactDetail.AutoRepairShop.InvalidTaxCertNumber"
+      value="(contactHandle.Contact as AutoRepairShop).SalesTaxNumberExt"/>
+    <Code><![CDATA[property get AutoRepairShop() : AutoRepairShop { return contactHandle.Contact as AutoRepairShop; }]]></Code>
+  </InputSet>
+  <!-- <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="AutoTowingAgcy">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Input
+      editable="true"
+      id="BusinessLicense"
+      label="displaykey.Web.ContactDetail.AutoTowingAgcy.BusinessLicense"
+      value="AutoTowingAgcy.AutoTowingLicense"/>
+    <Code><![CDATA[
+property get AutoTowingAgcy() : AutoTowingAgcy { return contactHandle.Contact as AutoTowingAgcy; }
+    ]]></Code>
+  </InputSet>  Defect #6022 - Disabled legal specialty & panel indicator. -->
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="LawFirm">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <!-- <Input
+      editable="!LawFirm.VerifiedPolicyContactExt"
+      id="LawFirmSpecialty"
+      label="displaykey.Web.ContactDetail.LawFirm.LawFirmSpecialty"
+      value="LawFirm.LawFirmSpecialty"/> -->
+    <Input
+      editable="perm.System.editPanelIndicator"
+      id="PanelIndicatorExt"
+      label="displaykey.Web.ContactDetail.AddidiontalInfo.PanelIndicatorExt"
+      value="LawFirm.PanelIndicatorExt"
+      visible="true"/>
+    <Code><![CDATA[
+property get LawFirm() : LawFirm { return contactHandle.Contact as LawFirm; }
+    ]]></Code>
+  </InputSet>
+  <!-- Defect 424 add additional foriegn companys
+Defect #6022 - Disabled legal specialty & panel indicator. -->
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="Ex_ForeignCoVenLawFrm">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <!-- <Input
+      editable="!Ex_ForeignCoVenLawFrm.VerifiedPolicyContactExt"
+      id="LawFirmSpecialty"
+      label="displaykey.Web.ContactDetail.LawFirm.LawFirmSpecialty"
+      value="Ex_ForeignCoVenLawFrm.LawFirmSpecialty"/> -->
+    <Input
+      editable="perm.System.editPanelIndicator"
+      id="PanelIndicatorExt"
+      label="displaykey.Web.ContactDetail.AddidiontalInfo.PanelIndicatorExt"
+      value="Ex_ForeignCoVenLawFrm.PanelIndicatorExt"
+      visible="true"/>
+    <Code><![CDATA[
+property get Ex_ForeignCoVenLawFrm() : Ex_ForeignCoVenLawFrm { return contactHandle.Contact as Ex_ForeignCoVenLawFrm; }
+    ]]></Code>
+  </InputSet>
+  <InputSet
+    id="CompanyVendorSpecialtyInputSet"
+    mode="default">
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+  </InputSet>
+</PCF>

@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ClaimSnapshotPolicyLocations500LV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="SnapshotParam"
+      type="Object"/>
+    <Variable
+      initialValue="(SnapshotParam as snapshot.v500.Claim).Policy"
+      name="Policy"
+      type="snapshot.v500.Policy"/>
+    <RowIterator
+      editable="false"
+      elementName="LocationBasedRU"
+      value="getProperties(Policy.RiskUnits)">
+      <Row>
+        <Cell
+          id="PropertyNumber"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.PropertyNumber"
+          sortOrder="1"
+          value="(LocationBasedRU as snapshot.v500.LocationBasedRU).RUNumber"/>
+        <Cell
+          id="Location"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.Location"
+          value="(LocationBasedRU as snapshot.v500.LocationBasedRU).Property.LocationNumber"/>
+        <Cell
+          id="Building"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.BuildingNumber"
+          value="(LocationBasedRU as snapshot.v500.LocationBasedRU).Building.BuildingNumber"/>
+        <Cell
+          id="ClassCode"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.ClassCode"
+          value="(LocationBasedRU as snapshot.v500.LocationBasedRU).ClassCode.Code"/>
+        <Cell
+          id="Address"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.Address"
+          value="util.Snapshot.renderValue((LocationBasedRU as snapshot.v500.LocationBasedRU).Property.Address)"/>
+        <Cell
+          id="Notes"
+          label="displaykey.Web.ClaimSnapshotPolicyLocations500LV.Notes"
+          value="(LocationBasedRU as snapshot.v500.LocationBasedRU).Property.Notes"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function getProperties(riskUnits : snapshot.v500.RiskUnit[]) : Object[] {
+  var list = new java.util.ArrayList();
+  for (ru in riskUnits) {
+    if (snapshot.v500.LocationBasedRU.Type.isAssignableFrom(typeof ru)) {
+      list.add(ru);
+    }
+  }
+  return list.toArray(new Object[list.Count])
+}
+      
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

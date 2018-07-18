@@ -1,0 +1,27 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEQ1000EquineClaimExceptionRules_dir.CEEQ1300CreateSupervisorActivities_dir
+
+@gw.rules.RuleName("CEEQ1310 - CA Status ")
+internal class CEEQ1310CAStatus {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(Activity in claim.Activities
+where Activity.ActivityPattern.Code=="eq_CA_25day_status_letter")  &&
+!exists(Activity in claim.Activities
+ where Activity.ActivityPattern.Code=="eq_ca_letter_supv")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(claim.Insured.PrimaryAddress.State =="CA"){
+    for(act in claim.Activities ){
+        if(act.ActivityPattern.Code=="eq_CA_25day_status_letter" && act.Status!="complete"  &&
+          gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays( act.CreateTime, ScriptParameters.Activity_OverdueCAStatus),gw.api.util.DateUtil.currentDate()) <0){
+            var ap = util.custom_Ext.finders.findActivityPattern( "eq_ca_letter_supv" ) 
+             claim.createActivityFromPattern( null, ap )
+          }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

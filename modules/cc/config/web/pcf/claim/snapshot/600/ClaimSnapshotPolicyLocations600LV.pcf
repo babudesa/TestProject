@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ClaimSnapshotPolicyLocations600LV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="SnapshotParam"
+      type="Object"/>
+    <Variable
+      initialValue="(SnapshotParam as snapshot.v600.Claim).Policy"
+      name="Policy"
+      type="snapshot.v600.Policy"/>
+    <RowIterator
+      editable="false"
+      elementName="LocationBasedRU"
+      value="getProperties(Policy.RiskUnits)">
+      <Row>
+        <Cell
+          id="PropertyNumber"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.PropertyNumber"
+          sortOrder="1"
+          value="(LocationBasedRU as snapshot.v600.LocationBasedRU).RUNumber"/>
+        <Cell
+          id="Location"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.Location"
+          value="(LocationBasedRU as snapshot.v600.LocationBasedRU).Property.LocationNumber"/>
+        <Cell
+          id="Building"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.BuildingNumber"
+          value="(LocationBasedRU as snapshot.v600.LocationBasedRU).Building.BuildingNumber"/>
+        <Cell
+          id="ClassCode"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.ClassCode"
+          value="(LocationBasedRU as snapshot.v600.LocationBasedRU).ClassCode.Code"/>
+        <Cell
+          id="Address"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.Address"
+          value="util.Snapshot.renderValue((LocationBasedRU as snapshot.v600.LocationBasedRU).Property.Address)"/>
+        <Cell
+          id="Notes"
+          label="displaykey.Web.ClaimSnapshotPolicyLocationsLV.Notes"
+          value="(LocationBasedRU as snapshot.v600.LocationBasedRU).Property.Notes"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getProperties(riskUnits : snapshot.v600.RiskUnit[]) : Object[] {
+  var list = new java.util.ArrayList();
+  for (ru in riskUnits) {
+    if ({"LocationBasedRU", "BuildingRU", "GeneralLiabilityRU", "InlandMarineRU", "PropertyRU"}.contains(ru.Subtype.Name)) {
+      list.add(ru);
+    }
+  }
+  return list.toArray(new Object[list.Count])
+}]]></Code>
+  </ListViewPanel>
+</PCF>

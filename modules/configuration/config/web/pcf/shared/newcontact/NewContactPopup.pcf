@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    canEdit="true"
+    canVisit="perm.Contact.createlocal"
+    id="NewContactPopup"
+    returnType="Contact"
+    startInEditMode="true"
+    title="displaykey.Web.Contact.Title.New(ContactType.DisplayName)">
+    <LocationEntryPoint
+      signature="NewContactPopup(ContactType : Type, parentContact : Contact, claim : Claim)"/>
+    <Variable
+      name="ContactType"
+      type="Type"/>
+    <Variable
+      name="parentContact"
+      type="Contact"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim.createClaimContact(gw.api.contact.NewContactUtil.newContact(ContactType))"
+      name="contactHandle"/>
+    <Variable
+      initialValue="Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="(linkStatus != null and linkStatus.Known and linkStatus.Linked) ? true : false"
+      name="showRelatedObjects"
+      type="boolean"/>
+    <ScreenRef
+      def="ContactDetailScreen(contactHandle, true, false, linkStatus, claim, true, showRelatedObjects)"/>
+    <Code><![CDATA[property get Contact() : Contact { return contactHandle.Contact; }]]></Code>
+  </Popup>
+</PCF>

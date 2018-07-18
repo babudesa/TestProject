@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1U00 - Set BusinessUnitExt if null")
+internal class CPUXX1U00SetBusinessUnitExtifnull {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.NCWOnlyBusinessUnitExt == null 
+and claim.BusinessLineExt != null
+//Blawless - central print needs to have Business Unit which is not a required field.
+ /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  for(bu in BusinessUnitExt.getTypeKeys(false)){
+    if(claim.BusinessLineExt.hasCategory(bu)){
+      claim.NCWOnlyBusinessUnitExt = bu
+      break
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, "Problem with setting Claim.setFlag" )
+}
+/*end00rule*/
+  }
+}

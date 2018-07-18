@@ -1,0 +1,29 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir.ECVXX1400MethodofSettlement_dir
+
+@gw.rules.RuleName("ECVXX1420 - Annuity fields null on Structured Settlement")
+internal class ECVXX1420AnnuityfieldsnullonStructuredSettlement {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*If method of settlement is structured, annuity fields are required to close the exposure
+  Sprint: Sprint 13, Defect 1087
+  Author: Stephanie Przygocki
+  Date: 5-20-08
+  Updated: 2/19/10 sprzygocki - added a check for all phone numbers being null, the 
+    insurance company can use any of these
+*/ 
+exposure.MethodOfSettlementExt=="structured_settle"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var errorMsg = displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.MethodOfSettlement
+
+if(exposure.InsuranceCoExt.Name==null ||
+   exposure.PolicyNumberExt==null ||
+   (exposure.InsuranceCoExt.FaxPhone==null and
+    exposure.InsuranceCoExt.TollFreeNumberExt==null and
+    exposure.InsuranceCoExt.WorkPhone==null) ||
+   exposure.InsuranceCoExt.PrimaryAddress==null ||
+   exposure.AnticFinalPmtDateExt==null){
+  exposure.reject( "payment", errorMsg, null, null )   
+}/*end00rule*/
+  }
+}

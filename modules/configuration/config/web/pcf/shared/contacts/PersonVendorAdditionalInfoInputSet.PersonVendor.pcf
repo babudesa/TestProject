@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="PersonVendorAdditionalInfoInputSet"
+    mode="PersonVendor">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact.
+
+    Note also that claimContact may be null, so fields which depend on reference it should only be available for setting if it is not. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Label
+      label="displaykey.Web.ContactDetail.AdditionalInfo"/>
+    <InputSetRef
+      def="DoctorAdditionalInfoInputSet(contactHandle)"
+      mode="PersonVendor typeis Doctor ? &quot;Doctor&quot; : null"/>
+    <InputSetRef
+      def="AttorneyAdditionalInfoInputSet(contactHandle, claim)"
+      mode="PersonVendor typeis Attorney ? &quot;Attorney&quot; : null"/>
+    <Input
+      editable="perm.Contact.createpreferredab and !PersonVendor.VerifiedPolicyContactExt"
+      id="IsPreferredVendor"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.IsPreferredVendor"
+      required="false"
+      validationExpression="(!PersonVendor.PayableExt and PersonVendor.Preferred ? &quot;Vendor needs to be Payable before being Preferred&quot; : null)"
+      value="PersonVendor.Preferred"
+      visible="true"/>
+    <Input
+      editable="perm.System.vendorpayable and !PersonVendor.VerifiedPolicyContactExt"
+      id="IsPayable"
+      label="displaykey.Web.ContactDetail.AddidiontalInfo.PayableExt"
+      postOnChange="true"
+      value="PersonVendor.PayableExt"
+      visible="true"/>
+    <Input
+      id="CMFContactInput"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.CMFContact"
+      postOnChange="true"
+      value="PersonVendor.CMFContactExt"
+      visible="true"/>
+    <!-- <InputSetRef
+      def="BusinessContactInfoInputSet(contactHandle, claimContact, claim)"/> -->
+    <!-- GW ADDED -->
+    <InputDivider/>
+    <!-- <Label
+      label="displaykey.Web.ContactDetail.TaxInfo"/> -->
+    <!-- <Input
+      editable="true"
+      id="SSN"
+      label="displaykey.Web.ContactDetail.Name.TaxID.SSN"
+      required="false"
+      value="PersonVendor.TaxID"/> -->
+    <!-- <InputSetRef
+      def="VendorW9InfoInputSet(contactHandle)"/> -->
+    <!-- <Input
+      available="claimContact != null"
+      editable="true"
+      id="PersonVendorValidFrom"
+      label="displaykey.Web.ContactBasicsDV.Person.PersonVendor.ValidFrom"
+      value="ClaimContact.ContactValidFrom"/> -->
+    <!-- <Input
+      available="claimContact != null"
+      editable="true"
+      id="PersonVendorValidTo"
+      label="displaykey.Web.ContactBasicsDV.Person.PersonVendor.ValidTo"
+      value="ClaimContact.ContactValidTo"/> -->
+    <!-- GW ADDED -->
+    <Code><![CDATA[
+property get PersonVendor() : PersonVendor { return contactHandle.Contact as PersonVendor; }
+    ]]></Code>
+  </InputSet>
+</PCF>

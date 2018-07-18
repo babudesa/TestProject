@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Calling Web Services from Gosu</title>
+    <link rel="StyleSheet" href="css/webservice-consuming.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Integration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;">Calling Web Services from Gosu</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="CT_-_Chapter_Title"><a name="2001714">Calling Web Services from Gosu</a></div>
+      <div class="B_-_Body"><a name="2001771">Gosu code can import web services (SOAP APIs) from external systems and call these services as a SOAP client </a>(an API consumer). The Gosu language handles all aspects of object serialization, object deserialization, basic authentication, and SOAP fault handling.</div>
+      <div class="H1NB_-_Heading_1_No_Break"><a name="2001775">Calling External Web Services</a></div>
+      <div class="B_-_Body"><a name="2020932">You can write code that easily imports SOAP APIs from external systems. By specifying the external web </a>service in Guidewire&nbsp;Studio, you can easily call external web services from Gosu. The Gosu language handles all aspects of object serialization, object deserialization, basic authentication, and SOAP fault handling.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2020935">Avoid calling locally-hosted SOAP APIs from within a plugin or the rules engine in </a>production systems. Be careful about any SOAP calls to the same server. If the SOAP API hosted locally modifies entity data and commits the bundle, the current transaction does not always detect and reload local data. Instead, refactor your code to avoid this case. For example, write a Gosu class that performs a similar function as the web service but that does not commit the bundle. This type of refactoring also results in higher server performance. If you have questions about how to convert some particular use locally-hosted SOAP APIs from plugins or rules, contact Customer Support. This is true for all types of local loopback SOAP calls to the same server. This includes <span class="cv_-_computer_voice">soap.local.*</span> objects, the SOAP client Java classes from Java plugins, and Studio-registered web services that call the same server as the client. </div>
+      <div class="B_-_Body"><a name="2001354">In Guidewire Studio, define a new web service endpoint in the </a><span class="ui_-_UI_element">Web</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Services</span> folder in the left-most column of Guidewire&nbsp;Studio. Right-click on the <span class="ui_-_UI_element">Web</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Services</span> folder. Click <span class="ui_-_UI_element">New</span> → <span class="ui_-_UI_element">Web</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Service</span>. Carefully review <a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">“Working with Web Services” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">Configuration Guide</a></span> for details on specifying a URL for your web service. That URL must start with the string “<span class="cv_-_computer_voice">http://</span>” and must return a WSDL format document. </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2001361">You can configure the URL to have different values with different values of the different server </a>(<span class="cv_-_computer_voice">server</span>) or environment (<span class="cv_-_computer_voice">env</span>) variables. For example, if using the development environment, directly connect to the service. If using the production environment, connect through a proxy server.</div>
+      <div class="B_-_Body"><a name="2001365">In the web service configuration screen, note the </a><span class="ui_-_UI_element">Name</span> to enter. The name that you enter in that field is important because the web services client code uses that name explicitly. Choose the name carefully.</div>
+      <div class="B_-_Body"><a name="2001366">In the web service configuration screen, provide the timeout value. If the external system exceeds that timeout </a>without a response, Gosu returns an error as a Gosu exception. A timeout of zero specifies no timeout, which means the system waits infinitely for a response. However, other factors might timeout the request if it takes too long, such as the destination’s web application container if it has a timeout.</div>
+      <div class="B_-_Body"><a name="2001367">Write code that calls the SOAP endpoint and accesses its methods and entities. The name that you define for the </a>SOAP endpoint affects how you call the service from Gosu. The name also affects the namespaces of objects related to the endpoint. For example, if you define the web service with the name <span class="cv_-_computer_voice">MyServiceAPI</span>, all related Gosu objects are under the following package hierarchy:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2001368">soap.MyServiceAPI.*</a></div>
+      <div class="B_-_Body"><a name="2001369">The following table displays the subpackage hierarchies for any web service accessed from Gosu.</a></div>
+      <div class="T_-_Table"><a name="2001396">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="2001372">Package hierarchy</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="2001374">Contains</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2001376">soap.</a></span><span class="pt_-_parameter_in_table">SERVICENAME</span><span class="cv_-_computer_voice">.*</span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2001378">Root package hierarchy for the service</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2001380">soap.</a></span><span class="pt_-_parameter_in_table">SERVICENAME</span><span class="cv_-_computer_voice">.api.*</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2001382">The API classes provided by the remote service and specified in its WSDL file. Using </a>SOAP terminology, these corresponds to <span class="e_-_emphasis">SOAP ports</span> defined by the service. Objects within this hierarchy are what you must instantiate to use the API.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2001385">soap.</a></span><span class="pt_-_parameter_in_table">SERVICENAME</span><span class="cv_-_computer_voice">.entity.*</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2001387">The entity classes for this web service. This includes all objects, but does not include </a>enumerations.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2001389">soap.</a></span><span class="pt_-_parameter_in_table">SERVICENAME</span><span class="cv_-_computer_voice">.enum.*</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2001391">Enumerations for this web service.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2001393">soap.</a></span><span class="pt_-_parameter_in_table">SERVICENAME</span><span class="cv_-_computer_voice">.fault.*</span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2001395">SOAP faults, which are analogous to Gosu or Java exceptions.</a></div>
+          </td>
+        </tr>
+      </table>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2001397">From the perspective of Gosu code connecting to an external inbound SOAP API, the </a>API class is always in the package <span class="cv_-_computer_voice">soap.</span><span class="ps_-_parameter_in_code_snippets">SERVICENAME</span><span class="cv_-_computer_voice">.entity.</span><span class="p_-_parameter">EntityName</span>. This is true independent of the original package of the class that implements the web service in the remote system.</div>
+      <div class="B_-_Body"><a name="2001398">To set up the remote API, use the Gosu keyword </a><span class="cv_-_computer_voice">new</span> with the SOAP API object.</div>
+      <div class="B_-_Body"><a name="2001399">For example, if the remote service provides a </a><span class="cv_-_computer_voice">FindServiceSoap</span> API, instantiate it with code similar to:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2001400">var api = new soap.MyServiceAPI.api.FindServiceSoap()</a></div>
+      <div class="B_-_Body"><a name="2001401">Then, API methods from this service can then just be called as normal method calls, for example:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001402">var addr = api.FindAddress( spec )</a></PRE>
+      <div class="B_-_Body"><a name="2001412">The following example uses a hypothetical geocoding service, named </a><span class="cv_-_computer_voice">AddressID</span>. </div>
+      <div class="B_-_Body"><a name="2001417">The following example in Gosu uses this service:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001418">uses soap.AddressID.entity.FindOptions</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001419">uses soap.AddressID.entity.FindAddressSpecification</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001420">uses soap.AddressID.entity.Address</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001421">uses soap.AddressID.entity.FindRange</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001422">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001423">// insantiate the SOAP endpoint (the SOAP port)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001424">var </a><span class="s_-_strong">api</span> = new soap.AddressID.api.FindServiceSoap()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001425">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001426">// set the logging output to SHOW YOU the *full* SOAP outgoing call and SOAP response!</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="s_-_strong"><a name="2001427">api</a></span>.setLoggingOutputStream( java.lang.System.out)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001428">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001429">// In this example, the API provides a class called FindAddressSpecification</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001430">// and an API method called FindAddress</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001431">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001432">// set up a FindAddressSpecification entitiy</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001433">var </a><span class="s_-_strong">spec</span> = new FindAddressSpecification()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001434">var address = new Address()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001435">address.PostalCode = "94062"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001436">address.CountryRegion = "USA"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001437">address.Subdivision="CA"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001438">spec.InputAddress = address</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001439">spec.DataSourceName = ".NA"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001440">spec.Options = new FindOptions()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001441">spec.Options.Range = new FindRange()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001442">spec.Options.Range.Count = 50</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001443">spec.Options.ResultMask = {}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001444">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001445">// Actually send the request. This actually does the request</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001446">var </a><span class="s_-_strong">addr</span> = <span class="s_-_strong">api</span>.FindAddress(<span class="s_-_strong">spec</span>)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001447">var coordinates = addr.Results.FindResult.FoundLocation[0].LatLong</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001448">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001449">print("Latitude: " + coordinates.Latitude)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001450">print("Longitude: " + coordinates.Longitude)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001451">&nbsp;</a></PRE>
+      <div class="B_-_Body"><a name="2001452">Note the beginning of this example has </a><span class="cv_-_computer_voice">uses</span> statements that define the namespaces of the destination service:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001453">uses soap.AddressID.entity.FindOptions</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001454">uses soap.AddressID.entity.FindAddressSpecification</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001455">uses soap.AddressID.entity.Address</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2001456">uses soap.AddressID.entity.FindRange</a></PRE>
+      <div class="B_-_Body"><a name="2001457">You must understand the namespaces of your desired objects and add lines like these for Gosu to know which </a>objects and types you require. The <span class="e_-_emphasis">dot</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">completion</span> (auto-completion) features in Guidewire&nbsp;Studio let you access entity properties. Studio displays your choices automatically based on the imported WSDL for your web service and the types of your variables:</div>
+      <div class="F_-_Figure"><a name="2001463"><img class="Default" src="images/gscript-soap-intellisense.png" style="display: inline; float: none; left: 0.0; top: 0.0" alt="" /></a></div>
+      <div class="HS_-_Head_Sub"><a name="2001467">Local SOAP Endpoints in Gosu</a></div>
+      <div class="B_-_Body"><a name="2001468">The instructions listed in the previous section describe how to access external web service APIs. However, you </a>can also call web services published on the same server as an outgoing (published) SOAP endpoint. This is particularly valuable for testing your SOAP APIs or calling ClaimCenter SOAP APIs that only exist as SOAP APIs.</div>
+      <div class="B_-_Body"><a name="2001472">To import a web service published on the same server, you do not need to set up the web service using the </a><span class="ui_-_UI_element">Web</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Service</span> configuration dialog in Studio. You can simply access the class directly, although there is another important difference. All web service APIs publish to the same server from Gosu in the <span class="cv_-_computer_voice">soap.local.api.*</span> namespace in Guidewire Studio. In contrast, do not use the package hierarchy <span class="cv_-_computer_voice">soap.</span><span class="ps_-_parameter_in_code_snippets">SERVICENAME</span><span class="cv_-_computer_voice">.*</span> to connect to APIs published from the same server.</div>
+      <div class="B_-_Body"><a name="2001793">The service name is not part of the package hierarchy. All local web services share the same namespace for their </a>APIs objects and their entities.</div>
+      <div class="B_-_Body"><a name="2001797">The section </a><a href="javascript:WWHClickedPopup('integration', 'webservices.04.05.html#3395304', '');" title="Testing Your Web Service">“Testing Your Web Service”</a> shows how to use this feature to test your web service. It also shows how to authenticate to the server using handlers, a feature discussed in the following section.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="2001478">Avoid calling locally-hosted SOAP APIs from within a plugin or the rules engine in </a>production systems. Be careful about any SOAP calls to the same server. If the SOAP API hosted locally modifies entity data and commits the bundle, the current transaction does not always detect and reload local data. Instead, refactor your code to avoid this case. For example, write a Gosu class that performs a similar function as the web service but that does not commit the bundle. This type of refactoring also results in higher server performance. If you have questions about how to convert some particular use locally-hosted SOAP APIs from plugins or rules, contact Customer Support. This is true for all types of local loopback SOAP calls to the same server. This includes <span class="cv_-_computer_voice">soap.local.*</span> objects, the SOAP client Java classes from Java plugins, and Studio-registered web services that call the same server as the client. </div>
+      <div class="HS_-_Head_Sub"><a name="2001479">Connecting to Microsoft.NET Web Services</a></div>
+      <div class="B_-_Body"><a name="2001480">Gosu automatically handles Windows Integrated authentication (NTLM authentication) exposed by web services </a>published by Microsoft.NET. For NTLM authentication, you must specify the Windows domain in the user field separated by a backslash. For example, if the Windows domain is <span class="cv_-_computer_voice">mygroup</span> and the username is <span class="cv_-_computer_voice">jsmith</span>, set authentication to HTTP authentication and set the username in Studio for the web service to:</div>
+      <div class="CS_-_Code_Single_Line"><span class="cv_-_computer_voice"><a name="2001481">mygroup\jsmith</a></span> </div>
+      <div class="H2_-_Heading_2"><a name="2001482">Dynamic SOAP Authentication Handlers</a></div>
+      <div class="B_-_Body"><a name="2001483">If you need to connect to a SOAP API that does not require authentication, your code can simply connect to the </a>service as discussed in previous sections. Similarly, to connect to a web service set up in Studio with HTTP authentication, connect to it directly using the code specified in previous sections. To set up authentication in Studio, see <a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">“Working with Web Services” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">Configuration Guide</a></span>. You can set up various combinations of username and password, varying by the system <span class="cv_-_computer_voice">server</span> and <span class="cv_-_computer_voice">env</span> variables.</div>
+      <div class="B_-_Body"><a name="2001487">However, if you need to dynamically generate name and/or password or other authentication criteria, you can </a>send your authentication information with a SOAP request. At an implementation level, this typically involves adding <span class="e_-_emphasis">headers</span> to the SOAP request. You can add SOAP headers with <span class="e_-_emphasis">API</span><span class="e_-_emphasis">&nbsp;</span><span class="e_-_emphasis">handlers</span>, which are blocks of code associated with a web service interface. In a typical case, the block of code embeds authentication information in the web service API call by adding SOAP headers. </div>
+      <div class="B_-_Body"><a name="2001489">The authentication handlers customize authentication at the SOAP header level, which is in the HTTP request </a><span class="s_-_strong">content</span>. Authentication handlers cannot dynamically generate HTTP request <span class="s_-_strong">header</span> authentication information. You can vary SOAP user names and passwords by server environments or server IDs in a cluster. Studio has built-in configuration options to create setting groups for this purpose. See <a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">“Working with Web Services” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('config', 'studio_web_services.14.1.html#1178213', '');" title="Working with Web Services">Configuration Guide</a></span>. However, in Studio you cannot dynamically set the username and password for HTTP authentication other than varying based on server ID and environment variables. To do more complex dynamic generation of authentication information, use an API handler.</div>
+      <div class="B_-_Body"><a name="2001493">A handler operation can trigger before the SOAP call, after the SOAP call returns, or both. The primary use of </a>API handlers is to add SOAP headers to the outgoing request SOAP request. The ability to trigger an action before a method call, after a method call, or both, is similar to Gosu <span class="e_-_emphasis">interceptors</span>. See <a href="javascript:WWHClickedPopup('gosu', 'annotations.15.1.html#1433440', '');" title="Annotations and Interceptors">“Annotations and Interceptors”</a> for more information.</div>
+      <div class="B_-_Body"><a name="2001498">After you choose a handler type, instantiate a handler. In the constructor, pass the appropriate authentication </a>credentials. Next, add it to an API by call the <span class="cv_-_computer_voice">addHandler</span> method on the web service interface. </div>
+      <div class="B_-_Body"><a name="2001499">The following sections show how use each built-in type of handler as well how to create your own handler.</a></div>
+      <div class="H3_-_Heading_3"><a name="2001500">Dynamic Transaction Authentication</a></div>
+      <div class="B_-_Body"><a name="2001502">Some web services require transaction identifiers (transaction IDs) in the </a><span class="cv_-_computer_voice">GW_TRANSACTION_ID_PROPERTY</span> header of each request.</div>
+      <div class="B_-_Body"><a name="2001505">Use the handler called </a><span class="cv_-_computer_voice">GWTransactionIDHandler</span> to pass a transaction ID to the external API. The constructor takes one argument, the transaction ID.</div>
+      <div class="B_-_Body"><a name="2001506">For example:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001507">var api = new soap.MyRemoteWebService.api.ServiceName()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001509">api.addHandler(new GWTransactionIDHandler("123451"))</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001510">api.myMethodName()</a></PRE>
+      <div class="H3_-_Heading_3"><a name="2001511">Dynamic Guidewire Authentication</a></div>
+      <div class="B_-_Body"><a name="2001512">Suppose you have more than one Guidewire application and want to write custom APIs for them to communi</a>cate. For typical cases, simply set up the authentication in the standard <span class="ui_-_UI_element">Web</span><span class="ui_-_UI_element">&nbsp;</span><span class="ui_-_UI_element">Service</span> editor in Studio. However, if you did not specify Guidewire authentication in the connection setup configuration, you can authenticate dynamically. The built-in handler called <span class="cv_-_computer_voice">GWAuthenticationHandler</span> lets you authenticate dynamically. Similarly, if you store this authentication information in a hidden or generate it dynamically in some other way, authenticate the connection using <span class="cv_-_computer_voice">GWAuthenticationHandler</span>.</div>
+      <div class="B_-_Body"><a name="2001515">You can use this handler to connect to a web service on this server using the local endpoint system. See </a><a href="javascript:WWHClickedPopup('integration', 'webservice-consuming.html#2001467', '');" title="Calling Web Services from Gosu">“Local SOAP Endpoints in Gosu”</a>. That section includes more information and an example that uses this authentication system.</div>
+      <div class="B_-_Body"><a name="2001517">Use </a><span class="cv_-_computer_voice">GWAuthenticationHandler</span> to authenticate the external API with Guidewire authentication. All methods on the API object authenticate with the given credentials. It takes two arguments, the username and the password, as shown in the example in this section:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001518">var api = new soap.MyRemoteWebService.api.ServiceName()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001519">api.addHandler(new GWAuthenticationHandler("su", "gw"))</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001520">api.Methodname()</a></PRE>
+      <div class="B_-_Body"><a name="2001522">Your web service calls to this </a><span class="cv_-_computer_voice">api</span> object include the <span class="cv_-_computer_voice">GW_AUTHENTICATION_USERNAME_PROPERTY</span> and <span class="cv_-_computer_voice">GW_AUTHENTICATION_USERNAME_PROPERTY</span> headers. </div>
+      <div class="H3_-_Heading_3"><a name="2001524">Writing Your Own Handlers</a></div>
+      <div class="B_-_Body"><a name="2001525">In some cases you might need to access a web service that requires other headers. Insert arbitrary headers by </a>making your own handler. To do this, write your own implementation of the <span class="cv_-_computer_voice">Handler</span> interface and insert whatever headers you need.</div>
+      <div class="HS_-_Head_Sub"><a name="2001526">To create a custom handler</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><span class="ri_-_run_in_header"><a name="2001527">Learn what custom headers you need.</a></span> Sometimes this is a fixed header name. Sometimes this is dynamic value. Check the WSDL data to learn the headers. For example, suppose you see something like this in the WSDL for the service:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="2001528">&lt;soap:header message="tns:GetClientTokenUserInfoHeader" part="UserInfoHeader" use="literal"/&gt;</a></div>
+      <div class="LP_-_List_Para"><a name="2001529">This indicates that you need the header </a><span class="cv_-_computer_voice">tns:GetClientTokenUserInfoHeader</span>.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2001530">Learn what custom data you need to insert in that header.</a></span> Sometimes this is a fixed value. Sometimes this is dynamic, perhaps encoded within the WSDL data. Sometimes this is simple text, such as a user ID, but it might be an entire complex structure. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2001531">Create a custom CallHandler implementation.</a></span> Create a new call handler that inserts custom headers into an outgoing web services request. If you call a method on the web service interface, Gosu calls the handler. This is similar to an interceptor, see <a href="javascript:WWHClickedPopup('gosu', 'annotations.15.1.html#1433440', '');" title="Annotations and Interceptors">“Annotations and Interceptors” in the </a><span class="bt_-_book_title"><a href="javascript:WWHClickedPopup('gosu', 'annotations.15.1.html#1433440', '');" title="Annotations and Interceptors">Gosu Reference Guide</a></span>. Define your own custom constructors that take authentication information or other important information. To embed static information into the request, encode authentication information directly into a handler class whose constructor takes no arguments.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2001535">Add the handler to a web service API object.</a></span> Attach the handler to the web service interface:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001536">var api = new soap.MyRemoteWebService.api.ServiceName()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001537">api.addHandler(new MyHandlerClass("su", "gw"))</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><span class="ri_-_run_in_header"><a name="2001538">Call methods on the web service API object.</a></span> Simply use the<span class="ri_-_run_in_header"> </span>API<span class="ri_-_run_in_header">:</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="2001539">api.Methodname()</a></div>
+      <div class="B_-_Body"><a name="2001540">There are two required methods on the </a><span class="cv_-_computer_voice">CallHandler</span> interface. The most important method is the <span class="cv_-_computer_voice">beforeRequest</span> method. Its last argument is a list of headers. You can call <span class="cv_-_computer_voice">headers.setHeader(...)</span> to append new outgoing headers to each request. One special requirement of this method is that the header name is not simply a <span class="cv_-_computer_voice">String</span> value but a two-part value called a qualified name (<span class="cv_-_computer_voice">QName</span>) object. A <span class="cv_-_computer_voice">QName</span> has two parts, the namespace and the name. A <span class="cv_-_computer_voice">QName</span> concatenates these two parts into one <span class="cv_-_computer_voice">String</span> separated by a colon in the resulting XML. Create one of these by passing to the <span class="cv_-_computer_voice">QName</span> constructor the two parts of the qualified name. </div>
+      <div class="B_-_Body"><a name="2001541">For example, to add the header with name </a><span class="cv_-_computer_voice">tns:GetClientTokenUserInfoHeader</span>, you can use the code:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2001542">var qn = new QName("tns", "GetClientTokenUserInfoHeader")</a></div>
+      <div class="B_-_Body"><a name="2001543">Next, you can add a header using this object and a value to add. For example:</a></div>
+      <div class="CS_-_Code_Single_Line"><a name="2001544">headers.setHeader( qn,  "my custom header value")</a></div>
+      <div class="B_-_Body"><a name="2001545">For the header argument to this method, you can pass a complex object that maps to a SOAP entity rather than a </a>simple <span class="cv_-_computer_voice">String</span> value. The WSDL for the service, define all valid SOAP entities for that service.</div>
+      <div class="B_-_Body"><a name="2001546">Trigger this code in the </a><span class="cv_-_computer_voice">beforeRequest</span> method of your call handler with the following method signature:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2001547">beforeRequest(opName: String, args: Object[], headers : OutboundHeaders)</a></div>
+      <div class="B_-_Body"><a name="2001548">You can use a compact Gosu syntax to create a subclass of </a><span class="cv_-_computer_voice">CallHandler</span> without naming the subclass. This uses the Gosu feature anonymous subclasses, which means in-line subclasses without names. Use anonymous subclasses to create and use your handler with code such as the following example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001549">var api = new soap.MyRemoteWebService.api.ServiceName()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001550">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001551">var userHeader = "my userHeader" // this example assumes a string value for the header</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001552">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001553">var myHandler = new CallHandler(){ </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001554">  function beforeRequest(opName: String, args: Object[], headers : OutboundHeaders){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001555">    headers.setHeader( new QName("tns", "GetClientTokenUserInfoHeader"),  userHeader)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001556">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001557">  function afterRequest(opName: String, args: Object, headers : InboundHeaders){}</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2001558">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001559">api.addHandler(myHandler)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001560">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001561">// use it...</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2001562">api.Methodname()</a></PRE>
+      <div class="B_-_Body"><a name="2001566">For more information about anonymous subclasses, see </a><a href="javascript:WWHClickedPopup('gosu', 'annotations.15.1.html#1433440', '');" title="Annotations and Interceptors">“Annotations and Interceptors”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="2001567">Calling Web Service from Gosu: ICD-9 Example</a></div>
+      <div class="B_-_Body"><a name="2001568">Suppose your application wants to look up special codes. For example, ICD-9 codes represent International </a>Statistical Classification of Diseases and Related Health Problems. One way to look up codes is to put all information directly into your application, such as a large look-up table. However, in some cases it might be necessary to let an external system look up the code, especially if the information changes frequently. This example looks up codes using an external web service. It create a utility class in Gosu to help connect to this service and prepare its arguments.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2001569">Guidewire does not certify the web service mentioned in the example as the standard </a>way to integrate with ICD-9 codes. This example demonstrates how web services might be used in application logic. You can write Gosu utility classes to prepare data for the service, or perform post-processing after getting results.</div>
+      <div class="B_-_Body"><a name="2001570">Set up the external web service in Studio:</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="2001571">Launch studio</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2001572">Create a new web service</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2001573">Name the web service </a><span class="cv_-_computer_voice">ICD9</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2001574">Click the </a><span class="ui_-_UI_element">Update</span> button to update the WSDL location</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2001575">Type the web service URL: </a><span class="cv_-_computer_voice">http://www.webservicemart.com/icd9code.asmx?WSDL</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="2001576">Save the web service definition.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="N_-_Note">
+        <span class="n_-_note">Note: </span><a name="2001577">Carefully note the created service name. The .NET service class has the original name of the class </a>plus <span class="cv_-_computer_voice">Soap</span> at the end. Because the original name for the service is <span class="cv_-_computer_voice">ICD9Code</span>, Gosu creates this class as <span class="cv_-_computer_voice">ICD9CodeSoap</span> and you must use that name to connect to it.</div>
+      <div class="B_-_Body"><a name="2001578">To create a class to represent a single ICD-9 code, add the following code in the package </a><span class="cv_-_computer_voice">example.webservice.icd9</span> in Studio:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001579">package example.webservice.icd9</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001580">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001581">/**</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001582"> * A single ICD9 code containing a code and a description.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001583"> * </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001584">*/</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001585">class ICD9Code</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001586">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001587">  private var _code : String as Code</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001588">  private var _desc : String as Desc</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001589">  construct()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001590">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001591">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001592">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001593">  construct(aCode  : String, aDesc : String){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001594">    _code = aCode;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001595">    _desc = aDesc;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001596">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001597">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001598">&nbsp;</a></PRE>
+      <div class="B_-_Body"><a name="2001599">Next use a utility class to talk to this web service and to prepare data to send over the web service. In this case, </a>the service requires a list of string lengths (code lengths) to be provided as a list. For example, to look for 3-to-6-character codes, the service expects the string <span class="cv_-_computer_voice">"(3,4,5,6)"</span>. The <span class="cv_-_computer_voice">lookupICD9CodesByPrefix</span> method provides an easy-to-use API to provide a minimum and maximum length argument, and the method generates the list automatically</div>
+      <div class="B_-_Body"><a name="2001600">Add this class in the package </a><span class="cv_-_computer_voice">example.webservice.icd9</span>:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001601">package example.webservice.icd9</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001602">uses java.lang.Integer</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001603">uses java.lang.IllegalArgumentException</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001604">uses java.util.ArrayList</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001605">uses gw.api.xml.XMLNode</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001606">uses java.lang.RuntimeException</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001607">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001608">class ICD9Util</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001609">{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001610">  private var _api : soap.ICD9.api.ICD9CodeSoap</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001611">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001612">  construct()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001613">  {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001614">    _api = new soap.ICD9.api.ICD9CodeSoap()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001615">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001616">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001617">  private function getICD9Codes(code : String, len : String) : String {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001618">    return _api.ICD9Codes( code, len )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001619">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001620">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001621">  static function getICD9Codes2(code : String, len : String) : String {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001622">    var util = new ICD9Util()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001623">    return util.getICD9Codes( code, len )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001624">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001625">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001626">  /**</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001627">   * @codePrefix the prefix of any code that to look up.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001628">   * @minLen the minimum number of characters the code must contain.  This may be null</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001629">   * @maxLen the maximum number of characters the code must contain.  This may be null. </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001630">&nbsp;</a>&nbsp;&nbsp;* If both the minLen and maxLen are null, then </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001631">   */</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001632">  static function lookupICD9CodesByPrefix(codePrefix : String, minLen : Integer, </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001633">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maxLen : Integer) : List&lt;ICD9Code&gt;{</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001634">    //no-op   </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001635">    var pre = codePrefix + "*"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001636">    var lenStr = createLengthFilter( minLen, maxLen )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001637">    var result = getICD9Codes2( pre, lenStr )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001638">    return parseResultIntoCodes( result )    </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001639">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001640">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001641">  private static function parseResultIntoCodes(result : String) : List&lt;ICD9Code&gt; {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001642">    var codes = new ArrayList&lt;ICD9Code&gt;()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001643">    var itemsNode = XMLNode.parse( result )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001644">    if (itemsNode.ElementName != "items"){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001645">      throw new RuntimeException("Could not parse the result into ICD9 Codes.")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001646">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001647">    itemsNode.Children.each( \ item -&gt; { </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001648">        var code = item.Attributes.get( "code")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001649">        var desc = item.Attributes.get( "description")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001650">        if (item.ElementName != "item" || code == null){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001651">          throw new RuntimeException("Could not parse the result into ICD9 Codes.")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001652">        }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001653">        codes.add(new ICD9Code(code, desc))      </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001654">      })</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001655">   </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001656">    return codes</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001657">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001658">  </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001659">  private static function createLengthFilter(minLen : Integer, maxLen : Integer) : String{</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001660">    if ((minLen != null &amp;&amp; minLen &lt; 0) || (maxLen != null &amp;&amp; maxLen &lt; 0)){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001661">       throw new IllegalArgumentException("Cannot have a minimum length or maximum </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001662">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length that is negative: Min:" + minLen + ", Max:" + maxLen)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001663">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001664">        </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001665">    if (minLen != null &amp;&amp; maxLen != null &amp;&amp; minLen &gt; maxLen){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001666">       throw new IllegalArgumentException("Maximum length is less than the minimum length: "</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001667">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ minLen + " &gt; " + maxLen)</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001668">    }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001669">    var min = minLen == null ? 0 : minLen</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001670">    var max = maxLen == null ? 15 : maxLen //assume that no ICD9 code is more than 15 characters long</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001671">    var diff = (max + 1) - min</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001672">    var range : int[] = new int[diff]</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001673">    for (i in diff){</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001674">      range[i] = i + min</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001675">    }    </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001676">    var rangeStr = range.join( "," )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001677">    return "(" + rangeStr + ")"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001678">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001679">}</a></PRE>
+      <div class="HS_-_Head_Sub"><a name="2001680">Test the ICD-9 Web Service from Gosu Tester</a></div>
+      <div class="B_-_Body"><a name="2001681">Launch the Gosu Tester and invoke the web service to test it. You must create an instance of the web service that </a>has the class:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2001682">soap.</a><span class="pc_-_parameter_in_code">WEBSERVICE</span>.api.<span class="pc_-_parameter_in_code">SERVICE</span></div>
+      <div class="B_-_Body"><a name="2001683">In this case, the fully qualified name is </a><span class="cv_-_computer_voice">soap.ICD9.api.ICD9CodeSoap</span>.</div>
+      <div class="B_-_Body"><a name="2001684">For a simple test, paste the following code in the Gosu Tester:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2001685">var api = new soap.ICD9.api.ICD9CodeSoap()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001686">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001687">var code = "E*"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001688">var len = "(2,3,4)"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001689">var result = api.ICD9Codes( code, len )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2001690">&nbsp;</a></PRE>
+      <div class="B_-_Body"><a name="1444253">print(result) // print the final answer</a></div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

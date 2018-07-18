@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVWC1180 - Injured Worker Last Name")
+internal class CVWC1180InjuredWorkerLastName {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.claimant.LastName == null &&
+claim.Policy.isPolicyInRefresh(1) == false/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  claim.rejectField( "claimant.LastName", "newloss", displaykey.Rules.Validation.Claim.WorkersComp.InjWorkerName, null, null )
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

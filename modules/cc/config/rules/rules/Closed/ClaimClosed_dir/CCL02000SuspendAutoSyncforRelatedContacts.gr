@@ -1,0 +1,20 @@
+package rules.Closed.ClaimClosed_dir
+
+@gw.rules.RuleName("CCL02000 - Suspend AutoSync for Related Contacts")
+internal class CCL02000SuspendAutoSyncforRelatedContacts {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/// Any claim related contacts that have an AutoSync status of ALLOW, 
+//  should be changed to SUSPENDED because a closed claim shoud never be updated.
+var preloadedContacts = Claim.getContactsWithPreload()
+
+for (contact in preloadedContacts) {
+  if (contact.Contact.AutoSync == typekey.AutoSync.TC_ALLOW) {
+    contact.Contact.AutoSync = typekey.AutoSync.TC_SUSPENDED
+  }
+}/*end00rule*/
+  }
+}

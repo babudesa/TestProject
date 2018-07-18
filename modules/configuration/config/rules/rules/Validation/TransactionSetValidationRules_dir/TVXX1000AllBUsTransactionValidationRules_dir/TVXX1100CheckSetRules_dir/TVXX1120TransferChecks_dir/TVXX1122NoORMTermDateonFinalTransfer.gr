@@ -1,0 +1,36 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX1120TransferChecks_dir
+
+@gw.rules.RuleName("TVXX1122 - No ORM Term Date on Final Transfer")
+internal class TVXX1122NoORMTermDateonFinalTransfer {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(check in (transactionSet as CheckSet).Checks){
+  for(trans in transactionSet.Transactions){
+    var payment = trans as Payment
+      if(check.Transferred and check.TransferredToCheck.New and check.TransferredToCheck.Payments.Count != 0){
+        for(paymt in check.TransferredToCheck.Payments){
+          if(paymt.PaymentType == "final"){
+            for(payees in check.Payees){  //checks all the payees on check
+              for(TransferedContact in check.TransferredToCheck.Claim.Contacts){  //searches through the contacts on the destination claim
+                if(TransferedContact.DisplayName == payees.ClaimContact.DisplayName){ //matches the name
+       
+                    if(TransferedContact.Contact.ContactISOMedicareExt.ORMIndExt and 
+                      (TransferedContact.Contact as Person).MedicareEligibleExt){
+                        if(TransferedContact.Contact.ContactISOMedicareExt.ExhaustDateExt == null and
+                           TransferedContact.Contact.ContactISOMedicareExt.ORMEndDateExt == null){
+                             transactionSet.reject(null, null, "payment", "ORM is open with Medicare.  Medicare requires ORM to remain open until coverage for MedPay or PIP has ended.  You should either provide an ORM Termination Date or set a reminder to close ORM when coverage ends.")
+                           }
+                      }
+                }
+              }
+          }
+          }
+      }
+      }
+  }
+}/*end00rule*/
+  }
+}

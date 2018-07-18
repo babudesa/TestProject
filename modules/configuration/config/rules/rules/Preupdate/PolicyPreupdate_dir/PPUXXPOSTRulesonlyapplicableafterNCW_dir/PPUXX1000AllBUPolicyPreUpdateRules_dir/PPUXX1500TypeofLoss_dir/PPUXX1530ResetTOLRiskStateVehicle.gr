@@ -1,0 +1,52 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir.PPUXX1500TypeofLoss_dir
+
+@gw.rules.RuleName("PPUXX1530 - Reset TOL - Risk State Vehicle")
+internal class PPUXX1530ResetTOLRiskStateVehicle {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Claim.Exposures.length > 0/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var originalState : State
+var currentState : State
+
+for(prop in policy.Vehicles){
+  if(exists(cov in prop.Coverages where cov.isFieldChanged( "State" ) and !cov.New)){
+    for(cov in prop.Coverages){  
+      originalState = (cov.OriginalVersion.getFieldValue( "State" ) as State)
+      currentState = cov.State
+  
+      //cov.StateChangedExt = false
+      switch(cov.SublineExt){
+        case "615":
+        case "625":
+        case "635":
+        case "611":
+        case "620":
+        case "621":
+        case "622":
+        case "623":
+          if(originalState != currentState and (originalState == "HI" or currentState == "HI")){
+            for(exp in policy.Claim.Exposures){
+              exp.CvgStateChangedExt = false
+              if(exp.Coverage==cov){
+                exp.CvgStateChangedExt = true
+                if((exp.Coverage.SublineExt=="615" || exp.Coverage.SublineExt=="625" || exp.Coverage.SublineExt=="635")
+                   and exp.TypeOfLossMostExt!=null){
+                   exp.resetTypeofLoss()
+                } else if((exp.Coverage.SublineExt=="611" || exp.Coverage.SublineExt=="620" || exp.Coverage.SublineExt=="621" || exp.Coverage.SublineExt=="622" || exp.Coverage.SublineExt=="623")
+                          and (exp.ExposureType=="ab_AGG_auto_BodInjury"|| exp.ExposureType=="ab_AGG_gl_BodInjury"|| exp.ExposureType=="ab_BodilyInjury") and exp.TypeOfLossMostExt!=null){
+                   exp.resetTypeofLoss()
+                }
+              }
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

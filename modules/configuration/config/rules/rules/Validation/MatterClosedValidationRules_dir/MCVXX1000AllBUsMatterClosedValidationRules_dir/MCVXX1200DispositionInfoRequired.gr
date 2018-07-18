@@ -1,0 +1,32 @@
+package rules.Validation.MatterClosedValidationRules_dir.MCVXX1000AllBUsMatterClosedValidationRules_dir
+
+@gw.rules.RuleName("MCVXX1200 - Disposition Info Required")
+internal class MCVXX1200DispositionInfoRequired {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists(ae in matter.MatterAssignmentsExt*.AssignmentExposuresExt
+       where (ae.DispositionDateExt == null || ae.DispositionTypeExt == null) &&
+       ae.Assignment.MatterAssignmentStatusExt != typekey.MatterAssignmentStatus.TC_DECLINED) ||
+            
+       matter.DidMediationOccurExt == null
+ 
+/*
+* Matter cannot be closed if the disposition information is not entered for the
+* matter
+*/     
+
+
+
+
+
+/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var strErrorReason="You cannot close this legal action ("+ matter.Name + ") because there is missing disposition information. Please complete all disposition information before closing the legal action."
+    matter.reject("newloss", strErrorReason, Null, Null)
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

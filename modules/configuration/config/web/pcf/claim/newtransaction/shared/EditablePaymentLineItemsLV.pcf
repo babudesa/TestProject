@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="EditablePaymentLineItemsLV"
+    mode="default">
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <Variable
+      initialValue="new pcf_gs.EditablePaymentLineItemsLV_PageProc(Transaction)"
+      name="pageProcess"
+      recalculateOnRefresh="true"
+      type="pcf_gs.EditablePaymentLineItemsLV_PageProc"/>
+    <RowIterator
+      alternateEntryStyle="false"
+      autoAdd="Transaction.LineItems.length == 0"
+      editable="true"
+      elementName="TransactionLineItem"
+      toAdd="Transaction.addToLineItems(TransactionLineItem)"
+      toRemove="remove(TransactionLineItem)"
+      value="Transaction.LineItems">
+      <Row
+        useTitleStyle="true">
+        <Cell
+          align="center"
+          editable="true"
+          footerLabel="displaykey.Java.ListView.Sum"
+          id="ApplyDeduction"
+          label="&quot;Show/Add Deductions?&quot;"
+          postOnChange="true"
+          value="TransactionLineItem.ApplyDeductions"
+          visible="Transaction.CostType == null ? false : true"
+          width="100"
+          wrapLabel="true"/>
+        <TypeKeyCell
+          editable="true"
+          filter="TransactionLineItem.ValidLineCategories"
+          id="LineCategory"
+          label="getLineCategoryLabel(Transaction.CostType)"
+          postOnChange="true"
+          required="Transaction.costTypeCodeRequired() or  ((Transaction.CostType == CostType.TC_CLAIMCOST || Transaction.CostType == CostType.TC_GAIASTPALOSS) and Transaction.LineItems.Count &gt; 1)"
+          validationExpression="Transaction.Exposure!=null ? Transaction.Exposure.getMedPayError(TransactionLineItem.LineCategory, Transaction.CostType):null"
+          value="TransactionLineItem.LineCategory"
+          visible="Transaction.CostType == null ? false : true"/>
+        <TypeKeyCell
+          editable="true"
+          id="TransactionQualifier"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseType"
+          required="true"
+          value="TransactionLineItem.TransactionQualifierExt"
+          visible="/*Is this Transaction an expense payment? */ Transaction typeis Payment ? Transaction.CostType == CostType.TC_EXPENSE || Transaction.CostType == CostType.TC_GAIASTPAEXPENSE : false"/>
+        <Cell
+          editable="true"
+          footerSumValue="TransactionLineItem.GrossAmountExt"
+          formatType="currency"
+          id="GrossAmount"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.GrossAmount"
+          numCols="12"
+          onChange="TransactionLineItem.calculateNetAmount();"
+          postOnChange="true"
+          required="true"
+          validationExpression="validateGrossAmount(TransactionLineItem)"
+          value="TransactionLineItem.GrossAmountExt"
+          wrapLabel="true"/>
+        <Cell
+          align="center"
+          footerSumValue="TransactionLineItem.TransactionAmount"
+          formatType="currency"
+          id="NetAmount"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.NetAmount"
+          required="false"
+          value="TransactionLineItem.TransactionAmount"
+          visible="Transaction.CostType == null ? false : true"
+          wrapLabel="true"/>
+        <!-- <TypeKeyCell
+          available="true"
+          editable="true"
+          id="BoxNumber"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.BoxNumber"
+          required="false"
+          showNoneSelected="false"
+          value="TransactionLineItem.IRS1099BoxNumberExt"
+          visible="false"/> -->
+      </Row>
+      <Row
+        useSubHeaderStyle="true"
+        visible="TransactionLineItem.ApplyDeductions == true">
+        <Cell
+          colspan="6"
+          id="fillerCell0"
+          visible="TransactionLineItem.LineItemDeductions.Count &gt; 0"/>
+      </Row>
+      <Row
+        visible="TransactionLineItem.ApplyDeductions == true">
+        <ContentCell
+          align="left"
+          colspan="6"
+          visible="TransactionLineItem.ApplyDeductions == true">
+          <DetailViewPanel
+            border="true"
+            compress="false">
+            <InputColumn>
+              <ListViewInput
+                boldLabel="true"
+                def="LineItemDeductionsLV(TransactionLineItem)"
+                label="&quot;Deductions&quot;"
+                labelAbove="true"
+                visible="TransactionLineItem.ApplyDeductions == true">
+                <Toolbar>
+                  <IteratorButtons/>
+                </Toolbar>
+              </ListViewInput>
+            </InputColumn>
+          </DetailViewPanel>
+        </ContentCell>
+      </Row>
+      <Row
+        useSubHeaderStyle="true"
+        visible="TransactionLineItem.ApplyDeductions == true">
+        <Cell
+          colspan="6"
+          id="fillerCell1"
+          visible="TransactionLineItem.LineItemDeductions.Count &gt; 0"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function remove(tli : TransactionLineItem) {
+  if (tli.LineCategory == "Deductible") {
+    (Transaction as Payment).removeDeductibleLineItem(tli)
+    tli.calculateNetAmount()
+  } else {
+    Transaction.removeFromLineItemsIfEditable(tli)
+    tli.calculateNetAmount()
+  }
+}
+
+function wrapAdd(item: TransactionLineItem){
+  Transaction.addToLineItems(item)
+  item.TransactionQualifierExt = TransactionQualifierExt.TC_ALLOCATED
+}
+
+
+
+function getLineCategoryLabel(type : typekey.CostType) : String {
+  var label : String = ""
+  if(type == CostType.TC_CLAIMCOST || type == CostType.TC_GAIASTPALOSS){
+    label = displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ClaimcostCategory
+  }else if(type == CostType.TC_EXPENSE || type == CostType.TC_GAIASTPAEXPENSE) {
+    label =  displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseCategory
+  }
+  return label
+}
+
+
+function validateGrossAmount(lineItem : TransactionLineItem) : String {
+  if(lineItem.GrossAmountExt.IsZero){
+    return displaykey.LV.Financials.EditablePaymentLineItems.LineItem.Amtzero
+  }else if(lineItem.GrossAmountExt < 0) {
+   return displaykey.LV.Financials.EditablePaymentLineItems.LineItem.Negative
+  }else{
+    return null
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

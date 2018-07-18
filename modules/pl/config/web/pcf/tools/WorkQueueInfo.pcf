@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Page
+    autosaveable="false"
+    canEdit="false"
+    canVisit="perm.User.ViewWorkQueue or perm.User.DevAllAccess"
+    countsAsWork="false"
+    id="WorkQueueInfo"
+    parent="ServerTools()"
+    title="displaykey.Web.InternalTools.WorkQueueInfo.Title">
+    <LocationEntryPoint
+      signature="WorkQueueInfo()"/>
+    <LocationEntryPoint
+      signature="WorkQueueInfo(initialWorkQueueInfo : gw.api.web.tools.WorkQueueDisplayInfo)"/>
+    <Variable
+      initialValue="new gw.api.web.tools.WorkQueueInfoPage()"
+      name="Page"/>
+    <Variable
+      name="initialWorkQueueInfo"
+      type="gw.api.web.tools.WorkQueueDisplayInfo"/>
+    <Screen
+      id="WorkQueueInfoScreen">
+      <DetailViewPanel>
+        <InputColumn>
+          <ButtonInput
+            action="null"
+            id="refresh"
+            value="displaykey.Button.Refresh"/>
+        </InputColumn>
+        <InputColumn>
+          <ButtonInput
+            action="Page.download()"
+            download="true"
+            id="download"
+            value="displaykey.Button.Download"/>
+        </InputColumn>
+      </DetailViewPanel>
+      <ListDetailPanel
+        selectionName="SelectedQueue"
+        selectionOnEnter="initialWorkQueueInfo"
+        selectionType="gw.api.web.tools.WorkQueueDisplayInfo">
+        <ListViewPanel
+          id="WorkQueueInfoLV">
+          <RowIterator
+            editable="false"
+            elementName="WorkQueueRow"
+            pageSize="0"
+            type="gw.api.web.tools.WorkQueueDisplayInfo"
+            value="Page.WorkQueueList">
+            <Variable
+              initialValue="new gw.api.tools.BatchProcess(WorkQueueRow.WorkQueueInfo.QueueType)"
+              name="batchProcess"/>
+            <Row
+              refreshOnProgressComplete="true"
+              visible="WorkQueueRow.QueueType != typekey.BatchProcessType.TC_ARCHIVE or gw.api.web.tools.ArchiveInfoPage.isArchivingAvailable()">
+              <Cell
+                enableSort="false"
+                id="WorkQueueName"
+                label="displaykey.Web.InternalTools.WorkQueueLv.WorkQueueName"
+                value="WorkQueueRow.WorkQueueInfo.QueueName"/>
+              <Cell
+                enableSort="false"
+                id="numActive"
+                label="displaykey.Web.InternalTools.WorkQueueLv.AvailableCount"
+                value="WorkQueueRow.AvailableCount"/>
+              <Cell
+                enableSort="false"
+                id="numCheckedOut"
+                label="displaykey.Web.InternalTools.WorkQueueLv.CheckedOutCount"
+                value="WorkQueueRow.CheckedOutCount"/>
+              <Cell
+                enableSort="false"
+                id="numFailed"
+                label="displaykey.Web.InternalTools.WorkQueueLv.FailedCount"
+                value="WorkQueueRow.FailedCount"/>
+              <Cell
+                enableSort="false"
+                id="numWorkersActive"
+                label="displaykey.Web.InternalTools.WorkQueueLv.WorkersRunningCount"
+                value="WorkQueueRow.WorkersRunning"/>
+              <ProgressCell
+                id="WriterStatus"
+                label="displaykey.Web.InternalTools.WorkQueueLv.WriterStatus"
+                percentage="batchProcess.ActiveStatus ? -1 : 100"
+                status="Page.getWriterStatus(WorkQueueRow)"
+                visible="gw.api.tools.ClusterInfoData.isBatchServerAvailable()"/>
+              <ContentCell
+                align="center"
+                id="NotifyCell"
+                label="displaykey.Web.InternalTools.WorkQueueLv.Action"
+                visible="gw.api.tools.ClusterInfoData.isBatchServerAvailable() and (perm.User.EditWorkQueue or perm.User.DevAllAccess)">
+                <Link
+                  action="SelectedQueue = WorkQueueRow;Page.runWriter(WorkQueueRow)"
+                  available="(not batchprocess.ActiveStatus) and Page.canStartFromUi(WorkQueueRow)"
+                  id="RunWriter"
+                  label="displaykey.Web.InternalTools.WorkQueueLv.RunWriter"
+                  styleClass="miniButton"/>
+                <Link
+                  action="SelectedQueue = WorkQueueRow;Page.notifyWorkers(WorkQueueRow)"
+                  id="Notify"
+                  label="displaykey.Web.InternalTools.WorkQueueLv.Waken"
+                  styleClass="miniButton"/>
+                <Link
+                  action="Page.stopWorkers(WorkQueueRow)"
+                  id="StopWorkers"
+                  label="displaykey.Web.InternalTools.WorkQueueLv.Stop"
+                  styleClass="miniButton"/>
+                <Link
+                  action="Page.restartWorkers(WorkQueueRow)"
+                  id="RestartWorkers"
+                  label="displaykey.Web.InternalTools.WorkQueueLv.Restart"
+                  styleClass="miniButton"/>
+                <Link
+                  action="SelectedQueue = WorkQueueRow;Page.downloadHistory(WorkQueueRow)"
+                  available="WorkQueueRow.WriterLastExecutionTime != null"
+                  download="true"
+                  id="PrintHistory"
+                  label="displaykey.Web.InternalTools.WorkQueueLv.DownloadHistory"
+                  styleClass="miniButton"/>
+              </ContentCell>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+        <PanelRef>
+          <TitleBar
+            title="displayKey.Web.InternalTools.WorkQueueInfo.StatisticsTitle"/>
+          <CardViewPanel
+            id="WorkQueueDV">
+            <Card
+              id="WorkItemsByWriter"
+              title="displaykey.Web.WorkQueueItemsByWriter.Title">
+              <PanelRef
+                def="WorkQueueItemByWriterLV(Page, SelectedQueue)"/>
+            </Card>
+            <Card
+              id="WorkQueueWorkers"
+              title="displaykey.Web.WorkQueueWorkers.Title">
+              <PanelRef
+                def="WorkQueueWorkerLDV(Page, SelectedQueue)"/>
+            </Card>
+            <Card
+              id="WorkQueueWorkItems"
+              title="displaykey.Web.WorkQueueWorkItems.Title">
+              <PanelRef
+                def="WorkQueueWorkItemsLDV(Page, SelectedQueue)"/>
+            </Card>
+          </CardViewPanel>
+        </PanelRef>
+      </ListDetailPanel>
+    </Screen>
+  </Page>
+</PCF>

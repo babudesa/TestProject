@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    canEdit="true"
+    canVisit="perm.Claim.create"
+    id="NewClaimWizard_NewNoteWorksheet"
+    parent="NewClaimWizard()"
+    startEditing="Note.setInitialValues(null)"
+    startInEditMode="true"
+    tabLabel="displaykey.JSP.WorkspaceTabBar.NewNote"
+    title="displaykey.JSP.NewClaimNote.Add.AddNote">
+    <LocationEntryPoint
+      signature="NewClaimWizard_NewNoteWorksheet(Wizard : claim.NewClaimWizardInfo)"/>
+    <Scope
+      location="NewClaimWizard(Wizard.Claim)"/>
+    <Variable
+      initialValue="new note.NewClaimNotesPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="PageHelper.initialize(Wizard)"
+      name="Note"
+      type="Note"/>
+    <Screen
+      id="NewClaimWizard_NewNoteScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="PageHelper.commitNote(); CurrentLocation.cancel()"
+          id="NewClaimWizard_NewNoteWorksheet_UpdateButton"
+          label="displaykey.Button.Update"
+          shortcut="U"/>
+        <ToolbarButton
+          action="PageHelper.cancelNote(); CurrentLocation.cancel()"
+          id="NewClaimWizard_NewNoteWorksheet_CancelButton"
+          label="displaykey.Button.Cancel"
+          shortcut="L"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickNoteTemplatePopup.push(Wizard.Claim.LossType)"
+          id="NewClaimWizard_NewNoteWorksheet_UseTemplateButton"
+          label="displaykey.Web.Note.UseTemplate"
+          onPick="gw.api.note.NewNoteUtil.useNoteTemplate(PickedValue, Note, Wizard.Claim)"
+          shortcut="P"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Wizard.Claim)"
+          id="NewClaimWizard_NewNoteWorksheet_AddDocumentButton"
+          label="displaykey.JSP.NoteDetail.Toolbar.AddDocument"
+          onPick="gw.api.note.NewNoteUtil.linkDocumentToNote(PickedValue, Note)"
+          visible="gw.api.document.DocumentsUtil.claimHasDocuments(Wizard.Claim) and perm.Claim.view(Wizard.Claim) and perm.System.viewdocs"/>
+      </Toolbar>
+      <PanelRef
+        def="DocumentNoteDV(Note)"/>
+    </Screen>
+  </Worksheet>
+</PCF>

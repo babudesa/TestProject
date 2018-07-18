@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Screen
+    id="AddressBookSearchScreen">
+    <Require
+      name="externalSearchEnabled"
+      type="boolean"/>
+    <Require
+      name="requiredContactType"
+      type="Type"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="showCancel"
+      type="boolean"/>
+    <Require
+      name="SIRScreen"
+      type="boolean"/>
+    <Require
+      name="allowPlace"
+      type="Boolean"/>
+    <Variable
+      initialValue="new contact.CCProximitySearchPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      initialValue="&quot;AddressBookSearchLV&quot;"
+      name="PrintTargetLV"/>
+    <Toolbar>
+      <ToolbarButton
+        action="CurrentLocation.cancel()"
+        id="cancel"
+        label="displaykey.Button.Cancel"
+        visible="showCancel"/>
+    </Toolbar>
+    <SearchPanel
+      cachingEnabled="false"
+      clearInvisibleInputs="true"
+      criteriaName="searchCriteria"
+      maxSearchResults="gw.api.search.MaxSearchResults.forContacts()"
+      resultsName="searchResults"
+      search="PageHelper.performProximitySearch(CurrentLocation,searchCriteria)"
+      searchCriteria="newSearchCriteria()"
+      searchResultsType="ContactQuery">
+      <PanelRef
+        def="AddressBookSearchDV(searchCriteria, PageHelper, requiredContactType, externalSearchEnabled, claim, SIRScreen, allowPlace)"/>
+      <PanelRef
+        def="AddressBookSearchLV(null, PageHelper, searchCriteria.ExternalContactSource, searchResults, searchCriteria)">
+        <TitleBar
+          appendListViewPaging="true"
+          title="displaykey.Web.Search.Results"/>
+        <Toolbar>
+          <CheckedValuesToolbarButton
+            allCheckedRowsAction="PageHelper.getDrivingDirectionsCache().getSelectedDirections(CheckedValues, SearchCriteria);"
+            flags="any ExternalContact"
+            id="RetrieveRequested"
+            iterator="AddressBookSearchLV"
+            label="displaykey.Web.Addressbook.Search.Result.GetRequested"
+            visible="searchCriteria.isProximitySearch()"/>
+          <ToolbarButtonSetRef
+            toolbarButtonSet="AddressBookDeleteToolbarButtonSet(searchCriteria.ExternalContactSource)"/>
+          <ToolbarDivider/>
+          <ToolbarButton
+            action="print.ListViewPrintOptionPopupAction.printListViewOnlyWithOptions(PrintTargetLV, displaykey.Web.Search.Results, null)"
+            available="perm.User.printlistviews"
+            id="ClaimSearchScreen_PrintButton"
+            label="displaykey.Java.ListView.Print"
+            shortcut="N"/>
+        </Toolbar>
+      </PanelRef>
+    </SearchPanel>
+    <Code><![CDATA[function newSearchCriteria() : ContactSearchCriteria {
+        var aCriteria = new ContactSearchCriteria();
+        aCriteria.ContactSubtype = requiredContactType.RelativeName as typekey.Contact;
+        aCriteria.SearchType = "internal"; 
+        if (claim != null) {
+          aCriteria.initializeProximitySearch(claim.Addresses as java.util.List<entity.Address>, claim.LossLocation);
+        }
+        return aCriteria;
+      }]]></Code>
+  </Screen>
+</PCF>

@@ -1,0 +1,40 @@
+package rules.BulkInvoiceApproval.BulkInvoiceApprovalRules_dir.BIAXX1000AllBUBulkInvoiceApprovalRules_dir
+
+@gw.rules.RuleName("BIAXX1100 - Manual Bulk Invoices")
+internal class BIAXX1100ManualBulkInvoices {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*///Determines whether a bulk invoice needs approval at a high level, meaning
+//that a user's claim payments to date - expense authority limit is compared
+//to the total of the bulk invoice - is escalated if the total is greater than
+//this amount
+//Sprint - AgriBusiness Continuous Sprint 15
+//Author - Stephanie Przygocki
+//Date - 7/8/08
+//Updated - 8/26/08 - To get around line item validation, if the user has enough
+//authority to pass the invoice, the requesting user is set to Batch Superuser who
+//has large limits so that line items will always pass.
+
+bulkInvoice.BulkInvoiceTypeExt == "other" &&
+bulkInvoice.ApprovalStatus == "unapproved" /*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+  //checks if the total of the invoice is higher than the user's authority limit for 
+  //claim payments to date (expense)
+  if(bulkInvoice.BulkInvoiceTotal > bulkInvoice.LastApprovingUser.getAuthorityLimit( "cptd", null, "expense" ).LimitAmount && bulkInvoice.LastApprovingUser!=util.custom_Ext.finders.getUserOb( "vmwillard" )){
+    bulkInvoice.requireApproval( "Bulk invoice for " + bulkInvoice.Payee.DisplayName + " requires approval." );
+  } else {
+    bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+  }
+  actions.exit()
+
+}catch(aex:gw.rules.AbortExecutionException) {
+    throw aex
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

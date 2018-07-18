@@ -1,0 +1,42 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir.TAXX1000AllBUsTransactionApprovalRules_dir
+
+@gw.rules.RuleName("TAXX1200 - Unverified Policy Requires Approval of Supervisor")
+internal class TAXX1200UnverifiedPolicyRequiresApprovalofSupervisor {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype=="CheckSet") and
+(!transactionSet.Claim.Policy.Verified) and
+((!util.user.GroupsHelper.isClaimManager(transactionSet.LastApprovingUser) and
+transactionSet.LastApprovingUser != transactionSet.getSCOAssistUser() and
+!util.user.SCOHelper.isAnSCO(transactionSet.LastApprovingUser) and
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser) and
+!(transactionSet as CheckSet).PrimaryCheck.ManualCheck and
+((transactionSet.LastApprovingUser!=util.custom_Ext.finders.getUserOb( "batchsu" ) and
+(transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt != "lit_advisor")) and
+((transactionSet.LastApprovingUser!=util.custom_Ext.finders.getUserOb( "batchsu" ) and
+ ((transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt != CheckCategoryExt.TC_MITCHELL &&
+ (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt != CheckCategoryExt.TC_HCS &&
+ (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt != CheckCategoryExt.TC_OCCM))))
+//This rule will need to replace TAEQ1100 when agri goes live
+//equine does not have the new script parameters so this couldn't be done there
+
+//sprzygocki 9/21/09 Added the condition that if the last requesting user is Batch SU
+//do not go into the rules...Batch SU should be able to approve all.
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var cSet = transactionSet as CheckSet
+if (cSet.Recurrence != null){
+  var first = cSet.Checks.first()
+  transactionSet.requireApproval( "Payment/Check is on a claim with an Unverified Policy." )
+  transactionSet.Claim.createCustomHistoryEvent( "UnvPolTransApprove", "Check of $" + first.NetAmount + " to be sent on: " + first.ScheduledSendDate + " requires approval because it is on an unverified policy." )
+}
+else {
+  for(check in cSet.Checks){
+    transactionSet.requireApproval( "Payment/Check is on a claim with an Unverified Policy." )
+    transactionSet.Claim.createCustomHistoryEvent( "UnvPolTransApprove", "Check of $" + check.NetAmount + " to be sent on: " + check.ScheduledSendDate + " requires approval because it is on an unverified policy." )
+  }
+}/*end00rule*/
+  }
+}

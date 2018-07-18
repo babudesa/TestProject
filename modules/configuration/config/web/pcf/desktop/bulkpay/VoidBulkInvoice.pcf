@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ViewBulkInvoiceDetail.go(bulkInvoice)"
+    afterCommit="ViewBulkInvoiceDetail.go(bulkInvoice)"
+    canEdit="true"
+    countsAsWork="false"
+    id="VoidBulkInvoice"
+    parent="ViewBulkInvoiceDetail(bulkInvoice)"
+    startInEditMode="true"
+    title="&quot;Bulk Invoice Void&quot;">
+    <LocationEntryPoint
+      signature="VoidBulkInvoice(bulkInvoice:BulkInvoice)"/>
+    <Variable
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalContactSource"/>
+    <Variable
+      initialValue="BulkInvoice.Payee!=null ? BulkInvoice.Payee.generateLinkStatus() : null"
+      name="payeeLinkStatus"
+      recalculateOnRefresh="true"/>
+    <Screen
+      editable="true"
+      id="BulkInvoiceDetailScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="voidBulkInvoice()"
+          id="Stop"
+          label="&quot;Void Bulk Invoice&quot;"/>
+        <ToolbarButton
+          action="currentLocation.cancel();ViewBulkInvoiceDetail.go(bulkInvoice)"
+          id="Cancel"
+          label="&quot;Cancel&quot;"/>
+      </Toolbar>
+      <PanelRef
+        def="ViewBulkInvoiceVoidStopDetailDV(bulkInvoice, externalContactSource, payeeLinkStatus)"
+        editable="true"/>
+      <PanelRef
+        def="BulkInvoiceItemsLV(bulkInvoice, helper)"
+        editable="false">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[function voidBulkInvoice() {
+  try {
+    if(bulkInvoice.CheckVoidStopReasonTypeExt == null){
+      throw new gw.api.util.DisplayableException("Enter Reason for Void/Stop")
+  }else if(!User.util.CurrentUser.hasPermission("payvoid")){ 
+    throw new gw.api.util.DisplayableException("Void action unsuccessful. Please cancel the Transaction") 
+    }else{
+     gw.api.util.CCLocationUtil.runAndCommit( \ -> bulkInvoice.voidBulkInvoice(), CurrentLocation )
+    }
+  } catch ( e : com.guidewire.pl.system.exception.IllegalTransactionStatusException ) {
+   throw new gw.api.util.DisplayableException(displaykey.Web.Financials.CheckCancel.Error.IllegalFinancialsStatus, e)
+  
+  }
+}]]></Code>
+  </Page>
+</PCF>

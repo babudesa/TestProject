@@ -1,0 +1,29 @@
+package rules.Postsetup.TransactionSetPostsetup_dir
+
+@gw.rules.RuleName("TPS01000 - Check Aggregate Limits")
+internal class TPS01000CheckAggregateLimits {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/TransactionSet.isWithinPercentOfLimit( 20 )/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//* Add activity over-riding subject and description only */
+        var activities = TransactionSet.Claim.Activities;
+        var warningExists = false;
+        for (activity in activities) {
+          if (activity.ActivityPattern.Code == "general_reminder"
+              AND activity.Subject == displaykey.Rules.PostSetup.Transaction.ApproachingAggLimits
+              AND activity.Status == "open") {
+            warningExists = true;
+            break;
+          }
+        }
+
+        if (!warningExists) {
+          TransactionSet.Claim.createActivity( null, ActivityPattern.finder.getActivityPatternByCode("general_reminder"),
+             displaykey.Rules.PostSetup.Transaction.ApproachingAggregateLimits,
+             displaykey.Rules.PostSetup.Transaction.PolicyWithinAggregateLimits,
+             null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ), null )
+        }/*end00rule*/
+  }
+}

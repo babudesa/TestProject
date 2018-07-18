@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.System.viewEDWPushTool"
+    id="EDWPushHolderTableTool"
+    title="&quot;EDW Push Tool&quot;">
+    <Screen>
+      <CardViewPanel>
+        <Card
+          id="History"
+          title="&quot;History&quot;">
+          <ListDetailPanel
+            selectionName="selectedHistory"
+            selectionType="EDWPushHolderHistoryExt">
+            <Variable
+              initialValue="gw.api.database.Query.make(EDWPushHolderHistoryExt).select().orderByDescending(\ r -&gt; r.CreateTime) as gw.api.database.IQueryBeanResult&lt;EDWPushHolderHistoryExt&gt;"
+              name="histories"
+              type="gw.api.database.IQueryBeanResult&lt;EDWPushHolderHistoryExt&gt;"/>
+            <PanelRef>
+              <Toolbar/>
+              <ListViewPanel>
+                <RowIterator
+                  editable="false"
+                  elementName="history"
+                  value="histories">
+                  <Row>
+                    <DateCell
+                      id="ExecutedDate"
+                      label="&quot;Date Executed&quot;"
+                      value="history.CreateTime"/>
+                    <Cell
+                      id="ExecutedBy"
+                      label="&quot;Executed By&quot;"
+                      value="history.CreateUser"/>
+                    <Cell
+                      id="ClaimNumber"
+                      label="&quot;Claim Number&quot;"
+                      value="history.ClaimNumber"/>
+                    <Cell
+                      id="UniqueID"
+                      label="&quot;Unique ID&quot;"
+                      value="history.UniqueID"/>
+                    <Cell
+                      id="Type"
+                      label="&quot;Type&quot;"
+                      value="history.Subtype"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </PanelRef>
+            <CardViewPanel>
+              <Card
+                id="HistoryDetail"
+                title="&quot;Details&quot;">
+                <DetailViewPanel>
+                  <InputColumn>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="Comments"
+                      label="&quot;Comments&quot;"
+                      labelAbove="true"
+                      numCols="100"
+                      numRows="10"
+                      value="selectedHistory.Comments"/>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="OriginalMessage"
+                      label="&quot;OriginalMessage&quot;"
+                      labelAbove="true"
+                      numCols="100"
+                      numRows="10"
+                      value="(selectedHistory as EDWPushTransactionHistoryExt).OriginalMessage"
+                      visible="selectedHistory typeis EDWPushTransactionHistoryExt"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </Card>
+            </CardViewPanel>
+          </ListDetailPanel>
+        </Card>
+        <Card
+          id="Held"
+          title="&quot;Held&quot;">
+          <ListDetailPanel
+            selectionName="selectedItem"
+            selectionType="gaic.ui.tools.edwpush.HolderItem">
+            <Variable
+              initialValue="20"
+              name="limit"
+              type="int"/>
+            <Variable
+              initialValue="gaic.ui.tools.edwpush.EDWPushTableTool.getHolderItemsSimple(limit)"
+              name="items"
+              type="List&lt;gaic.ui.tools.edwpush.HolderItem&gt;"/>
+            <PanelRef>
+              <Toolbar>
+                <ToolbarInput
+                  editable="true"
+                  formatType="exactNumber"
+                  id="LimitInput"
+                  label="&quot;Max number of rows&quot;"
+                  requestValidationExpression="(VALUE != null &amp;&amp; VALUE typeis int &amp;&amp; VALUE &gt; 0)?null:&quot;Rows must be a non-negative, non-zero integer&quot;"
+                  value="limit"/>
+                <ToolbarButton
+                  action="items = gaic.ui.tools.edwpush.EDWPushTableTool.getHolderItemsSimple(limit)"
+                  id="RefreshButton"
+                  label="&quot;Refresh&quot;"/>
+                <ToolbarDivider/>
+                <ToolbarButton
+                  action="gaic.ui.tools.edwpush.EDWPushTableTool.removeHolderItemSimple(selectedItem, web.WebUtil.getActionEventParameter());items = gaic.ui.tools.edwpush.EDWPushTableTool.getHolderItemsSimple(limit)"
+                  available="selectedItem != null &amp;&amp; perm.System.runEDWPushTool"
+                  confirmMessage="&quot;Are you sure you wish to remove the selected item?&quot;"
+                  id="RemoveButton"
+                  label="&quot;Remove Selected Holder&quot;"
+                  promptQuestion="&quot;Why are you attempting to delete this item?&quot;"/>
+                <ToolbarButton
+                  action="EDWPushPopup.push(selectedItem)"
+                  available="false &amp;&amp; selectedItem != null &amp;&amp; selectedItem.HasTransaction == true &amp;&amp; perm.System.runEDWPushTool"
+                  id="EditButton"
+                  label="&quot;Edit Selected&quot;"/>
+              </Toolbar>
+              <ListViewPanel>
+                <RowIterator
+                  editable="false"
+                  elementName="item"
+                  id="HolderItemsIterator"
+                  value="items">
+                  <Row>
+                    <Cell
+                      id="UniqueID"
+                      label="&quot;Unique ID&quot;"
+                      value="item.UniqueID"/>
+                    <Cell
+                      id="TransactionName"
+                      label="&quot;Transaction Name&quot;"
+                      value="item.TransactionName"/>
+                    <Cell
+                      id="ClaimNumber"
+                      label="&quot;Claim Number&quot;"
+                      value="item.ClaimNumber"/>
+                    <Cell
+                      id="UpdateTime"
+                      label="&quot;Update Time&quot;"
+                      value="item.UpdateTime"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </PanelRef>
+            <CardViewPanel>
+              <Card
+                id="HolderItemDetails"
+                title="&quot;Details&quot;">
+                <DetailViewPanel>
+                  <InputColumn>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="Message"
+                      label="&quot;Message&quot;"
+                      labelAbove="true"
+                      numCols="100"
+                      numRows="10"
+                      value="selectedItem.Message"/>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="ErrorMessage"
+                      label="&quot;Error Message&quot;"
+                      labelAbove="true"
+                      numCols="100"
+                      numRows="10"
+                      value="selectedItem.ErrorMessage"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </Card>
+            </CardViewPanel>
+          </ListDetailPanel>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+  </Page>
+</PCF>

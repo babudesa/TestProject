@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="ContactBasicsDV"
+    mode="ex_Agency">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact.
+
+    Note also that claimContact may be null, so fields which depend on reference it should only be available for setting if it is not. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="showRoles"
+      type="boolean"/>
+    <Require
+      name="linkStatus"
+      type="contact.LinkStatus"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Company.resetAAPLimit(Company.ex_Agency.ex_AAPAuthority)"
+      name="clearAAPLimit"
+      recalculateOnRefresh="true"/>
+    <InputHeaderSection>
+      <InputSetRef
+        def="ContactBasicsHeaderInputSet(contactHandle, claimContact, showRoles, linkStatus)"/>
+    </InputHeaderSection>
+    <InputColumn>
+      <Label
+        label="Company.getSubtype().DisplayName"/>
+      <Input
+        id="OrganizationName"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName"
+        required="true"
+        value="Company.Name"/>
+      <Input
+        id="Agent_ProducerCode"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.ProducerCode"
+        value="claim.Policy.ProducerCode"
+        visible="isVisible(ClaimContact)"/>
+      <Input
+        id="Agent_AAP"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.AAPAuthority"
+        postOnChange="true"
+        value="Company.ex_Agency.ex_AAPAuthority"/>
+      <Input
+        available="Company.ex_Agency.ex_AAPAuthority"
+        formatType="exactNumber"
+        id="Agent_AAPLimit"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.AAPLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        validationExpression="Company.ex_Agency.ex_AAPAuthorityLimit == null || (Company.ex_Agency.ex_AAPAuthorityLimit.intValue() == Company.ex_Agency.ex_AAPAuthorityLimit) ? null : displayKey.Java.Validation.Number.NotAnInteger"
+        value="Company.ex_Agency.ex_AAPAuthorityLimit"
+        visible="Company.ex_Agency.ex_AAPAuthority"/>
+      <Input
+        id="Agent_LossCheck"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.LossCheckCopy"
+        value="Company.ex_Agency.ex_LossCheckCopy"/>
+      <Input
+        id="Agent_ExpenseCheck"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.ExpenseCheckCopy"
+        value="Company.ex_Agency.ex_ExpenseCheckCopy"/>
+      <Input
+        id="ProfitCenterName"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.ProfitCenterName"
+        value="Company.ex_Agency.AgencyProfitCenterNameExt"
+        visible="true"/>
+      <Input
+        id="ProfitCenter"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.ProfitCenter"
+        value="Company.ex_Agency.ex_AgencyProfitCenter"
+        visible="true"/>
+      <InputSetRef
+        def="BusinessContactInfoInputSet(contactHandle, claimContact, claim)"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.ClaimPref"/>
+      <Input
+        id="Agent_FundedDeductible"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.FundedDeductible"
+        value="Company.ex_Agency.ex_FundedDeductible"/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.PrimaryAddressDV"/>
+      <InputSetRef
+        def="AddressInputSet(contactHandle.AddressOwner)"
+        mode="contactHandle.AddressOwner.InputSetMode"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.Web.ContactDetail.TaxInfo"/>
+      <Input
+        editable="Company.ssnISEditable(claim, CurrentLocation.InEditMode)"
+        id="V_EIN"
+        label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+        validationExpression="Company.validateTaxID()"
+        value="TAXINFO"/>
+      <Input
+        editable="Company.canEditTaxInfo()"
+        id="TaxStatusCode"
+        label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+        postOnChange="true"
+        required="Company.checkContactTaxID()"
+        validationExpression="Company.ex_TaxStatusCode != null ? Company.checkContactTaxStatusUpdate(): Company.ex_TaxStatusCode"
+        value="Company.ex_TaxStatusCode"/>
+      <Input
+        editable="Company.canEditTaxInfo()"
+        id="TaxReportingName"
+        label="displaykey.Web.ContactDetail.TaxReportingName"
+        validationExpression="(Company.Preferred and Company.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+        value="Company.Ex_TaxReportingName"/>
+      <InputSetRef
+        def="VendorW9InfoInputSet(contactHandle)"/>
+      <InputDivider/>
+      <!-- LOSS DESCRIPTION -->
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="AgentUpdates"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.AgentUpdates"
+        numCols="50"
+        numRows="3"
+        required="false"
+        value="claim.AgentUpdatesExt"/>
+    </InputColumn>
+    <Code><![CDATA[property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Company.ex_Agency.TaxID, Company.ex_Agency.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+      property set TAXINFO(taxID : String) { Company.ex_Agency.TaxID = taxID } 
+      property get Company() : Company { return contactHandle.Contact as Company; }
+      
+      property get ClaimContact() : ClaimContact { return contactHandle typeis ClaimContact ? (contactHandle as ClaimContact) : null; }
+
+function isVisible(cont : ClaimContact) : Boolean {
+  for(role in cont.Roles){
+   if(role.Role == ContactRole.TC_FORMERAGENCY or role.Role== ContactRole.TC_FORMERCOVEREDPARTY){
+    return false 
+   }
+  }
+  return true
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

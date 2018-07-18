@@ -1,0 +1,20 @@
+package rules.EventMessage.EventFired_dir.Destination11LDM_dir
+
+@gw.rules.RuleName("ExposureChanged")
+internal class ExposureChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Exposure &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.Claim.LoadCommandID) &&
+messageContext.EventName == "ExposureChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var exposure = messageContext.Root as Exposure
+  var f = util.gaic.LDM.LDMFunctionsFactory.getExposureFunctions()
+  f.sendExposureChanges(messageContext, exposure)
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

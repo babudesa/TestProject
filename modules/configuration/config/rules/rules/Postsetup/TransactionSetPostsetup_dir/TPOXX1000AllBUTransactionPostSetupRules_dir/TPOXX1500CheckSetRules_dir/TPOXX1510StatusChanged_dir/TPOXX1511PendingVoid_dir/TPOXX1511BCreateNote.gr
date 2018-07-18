@@ -1,0 +1,42 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1511PendingVoid_dir
+
+@gw.rules.RuleName("TPOXX1511B - Create Note")
+internal class TPOXX1511BCreateNote {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet.New and transactionSet.LoadCommandID != null)
+//Notes will be created for all Voided checks/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  var noteBody = ""
+  var noteSubject = ""
+  var checkNum : String
+  
+  if(check.ex_DraftRegion != null){
+    checkNum = check.ex_DraftRegion + "-" + check.CheckNumber
+  } else if ( check.PrefixExt != null) {
+    checkNum = check.PrefixExt + "-" + check.CheckNumber 
+  } else {
+    checkNum = check.CheckNumber
+  }
+
+  // Generate note body
+  noteBody = displaykey.Rules.PostSetup.Transaction.Enterprise.CheckSet.ADISNoteBody( "Void", checkNum, gw.api.util.StringUtil.formatNumber(check.GrossAmountExt, "#,##0.00" ), check.PayTo)
+  noteSubject = displaykey.Rules.PostSetup.Transaction.Enterprise.CheckSet.ADISNoteSubject("Void")
+
+  var exposure = (check.Payments != null && check.Payments.length > 0) ? check.Payments[0].Exposure : null
+  var note : Note
+  if (exposure == null) {
+    note = transactionSet.Claim.addNote( "check", noteBody)
+  }
+  else {
+    note = transactionSet.Claim.addNote( exposure, "check", noteBody)
+  }
+  note.Subject = noteSubject
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

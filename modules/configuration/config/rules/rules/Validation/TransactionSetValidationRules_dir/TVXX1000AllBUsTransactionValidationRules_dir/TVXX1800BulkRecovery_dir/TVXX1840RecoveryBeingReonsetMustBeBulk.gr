@@ -1,0 +1,30 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1800BulkRecovery_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TVXX1840 - Recovery Being Re-onset Must Be Bulk")
+internal class TVXX1840RecoveryBeingReonsetMustBeBulk {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="RecoverySet" and transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//* Defect 7388- Commented the code which throws an error message for anormal recovery with same cash receipt number of bulk recovery.
+ by gyemula on 22/01/2015 */
+var transactions = transactionSet as RecoverySet
+//var msg = "This cash receipt number has already been used on another completed recovery. Please try again."
+  for(rec in transactions.Recoveries){
+    if((rec.Status=="pendingvoid" || rec.Status=="voided") and rec.RecodeExt ){
+     
+      actions.exitToNext()
+    }
+     //|| (rec.RecodeExt and rec.IsBulkedExt==true)){
+//     else {
+//      var recov = find(x in Recovery where (x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber 
+//                                            and (x.IsBulkedExt!=rec.IsBulkedExt)))
+//      if(recov.getCount()>0){
+//        transactionSet.reject( "payment", msg, null, null )
+//      }
+//    }
+  }/*end00rule*/
+  }
+}

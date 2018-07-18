@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewfinsum and perm.Claim.viewtransactiondetails(Claim)"
+    id="ClaimFinancialsSummary"
+    title="perm.Claim.viewnettotalincurred(Claim) ? displaykey.JSP.ClaimFinancials.Financials.Incurred(util.CurrencyUtil.renderAsCurrency(util.Math.Nz(financials.FinancialsCalculationUtil.getTotalIncurredNet().getAmount(Claim).Amount), Claim.Currency), displaykey.JSP.ClaimFinancials.Financials.Summary) : displaykey.JSP.ClaimFinancials.Financials.NoIncurred(displaykey.JSP.ClaimFinancials.Financials.Summary)">
+    <LocationEntryPoint
+      signature="ClaimFinancialsSummary(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="ClaimFinancialsSummary(Claim : Claim, filterOption : String)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="financials.FinancialsUtil.getFinancialsSummaryOption(Claim)"
+      name="savedOption"/>
+    <Variable
+      initialValue="&quot;Exposure&quot;"
+      name="defaultOption"/>
+    <Variable
+      initialValue="savedOption != null ? savedOption : defaultOption "
+      name="filterOption"/>
+    <Screen
+      id="ClaimFinancialsSummaryScreen">
+      <Variable
+        initialValue="new String[]{&quot;Exposure&quot;, &quot;Claimant&quot;, &quot;Coverage&quot;, &quot;ClaimCostOnly&quot;, &quot;ExposureOnly&quot;}"
+        name="filterOptions"/>
+      <Toolbar>
+        <ToolbarRangeInput
+          id="FinancialsSummaryRangeInput"
+          onChange="financials.FinancialsUtil.setFinancialsSummaryOption(Claim, filterOption)"
+          optionLabel="getFilterOptionLabel(VALUE)"
+          postOnChange="true"
+          value="filterOption"
+          valueRange="filterOptions"/>
+      </Toolbar>
+      <PanelRef
+        def="FinancialsSummaryPanelSet(Claim)"
+        mode="filterOption"/>
+    </Screen>
+    <Code><![CDATA[
+function getFilterOptionLabel(option : String) : String {
+  switch (option) {
+    case "ClaimCostOnly": return displaykey.Web.Financials.Summary.ClaimCostOnly
+    case "Claimant": return displaykey.Web.Financials.Summary.Claimant
+    case "Coverage": return displaykey.Web.Financials.Summary.Coverage
+    case "Exposure": return displaykey.Web.Financials.Summary.Exposure
+    case "ExposureOnly": return displaykey.Web.Financials.Summary.ExposureOnly
+    default: return null
+  }
+}
+    ]]></Code>
+  </Page>
+</PCF>

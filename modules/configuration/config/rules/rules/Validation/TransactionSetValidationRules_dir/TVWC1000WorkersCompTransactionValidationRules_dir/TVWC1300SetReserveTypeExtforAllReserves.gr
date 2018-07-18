@@ -1,0 +1,23 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVWC1000WorkersCompTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVWC1300 - Set ReserveTypeExt for All Reserves")
+internal class TVWC1300SetReserveTypeExtforAllReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.AllTransactions where trans.Subtype=="reserve" && (trans as Reserve).ReserveTypeExt == null)
+// 4.24.15 - cmullin - this rule sets ReserveTypeExt to "Standard" for every new WC reserve.
+// 1.27.16 - cmullin - moved to TransactionSet Validation rules as it wasn't triggering from Preupdate
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(trans in transactionSet.AllTransactions){
+    if(trans.Subtype=="reserve" && (trans as Reserve).ReserveTypeExt==null){
+      (trans as Reserve).ReserveTypeExt = ReserveTypeExt.TC_STANDARD
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

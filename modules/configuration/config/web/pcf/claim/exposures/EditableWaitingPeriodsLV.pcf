@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableWaitingPeriodsLV"
+    validationExpression="(claim.getWCWaitingDaysApplied() &gt; claim.getWCWaitingDays( null)) ? displaykey.Warning.WaitingPeriod.DaysEnteredGTJurisdiction : null">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim.ClaimWorkComp"
+      name="ClaimWorkComp"
+      type="ClaimWorkComp"/>
+    <RowIterator
+      editable="true"
+      elementName="WaitingPeriod"
+      hideCheckBoxesIfReadOnly="true"
+      id="WaitingPeriods"
+      toAdd="ClaimWorkComp.addToWaitingPeriodDetails( WaitingPeriod )"
+      toRemove="ClaimWorkComp.removeFromWaitingPeriodDetails( WaitingPeriod )"
+      value="ClaimWorkComp.WaitingPeriodDetails">
+      <Row>
+        <DateCell
+          editable="true"
+          id="DateStarted"
+          label="displaykey.LV.EditableWaitingPeriods.DateStarted"
+          required="true"
+          validationExpression="( WaitingPeriod.DateStarted &gt; WaitingPeriod.DateEnded  ? displaykey.LV.EditableWaitingPeriods.StartedDatePriorToEnded_Error: null)"
+          value="WaitingPeriod.DateStarted"
+          wrapLabel="true"/>
+        <DateCell
+          editable="true"
+          id="DateEnded"
+          label="displaykey.LV.EditableWaitingPeriods.DateEnded"
+          required="true"
+          validationExpression="( WaitingPeriod.DateStarted &gt; WaitingPeriod.DateEnded  ? displaykey.LV.EditableWaitingPeriods.StartedDatePriorToEnded_Error: null)"
+          value="WaitingPeriod.DateEnded"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="WaitingDaysApplied"
+          label="displaykey.LV.EditableWaitingPeriods.DaysApplied"
+          numCols="14"
+          requestValidationExpression="VALUE % 1 == 0 ? null : &quot;Days Withheld must be a whole number.&quot;"
+          validationExpression=" (WaitingPeriod.WaitingDaysApplied &lt; 0 ? displaykey.LV.EditableWaitingPeriods.Message.NegativeWaitingDaysApplied : ( WaitingPeriod.WaitingDaysRepaid &gt; WaitingPeriod.WaitingDaysApplied ? displaykey.LV.EditableWaitingPeriods.DaysRepaidGTDaysApplied : null))"
+          value="WaitingPeriod.WaitingDaysApplied"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="WaitingDaysRepaid"
+          label="displaykey.LV.EditableWaitingPeriods.DaysRepaid"
+          numCols="14"
+          requestValidationExpression="VALUE % 1 == 0 ? null : &quot;Days Repaid must be a whole number.&quot;"
+          validationExpression=" (WaitingPeriod.WaitingDaysRepaid &lt; 0 ? displaykey.LV.EditableWaitingPeriods.Message.NegativeWaitingDaysRepaid :( WaitingPeriod.WaitingDaysRepaid &gt; WaitingPeriod.WaitingDaysApplied  ? displaykey.LV.EditableWaitingPeriods.DaysRepaidGTDaysApplied: null))"
+          value="WaitingPeriod.WaitingDaysRepaid"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

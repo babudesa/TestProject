@@ -1,0 +1,23 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir.PVXX1110PolicyDatesRequirements_dir
+
+@gw.rules.RuleName("PVXX1113 - Policy Dates")
+internal class PVXX1113PolicyDates {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified and
+(policy.EffectiveDate==null ||
+(policy.ExpirationDate!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.ExpirationDate,policy.EffectiveDate)<0))/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var msg1:String = "Policy Effective Date cannot occur after the Policy Expiration Date."
+var msg2:String = "Policy Effective Date cannot be null."
+
+if(policy.EffectiveDate==null){
+  policy.rejectField( "EffectiveDate", "newloss", msg2, null, null )
+} else {
+  if(policy.ExpirationDate!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.ExpirationDate,policy.EffectiveDate)<0){
+    policy.rejectField( "ExpirationDate", "newloss", msg1, null, null )
+  } 
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,40 @@
+package rules.ApprovalRouting.ApprovalRules_dir.ARXX1000AllBUsApprovalRoutingRules_dir.ARXX1100AllBUsAuthorityLimitRoutings_dir
+
+@gw.rules.RuleName("ARXX1160 - Approve By SCO")
+internal class ARXX1160ApproveBySCO {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(util.user.GroupsHelper.isClaimManager(transactionSet.LastApprovingUser) or
+(transactionSet.getSCOAssistUser() != null and transactionSet.LastApprovingUser == transactionSet.getSCOAssistUser())) and
+transactionSet.LastApprovingUser != util.user.SCOHelper.getSCOUser(transactionSet.Claim.LossType) and
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+transactionSet.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  var scoUser = util.user.SCOHelper.getSCOUser(transactionSet.Claim.LossType)
+  var scoUserGroup : Group = util.GlobalParameters.ParameterFinder.getGroupParameter( "gaicclaims", transactionSet.Claim.LossType )
+  var approvalHistory = transactionSet.BeanVersion != null ? util.approvals.ApprovalHelper.getApprovalHistory(transactionSet) : null
+  var currentApprovalAssignedToUser = transactionSet.BeanVersion != null ? util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory) : null
+  
+  //If the activity is already assigned to the CorpClaimsOneUser or CorpClaimsTwo user then do
+  //not reassign. 
+  if(currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsOneUser || currentApprovalAssignedToUser == util.user.SCOHelper.CorpClaimsTwoUser) {
+    var nextApprovingUser = currentApprovalAssignedToUser
+    var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+    transactionSet.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    actions.exit()
+  //else continue normal assignment
+  } else if(transactionSet.LastApprovingUser != scoUser){
+    transactionSet.setApprovingUser( scoUser, scoUserGroup );
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName );
+    actions.exit();
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

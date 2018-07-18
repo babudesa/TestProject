@@ -1,0 +1,38 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1240TransferCheck_dir
+
+@gw.rules.RuleName("TPUXX1244 - Copy Vendor Roles")
+internal class TPUXX1244CopyVendorRoles {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(check in (transactionSet as CheckSet).Checks){
+    if(check.Transferred and check.TransferredToCheck.New and !(check.Bulked)){
+      for(payee in check.Payees){
+        for(transContact in check.TransferredToCheck.Claim.Contacts){
+          if(payee.ClaimContact.Contact.DisplayName == transContact.Contact.DisplayName and
+           (transContact.Contact typeis PersonVendor or transContact.Contact typeis CompanyVendor) and 
+           !exists(address in payee.ClaimContact.Contact.AllAddresses where
+           exists(transAddress in transContact.Contact.AllAddresses where 
+           address.DisplayName != transAddress.DisplayName))){
+         
+            for(role in payee.ClaimContact.Roles){
+              // Defect 8237 : Do not add Former Check Payee Role to contact on the new claim.
+              if(role.Role != ContactRole.TC_FORMERCHECKPAYEE and !transContact.hasRole( role.Role as java.lang.String )){
+                transContact.Claim.addRole( role.Role, transContact.Contact );
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+            
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(transactionSet, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

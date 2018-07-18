@@ -1,0 +1,21 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUAG1000AgriBusinessActivityPreUpdateRules_dir
+
+@gw.rules.RuleName("APUAG1200 - Awaiting Damage Estimates")
+internal class APUAG1200AwaitingDamageEstimates {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/((activity.Claim.LossType=="AGRIAUTO" ||
+activity.Claim.LossType=="AGRIPROPERTY" ||
+activity.Claim.LossType=="AGRILIABILITY") &&
+(activity.ActivityPattern.Code == "ab_assign_damage" &&
+activity.Status.Code == "complete" &&
+activity.ExternallyOwned==false) and
+!exists(act in activity.Claim.Activities where act.ActivityPattern.Code=="ab_awaiting_damage_est"))
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "ab_awaiting_damage_est" )
+activity.Claim.createActivityFromPattern( null, ap)
+/*end00rule*/
+  }
+}

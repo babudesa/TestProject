@@ -1,0 +1,17 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleName("CPU06000 - SI - Create SIU Escalation Activity")
+internal class CPU06000SICreateSIUEscalationActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.isFieldChanged( "SIescalateSIU" )
+and
+Claim.SIEscalateSIU == "Yes"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/Claim.createActivityFromPattern( null,  ActivityPattern.finder.getActivityPatternByCode("SIU_escalation"));
+Claim.SIEscalateSIUdate = gw.api.util.DateUtil.currentDate();
+Claim.SIUStatus="Under_Investigation";
+Claim.addToHistory( Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.PreUpdate.Claim.EscalatedToSIUTeam ) )/*end00rule*/
+  }
+}

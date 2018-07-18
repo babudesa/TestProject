@@ -1,0 +1,21 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir
+
+@gw.rules.RuleName("ABWC1800 - Special Claim Handling Threshold Reached")
+internal class ABWC1800SpecialClaimHandlingThresholdReached {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType == typekey.LossType.TC_ALTMARKETSWC || claim.LossType == typekey.LossType.TC_ALTMARKETSEL) 
+&& claim.SpecClaimThresholdExt != null 
+&& claim.SpecClaimThresholdExt > 0 
+&& claim.getTotalIncurred() >= claim.SpecClaimThresholdExt 
+&& !exists(act in claim.Activities where act.ActivityPattern.Code=="special_claim_threshold") /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "special_claim_threshold" )
+try{
+  claim.createActivityFromPattern(null, ap)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

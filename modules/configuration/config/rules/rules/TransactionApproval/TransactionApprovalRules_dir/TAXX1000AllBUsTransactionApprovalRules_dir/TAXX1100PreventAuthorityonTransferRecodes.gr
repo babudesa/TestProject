@@ -1,0 +1,53 @@
+package rules.TransactionApproval.TransactionApprovalRules_dir.TAXX1000AllBUsTransactionApprovalRules_dir
+
+@gw.rules.RuleName("TAXX1100 - Prevent Authority on Transfer/Recodes")
+internal class TAXX1100PreventAuthorityonTransferRecodes {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//*updated defect 8864 to assign Unable to Close Claim/Feature activity to claim owner/adjuster */
+
+uses com.guidewire.pl.web.controller.UserDisplayableException;
+
+var user = User.util.getCurrentUser()
+var oldRequester = transactionSet.RequestingUser
+transactionSet.RequestingUser = user
+var approvalResult = transactionSet.testAuthorityLimits();
+try {
+  if(Typeof transactionSet == ReserveSet){
+    for(reserve in (transactionSet as ReserveSet).Reserves){
+      if (gw.api.web.Scopes.Request != null) {
+        if(gw.api.web.Scopes.Request["AutoRes"] as boolean==true){
+          actions.exit();
+        }
+      }
+    }
+  }
+}catch(aex:gw.rules.AbortExecutionException){
+  throw aex;   
+} catch (e1) {
+   gw.api.util.Logger.logDebug("Scopes Request is null in TAXX1100");
+}
+
+for(trans in transactionSet.AllTransactions){
+  if(trans.Subtype != "payment" or (trans.Subtype == "payment" and !(trans as Payment).Recoded and !(trans as Payment).Check.Transferred)){
+    if (approvalResult.HasAuthority) {
+      if (approvalResult.RequiresApproval and transactionSet.ApprovalStatus == "unapproved") {
+        transactionSet.requireApproval( approvalResult.getCombinedMessages() );
+        break;      
+              }
+    }
+  }
+/*Below does the assignment for Unable to Close claim/feature activity, which is
+created with GuideWire code.  Not sure if has useage for the above for loop or not ER 1/26/17
+Renaming rule to include Unable to close claim activity assignment*/}
+for (exp in transactionSet.Exposures){
+  if (exp.AssignedUser != exp.Claim.AssignedUser){
+    transactionSet.RequestingUser = exp.AssignedUser
+  }else  
+  transactionSet.RequestingUser = transactionSet.Claim.AssignedUser
+}/*end00rule*/
+  }
+}

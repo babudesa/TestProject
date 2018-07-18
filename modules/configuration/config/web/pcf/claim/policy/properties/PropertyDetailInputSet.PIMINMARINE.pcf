@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    id="PropertyDetailInputSet"
+    mode="PIMINMARINE">
+    <Require
+      name="aLocationBasedRU"
+      type="LocationBasedRU"/>
+    <Input
+      editable="true"
+      id="Number"
+      label="displaykey.NVV.Policy.LocationDetail.Property.PremisesNumber"
+      onChange="(aLocationBasedRU as PropertyRU).updateLocationAddress()"
+      postOnChange="true"
+      required="true"
+      value="(aLocationBasedRU as PropertyRU).PropertyNumberExt"/>
+    <Input
+      editable="true"
+      id="BuildingNumber"
+      label="displaykey.NVV.Policy.LocationDetail.Property.BuildingNumber"
+      onChange="(aLocationBasedRU as PropertyRU).updateLocationAddress();(aLocationBasedRU as PropertyRU).checkRiskTypeUsingBuildingNum()"
+      postOnChange="true"
+      required="true"
+      value="aLocationBasedRU.Property.BuildingNumberExt"/>
+    <InputSet>
+      <Input
+        editable="true"
+        id="RiskNumber"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskNumber"
+        onChange="(aLocationBasedRU as PropertyRU).checkRiskTypeUsingRiskNum()"
+        postOnChange="true"
+        value="aLocationBasedRU.Property.RiskNumberExt"/>
+      <TypeKeyInput
+        available="aLocationBasedRU.Coverages.length ==0 &amp;&amp; !(aLocationBasedRU.Property.BuildingNumberExt == &quot;0&quot; &amp;&amp; aLocationBasedRU.Property.RiskNumberExt == 0)"
+        editable="true"
+        filter="VALUE.hasCategory(LossType.TC_PIMINMARINE) and VALUE.hasCategory(RiskType.TC_PROPERTY) and VALUE.Code != &quot;JOBSITE&quot;"
+        id="RiskType"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskType"
+        onChange="(aLocationBasedRU as PropertyRU).checkRiskNumberForPIM()"
+        postOnChange="true"
+        required="true"
+        value="aLocationBasedRU.Property.RiskTypeExt"/>
+      <Input
+        editable="true"
+        id="RiskDescription"
+        label="displaykey.NVV.Policy.LocationDetail.Property.RiskDescription"
+        required="false"
+        value="aLocationBasedRU.Property.LocationNumber"/>
+    </InputSet>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskEffDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskEffectiveDate"
+      validationExpression="aLocationBasedRU.effDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropEffDateExt"/>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskExpDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskExpirationDate"
+      validationExpression="aLocationBasedRU.expDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropExpDateExt"/>
+    <Input
+      editable="true"
+      id="LocationNumber"
+      label="displaykey.NVV.Policy.LocationDetail.Property.LocationNumber"
+      required="false"
+      value="aLocationBasedRU.Property.LocationNumber"
+      visible="aLocationBasedRU.Policy.PolicyType==PolicyType.TC_IMP"/>
+    <Input
+      editable="true"
+      id="YearBuilt"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Year"
+      required="false"
+      value="aLocationBasedRU.Property.YearBuiltExt"
+      visible="aLocationBasedRU.Property.RiskTypeExt == EDWRiskType.TC_FRMDWL || aLocationBasedRU.Property.RiskTypeExt == EDWRiskType.TC_FRMSTRUCT || aLocationBasedRU.Property.RiskTypeExt == null"/>
+    <Code><![CDATA[var detectDuplicates = \ fieldName : String, fieldValue : Object ->{
+  switch(fieldName){
+    case "PropertyNum":
+      
+    case "BuildingNum":
+    
+    case "RiskNum":
+    
+    case "RiskType":
+  }
+}]]></Code>
+  </InputSet>
+</PCF>

@@ -1,0 +1,23 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG1400 - Populate Vehicle Incident")
+internal class EPUAG1400PopulateVehicleIncident {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Defect 3076 - 3/3/10 - sprzygocki - updated so that vehicle incidents are 
+//initialized and kept synced correctly
+//tnewcomb 02/24/2011 - Defect 3911: Disabled for EM28, will be re-enabled in EM29.
+//tnewcomb 03/11/2011 - re-enabled for EM29
+//sprzygocki 10/6/11 - this rule was creating a new vehicle without the correct
+//  information populated each and every time the feature was updated, when really
+//  we just need to associate the VehicleIncident with the policy vehicle.
+exposure.VehicleIncident != null and 
+exposure.Coverage.Subtype == "VehicleCoverage" and
+exposure.TotalLossIndExt == false and
+exposure.ExposureType != ExposureType.TC_AB_AUTOPROPDAM/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.VehicleIncident.Vehicle = ((exposure.Coverage as VehicleCoverage).RiskUnit as VehicleRU).Vehicle
+/*end00rule*/
+  }
+}

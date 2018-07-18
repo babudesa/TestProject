@@ -1,0 +1,21 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEQ1000EquineClaimExceptionRules_dir.CEEQ1200RULESFORUPDATINGNULLS_dir
+
+@gw.rules.RuleName("CEEQ1230 - Update PreviousPropertyExt if null")
+internal class CEEQ1230UpdatePreviousPropertyExtifnull {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(inc in claim.FixedPropertyIncidentsOnly where inc.PreviousPropertyExt == null)==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(inc in claim.FixedPropertyIncidentsOnly){
+    if(inc.PreviousPropertyExt == null){
+      inc.PreviousPropertyExt = inc.Property;
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

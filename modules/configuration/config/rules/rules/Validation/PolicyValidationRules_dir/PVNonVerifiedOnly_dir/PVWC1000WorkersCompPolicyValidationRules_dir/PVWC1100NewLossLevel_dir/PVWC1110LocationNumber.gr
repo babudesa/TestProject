@@ -1,0 +1,19 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVWC1000WorkersCompPolicyValidationRules_dir.PVWC1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVWC1110 - Location Number")
+internal class PVWC1110LocationNumber {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(exists(pol in policy.Coverages where(pol.LocationNumExt==null))){
+    policy.reject(ValidationLevel.TC_NEWLOSS, displaykey.Rules.Validation.Policy.WorkersComp.LocationNumber, null, null)
+  }
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

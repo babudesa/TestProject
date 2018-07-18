@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="TransactionRecoveryDV">
+    <Require
+      name="Recovery"
+      type="Recovery"/>
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <InputColumn>
+      <InputSetRef
+        def="RecoveryBasicsInputSet(Transaction)"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="TransactionTrackingInputSet(Transaction)"/>
+      <Input
+        id="IsRecode"
+        label="displaykey.Financials.Recovery.Recovery.Recode"
+        postOnChange="true"
+        value="Recovery.RecodeExt"
+        visible="true"/>
+      <Input
+        id="IsBulked"
+        label="displaykey.NVV.Financials.Recovery.IsBulked"
+        postOnChange="true"
+        value="Recovery.IsBulkedExt"
+        visible="true"/>
+      <Input
+        id="FirstRecovery"
+        label="displaykey.NVV.Financials.Recovery.First"
+        postOnChange="true"
+        required="true"
+        value="Recovery.FirstBulkExt"
+        visible="Recovery.IsBulkedExt==true"/>
+      <Input
+        id="LastRecovery"
+        label="displaykey.NVV.Financials.Recovery.Last"
+        required="true"
+        value="Recovery.LastBulkExt"
+        visible="Recovery.IsBulkedExt==true"/>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="BulkRecoveriesLV(Recovery)"
+        id="BulkRecoveryLV"
+        label="displaykey.LV.Financials.Recovery.History"
+        visible="bulkRecoveryVisibility(Recovery)">
+        <Toolbar/>
+      </ListViewInput>
+      <InputSetRef
+        def="TransactionApprovalHistoryInputSet(Transaction)"/>
+    </InputFooterSection>
+    <Code><![CDATA[
+function bulkRecoveryVisibility(rec : Recovery) : boolean {
+	  var query = find(x in Recovery where (x.ex_CashReceiptNumber == rec.ex_CashReceiptNumber))
+	  if(rec.IsBulkedExt){
+	  	return true
+	  } else if(rec.RecodeExt and query.getCount()>0 and rec.IsBulkedExt){
+	    return true
+	  } else {
+	    return false
+	  }
+	}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

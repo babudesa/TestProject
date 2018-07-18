@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  ISO subview and match details
+  ### =================================================================================================================
+      This file automatically generated from nvv_exposure.xml -->
+  <DetailViewPanel
+    id="ISODetailsDV">
+    <Require
+      name="ISOReportable"
+      type="ISOReportable"/>
+    <Variable
+      initialValue="ISOReportable.ISOSendDate==null ? false : (ISOReportable.ISOSendDate &gt; ISOReportable.ISOReceiveDate)"
+      name="blankISORecDate"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.ISODetails.StatusSection"/>
+      <Input
+        editable="perm.System.integadmin"
+        id="Status"
+        label="displaykey.NVV.Exposure.SubView.ISODetails.Status"
+        value="ISOReportable.ISOStatus"/>
+      <DateInput
+        dateFormat="short"
+        id="SendDate"
+        label="displaykey.NVV.Exposure.SubView.ISODetails.SendDate"
+        timeFormat="short"
+        value="ISOReportable.ISOSendDate"/>
+      <DateInput
+        dateFormat="short"
+        id="ReceiveDate"
+        label="displaykey.NVV.Exposure.SubView.ISODetails.ReceiveDate"
+        timeFormat="short"
+        value="blankISORecDate==true ? null : ISOReportable.ISOReceiveDate"/>
+      <TextAreaInput
+        id="ISOErrorMessage"
+        label="displaykey.NVV.Exposure.SubView.ISODetails.ISOErrorMessage"
+        numCols="80"
+        numRows="3"
+        value="ISOReportable.ISOErrorMessage"
+        visible="ISOReportable.ISOErrorMessage != null"/>
+      <Input
+        editable="perm.System.integadmin"
+        id="KnownToISO"
+        label="displaykey.NVV.Exposure.SubView.ISODetails.KnownToISO"
+        value="ISOReportable.ISOKnown"
+        visible="perm.System.integadmin"/>
+    </InputColumn>
+    <InputFooterSection>
+      <!-- <ListViewInput
+        def="ISOMatchReportsLV(ISOReportable)"
+        labelAbove="true">
+        <Toolbar/>
+      </ListViewInput> -->
+      <ListViewInput
+        boldLabel="true"
+        def="UnmodifiableISODocumentsLV(getISODocs())"
+        id="Matches"
+        labelAbove="true">
+        <Toolbar/>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[function getISODocs() : List<Document>{
+  if(ISOReportable typeis Exposure){
+    return ISOReportable.Documents.where( \ doc -> doc.ex_SubType == "ISO ClaimSearch Match Report") as List<Document> 
+  }else if(ISOReportable typeis Claim and ISOReportable.ISOClaimLevelMessaging){
+    return ISOReportable.Documents.where( \ doc -> doc.ex_SubType == "ISO ClaimSearch Match Report") as List<Document>
+  }else{  
+    return null
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

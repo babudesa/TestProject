@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="ExposureSearchOptionalInputSet">
+    <Require
+      name="ExposureSearchCriteria"
+      type="ExposureSearchCriteria"/>
+    <Label
+      label="displaykey.NVV.Search.OptionalParameters"/>
+    <RangeInput
+      editable="true"
+      id="LossTypeInput"
+      label="displaykey.Exposure.Search.LossType"
+      optionLabel="VALUE.Description"
+      postOnChange="true"
+      required="false"
+      value="ExposureSearchCriteria.LossType"
+      valueRange="LossType.getTypeKeys(false)"/>
+    <RangeInput
+      available="ExposureSearchCriteria.LossType != null"
+      editable="true"
+      id="FeatureTypeInput"
+      label="displaykey.Exposure.Search.FeatureType"
+      value="ExposureSearchCriteria.ExposureType"
+      valueRange="getValidExposureTypes()"/>
+    <TypeKeyInput
+      editable="true"
+      id="ExposureStatusInput"
+      label="displaykey.Exposure.Search.FeatureStatus"
+      required="false"
+      value="ExposureSearchCriteria.ExposureState"/>
+    <Input
+      editable="true"
+      id="SeverityInput"
+      label="displaykey.Exposure.Search.Severity"
+      required="false"
+      value="ExposureSearchCriteria.ExposureSeverity"/>
+    <Input
+      editable="true"
+      id="JurisdictionStateInput"
+      label="displaykey.Exposure.Search.JurisdictionState"
+      required="false"
+      value="ExposureSearchCriteria.JurisdictionState"
+      visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+    <BooleanDropdownInput
+      editable="true"
+      id="PendingAssignmentInput"
+      label="displaykey.Exposure.Search.PendingAssignment"
+      required="false"
+      value="ExposureSearchCriteria.pendingAssignment"/>
+    <Input
+      editable="true"
+      id="LitigationStatusInput"
+      label="displaykey.Exposure.Search.LitigationStatus"
+      value="ExposureSearchCriteria.LitigationStatus"/>
+    <InputDivider/>
+    <Label
+      label="&quot;Date Criteria&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      filter="DateFieldsToSearchType.TF_EXPOSURESEARCHTYPES.TypeKeys.contains(VALUE)"
+      id="SearchForDateInput"
+      label="displaykey.Exposure.Search.DateFieldToSearch"
+      onChange="if(ExposureSearchCriteria.DateFieldToSearch == null){resetDateFields()}"
+      postOnChange="true"
+      required="false"
+      value="ExposureSearchCriteria.DateFieldToSearch"/>
+    <TypeKeyRadioInput
+      available="ExposureSearchCriteria.DateFieldToSearch != null"
+      editable="true"
+      flatten="true"
+      id="DateSearchTypeInput"
+      label="displaykey.Exposure.Search.DateSearchType"
+      onChange="ExposureSearchCriteria.DateRangeChoice = null; ExposureSearchCriteria.StartDate = null; ExposureSearchCriteria.EndDate = null"
+      postOnChange="true"
+      value="ExposureSearchCriteria.DateSearchType"/>
+    <TypeKeyInput
+      editable="true"
+      filter="DateRangeChoiceType.TF_EXPOSURESEARCHTYPES.TypeKeys.contains(VALUE)"
+      id="DateRangeChoiceInput"
+      label="displaykey.Exposure.Search.DateRange"
+      required="false"
+      value="ExposureSearchCriteria.DateRangeChoice"
+      visible="ExposureSearchCriteria.DateSearchType == DateSearchType.TC_FROMLIST &amp;&amp; ExposureSearchCriteria.DateFieldToSearch != null"/>
+    <Input
+      align="left"
+      editable="true"
+      id="StartDateInput"
+      label="displaykey.Exposure.Search.DateStart"
+      postOnChange="true"
+      value="ExposureSearchCriteria.StartDate"
+      visible="ExposureSearchCriteria.DateSearchType == DateSearchType.TC_ENTEREDRANGE &amp;&amp; ExposureSearchCriteria.DateFieldToSearch != null"/>
+    <Input
+      align="left"
+      editable="true"
+      id="EndDateInput"
+      label="displaykey.Exposure.Search.DateEnd"
+      postOnChange="true"
+      value="ExposureSearchCriteria.EndDate"
+      visible="ExposureSearchCriteria.DateSearchType == DateSearchType.TC_ENTEREDRANGE &amp;&amp; ExposureSearchCriteria.DateFieldToSearch != null"/>
+    <InputDivider/>
+    <Label
+      label="&quot;Financial Value Criteria&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      filter="FinancialSearchField.TF_EXPOSURESEARCHTYPES.TypeKeys.contains(VALUE)"
+      id="FinancialValueSearchTypeInput"
+      label="displaykey.Exposure.Search.FinancialValueType"
+      onChange="if(ExposureSearchCriteria.FinancialSearchField == null){resetFinancialFields()}"
+      postOnChange="true"
+      required="false"
+      value="ExposureSearchCriteria.FinancialSearchField"/>
+    <Input
+      available="ExposureSearchCriteria.FinancialSearchField != null"
+      editable="true"
+      formatType="currency"
+      id="FinancialValueStartInput"
+      label="displaykey.Exposure.Search.AmountFrom"
+      numCols="20"
+      postOnChange="true"
+      required="false"
+      value="ExposureSearchCriteria.AmountStart"/>
+    <Input
+      available="ExposureSearchCriteria.FinancialSearchField !=null"
+      editable="true"
+      formatType="currency"
+      id="FinancialValueEndInput"
+      label="displaykey.Exposure.Search.AmountTo"
+      numCols="20"
+      postOnChange="true"
+      required="false"
+      value="ExposureSearchCriteria.AmountEnd"/>
+    <Code><![CDATA[uses java.util.HashSet
+uses java.util.ArrayList
+
+
+/**
+* Funtion resets all date fields to null
+*/
+function resetDateFields(){
+    ExposureSearchCriteria.DateSearchType = null
+    ExposureSearchCriteria.DateRangeChoice = null
+    ExposureSearchCriteria.StartDate = null
+    ExposureSearchCriteria.EndDate = null
+}
+
+
+/**
+* Funtion resets all date fields to null
+*/
+function resetFinancialFields(){
+    ExposureSearchCriteria.AmountStart = null
+    ExposureSearchCriteria.AmountEnd = null
+}
+
+
+/**
+* Get the list of valid exposure types for the search
+*/
+function getValidExposureTypes() : List<ExposureType> {   
+    
+    
+    if(ExposureSearchCriteria.LossType != null){
+      
+        var coverages = new ArrayList<CoverageType>() 
+        var subtypes : List<CoverageSubtype>
+        var expoTypes = new HashSet<ExposureType>()
+        coverages.addAll(CoverageType.getTypeKeys(false).where(\ c -> c.hasCategory(ExposureSearchCriteria.LossType)))
+        subtypes = coverages*.Categories.whereTypeIs(CoverageSubtype).toList()
+
+        for(cst in subtypes){
+          expoTypes.addAll(ExposureType.getTypeKeys(false).where(\ e -> e.hasCategory(cst)))
+
+        }
+
+        return expoTypes.toList()
+        
+    }else {
+        return null
+    }
+}]]></Code>
+  </InputSet>
+</PCF>

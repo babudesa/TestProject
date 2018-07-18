@@ -1,0 +1,34 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVXX1300 - TestCheckReportability")
+internal class TVXX1300TestCheckReportability {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="CheckSet" and 
+exists (check in (transactionSet as CheckSet).Checks 
+where check.Changed == true 
+and check.Transferred == false 
+and check.TransferredCheck == null
+)&&
+!(transactionSet as CheckSet).ForBulkedCheck
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var check = (transactionSet as CheckSet).PrimaryCheck;
+var vendorcount = 0;
+for (payee in check.Payees)
+{
+   if (payee.PayeeType=="vendor") 
+     { 
+       vendorcount = vendorcount+1;
+     }
+}
+
+ if ((vendorcount == 0) and (check.Reportability == "reportable"))
+ {
+   var trans = transactionSet;
+   trans.reject("newloss", "A Check is reportable only if the Payee is a vendor", null, null) 
+ }
+/*end00rule*/
+  }
+}

@@ -1,0 +1,27 @@
+package rules.Validation.ExposureValidationRules_dir.EVAG1000AgriBusinessExposureValidationRules_dir.EVAG1300ValidforAbilitytoPay_dir
+
+@gw.rules.RuleName("EVAG1310 - Contribution Potential")
+internal class EVAG1310ContributionPotential {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Check Contribution potential only if a Bodily Injury, Medical Payment, or 
+  Personal Injury Feature.
+  Sprint: 16 
+  Author: zthomas
+  Date: 10/2/1008
+*/
+(exposure.ExposureType == "ab_AGG_auto_BodInjury" || 
+exposure.ExposureType == "ab_AGG_gl_BodInjury" || 
+exposure.ExposureType == "ab_BodilyInjury" || 
+exposure.ExposureType == "ab_MedPay" || 
+exposure.ExposureType == "ab_PersonalInjury") 
+&& exposure.ContribPotentialExt == null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  exposure.rejectField( "ContribPotentialExt", "payment", displaykey.Rules.Validaton.Exposure.Agribusiness.AbilityToPay.ContributionPotential, null, null )  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

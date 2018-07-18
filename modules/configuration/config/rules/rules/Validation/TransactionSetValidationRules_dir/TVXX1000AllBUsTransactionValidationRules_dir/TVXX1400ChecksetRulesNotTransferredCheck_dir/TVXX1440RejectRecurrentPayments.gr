@@ -1,0 +1,26 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TVXX1440 - Reject Recurrent Payments")
+internal class TVXX1440RejectRecurrentPayments {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//* Check for a recurrent check payment, if found reject the transaction
+*  rpampush - 11/14/06
+*/
+!util.WCHelper.isWCorELLossType(transactionSet.Claim)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///loop through transactions to find a recurrent check
+//if found reject the transaction
+for(trans in transactionSet.Transactions){
+  var payment = trans as Payment;
+  var check = payment.Check; 
+  if(check.CheckSet.Recurrence != null){
+    transactionSet.reject( "payment", "Cannot make a recurrent payment, please correct and try again.", null, null ); 
+    gw.api.util.Logger.logInfo("Rejected Recurrent Payments on Claim: " + payment.Claim.ClaimNumber + " by user: " + transactionSet.RequestingUser);
+    actions.exit();
+  }
+}/*end00rule*/
+  }
+}

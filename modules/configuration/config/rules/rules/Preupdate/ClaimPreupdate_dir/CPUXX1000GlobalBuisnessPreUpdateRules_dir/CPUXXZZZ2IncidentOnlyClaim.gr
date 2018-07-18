@@ -1,0 +1,48 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXXZZZ2 - Incident Only Claim")
+internal class CPUXXZZZ2IncidentOnlyClaim {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Update 8/12/13 renamed and move to last 2 of rule set because it has to
+have the actions.exit(), so it also has to be at the end.
+
+11/11/09 erawe - created rule for all LOB and turned off EQ and AG
+specific rules for incident only.
+*/
+claim.IncidentReport == true &&
+!claim.Closed && claim.State != "draft" &&
+!exists (exp in claim.Exposures where exp.State !="closed")
+////&& !exists (reopen in claim.History where reopen.Type == "reopened")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for( act in claim.Activities) {
+  if (act.Status == "open" and act.ActivityPattern != null) {
+      act.complete()
+     if (act.Description == null) {
+         act.Description = "Closed by system when claim changed to non Incident file ." }
+     else { 
+         act.Description = act.Description + "Closed by system when claim changed to non Incident file." 
+     }
+  }
+}
+claim.close( "other", "Incident only claim - Closed on entry" )
+
+if (!(claim.LoadCommandID != null and claim.isWCclaim)){
+  claim.createActivityFromPattern( null, util.custom_Ext.finders.findActivityPattern("incident_only_claim_notice") )
+}
+
+// 3/3/2009 - zthomas - Defect 1136, use automated assignment to assign claim to default incident only user.
+claim.autoAssign();
+
+actions.exit()
+
+
+
+
+
+
+ 
+/*end00rule*/
+  }
+}

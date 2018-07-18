@@ -1,0 +1,39 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1600- Supplemental Payments")
+internal class CCVXX1600SupplementalPayments {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* Defect 3553 - Keep claim from closing, if open, when making supplemental payments
+date: 9/14/10
+author: erawe
+** Per DBR meeting on 9/22/10 this rule will only be for checks at this 
+time.  Manual checks will be addressed in a future backlog item.
+*/
+claim.State == "open"
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var strErrorReason="This claim has a Supplemental payment in awaiting submission status.  The claim cannot be closed until these payments have been submitted."
+var result : Boolean = false;
+//var claimTransQueryResults = gw.api.database.Query.make(Transaction).select()
+  
+for(trans in claim.getAllTransactions()){
+  if(trans.Subtype=="Payment"){
+    var pmt = trans as Payment
+      if(pmt.PaymentType == "supplement" and pmt.Status=="awaitingsubmission"){// or pmt.Status=="submitting")
+        result = true;
+        break
+      }
+  }
+}
+if(result == true){
+  claim.reject( "newloss",strErrorReason, Null, Null )
+}
+  
+
+
+
+/*end00rule*/
+  }
+}

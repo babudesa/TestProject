@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="helper.flushCache()"
+    afterCommit="helper.flushCache()"
+    beforeCommit="bulkInvoice.verifyChangesAllowed()"
+    beforeValidate="helper.prepBulkInvoiceForSave(bulkInvoice, CostType.TC_UNSPECIFIED, CostCategory.TC_UNSPECIFIED)"
+    canEdit="perm.BulkInvoice.edit"
+    canVisit="perm.BulkInvoice.view"
+    id="EditBulkInvoiceDetail"
+    parent="BulkPay()"
+    showUpLink="true"
+    title="displaykey.Web.Financials.BulkPay.Invoice.BulkInvoiceDetail">
+    <LocationEntryPoint
+      signature="EditBulkInvoiceDetail(bulkInvoice : BulkInvoice)"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"
+      type="financials.BulkPayHelper"/>
+    <Variable
+      name="bulkInvoice"
+      type="BulkInvoice"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalContactSource"/>
+    <Variable
+      initialValue="BulkInvoice.Payee!=null ? BulkInvoice.Payee.generateLinkStatus() : null"
+      name="payeeLinkStatus"
+      recalculateOnRefresh="true"/>
+    <Screen
+      editable="true"
+      id="BulkInvoiceDetailScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          editVisible="bulkInvoice.Editable and perm.BulkInvoice.edit"/>
+        <ToolbarButton
+          action="helper.validateBulkInvoice(bulkInvoice);"
+          available="bulkInvoice.Validateable and perm.BulkInvoice.edit"
+          hideIfEditable="true"
+          id="ValidateButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Validate"/>
+        <ToolbarButton
+          action="helper.submitBulkInvoiceForApprovalAndCommit(bulkInvoice)"
+          available="bulkInvoice.Submittable and perm.BulkInvoice.edit"
+          hideIfEditable="true"
+          id="SubmitButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Submit"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="null"
+          hideIfEditable="true"
+          id="RefreshButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Refresh"/>
+      </Toolbar>
+      <PanelRef
+        def="BulkInvoiceDetailDV(bulkInvoice, externalContactSource, payeeLinkStatus)"/>
+      <PanelRef
+        def="BulkInvoiceItemsLV(bulkInvoice, helper)">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+  </Page>
+</PCF>

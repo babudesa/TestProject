@@ -1,0 +1,23 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX2100MedicareRelated_dir
+
+@gw.rules.RuleName("EVXX2112 - ME flag blank or Null with TPOC or ORM")
+internal class EVXX2112MEflagblankorNullwithTPOCorORM {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claimant typeis Person
+and !exposure.Claimant.MedicareEligibleExt/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(exposure.Claimant.ContactISOMedicareExt != null){
+ if(exposure.Claimant.ContactISOMedicareExt.TPOCExt.Count != 0){
+  exposure.Claimant.reject(null, null, "newloss", "Medicare Eligible is set to No or blank, please review.") 
+     
+ }
+ if(exposure.Claimant.ContactISOMedicareExt.ORMIndExt){
+  exposure.Claimant.reject(null, null, "newloss", "Medicare Eligible is set to No or blank, please review.") 
+     
+ }
+  
+}/*end00rule*/
+  }
+}

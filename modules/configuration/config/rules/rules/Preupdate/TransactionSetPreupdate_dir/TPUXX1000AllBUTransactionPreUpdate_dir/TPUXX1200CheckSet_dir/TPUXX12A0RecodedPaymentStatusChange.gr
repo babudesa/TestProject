@@ -1,0 +1,21 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX12A0 - Recoded Payment Status Change")
+internal class TPUXX12A0RecodedPaymentStatusChange {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(Payment in (transactionSet as CheckSet).PrimaryCheck.Payments where Payment.Status == TransactionStatus.TC_PENDINGRECODE) == true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var check = (transactionSet as CheckSet).PrimaryCheck;
+
+for(payment in check.Payments) {
+  if (payment.Status == "pendingrecode") {
+    payment.Status = "Recoded";
+  } else if (payment.Status =="submitting") {
+    payment.Status = "submitted";
+  }
+}
+/*end00rule*/
+  }
+}

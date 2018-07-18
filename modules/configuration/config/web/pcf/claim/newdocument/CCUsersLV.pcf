@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    editable="true"
+    id="CCUsersLV">
+    <Require
+      name="Document"
+      type="Document"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="true"
+      elementName="contactCC"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="Document.addToEx_CCUsers(contactCC)"
+      toRemove="Document.removeFromEx_CCUsers(contactCC)"
+      value="Document.ex_CCUsers">
+      <Row
+        editable="true"
+        visible="true">
+        <!-- 3/3/08 Agri Sprint 11 ER:  Added validationExpression for CCUser field -->
+        <RangeCell
+          editable="true"
+          id="ccname"
+          label="displaykey.LV.CCUsers.name"
+          postOnChange="true"
+          validationExpression="(contactCC.Contact.AllAddresses.length != 0 or !Document.ex_CentralPrint) ? (contactCC.Contact.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null ) : displaykey.GAIC.Documents.CentralPrint.Validation.NoMailingAdress.cp"
+          value="contactCC.Contact"
+          valueRange="getContacts()"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses libraries.Document_Entity.Document_Functions
+
+function getContacts() : List {
+  var contacts : List = new java.util.ArrayList()
+  for(contact in Claim.getRelatedContacts()){
+    // using an address hierarchy Mailing-Business-Home-Tax-Primary to get the CC's mail address
+    var mainAddr:Address = Document_Functions.getAddressToMail(contact)
+    if(mainAddr!=null && Document_Functions.isAddressValid(mainAddr)){
+      contacts.add(contact)
+    }
+  }
+  return contacts
+}]]></Code>
+  </ListViewPanel>
+</PCF>

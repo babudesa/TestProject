@@ -1,0 +1,157 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1600CorpClaimsAssist_dir
+
+@gw.rules.RuleName("TPOXX1610 - Total Incurred > Threshold")
+internal class TPOXX1610TotalIncurredThreshold {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//**
+ * Defect : 8185 - cprakash - 1/22/2016
+ * This Rule has been added as part of the Defect 8185
+ * This rule will verify if the claim doesn't have corp claim assistance role and doesn't have any activity
+ * If the payment exceeds the given threshold amount , this rule will fire an activity.
+ */
+!(exists (var roleAssignment in transactionSet.Claim.RoleAssignments where roleAssignment.Role == "scoassist" && roleAssignment.Active)) &&
+!(exists (var activity in transactionSet.Claim.Activities where activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("sco_assist_request") &&
+activity.Status == "open" and activity.Description.contains("Total Incurred")))
+and transactionSet.Claim.State != "closed" and transactionSet.Claim.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/switch (transactionSet.Claim.LossType) {
+  Case (LossType.TC_PIMINMARINE):
+    if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_PIM))){
+        transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_PIM.toString() + " or greater for this claim"  , "normal", false, null, null )
+    }
+    break;
+  Case (LossType.TC_EQUINE):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_Equine))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_Equine.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_FIDCRIME):	
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_FidCrime))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_FidCrime.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_AGRIPROPERTY):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AgriB_Prop))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_AgriB_Prop.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_AGRILIABILITY):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AgriB_Liab))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_AgriB_Liab.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_AGRIAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AgriB_Auto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_AgriB_Auto.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_EXCESSLIABILITY):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_ExcessLiab))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_ExcessLiab.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_EXCESSLIABILITYAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_ExcessLiabAuto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_ExcessLiabAuto.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_EXECLIABDIV):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_EXECLIABDIV))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_EXECLIABDIV.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_PROFLIABDIV):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_PROFLIABDIV))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_PROFLIABDIV.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_AGRIXSUMBAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AgriB_XSAuto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_AgriB_XSAuto.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_AGRIXSUMBLIAB):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AgriB_XSLiab))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_AgriB_XSLiab.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_SPECIALTYES):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_RiskSolutions))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_RiskSolutions.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_KIDNAPRANSOM):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_KidnapRansom))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_FidCrime.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_COMMBONDS):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_COMMBONDS))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_COMMBONDS.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_ENVLIAB):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_ENVLIAB))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_ENVLIAB.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_OMAVALON):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_OMAVALON))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_OMAVALON.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+	//Below line of business will be more applicable as part defect : 8185, cprakash, 2/18/2016
+//  Case (LossType.TC_PERSONALAUTO):
+//	if(!transactionSet.Claim.ConvertedClaimIndExt and (transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_PERSONALAUTO))){
+//		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_PERSONALAUTO.toString() + " or greater for this claim"  , "normal", false, null, null )
+//	}
+//	break;
+  Case (LossType.TC_ALTMARKETSWC):
+  Case (LossType.TC_ALTMARKETSEL):
+        if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_ALTMARKETS))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_ALTMARKETS.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+        break;
+  Case (LossType.TC_STRATEGICCOMPWC):
+  Case (LossType.TC_STRATEGICCOMPEL):
+        if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_STRATEGICCOMP))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_STRATEGICCOMP.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_TRUCKINGWC):
+  Case (LossType.TC_TRUCKINGEL):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_TRUCKING))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_TRUCKING.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_MERGACQU):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_MERGACQU))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_MERGACQU.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_SPECIALHUMSERV):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_DirectorsOfficers))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_DirectorsOfficers.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_ALTMARKETSAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_AltMarkets_Auto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_DirectorsOfficers.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_SHSAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_Specialty_Human_Services_Auto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_DirectorsOfficers.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+  Case (LossType.TC_TRUCKINGAUTO):
+	if((transactionSet.Claim.CheckCorpClaimAssistForTotalIncurred(ScriptParameters.CorpClaimsAssist_Trucking_Auto))){
+		transactionSet.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("sco_assist_request"), null, "Total Incurred is $" + ScriptParameters.CorpClaimsAssist_DirectorsOfficers.toString() + " or greater for this claim"  , "normal", false, null, null )
+	}
+	break;
+	
+}/*end00rule*/
+  }
+}

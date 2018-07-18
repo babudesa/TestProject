@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="ActivityDetailScreen"
+    mode="editable">
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Require
+      name="activityDetailHelper"
+      type="activity.ActivityDetailHelper"/>
+    <Toolbar>
+      <ToolbarButton
+        action="updateActivity()"
+        id="ActivityDetailScreen_UpdateButton"
+        label="displaykey.Button.Activity.Update"
+        shortcut="U"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="completeActivity()"
+        id="ActivityDetailScreen_CompleteButton"
+        label="displaykey.Button.Activity.Complete"
+        shortcut="P"
+        visible="Activity.canComplete()"/>
+      <ToolbarButton
+        action="completeActivityAndGoToNew()"
+        id="ActivityDetailScreen_RecurButton"
+        label="displaykey.Button.Activity.Recur"
+        visible="Activity.canRecur()"/>
+      <ToolbarButton
+        action="skipActivity()"
+        id="ActivityDetailScreen_SkipButton"
+        label="displaykey.Button.Activity.Skip"
+        shortcut="K"
+        visible="Activity.canSkip()"/>
+      <ToolbarButton
+        action="assignActivity()"
+        id="ActivityDetailScreen_AssignButton"
+        label="displaykey.Button.Activity.Assign"
+        shortcut="G"
+        visible="Activity.canAssign()"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="EmailWorksheet.push(Activity)"
+        id="ActivityDetailScreen_CreateEMailButton"
+        label="displaykey.Web.Email.CreateEmail"
+        visible="Activity.EmailTemplate != null"/>
+      <ToolbarButton
+        action="gw.api.activity.ActivityUtil.createDocumentFromTemplate(CurrentLocation,Activity)"
+        id="ActivityDetailScreen_ActionButton"
+        label="displaykey.Button.Activity.Action"
+        shortcut="T"
+        visible="(Activity.DocumentTemplate != null) and (Activity.DocumentTemplate != &quot;&quot;) and Activity.canEdit()"/>
+      <PickerToolbarButton
+        action="PickExistingDocumentPopup.push(Activity.Claim)"
+        id="ActivityDetailScreen_AddDocumentButton"
+        label="displaykey.Button.Activity.AddDocument"
+        onPick="gw.api.activity.ActivityUtil.onPickDocument(PickedValue, Activity)"
+        shortcut="E"
+        visible="Activity.canEdit() and perm.Claim.view(Activity.Claim) and perm.System.viewdocs"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="CurrentLocation.cancel()"
+        id="ActivityDetailScreen_CancelButton"
+        label="displaykey.Button.Activity.Cancel"
+        shortcut="L"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="ActivityNotesPage.goInMain(Activity.Claim, Activity)"
+        id="ActivityDetailScreen_NotesButton"
+        label="displaykey.Button.Activity.Notes"
+        shortcut="N"
+        visible="perm.Claim.view(Activity.Claim) and perm.System.viewclaimnotes"/>
+    </Toolbar>
+    <PanelRef
+      def="ActivityDV(Activity)"
+      mode="Activity.ActivityPattern.Code"/>
+    <Code><![CDATA[
+/* updates the activity */
+      function updateActivity(){
+        activityDetailHelper.doNothingBeforeCommit();
+        CurrentLocation.commit();
+      }
+
+      /* completes and commits the activity */
+      function completeActivity(){
+        activityDetailHelper.completeBeforeCommit();
+        CurrentLocation.commit();
+      }
+
+      /* completes and commits the activity, and navigates to the NewActivity page */
+      function completeActivityAndGoToNew(){
+        activityDetailHelper.completeBeforeCommit();
+        CurrentLocation.commit();
+        NewActivity.goInMain(Activity.Claim, Activity.ActivityPattern);
+      }
+
+      /* skips and commits the activity */
+      function skipActivity(){
+        activityDetailHelper.skipBeforeCommit();
+        CurrentLocation.commit();
+      }
+
+      /* skips and commits the activity */
+      function assignActivity(){
+        activityDetailHelper.doNothingBeforeCommit();
+        CurrentLocation.commit();
+        gw.api.assignment.AssignmentUtil.assignActivity(Activity)
+      }
+      
+    ]]></Code>
+  </Screen>
+</PCF>

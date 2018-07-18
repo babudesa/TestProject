@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    editable="exists (role in User.util.CurrentUser.Roles where role.Role.Name == &quot;Superuser&quot; || role.Role.Name == &quot;Corporate Claims Administrator&quot;)"
+    id="TPAAdminDetailScreen">
+    <Require
+      name="ExternalUser"
+      type="TPAAdminExt"/>
+    <Variable
+      initialValue="find (var pc in ProfitCenterGroupingExt)"
+      name="PCGroups"
+      type="ProfitCenterGroupingExtQuery"/>
+    <Variable
+      initialValue="find (var group in Group)"
+      name="ClaimGroups"
+      type="GroupQuery"/>
+    <Variable
+      initialValue="find (var tpa in TPAAdminExt where tpa.NameExt == ExternalUser.NameExt)"
+      name="TPAList"
+      type="TPAAdminExtQuery"/>
+    <Variable
+      initialValue="ExternalUser.New ? util.admin.ExternalUserAdminUtil.enable(ExternalUser) : null"
+      name="Enabled"/>
+    <Toolbar
+      visible="perm.SecurityZone.edit">
+      <EditButtons/>
+    </Toolbar>
+    <DetailViewPanel>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.Admin.TPA.ExternalUserName"/>
+        <TextInput
+          editable="ExternalUser.New"
+          id="NameExt"
+          label="displaykey.Web.Admin.TPA.Name"
+          maxChars="50"
+          required="true"
+          value="ExternalUser.NameExt"/>
+        <RangeInput
+          editable="ExternalUser.New"
+          id="ProfitCenterGroup"
+          label="displaykey.Web.Admin.TPA.ProfitCenter"
+          optionLabel="VALUE.Name"
+          postOnChange="true"
+          value="ExternalUser.ProfitCenterGroupExt"
+          valueRange="PCGroups"/>
+        <Input
+          id="ProfitCenterList"
+          label="displaykey.Web.Admin.TPA.ProfitCenters"
+          value="util.StringUtils.formatArray(ExternalUser.ProfitCenterGroupExt.ProfitCenterItemExt*.ProfitCenter) "
+          visible="ExternalUser.ProfitCenterGroupExt != null"/>
+        <RangeInput
+          editable="ExternalUser.New"
+          filter="VALUE.GroupType == typekey.GroupType.TC_TPA || VALUE.GroupType == typekey.GroupType.TC_TPAPROCESSING"
+          id="ClaimGroup"
+          label="displaykey.Web.Admin.TPA.Group"
+          required="false"
+          value="ExternalUser.ClaimGroupExt"
+          valueRange="ClaimGroups"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <DetailViewPanel>
+      <InputColumn>
+        <Label
+          label="displaykey.Web.Admin.TPA.SystemPreferences"/>
+        <Input
+          editable="ExternalUser.New"
+          id="ISO"
+          label="displaykey.Web.Admin.TPA.ISO"
+          validationExpression="ExternalUser.EnableISOExt != ExternalUser.MedReportingExt ? &quot;Medicare Reporting must have the same value as ISO Claim Search.&quot; : null"
+          value="ExternalUser.EnableISOExt"/>
+        <Input
+          editable="ExternalUser.New"
+          id="Medicare"
+          label="displaykey.Web.Admin.TPA.MedReporting"
+          value="ExternalUser.MedReportingExt"/>
+        <Input
+          editable="ExternalUser.New"
+          id="Tax1099"
+          label="displaykey.Web.Admin.TPA.Tax"
+          value="ExternalUser.Taxport1099Ext"/>
+        <Input
+          editable="ExternalUser.New"
+          id="LegalActions"
+          label="displaykey.Web.Admin.TPA.LegalActions"
+          value="ExternalUser.LegalActionsExt"/>
+        <Input
+          editable="ExternalUser.New"
+          id="AutoAck"
+          label="displaykey.Web.Admin.TPA.AutoAck"
+          value="ExternalUser.AutoAckExt"/>
+        <Input
+          editable="ExternalUser.New"
+          id="AutoMed"
+          label="displaykey.Web.Admin.TPA.AutoMedLetter"
+          value="ExternalUser.MedLetterExt"/>
+        <Input
+          editable="!ExternalUser.New"
+          id="isEnabled"
+          label="displaykey.Web.Admin.TPA.Enabled"
+          required="true"
+          value="ExternalUser.TPAEnabledExt"/>
+        <Input
+          editable="ExternalUser.New"
+          id="MedVendorsEligibility"
+          label="&quot;Medical Vendor Eligibility&quot;"
+          value="ExternalUser.EnableMedVendorsExt"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <DetailViewPanel
+      visible="false //!ExternalUser.New">
+      <InputColumn>
+        <Label
+          label="displaykey.Web.Admin.TPA.History"/>
+      </InputColumn>
+    </DetailViewPanel>
+  </Screen>
+</PCF>

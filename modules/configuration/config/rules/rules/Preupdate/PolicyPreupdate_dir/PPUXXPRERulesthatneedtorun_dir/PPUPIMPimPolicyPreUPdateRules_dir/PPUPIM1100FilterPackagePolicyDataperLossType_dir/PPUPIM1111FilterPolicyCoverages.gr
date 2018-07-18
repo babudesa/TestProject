@@ -1,0 +1,21 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUPIMPimPolicyPreUPdateRules_dir.PPUPIM1100FilterPackagePolicyDataperLossType_dir
+
+@gw.rules.RuleName("PPUPIM1111 - Filter Policy Coverages")
+internal class PPUPIM1111FilterPolicyCoverages {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Properties.Count > 0 &&
+exists(prop in policy.Properties where prop.Coverages.Count <= 0)
+/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var propTotal = policy.Properties.Count;
+
+for(prop in policy.Properties.where(\ l -> l.Coverages.Count <= 0)) {
+    prop.remove();
+    propTotal--;
+}
+      
+policy.TotalProperties = propTotal;/*end00rule*/
+  }
+}

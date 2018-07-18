@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    id="PolicySearchButtonsDV">
+    <Require
+      name="PolicySearchCriteria"
+      type="PolicySearchCriteria"/>
+    <Require
+      name="PolicySummary"
+      type="PolicySummaryQuery"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="lossdate"
+      type="pcf_gs.ClaimsMadeVisible_PageProc"/>
+    <Require
+      name="verifiedPolicyInfo"
+      type="util.custom_Ext.VerifiedPolicyInfo"/>
+    <Variable
+      name="ShowNonButtonLabel"
+      type="boolean"/>
+    <Variable
+      initialValue="util.custom_Ext.finders.enablePRO(Claim.LossType.Code)"
+      name="restoreFromPro"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="gw.plugin.util.CurrentUserUtil.getCurrentUser().User.canVisitPolReqRptScreen()"
+      name="accessPolicyRequestScreen"
+      type="boolean"/>
+    <InputColumn>
+      <ContentInput
+        id="LegacyButton">
+        <Link
+          action="util.custom_Ext.PolicySearchValidationWrapper.validateVIN(policySearchCriteria); util.SearchUtil.search(); ShowNonButtonLabel = true; checkForClaimsMade()"
+          default="true"
+          id="Search"
+          label="displaykey.Button.Search"
+          shortcut="S"
+          styleClass="bigButton"
+          visible="true"/>
+        <Link
+          action="util.SearchUtil.reset(); ShowNonButtonLabel = false; lossdate.Lossdate = true"
+          id="Reset"
+          label="displaykey.Button.Reset"
+          shortcut="R"
+          styleClass="bigButton"
+          visible="true"/>
+        <Link
+          action="GeneralErrorWorksheet.goInWorkspace(util.PolicyConversion.getPolicy(PolicySearchCriteria.PolicyNumber, PolicySearchCriteria.PolicyType.Code))"
+          id="Legacy"
+          label="displaykey.NVV.Policy.PolicySearch.Button.ConvertfromPRO"
+          shortcut="P"
+          styleClass="bigButton"
+          visible="PolicySearchCriteria.NewSearchExt and PolicySummary != null and PolicySummary.getCount() == 0 and PolicySearchCriteria.PolicyNumber != null and restoreFromPro and accessPolicyRequestScreen"/>
+      </ContentInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Java.PolicySearch.NoResultsReturned.RestoreFromPro"
+        visible="PolicySearchCriteria.NewSearchExt and PolicySummary != null and PolicySummary.getCount() == 0 and PolicySearchCriteria.PolicyNumber != null and restoreFromPro and accessPolicyRequestScreen"/>
+      <Label
+        label="displaykey.Java.PolicySearch.NoResultsReturned.NoRestoreFromPro"
+        visible="(PolicySearchCriteria.NewSearchExt and PolicySummary != null and PolicySummary.getCount() == 0 and ShowNonButtonLabel and !restoreFromPro) or (PolicySearchCriteria.NewSearchExt and PolicySummary != null and PolicySummary.getCount() == 0 and PolicySearchCriteria.PolicyNumber == null and ShowNonButtonLabel) or (PolicySearchCriteria.NewSearchExt and PolicySummary != null and PolicySummary.getCount() == 0 and ShowNonButtonLabel and !accessPolicyRequestScreen)"/>
+    </InputColumn>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+
+function checkForClaimsMade(){
+  if(PolicySearchCriteria.ClaimsMadeDateExt != null){
+  PolicySearchCriteria.ClaimsMadePolicyExt = true
+  verifiedPolicyInfo.ClaimsMadeDate = true;
+  verifiedPolicyInfo.ClaimsMadePolicy = true;
+  }else{
+    PolicySearchCriteria.ClaimsMadePolicyExt = false;
+    verifiedPolicyInfo.ClaimsMadeDate = false;
+    verifiedPolicyInfo.ClaimsMadePolicy = false;
+  }
+}
+  ]]></Code>
+  </DetailViewPanel>
+</PCF>

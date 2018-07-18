@@ -1,0 +1,37 @@
+package rules.Postsetup.ExposurePostsetup_dir.EPOXX1000AllBUsExposurePostSetupRules_dir
+
+@gw.rules.RuleName("EPOXX1200 - Set Exposure As Medical Payment")
+internal class EPOXX1200SetExposureAsMedicalPayment {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Medical Payments are defined by feature type...currently Med Pay and PIP
+//No fault will come later
+//Author: Stephanie Przygocki
+//Date: 8/12/09 Agri 0-1
+//Defect 1686
+exposure.ExposureType== ExposureType.TC_AB_MEDPAY ||
+exposure.ExposureType== ExposureType.TC_AB_PIP ||
+exposure.ExposureType== ExposureType.TC_AB_AGG_AUTO_BODINJURY||
+exposure.ExposureType== ExposureType.TC_AB_AGG_GL_BODINJURY||
+exposure.ExposureType== ExposureType.TC_AB_BODILYINJURY||
+/*Included exposure types "EX_AUTO_BODINJURY" and "EX_EXCESS_BODINJURY" 
+as part of defect # 6848 - 13th April 2014 by gyemula */
+exposure.ExposureType== ExposureType.TC_EX_AUTO_BODINJURY||
+exposure.ExposureType== ExposureType.TC_EX_EXCESS_BODINJURY||
+exposure.ExposureType== ExposureType.TC_SP_MEDICAL_PAYMENT||
+exposure.ExposureType== ExposureType.TC_SP_BODILY_INJURY||
+((exposure.Claim.LossType == LossType.TC_EXECLIABDIV || 
+exposure.Claim.LossType == LossType.TC_MERGACQU ||
+exposure.Claim.LossType == LossType.TC_PROFLIABDIV) and
+exposure.Claim.BodilyInjuryExt)||
+exposure.ExposureType==ExposureType.TC_EN_BODILYINJURY
+
+
+
+
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.IsMedicalPaymentExt = true/*end00rule*/
+  }
+}

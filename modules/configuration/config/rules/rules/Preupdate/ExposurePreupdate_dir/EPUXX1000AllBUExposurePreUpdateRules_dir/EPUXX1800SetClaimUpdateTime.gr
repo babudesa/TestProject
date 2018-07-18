@@ -1,0 +1,21 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUXX1800 - Set ClaimUpdateTime")
+internal class EPUXX1800SetClaimUpdateTime {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.State != "draft" and 
+(exposure.Claim.OriginalVersion as Claim).State != "draft"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  var claimUpdateTime:util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+  
+  claimUpdateTime.setClaimUpdateTime(exposure.Claim.ClaimNumber, gw.api.util.DateUtil.currentDate())
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( activity, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

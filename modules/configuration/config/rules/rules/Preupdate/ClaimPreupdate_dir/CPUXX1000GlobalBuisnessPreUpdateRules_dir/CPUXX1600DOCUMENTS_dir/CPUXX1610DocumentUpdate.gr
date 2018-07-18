@@ -1,0 +1,32 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir
+
+@gw.rules.RuleName("CPUXX1610 - Document Update")
+internal class CPUXX1610DocumentUpdate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+Defect 950 - ex_ClaimantName wasn&apos;t getting filled out until it was returned from
+ECF. This rule will fill it out when the document is created so that the screen reflects
+the correct Claimant. ECF&apos;s changes will overwrite what has been put into the ex_ClaimantName
+if it changes there. kmboyd - 1-7-08
+*/
+exists(doc in claim.Documents where doc.New) == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Defect:8303 actions- If condition is add to make sure that the mapping is applicable only for document
+//other than Initial Assignment Letter sc.
+try{
+  for(doc in claim.Documents){
+    if(doc.New){
+        if(doc.ex_ClaimantName == null and doc.Exposure != null){
+          doc.ex_ClaimantName = doc.Exposure.Claimant as java.lang.String
+          if(doc.Description!="Initial Assignment Letter - SC")
+          doc.Ex_ECFFeatureType = doc.Exposure.ExposureType.DisplayName
+        }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule(), e, null )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,154 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUEQ1000EquinePolicyPreUpdateRules_dir.PPUEQ1100AmountofInsurance_dir
+
+@gw.rules.RuleName("PPUEQ1100 - Set Amount of Insurance on EQM-Full Mortality")
+internal class PPUEQ1100SetAmountofInsuranceonEQMFullMortality {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*Made a change to make Coverage Limit value go to Amount of Insurance if
+the coverage is Full Mortality. As of 8/17/09 we're assuming this is only
+eq_fullmortality (EQM-Full Mortality) and eq_specifiedperils 
+(EQM-Specified Perils) coverages. We're further making Amount
+of Insurance uneditable in the pcf.
+Author: Stephanie Przygocki
+Date: 8/17/09 EM15 - final deployment
+*/
+//Developer: Amulya Saikumar
+//Defect# :7380  Date : 03/24/2015
+//Added FMDED coverages to also be included for generating the Amount of Insurance
+
+// kniese - 7/7/2016 - Defect 8601 - Update Ratings
+
+exists(cov in policy.AllCoverages where cov.Type=="eq_fullmortality" ||
+                                        cov.Type=="eq_specifiedperils" ||
+                                        cov.Type=="eq_stalIncomeLoss" ||
+                                        cov.Type=="eq_stalCI" ||
+                                        cov.Type=="eq_stalAv" ||
+                                        cov.Type=="eq_barrennesPF" ||
+                                        cov.Type=="eq_profoal" ||
+                                        cov.Type=="eq_frustImEx" ||
+                                        cov.Type=="eq_asd_FMDED" ||
+                                        cov.Type=="eq_colic_FMDED" ||
+                                        cov.Type=="eq_freeColSg_FMDED" ||
+                                        cov.Type=="eq_fulMorDed_FMDED" ||
+                                        cov.Type=="eq_losExt_FMDED" ||
+                                        cov.Type=="eq_mjm_FMDED" ||
+                                        cov.Type=="eq_mjm_FMDED10" ||
+                                        cov.Type=="eq_mjm_FMDED15" ||
+                                        cov.Type=="eq_manScr_FMDED" ||
+                                        cov.Type=="eq_surEnd_FMDED" ||
+                                        cov.Type=="eq_tran_FMDED" ||
+                                        cov.Type=="eq_wobSyn_FMDED" ||
+                                        cov.Type=="eq_ane_FMDED" ||
+                                        cov.Type=="eq_frustImExFM" ||
+                                        cov.Type=="eq_stalCIFM")== true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/for(prop in policy.Properties){
+  var bestCvgAmount = 0
+  var bestCvgPriority = 0
+  var badDateAmount = 0
+  var badDateAmountPriority = 0
+  var hasGoodDates = false
+  var priority = 0
+  var coverages : Coverage[];
+  for(riskUnit in policy.RiskUnits){
+    if(riskUnit.Subtype=="LocationBasedRU" || riskUnit.Subtype=="PropertyRU" 
+      and (riskUnit as LocationBasedRU).Property==prop.Property){
+      coverages = riskUnit.Coverages
+    }
+  }
+  for(cov in coverages){
+    if((cov.Type=="eq_fullmortality" || cov.Type=="eq_specifiedperils" ||
+        cov.Type=="eq_stalIncomeLoss" || cov.Type=="eq_stalCI" ||
+        cov.Type=="eq_stalAv" || cov.Type=="eq_barrennesPF" ||
+        cov.Type=="eq_profoal" || cov.Type=="eq_frustImEx" ||
+        cov.Type=="eq_asd_FMDED"|| cov.Type=="eq_colic_FMDED" ||
+        cov.Type=="eq_freeColSg_FMDED"|| cov.Type=="eq_fulMorDed_FMDED" ||
+        cov.Type=="eq_losExt_FMDED"|| cov.Type=="eq_mjm_FMDED" ||
+        cov.Type=="eq_mjm_FMDED10"|| cov.Type=="eq_mjm_FMDED15" ||
+        cov.Type=="eq_manScr_FMDED"|| cov.Type=="eq_surEnd_FMDED" ||
+        cov.Type=="eq_tran_FMDED"|| cov.Type=="eq_wobSyn_FMDED" ||
+        cov.Type=="eq_ane_FMDED" || cov.Type == "eq_frustImExFM" || cov.Type == "eq_stalCIFM") and (cov.IncidentLimit!=null and cov.IncidentLimit>0)){
+        switch(cov.Type){
+          //EQM-Full Mortality
+          case "eq_fullmortality":
+            priority = 8
+            break;
+          //FMDED-Full Mortality Deductible
+           case "eq_fulMorDed_FMDED":
+           priority = 8
+           break; 
+          //EQM - Specified Perils
+          case "eq_specifiedperils":
+            priority = 7
+            break;
+          //EQM - Prospective Foal
+          case "eq_profoal":
+            priority = 6
+            break;
+          //EQM - Barrenness Pro-Foal
+          case "eq_barrennesPF":
+            priority = 5
+            break;  
+          //EQM - Stallion Availability
+          case "eq_stalAv":
+            priority = 4
+            break;                
+          //EQM - Stallion First Season Infertility
+          case "eq_stalCI":
+            priority = 3
+            break;
+          //FM - Stallion First Season Infertility
+          case "eq_stalCIFM":
+            priority = 3
+            break;
+          //EQM - Stallion Loss of Income
+          case "eq_stalIncomeLoss":
+            priority = 2
+            break;
+          //EQM - Frustration of Import/Export
+          case "eq_frustImEx":
+            priority = 1
+            break;
+          //FM - Frustration of Export/Import
+          case "eq_frustImExFM":
+            priority = 1
+            break;
+          default:
+            priority = 0
+            break;
+        }//end switch
+        if(priority > badDateAmountPriority){
+          if(cov.IncidentLimit!=null){
+            badDateAmount = cov.IncidentLimit as int
+          } else {
+            badDateAmount = 0
+          }
+          badDateAmountPriority = priority
+        } else if(priority==badDateAmountPriority and cov.IncidentLimit!=null and cov.IncidentLimit>badDateAmount){
+              badDateAmount = cov.IncidentLimit as int
+        }
+        if((cov.ExpirationDate!=null and cov.EffectiveDate!=null) and 
+            !(gw.api.util.DateUtil.compareIgnoreTime( prop.Policy.Claim.LossDate, cov.ExpirationDate )>0 or
+             gw.api.util.DateUtil.compareIgnoreTime( prop.Policy.Claim.LossDate, cov.EffectiveDate )<0)){   
+          hasGoodDates = true
+          if(bestCvgAmount==0 || bestCvgPriority<priority){
+            if(cov.IncidentLimit!=null){
+              bestCvgAmount = cov.IncidentLimit as int
+            }
+            bestCvgPriority = priority
+          } else if(bestCvgPriority==priority and cov.IncidentLimit!=null and cov.IncidentLimit > bestCvgAmount){
+              bestCvgAmount = cov.IncidentLimit as int
+          }
+        }//end if(check dates)
+    }//end if(check which coverage)
+  }//end for(loop through coverages)
+  if(hasGoodDates){
+    prop.Property.ex_AmountofInsurance = bestCvgAmount
+  } else {
+    prop.Property.ex_AmountofInsurance = badDateAmount
+  }
+  policy.touch()
+}//end for(loop through properties)/*end00rule*/
+  }
+}

@@ -1,0 +1,33 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUWCO1000WorkersCompOnlyTransactionPreupdateRules_dir
+
+@gw.rules.RuleName("TPUWCO1200 - Attorney Rep No activity")
+internal class TPUWCO1200AttorneyRepNoactivity {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.conditionToCreateClaimActivity(transactionSet.Claim) and
+transactionSet.Subtype == "CheckSet" and
+transactionSet.Claim.Exposures.where(\ e -> e.AttorneyRepExt == true).IsEmpty and
+!transactionSet.Claim.Activities.where(\ a -> a.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "attorney_rep_ind")).HasElements
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var pattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern("attorney_rep_ind")
+var check = transactionSet as CheckSet
+
+for(pay in check.LineItems){
+   if(transactionSet.attorneyRepNoCodes(pay)){
+     transactionSet.Claim.createActivityFromPattern(null, pattern)    
+     break;
+  }
+}
+    
+      
+ 
+
+      
+
+  
+
+/*end00rule*/
+  }
+}

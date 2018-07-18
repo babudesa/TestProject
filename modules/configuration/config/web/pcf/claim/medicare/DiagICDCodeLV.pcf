@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="DiagICDCodeLV"
+    validationExpression="pageProc.CheckCode(claim)">
+    <Require
+      name="contactISO"
+      type="ContactISOMedicareExt"/>
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <RowIterator
+      editable="true"
+      elementName="ICDHelper"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="ICDHelper"
+      numEntriesRequired="0"
+      pageSize="19"
+      toCreateAndAdd="pageProc.addDiagHelper()"
+      toRemove="pageProc.removeICDHelper(ICDHelper)"
+      value="pageProc.DiagnosticCodes.where(\ c -&gt; c.ContactICD != null )">
+      <Row>
+        <Cell
+          editable="ICDHelper.ContactICD.ICDCode == null ? true : false"
+          id="ICDCode"
+          inputConversion="ICDHelper.ValidCode ? VALUE : null"
+          label="displaykey.Web.Medicare.ICDCode"
+          onChange="submitICDCode(ICDHelper);"
+          postOnChange="true"
+          required="false"
+          validationExpression="validateICDCode(ICDHelper)"
+          value="ICDHelper.ICDCode"/>
+        <Cell
+          id="descriptionCell"
+          label="displaykey.Web.Medicare.Description"
+          required="false"
+          value="ICDHelper.ContactICD.ICDCode.CodeDesc"/>
+        <Cell
+          hideChildrenIfReadOnly="false"
+          id="ICDCodeVersion"
+          value="ICDHelper.ContactICD.ICDCode.ICDVersionExt"
+          width="8"/>
+        <Cell
+          hideChildrenIfReadOnly="false"
+          id="RefreshICDCodes"
+          label="&quot;Refresh&quot;"
+          value="null"
+          visible="CurrentLocation.InEditMode &amp;&amp; !util.WCHelper.isWCLossType(claim)"
+          width="8"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[// Validating if provided input is a valid code or show error message
+function validateICDCode(helper: pcf_gs.ContactDiagICDHelper): String{
+  if(helper.ICDCode!=null and helper.ICDCode!=""){  
+      if(pageProc.isValidICDCode(helper.ICDCode, "ICD Codes") )
+      {
+          return null 
+       }
+       else return "Invalid ICD Code: " + helper.ICDCode 
+    } 
+    else 
+    { 
+        return "You must enter a code or remove the blank row."  
+    }
+}
+
+// Shows Exception error message when the value in the form is invalid
+// prevents showing error message: "ICD Code : Invalid ICD Code: null" when the field is empty
+function submitICDCode(helper : pcf_gs.ContactDiagICDHelper){
+    helper.ValidCode = true; 
+    if(helper.ICDCode!=null && !pageProc.isValidICDCode(helper.ICDCode, "ICD Codes")) 
+      throw new com.guidewire.pl.web.controller.UserDisplayableException("ICD Code : Invalid ICD Code: " + helper.ICDCode)
+}]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,25 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEQ1000EquineExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUEQ1800 - History message for property change")
+internal class EPUEQ1800Historymessageforpropertychange {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.ChangedFields.contains("Incident") or exposure.FixedPropertyIncident.ChangedFields.contains("Property") or exposure.FixedPropertyIncident.Changed) and exposure.Claim.State != "draft" and !exposure.New and exposure.Claim.Exposures.length == 1
+and !exposure.ReconnectFailExt/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if((exposure.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber != exposure.FixedPropertyIncident.Property.LocationNumber and !exposure.New){
+    if((exposure.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber != null){
+     exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exposure,(exposure.OriginalVersion as Exposure).FixedPropertyIncident.Property.LocationNumber, exposure.FixedPropertyIncident.Property.LocationNumber) )    
+    }else{
+      //exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exposure,((exposure.OriginalVersion as Exposure).PreviousCoverageExt as PropertyCoverage).Property.Location, exposure.FixedPropertyIncident.Property.Location) )
+      exposure.Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.Preupdate.Exposure.Equine.PropertyChange(exposure,(exposure.OriginalVersion as Exposure).FixedPropertyIncident.PreviousPropertyExt.LocationNumber, exposure.FixedPropertyIncident.Property.LocationNumber) )
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, "" )  
+}/*end00rule*/
+  }
+}

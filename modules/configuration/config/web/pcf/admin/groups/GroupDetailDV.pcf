@@ -1,0 +1,221 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="GroupDetailDV">
+    <Require
+      name="Group"
+      type="Group"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="GroupName"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.GroupName"
+        required="true"
+        value="Group.Name"/>
+      <RangeInput
+        editable="true"
+        id="DivisionName"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.DivisionName"
+        optionLabel="VALUE.DivisionNameValue"
+        required="Group.GroupType == &quot;busunit&quot; || Group.GroupType == &quot;technical&quot; || Group.GroupType == &quot;processing&quot;"
+        value="Group.DivisionNameExt"
+        valueRange="getDivisionNames()"/>
+      <Input
+        editable="true"
+        id="Type"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Type"
+        onChange="Group.GroupAddressExt = null"
+        postOnChange="true"
+        required="true"
+        value="Group.GroupType"/>
+      <GroupInput
+        action="GroupDetailPage.go(Group.Parent)"
+        editable="true"
+        id="Parent"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Parent"
+        required="true"
+        searchLocation="GroupSearchPopup.push(Group)"
+        selectLocation="OrganizationGroupTreePopup.push(Group.makeOrganizationSelection(), Group)"
+        value="Group.Parent"
+        visible="Group.Parent != null"/>
+      <TypeKeyInput
+        editable="true"
+        filter="filterIssuingCompany(VALUE as String)"
+        id="Company"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Company"
+        required="true"
+        showNoneSelected="false"
+        value="Group.CompanyNameExt"/>
+      <!-- 6/3/10 erawe scrum tasks to add ISO Agency Cd(ID) to Technical or Claims Business units -->
+      <Input
+        editable="true"
+        id="ISOAgencyID"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.ISOAgencyID"
+        required="true"
+        value="Group.ISOAgencyIDExt"
+        visible="Group.GroupType != typekey.GroupType.TC_GENERAL and Group.GroupType != typekey.GroupType.TC_NONCLAIMSBUSUNIT and Group.GroupType != typekey.GroupType.TC_TERM"/>
+      <UserInput
+        action="UserDetailPage.go(Group.Supervisor)"
+        editable="true"
+        id="Supervisor"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Supervisor"
+        required="true"
+        value="Group.Supervisor"/>
+      <RangeInput
+        action="SecurityZoneDetail.go(Group.SecurityZone)"
+        editable="true"
+        id="SecurityZone"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.SecurityZone"
+        required="true"
+        validationExpression="return isValidTPA()"
+        value="Group.SecurityZone"
+        valueRange="find (securityZone in SecurityZone)"/>
+      <ListViewInput
+        def="GroupUsersLV(Group)"
+        editable="true"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Users">
+        <Toolbar>
+          <IteratorButtons/>
+          <CheckedValuesToolbarButton
+            checkedRowAction="GroupUser.User.BackupUser = null"
+            hideIfReadOnly="true"
+            id="GroupDetailDV_ClearBackupUserButton"
+            iterator="GroupUsersLV"
+            label="displaykey.Java.Admin.GroupUsers.ClearBackupUser"/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment"/>
+      <Input
+        editable="true"
+        id="LoadFactor"
+        label="displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment.LoadFactor"
+        required="true"
+        validationExpression="!(Group.LoadFactor &lt; 0 or Group.LoadFactor &gt; 100) ? null : displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment.LoadFactor.OutOfRange"
+        value="Group.LoadFactor"/>
+      <!-- 8/25/2009 - zthomas - Defect 2360, Add address to group. -->
+      <InputDivider
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Label
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <TypeKeyInput
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="Country"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.Country"
+        onChange="Group.GroupAddressExt.PostalCode = null"
+        postOnChange="true"
+        required="Group.GroupType == &quot;busunit&quot;"
+        value="Group.GroupAddressExt.Country"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        available="Group.GroupAddressExt.Country != null"
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="AddressLine1"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.AddressLine1"
+        required="Group.GroupAddressExt.Country != null"
+        value="Group.GroupAddressExt.AddressLine1"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        available="Group.GroupAddressExt.Country != null"
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="City"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.City"
+        required="Group.GroupAddressExt.Country != null"
+        value="Group.GroupAddressExt.City"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <TypeKeyInput
+        available="Group.GroupAddressExt.Country != null"
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="State"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.State"
+        onChange="util.custom_Ext.addressFunctions.getValidCountyForState(Group.GroupAddressExt.State)"
+        postOnChange="true"
+        required="util.custom_Ext.finders.stateRequired(Group.GroupAddressExt.Country.Code, true)"
+        value="Group.GroupAddressExt.State"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <TextInput
+        available="Group.GroupAddressExt.Country != null"
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="PostalCode"
+        inputMask="util.custom_Ext.finders.getPostCodeMask(Group.GroupAddressExt.Country.Code)"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.Postalcode"
+        required="util.custom_Ext.finders.postCodeRequired(Group.GroupAddressExt.Country.Code, true)"
+        validationExpression="util.custom_Ext.finders.postCodeValidation(Group.GroupAddressExt) ? null : util.custom_Ext.finders.postCodeExpression(Group.GroupAddressExt.Country.Code)"
+        value="Group.GroupAddressExt.PostalCode"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        available="Group.GroupAddressExt.Country != null"
+        editable="!(Group.GroupAddressExt.StandardizedExt)"
+        id="County"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.County"
+        value="Group.GroupAddressExt.County"
+        visible="Group.GroupAddressExt.Country.Code != &quot;US&quot; and Group.GroupType == &quot;busunit&quot;"/>
+      <RangeInput
+        available="Group.GroupAddressExt.Country != null"
+        editable="true"
+        id="CountyChoiceFromState"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.County"
+        value="Group.GroupAddressExt.County"
+        valueRange="Group.GroupAddressExt.Country.Code == &quot;US&quot; &amp;&amp; Group.GroupAddressExt.State!=null  ? util.custom_Ext.addressFunctions.getValidCountyForState(Group.GroupAddressExt.State):null"
+        visible="Group.GroupAddressExt.Country.Code == &quot;US&quot; and Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        available="Group.GroupAddressExt.Country != null"
+        editable="(Group.GroupAddressExt.StandardizedExt == true)"
+        id="StandardizationIndicator"
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.StandardizedExt"
+        postOnChange="true"
+        value="Group.GroupAddressExt.StandardizedExt"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <ButtonInput
+        action="StandardizationPopup.push(Group.GroupAddressExt)"
+        available="Group.GroupAddressExt.Country != null"
+        hideIfReadOnly="true"
+        id="StandardizeAddressButton"
+        value="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.StandardizeButtonText"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <InputDivider
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Label
+        label="displaykey.NVV.Admin.GroupBasics.BusinessUnitAddress.CheckLabel"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        id="CheckAddressLine1"
+        value="util.StringUtils.getXMLValue(Group.GroupAddressExt.AddressLine1, true)"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+      <Input
+        id="CheckAddressLine2"
+        value="util.StringUtils.getXMLValue(Group.GroupAddressExt.AddressLine2, true)"
+        visible="Group.GroupType == &quot;busunit&quot; and Group.GroupAddressExt.AddressLine2 != null"/>
+      <Input
+        id="CheckCityStateZip"
+        value="util.StringUtils.getXMLValue(Group.GroupAddressExt.CityStateZip, true)"
+        visible="Group.GroupType == &quot;busunit&quot;"/>
+    </InputColumn>
+    <Code><![CDATA[function filterIssuingCompany(cpny:String):Boolean{
+  if(cpny == issuingCompanyExt.TC_GAIC.Code){
+    return true
+  }else{
+  return false
+ }
+}
+
+function getDivisionNames() : DivisionNameExt[]{
+  var divisionName = find ( s in DivisionNameExt where s.DivisionNameValue!=null)
+  return divisionName.toList().toArray() as DivisionNameExt[]
+}
+
+function isValidTPA() : String{
+  var isGroupTPA = Group.GroupType.equals(typekey.GroupType.TC_TPA) or Group.GroupType.equals(typekey.GroupType.TC_TPAPROCESSING);
+  var isSecZoneTPA = Group.SecurityZone.IsSecurityZoneTPAExt
+  if((isSecZoneTPA and !isGroupTPA) or (isGroupTPA and !isSecZoneTPA)) {
+    var message = "If Security Zone or Claim Group Type are of type External User, then they both must be of type External User"
+    return message
+  }
+    return null
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

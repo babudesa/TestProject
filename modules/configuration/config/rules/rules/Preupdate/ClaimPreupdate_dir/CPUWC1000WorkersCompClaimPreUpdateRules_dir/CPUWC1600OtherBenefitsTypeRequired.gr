@@ -1,0 +1,17 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1600 - Other Benefits Type Required")
+internal class CPUWC1600OtherBenefitsTypeRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.OtherBenefits.HasElements/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses com.guidewire.pl.web.controller.UserDisplayableException;
+for(each in claim.OtherBenefits){
+  if(each.ReferenceNumber==null && (each.Amount!=null || each.StartDate!=null || each.EndDate!=null || each.InitialContact!=null)){
+    throw new UserDisplayableException(displaykey.Rules.Validation.Claim.WorkersComp.OtherBenefits)
+  }
+}/*end00rule*/
+  }
+}

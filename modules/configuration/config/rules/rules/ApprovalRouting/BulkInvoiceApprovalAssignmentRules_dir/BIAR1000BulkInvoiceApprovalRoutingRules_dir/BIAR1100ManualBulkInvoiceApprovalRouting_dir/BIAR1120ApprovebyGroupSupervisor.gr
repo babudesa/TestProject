@@ -1,0 +1,43 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1100ManualBulkInvoiceApprovalRouting_dir
+
+@gw.rules.RuleName("BIAR1120 - Approve by Group Supervisor")
+internal class BIAR1120ApprovebyGroupSupervisor {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/((bulkInvoice.LastApprovingUser == bulkInvoice.CreateUser ||
+bulkInvoice.LastApprovingUser != bulkInvoice.CreateUser)||
+(util.user.GroupsHelper.isAGroupSupervisor(bulkInvoice.LastApprovingUser))) &&
+(!util.user.GroupsHelper.isClaimManager(bulkInvoice.LastApprovingUser) &&
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.ManualBulkInvoiceApproverUser &&
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser)
+
+/**
+ * This rule will be executed all the way up to the top manager of each group until the next
+ * group has the cc1 user as the supervisor (top of heirarchy). 
+ *//*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+   
+   var authorityLimits = bulkInvoice.LastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+   var nextApprovingUser = util.user.GroupsHelper.getClaimManager(bulkInvoice.LastApprovingUser)
+   var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+
+    if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+        bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+    } else {
+        bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+    }
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+    throw aex 
+}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError(bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

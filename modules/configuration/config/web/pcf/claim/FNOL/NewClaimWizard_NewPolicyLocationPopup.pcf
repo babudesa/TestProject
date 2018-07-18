@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    canEdit="true"
+    id="NewClaimWizard_NewPolicyLocationPopup"
+    returnType="LocationBasedRU"
+    startInEditMode="true"
+    title="displaykey.Wizard.NewClaimWizard.NewClaimPolicyLocation.New">
+    <LocationEntryPoint
+      signature="NewClaimWizard_NewPolicyLocationPopup(Policy : Policy)"/>
+    <Variable
+      name="Policy"
+      type="Policy"/>
+    <Variable
+      initialValue="createRU()"
+      name="locationRU"
+      type="LocationBasedRU"/>
+    <Screen
+      id="NewClaimWizard_NewPolicyLocationScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          pickValue="locationRU"/>
+      </Toolbar>
+      <PanelRef
+        def="LocationDetailPanelSet(locationRU)"
+        mode="Policy.Claim.LossType"/>
+    </Screen>
+    <Code><![CDATA[function createRU() : LocationBasedRU {
+  var riskUnitType = LocationBasedRU
+  if (Policy.Claim.LossType == LossType.TC_AUTO) {
+    return Policy.createLocationBasedRU( LocationBasedRU )
+  } else if (Policy.Claim.LossType == LossType.TC_GL) {
+    return Policy.createLocationBasedRU( GeneralLiabilityRU )
+  } else if (Policy.Claim.LossType == LossType.TC_PR) {
+    return Policy.createLocationBasedRU( PropertyRU )
+  } else if (Policy.Claim.LossType == LossType.TC_WC) {
+    return Policy.createLocationBasedRU( WCCovEmpRU )
+  } else {
+    return Policy.createLocationBasedRU( LocationBasedRU )
+  }
+}]]></Code>
+  </Popup>
+</PCF>

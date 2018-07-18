@@ -1,0 +1,41 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1AE0 - Remove unecessary Activity Owner Roles")
+internal class CPUXX1AE0RemoveunecessaryActivityOwnerRoles {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+* Manages the Activity Owner role on contacts.
+* Date: 1/18/2011
+* Defect: 3432
+* @author: Zach Thomas
+*/
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  for(clmCont in claim.Contacts){
+    if(exists(ccRole in clmCont.Roles where ccRole.Role == "activityowner") and
+       !exists(act in claim.Activities where act.ExternalOwner == clmCont.Contact)){
+      for(cont in claim.activityowner){
+        if(cont == clmCont.Contact){
+          cont.remove();
+        }
+      }
+      for(ccRole in clmCont.Roles){
+        if(ccRole.Role == "activityowner" or ccRole.isFormerRole()){
+          ccRole.remove();
+        }
+      }
+      if(clmCont.Roles.length == 0){
+        claim.removeFromContacts( clmCont );
+      }
+    }
+  }           
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

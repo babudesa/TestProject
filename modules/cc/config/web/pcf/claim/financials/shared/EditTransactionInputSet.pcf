@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This InputSet is only appropriate for editing a Payment, in spite of its more generic name  This file automatically generated from nvv_financials.xml -->
+  <InputSet
+    id="EditTransactionInputSet">
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <Require
+      name="Payment"
+      type="Payment"/>
+    <Require
+      name="helper"
+      type="financials.EditTransactionHelper"/>
+    <Variable
+      initialValue="Payment.ReserveLine"
+      name="reserveLine"
+      type="ReserveLine"/>
+    <RangeInput
+      editable="true"
+      id="Transaction_ReserveLine"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.ReserveLine"
+      onChange="Payment.setReserveLine(reserveLine); financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      optionLabel="helper.getReserveLinePickerOptionLabel(VALUE)"
+      postOnChange="true"
+      required="true"
+      validationExpression="((Transaction.ReserveLine != null and Transaction.ReserveLine.Exposure != null) ? ((Transaction.ReserveLine.Exposure.hasPassedAbilityToPay()) ? null : displaykey.Java.Financials.CheckWizard.Error.ExposureValidationFailed)  : ((Transaction.ReserveLine.Claim == null or Transaction.ReserveLine.Claim.hasPassedAbilityToPay()) ? null : displaykey.Java.Financials.CheckWizard.Error.ClaimValidationFailed))"
+      value="reserveLine"
+      valueRange="helper.getPayableReserveLines(Payment)"/>
+    <RangeInput
+      editable="true"
+      id="Exposure"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Exposure"
+      noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+      onChange="financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      postOnChange="true"
+      required="false"
+      showNoneSelected="true"
+      sortValueRange="true"
+      validationExpression="((Transaction.Exposure != null) ? ((Transaction.Exposure.hasPassedAbilityToPay()) ? null : displaykey.Java.Financials.CheckWizard.Error.ExposureValidationFailed)  : ((Transaction.Claim.hasPassedAbilityToPay()) ? null : displaykey.Java.Financials.CheckWizard.Error.ClaimValidationFailed))"
+      value="Transaction.Exposure"
+      valueRange="helper.getPossibleExposures(Payment)"
+      visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+    <Input
+      id="Coverage"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Coverage"
+      value="Transaction.Exposure.PrimaryCoverage"/>
+    <RangeInput
+      editable="true"
+      id="CostType"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.CostType"
+      onChange="financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      postOnChange="true"
+      required="true"
+      value="Transaction.CostType"
+      valueRange="helper.getPossibleCostTypes(Payment)"
+      visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+    <RangeInput
+      editable="true"
+      id="CostCategory"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.CostCategory"
+      onChange="financials.FinancialsUtil.validateCostCategoryAndTransactionLines(Transaction); financials.FinancialsUtil.refreshPaymentType(Payment)"
+      postOnChange="true"
+      required="true"
+      value="Transaction.CostCategory"
+      valueRange="helper.getPossibleCostCategories(Payment)"
+      visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+    <Input
+      editable="true"
+      id="Comments"
+      label="displaykey.NVV.Financials.SubView.EditTransaction.Transaction.Comments"
+      value="Transaction.Comments"/>
+  </InputSet>
+</PCF>

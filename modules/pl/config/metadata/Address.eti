@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<!-- address represents an address (either personal or business) -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="Address of a person or business."
+  entity="Address"
+  exportable="true"
+  extendable="true"
+  javaClass="com.guidewire.pl.domain.contact.AddressBase"
+  platform="true"
+  table="address"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <implementsEntity
+    name="OverlapTable"/>
+  <implementsEntity
+    name="AddressAutofillable"/>
+  <implementsEntity
+    name="AddressBookLinkable"/>
+  <fulldescription><![CDATA[<p>Represents a street or mailing address. Addresses are normally associated with
+      a <code>Contact</code>, either as a <code>Contact.PrimaryAddress</code> or via the <code>ContactAddress</code> table.
+      Addresses can have geographic location information stored for proximity searches.</p>
+      {@see com.guidewire.pl.domain.contact.Contact}<br>>
+      {@see com.guidewire.pl.domain.contact.ContactAddress}
+    ]]></fulldescription>
+  <column
+    desc="The system uses this value when it is integrated with ContactCenter and the related contact             is linked.  In this case, the ID represents the ID of this &lt;/code&gt;Address&lt;/code&gt; object's associated             &lt;code&gt;ABAddress&lt;/code&gt; in ContactCenter. This value is Null if the object is not linked."
+    name="AddressBookUID"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="30"/>
+  </column>
+  <column
+    desc="First line of mailing address."
+    name="AddressLine1"
+    type="addressline"/>
+  <column
+    desc="Second line of mailing address."
+    name="AddressLine2"
+    type="addressline"/>
+  <column
+    desc="Third line of mailing address."
+    name="AddressLine3"
+    type="addressline"/>
+  <column
+    desc="Additional description of mailing address."
+    name="Description"
+    type="shorttext"/>
+  <column
+    desc="Latest date that this address is valid."
+    name="ValidUntil"
+    type="datetime"/>
+  <typekey
+    desc="Type of this address record."
+    name="AddressType"
+    typelist="AddressType"/>
+  <column
+    desc="Latitude expressed in degrees.  Positive = North; Negative = South: -90 &lt;= x &lt;= 90"
+    exportable="true"
+    loadable="false"
+    name="Latitude"
+    type="decimal">
+    <columnParam
+      name="scale"
+      value="5"/>
+    <columnParam
+      name="precision"
+      value="7"/>
+  </column>
+  <column
+    desc="Longitude expressed in degrees relative to the prime meridian.  Positive = East; Negative = West: -180 &lt;= x &lt; 180"
+    exportable="true"
+    loadable="false"
+    name="Longitude"
+    type="decimal">
+    <columnParam
+      name="scale"
+      value="5"/>
+    <columnParam
+      name="precision"
+      value="8"/>
+  </column>
+  <column
+    desc="Hierarchical Triangular Map ID for longitude/latitude pair.  See http://www.sdss.jhu.edu/htm/"
+    exportable="true"
+    loadable="false"
+    name="HTMID"
+    type="decimal">
+    <columnParam
+      name="scale"
+      value="0"/>
+    <columnParam
+      name="precision"
+      value="21"/>
+  </column>
+  <typekey
+    default="None"
+    desc="Enum giving the status of the latitude and longitude data."
+    exportable="true"
+    loadable="false"
+    name="GeocodeStatus"
+    typelist="GeocodeStatus"/>
+  <index
+    desc="Index on HTMID/retired/ID to speed up proximity searches, especially when "
+    name="addressu2"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="HTMID"/>
+    <indexcol
+      keyposition="2"
+      name="retired"/>
+    <indexcol
+      keyposition="3"
+      name="ID"/>
+    <indexcol
+      keyposition="4"
+      name="Longitude"/>
+    <indexcol
+      keyposition="5"
+      name="Latitude"/>
+  </index>
+  <index
+    desc="Index covering address for search on postal code."
+    name="addressu3"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="PostalCodeDenorm"/>
+    <indexcol
+      keyposition="3"
+      name="retired"/>
+  </index>
+</entity>

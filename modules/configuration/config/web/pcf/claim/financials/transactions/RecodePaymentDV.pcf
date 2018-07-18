@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="RecodePaymentDV">
+    <!-- Added this to support Defect 450 and 454 kmboyd -->
+    <Require
+      name="OriginalPayment"
+      type="Payment"/>
+    <Require
+      name="Payment"
+      type="Payment"/>
+    <Require
+      name="helper"
+      type="financials.EditTransactionHelper"/>
+    <InputColumn>
+      <InputSetRef
+        def="EditTransactionInputSet(Payment, Payment, helper)"/>
+      <TypeKeyInput
+        available="OriginalPayment.Exposure != Payment.Exposure or OriginalPayment.CostType != Payment.CostType"
+        editable="true"
+        filter="Payment.findPaymentTypes(VALUE as java.lang.String)"
+        id="PaymentType"
+        label="displaykey.NVV.Financials.RecodePayment.Payment.PaymentType"
+        onChange="financials.FinancialsUtil.refreshErodesReserves(Payment)"
+        postOnChange="true"
+        required="true"
+        value="Payment.PaymentType"/>
+      <TypeKeyInput
+        available="Payment.Claim.LossType == &quot;EXECLIABDIV&quot; || Payment.Claim.LossType == typekey.LossType.TC_MERGACQU|| Payment.Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV"
+        id="PaymentCategory"
+        label="displaykey.NVV.Financials.RecodePayment.Payment.PaymentCategory"
+        value="Payment.PaymentCategoryExt"/>
+      <RangeInput
+        editable="true"
+        id="PaymentInjuryType"
+        label="displaykey.NVV.Financials.RecodePayment.Payment.InjuryType"
+        required="true"
+        value="Payment.WCInjuryTypeExt"
+        valueRange="util.WCHelper.getWCInjuryTypeExtList(Payment.Claim)"
+        visible="util.WCHelper.isWCorELLossType(Payment.Claim)"/>
+      <Input
+        formatType="currency"
+        id="Transaction_AvailableReserves"
+        label="&quot;Remaining Reserves&quot;"
+        value="financials.FinancialsCalculationUtil.getAvailableReservesForCostCategory(Payment)"/>
+      <ListViewInput
+        def="EditableRecodeLineItemsLV(Payment)"
+        editable="Payment.CostCategory != null"
+        id="Transaction_LineItems"
+        label="displaykey.NVV.Financials.RecodePayment.Transaction.LineItems"
+        validationExpression="Payment.Valid ? null : displaykey.Java.Financials.CheckWizard.Error.Payment.PaymentExceedsReserves">
+        <Toolbar/>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

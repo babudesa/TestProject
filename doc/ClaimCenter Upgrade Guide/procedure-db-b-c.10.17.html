@@ -1,0 +1,1144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Using the IDatabaseUpgrade Plugin</title>
+    <link rel="StyleSheet" href="css/procedure-db-b-c.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter Upgrade Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="part-basicupgrade_3.html#1941005">Upgrading from 5.0.x</a> : <a class="WebWorks_Breadcrumb_Link" href="procedure-db-b-c.10.01.html#1941005">Upgrading the ClaimCenter 5.0.x Database</a> : Using the IDatabaseUpgrade Plugin</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="1941005">Using the IDatabaseUpgrade Plugin</a></div>
+      <div class="B_-_Body"><a name="1941006">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin interface provides hooks for custom code that you want to run during the database upgrade. You can use the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin to run custom SQL before and after the database upgrade. You can also use the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin to eliminate circular references in your data model by converting specific foreign keys to edge foreign keys.</div>
+      <div class="NW_-_Note_Warning">
+        <span class="w_-_warning">WARNING  </span><a name="1941007">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin runs any time that the server determines that a database upgrade is necessary, whether for a major or minor version. Therefore, use conditionals within your <span class="cv_-_computer_voice">preUpgrade</span> and <span class="cv_-_computer_voice">postUpgrade </span>methods and <span class="cv_-_computer_voice">get EdgeForeignKeyUpgrades</span> property to control execution of your custom code. Test these conditionals thoroughly to ensure that the custom code you define within the methods runs appropriately. Remove or disable the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin once you have completed the upgrade.</div>
+      <div class="B_-_Body"><a name="1941008">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin interface includes the following properties:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941009">get BeforeUpgradeArchivedDocumentChanges() : List&lt;ArchivedDocumentUpgradeVersionTrigger&gt;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941010">get AfterUpgradeArchivedDocumentChanges() : List&lt;ArchivedDocumentUpgradeVersionTrigger&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1941011">These properties are for making custom upgrades to archived XML entities. This is only applicable to implemen</a>tations that have enabled archiving. If you do not have archiving enabled, return an empty list for these properties.</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941013">override property get BeforeUpgradeArchivedDocumentChanges() :</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941014">&nbsp;</a>&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941015">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941016">&nbsp;</a>&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941017">&nbsp;</a>&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941018">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941019">&nbsp;</a>&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941020">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941021">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941022">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941023">override property get AfterUpgradeArchivedDocumentChanges() :</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941024">&nbsp;</a>&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941025">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941026">&nbsp;</a>&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941027">&nbsp;</a>&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941028">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941029">&nbsp;</a>&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941030">&nbsp;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941031">}</a></PRE>
+      <div class="B_-_Body"><a name="1941035">If you make custom data model changes within ClaimCenter and enable archiving, you can use these properties </a>to define changes for the upgrader to make to the archived XML. See <a href="javascript:WWHClickedPopup('upgrade', 'procedure-db-b-c.10.17.html#1941401', '');" title="Using the IDatabaseUpgrade Plugin">“Upgrading Archived Entities”</a>.</div>
+      <div class="H2_-_Heading_2"><a name="1941040">Running Custom SQL</a></div>
+      <div class="B_-_Body"><a name="1941041">You can use the </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin to run custom SQL before and after the database upgrade. For example, you might fix a consistency check failure issue, correct issues reported by version checks, or delete a custom extension that you are no longer using.</div>
+      <div class="B_-_Body"><a name="1941042">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin interface contains method signatures for two methods that you must define in your plugin. These signatures are:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1941043">function preUpgrade(context : IUpgradeContext)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1941044">function postUpgrade(context : IUpgradeContext)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1941045">The </a><span class="cv_-_computer_voice">preUpgrade</span> method runs before version checks, so you can include any SQL to resolve version check issues in the <span class="cv_-_computer_voice">preUpgrade</span> method. You can also write SQL to resolve consistency check issues among other operations.</div>
+      <div class="B_-_Body"><a name="1941046">The </a><span class="cv_-_computer_voice">postUpgrade</span> method runs after the database upgrade version triggers.  You can incorporate SQL in the <span class="cv_-_computer_voice">postUpgrade</span> method to move data into tables or columns that did not exist prior to upgrading.</div>
+      <div class="B_-_Body"><a name="1941047">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> interface also contains an <span class="cv_-_computer_voice">Iterable</span> property used for eliminating circular references. You must define this property. If you are not using this feature of the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin, you can define an empty <span class="cv_-_computer_voice">Iterable</span> as follows:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941048">override property get EdgeForeignKeyUpgrades() : Iterable&lt;EdgeForeignKeyUpgradeInfo&gt; {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941049">&nbsp;</a>&nbsp;return {}</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941050">}</a></PRE>
+      <div class="B_-_Body"><a name="1941051">Any custom SQL that you write must be idempotent. That is, the SQL must be designed so that it can run against </a>the database multiple times without corrupting data. The <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin runs each time the database is upgraded, whether for a major or minor version of ClaimCenter or for a data model change such as a new extension. Check the version of the database in your <span class="cv_-_computer_voice">preUpgrade</span>, <span class="cv_-_computer_voice">postUpgrade</span> methods, and <span class="cv_-_computer_voice">get </span><span class="cv_-_computer_voice">EdgeForeignKeyUpgrades</span> property to ensure that your custom SQL is executed appropriately. Guidewire recommends that you create a custom method to check the database version. </div>
+      <div class="B_-_Body"><a name="1941058">For ClaimCenter </a>5.0 you can determine the database major and minor version by opening <span class="cv_-_computer_voice">modules\cc\config\metadata\metadataproperties.xml</span> and checking the value of the <span class="cv_-_computer_voice">majorVersion</span> and <span class="cv_-_computer_voice">minorVersion</span> properties.</div>
+      <div class="B_-_Body"><a name="1941065">For </a>6.0 versions of ClaimCenter, the internal major and minor version numbers are listed in <span class="cv_-_computer_voice">modules\cc\config\metadata\metadata.properties</span>.</div>
+      <div class="B_-_Body"><a name="1941072">You can also determine the major and minor version of a ClaimCenter instance by reading the messages reported </a>by the server during startup.</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941073">[java] </a><span class="pc_-_parameter_in_code">serverName</span> <span class="pc_-_parameter_in_code">timestamp</span> INFO Validating main database connections have all required properties</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941074">[java] </a><span class="pc_-_parameter_in_code">serverName</span> <span class="pc_-_parameter_in_code">timestamp</span> INFO Checking if existing database version is current...</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941075">[java] </a><span class="pc_-_parameter_in_code">serverName</span> <span class="pc_-_parameter_in_code">timestamp</span> INFO Datamodel version (<span class="pc_-_parameter_in_code">major</span>, <span class="pc_-_parameter_in_code">minor</span>, <span class="pc_-_parameter_in_code">platform</span>) is up to date.</PRE>
+      <div class="B_-_Body"><a name="1941076">This message reports the internal major, minor and platform version numbers. Only the major and minor version </a>are of interest for writing custom SQL. Note that these are internal version numbers and do not match the commonly used external version number, such as 6.0.8.</div>
+      <div class="HS_-_Head_Sub"><a name="1941080">To run custom SQL</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1941081">Create a new Gosu class that implements </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span>. If you already created a Gosu class to eliminate circular references, you can use the <span class="cv_-_computer_voice">preUpgrade</span> and <span class="cv_-_computer_voice">postUpgrade</span> methods of that class. The class you create must define the <span class="cv_-_computer_voice">preUpgrade</span> and <span class="cv_-_computer_voice">postUpgrade</span> methods and the <span class="cv_-_computer_voice">get EdgeForeignKeyUpgrades</span> property.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1941083">The following example demonstrates using the </a><span class="cv_-_computer_voice">preUpgrade</span> method to set <span class="cv_-_computer_voice">Claim.DeductibleStatus</span>, <span class="cv_-_computer_voice">Claim.ReinsuranceStatus</span> and <span class="cv_-_computer_voice">Claim.LossLocationID</span> to <span class="cv_-_computer_voice">null</span>:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941084">package gw.myplugins.upgrade.impl</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941085">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941086">uses gw.plugin.upgrade.IDatabaseUpgrade</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941087">uses gw.plugin.upgrade.IUpgradeContext</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941088">uses java.lang.Iterable</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941089">uses gw.plugin.upgrade.EdgeForeignKeyUpgradeInfo</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941090">uses gw.api.archiving.upgrade.ArchivedDocumentUpgradeVersionTrigger</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941091">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941092">class DatabaseUpgradeImpl implements IDatabaseUpgrade {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941093">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941094">&nbsp;</a>&nbsp;construct() {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941095">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941096">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941100">&nbsp;</a>&nbsp;// custom function to determine if DB version is prior to ClaimCenter 6.0 (DB version 8).</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941102">&nbsp;</a>&nbsp;// MajorVersion of CC 5.x is 7, MajorVersion for CC 6.x is 8</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941104">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941105">&nbsp;</a>&nbsp;private function isMajorVersionLessThan8(upgradeContext : IUpgradeContext) : boolean {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941106">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941107">&nbsp;</a>&nbsp;&nbsp;&nbsp;//if null upgrade context is sent, return false and log reason</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941108">&nbsp;</a>&nbsp;&nbsp;&nbsp;if (upgradeContext == null) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941109">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//printing instead of logging because logs were not shown in console</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941110">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("databaseupgrade.isMajorVersionLessThan8() - null upgradeContext sent")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941111">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941112">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941113">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941114">&nbsp;</a>&nbsp;&nbsp;&nbsp;//try to access major version, was throwing exception</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941115">&nbsp;</a>&nbsp;&nbsp;&nbsp;try {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941116">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941117">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (upgradeContext.CurrentMajorVersion &lt; 8) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941118">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941119">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941120">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941121">&nbsp;</a>&nbsp;&nbsp;&nbsp;} catch(e) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941122">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941123">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//swallow exception and return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941124">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("databaseupgrade.isMajorVersionLessThan8() - accessing " +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941125">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"upgradeContext.CurrentMajorVersion threw exception. Swallowing following exception" +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941126">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"and returning false.")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941127">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941128">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.printStackTrace()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941129">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941130">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941131">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941132">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941133">&nbsp;</a>&nbsp;&nbsp;&nbsp;//All other conditions, return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941134">&nbsp;</a>&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941135">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941136">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941137">&nbsp;</a>&nbsp;override function preUpgrade(upgradeContext : IUpgradeContext) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941138">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941139">&nbsp;</a>&nbsp;&nbsp;&nbsp;// first check the major version of the database to determine if scripts need to be run.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941140">&nbsp;</a>&nbsp;&nbsp;&nbsp;if (isMajorVersionLessThan8(upgradeContext)) { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941141">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941144">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// DB will be upgraded to CC6.0, execute pre-upgrade scripts</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941145">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upgradeContext.update("Set DeductibleStatus and ReinsuranceStatus to null",</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941146">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UPDATE CC_CLAIM " + </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941147">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"SET DeductibleStatus = null, ReinsuranceStatus = null " +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941148">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"WHERE DeductibleStatus is not null OR ReinsuranceStatus is not null")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941149">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941150">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upgradeContext.update("Null out LossLocationID",</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941151">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"UPDATE CC_CLAIM " +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941152">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"SET LossLocationID = null " +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941153">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"WHERE LossLocationID is not null")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941154">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941155">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941156">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941157">&nbsp;</a>&nbsp;override function postUpgrade(upgradeContext : IUpgradeContext) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941158">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941159">&nbsp;</a>&nbsp;&nbsp;&nbsp;// first check the major version of the database to determine if scripts need to be run.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941160">&nbsp;</a>&nbsp;&nbsp;&nbsp;if (isMajorVersionLessThan8(upgradeContext)) { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941161">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941162">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//## todo: Implement</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941163">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941164">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941165">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941166">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941167">&nbsp;</a>&nbsp;override property get EdgeForeignKeyUpgrades() : Iterable&lt;EdgeForeignKeyUpgradeInfo&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941168">&nbsp;</a>&nbsp;&nbsp;&nbsp;// If not applicable, return empty iterable. </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941169">&nbsp;</a>&nbsp;&nbsp;&nbsp;return {}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941170">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941171">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941172">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941173">&nbsp;</a>&nbsp;override property get BeforeUpgradeArchivedDocumentChanges() :</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941174">&nbsp;</a>&nbsp;&nbsp;&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941175">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941176">&nbsp;</a>&nbsp;&nbsp;&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941177">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941178">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941179">&nbsp;</a>&nbsp;&nbsp;&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941180">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941181">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941182">&nbsp;</a>&nbsp;override property get AfterUpgradeArchivedDocumentChanges() :</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941183">&nbsp;</a>&nbsp;&nbsp;&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941184">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941185">&nbsp;</a>&nbsp;&nbsp;&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941186">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941187">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941188">&nbsp;</a>&nbsp;&nbsp;&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941189">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941190">  </a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941191">}</a></PRE>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1941192">Implement the </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin with the new class. If you already implemented this class to eliminate circular references, skip this step.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LS2A_-_List_Start_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">a.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner"><a name="1941202">Start Guidewire Studio 6.0.8 by entering </a><span class="cv_-_computer_voice">gwcc studio</span> from the <span class="cv_-_computer_voice">ClaimCenter\bin</span> directory.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">b.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941212">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, expand <span class="ui_-_UI_element">Plugins</span> → <span class="ui_-_UI_element">gw </span>→ <span class="ui_-_UI_element">plugin </span>→ <span class="ui_-_UI_element">upgrade</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">c.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941213">Right-click </a><span class="ui_-_UI_element">IDatabaseUpgrade</span> and select <span class="ui_-_UI_element">Implement</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">d.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941214">On the </a><span class="ui_-_UI_element">IDatabaseUpgrade</span> tab, click <span class="ui_-_UI_element">Add...</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">e.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941215">Select </a><span class="ui_-_UI_element">Gosu</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">f.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941216">Enter your class, including the package.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">g.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941220">Select </a><span class="ui_-_UI_element">File</span> → <span class="ui_-_UI_element">Save Changes</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1941221">When you start the server to perform the database upgrade from a prior major version, the upgrade calls the </a>plugin and runs your custom <span class="cv_-_computer_voice">preUpgrade</span> and <span class="cv_-_computer_voice">postUpgrade</span> methods.</div>
+      <div class="H2_-_Heading_2"><a name="1941223">Eliminating Circular References</a></div>
+      <div class="B_-_Body"><a name="1941230">ClaimCenter 6.0.5 and newer enforces data model integrity more strictly than previous versions. ClaimCenter </a>runs a series of checks on the data model during server startup. If any of these checks fails, ClaimCenter reports an error and does not start. One of these checks looks for circular references in the data model.</div>
+      <div class="B_-_Body"><a name="1941234">A circular reference exists when an entity points to an entity of the same type through one or more foreign keys. </a>The circular reference can be simple, in which the entity has a foreign key directly to the same entity. Or, the reference can be more complex, in which an entity has a foreign key to another entity that directly or indirectly references the original entity.</div>
+      <div class="B_-_Body"><a name="1941235">To resolve circular references in the data model, use the </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin to convert foreign keys causing circular references to edge foreign keys. This plugin enables you to specify the entity, existing foreign key and the edge foreign key to create. The plugin is called during the database upgrade from a prior major version.</div>
+      <div class="B_-_Body"><a name="1941236">The interface also contains an </a><span class="cv_-_computer_voice">Iterable</span> property used for eliminating circular references. You must define this property. If you are not using this feature of the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin, you can define an empty <span class="cv_-_computer_voice">Iterable</span> as follows:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941237">override property get EdgeForeignKeyUpgrades() : Iterable&lt;EdgeForeignKeyUpgradeInfo&gt; {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941238">&nbsp;</a>&nbsp;return {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941239">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941240">}</a></PRE>
+      <div class="B_-_Body"><a name="1941241">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin interface also contains method signatures for methods that you must define in your plugin. These signatures are:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1941242">function preUpgrade(context : IUpgradeContext)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt; margin-bottom: 2.0pt; vertical-align: baseline">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: normal; text-transform: none"><span class="cv_-_computer_voice"><a name="1941243">function postUpgrade(context : IUpgradeContext)</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1941244">If you do not want to run custom SQL before or after the upgrade, you can create these methods with no opera</a>tions defined within them.</div>
+      <div class="HS_-_Head_Sub"><a name="1941245">To convert foreign keys to edge foreign keys</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1941246">Change the data model to replace the foreign key with an edge foreign key.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LS2A_-_List_Start_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">a.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner"><a name="1941256">Start Guidewire Studio 6.0.8 by entering </a><span class="cv_-_computer_voice">gwcc studio</span> from the <span class="cv_-_computer_voice">ClaimCenter\bin</span> directory.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">b.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941260">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, expand <span class="ui_-_UI_element">Data Model Extensions</span> → <span class="ui_-_UI_element">extensions</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">c.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941261">Double-click </a><span class="e_-_emphasis" style="font-family: &quot;Arial Narrow&quot;; font-size: 8.5pt; font-weight: bold">EntityName</span><span class="ui_-_UI_element">.etx</span> to open the file defining the entity extension.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">d.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941262">Change the </a><span class="cv_-_computer_voice">foreignKey</span> element to <span class="cv_-_computer_voice">edgeForeignKey</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">e.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941263">Add an </a><span class="cv_-_computer_voice">edgeTableName</span> attribute and set the value to a name for the edge table, such as <span class="cv_-_computer_voice">edgeTableName="</span><span class="ps_-_parameter_in_code_snippets">entityname</span><span class="cv_-_computer_voice">edge"</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">f.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941264">Remove the </a><span class="cv_-_computer_voice">columnName</span> attribute.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">g.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941265">If you want the contents of the edge table to be part of the domain graph, add the following subelement to </a><span class="cv_-_computer_voice">edgeForeignKey</span>:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="CS_-_Code_Single_Line"><a name="1941266">&nbsp;</a>&nbsp;&lt;implementsEntity name="Extractable"/&gt;</div>
+      <div class="LP2_-_List_Para_002c_Level_2"><a name="1941267">Be sure to move the closing tag of the </a><span class="cv_-_computer_voice">edgeForeignKey</span> element if necessary to encapsulate the subelement.</div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">h.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941271">Select </a><span class="ui_-_UI_element">File</span> → <span class="ui_-_UI_element">Save Changes</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">i.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941272">Repeat steps c through h for each foreign key that you want to convert to an edge foreign key.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1941273">Create a new Gosu class that implements </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span>. If you already created a Gosu class to run custom SQL before or after the upgrade, you can use the <span class="cv_-_computer_voice">get EdgeForeignKeyUpgrades</span> property of that class. The class you create must define the <span class="cv_-_computer_voice">get EdgeForeignKeyUpgrades</span> property and the <span class="cv_-_computer_voice">preUpgrade</span> and <span class="cv_-_computer_voice">postUpgrade</span> methods. If you do not want to run custom SQL before or after the upgrade, you can create these methods with no operations defined within them. For example:</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941274">package gw.myplugins.upgrade.impl</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941275">uses gw.plugin.upgrade.IDatabaseUpgrade</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941276">uses gw.plugin.upgrade.IUpgradeContext</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941277">uses java.lang.Iterable</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941278">uses gw.plugin.upgrade.EdgeForeignKeyUpgradeInfo</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941279">uses gw.api.archiving.upgrade.ArchivedDocumentUpgradeVersionTrigger</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941280">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941281">class DatabaseUpgradeImpl implements IDatabaseUpgrade {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941282">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941283">&nbsp;</a>&nbsp;construct() {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941284">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941285">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941286">&nbsp;</a>&nbsp;private var _upgradeContext : IUpgradeContext</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941287">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941291">&nbsp;</a>&nbsp;// custom function to determine if DB version is prior to ClaimCenter 6.0 (DB version 8).</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941293">&nbsp;</a>&nbsp;// MajorVersion of CC 5.x is 7, MajorVersion for CC 6.x is 8</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941295">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941296">&nbsp;</a>&nbsp;private function isMajorVersionLessThan8(upgradeContext : IUpgradeContext) : boolean {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941297">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941298">&nbsp;</a>&nbsp;&nbsp;&nbsp;_upgradeContext = upgradeContext</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941299">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941300">&nbsp;</a>&nbsp;&nbsp;&nbsp;//if null upgrade context is sent, return false and log reason</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941301">&nbsp;</a>&nbsp;&nbsp;&nbsp;if (upgradeContext == null) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941302">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//printing instead of logging because logs were not shown in console</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941303">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("databaseupgrade.isMajorVersionLessThan8() - null upgradeContext sent")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941304">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941305">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941306">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941307">&nbsp;</a>&nbsp;&nbsp;&nbsp;//try to access major version, was throwing exception</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941308">&nbsp;</a>&nbsp;&nbsp;&nbsp;try {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941309">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941310">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (upgradeContext.CurrentMajorVersion &lt; 8) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941311">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941312">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941313">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941314">&nbsp;</a>&nbsp;&nbsp;&nbsp;} catch(e) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941315">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941316">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//swallow exception and return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941317">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("databaseupgrade.isMajorVersionLessThan8() - accessing" +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941318">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"upgradeContext.CurrentMajorVersion threw exception. Swallowing following exception" +</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941319">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"and returning false.")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941320">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941321">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.printStackTrace()</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941322">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941323">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941324">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941325">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941326">&nbsp;</a>&nbsp;&nbsp;&nbsp;//All other conditions, return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941327">&nbsp;</a>&nbsp;&nbsp;&nbsp;return false</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941328">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941329">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941330">&nbsp;</a>&nbsp;override property get EdgeForeignKeyUpgrades() : Iterable&lt;EdgeForeignKeyUpgradeInfo&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941331">&nbsp;</a>&nbsp;&nbsp;&nbsp;// Check the major version of the database to determine which edge foreign keys must be converted.</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941332">&nbsp;</a>&nbsp;&nbsp;&nbsp;// MajorVersion of CC5.x is 7, MajorVersion for CC6.x is 8</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941333">&nbsp;</a>&nbsp;&nbsp;&nbsp;if (isMajorVersionLessThan8(_upgradeContext)) { </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941334">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941335">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941336">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// add these as necessary</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941337">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// new EdgeForeignKeyUpgradeInfo("<span class="pc_-_parameter_in_code">foreignKeyColumn</span>", <span class="pc_-_parameter_in_code">entityName</span>, "<span class="pc_-_parameter_in_code">edgeForeignKey</span>")</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941338">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941339">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941340">&nbsp;</a>&nbsp;&nbsp;&nbsp;else {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941341">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941342">&nbsp;</a>&nbsp;&nbsp;&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941343">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941344">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941345">&nbsp;</a>&nbsp;override function preUpgrade(p0 : IUpgradeContext) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941346">  }</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941347">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941348">&nbsp;</a>&nbsp;override function postUpgrade(p0 : IUpgradeContext) {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941349">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941350">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941351">&nbsp;</a>&nbsp;override property get BeforeUpgradeArchivedDocumentChanges() :</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941352">&nbsp;</a>&nbsp;&nbsp;&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941353">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941354">&nbsp;</a>&nbsp;&nbsp;&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941355">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941356">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941357">&nbsp;</a>&nbsp;&nbsp;&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941358">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941359">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941360">&nbsp;</a>&nbsp;override property get AfterUpgradeArchivedDocumentChanges() :</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941361">&nbsp;</a>&nbsp;&nbsp;&nbsp;List&lt;ArchivedDocumentUpgradeVersionTrigger&gt; {</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941362">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941363">&nbsp;</a>&nbsp;&nbsp;&nbsp;final ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt; list = new</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941364">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ArrayList&lt;ArchivedDocumentUpgradeVersionTrigger&gt;(); </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941365">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941366">&nbsp;</a>&nbsp;&nbsp;&nbsp;return list;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941367">&nbsp;</a>&nbsp;}</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941368">}</a></PRE>
+      <div class="LP_-_List_Para"><a name="1941369">Add a </a><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">new EdgeForeignKeyUpgradeInfo("</span><span class="pc_-_parameter_in_code">foreignKeyColumn</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">", </span><span class="pc_-_parameter_in_code">entityName</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">, "</span><span class="pc_-_parameter_in_code">edgeForeignKey</span><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt">")</span> line to the <span class="cv_-_computer_voice">get </span><span class="cv_-_computer_voice">EdgeForeignKeyUpgrades()</span> definition for each foreign key that you want to convert. Separate these lines with commas.</div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1941370">Implement the </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin with the new class. If you already implemented this class to run custom SQL before or after the database upgrade, skip this step.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LS2A_-_List_Start_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">a.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS2A_-_List_Start_002c_Level_2_Alpha_inner"><a name="1941380">Start Guidewire Studio 6.0.8 by entering </a><span class="cv_-_computer_voice">gwcc studio</span> from the <span class="cv_-_computer_voice">ClaimCenter\bin</span> directory.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">b.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941390">In the Studio </a><span class="ui_-_UI_element">Resources</span> pane, expand <span class="ui_-_UI_element">Plugins</span> → <span class="ui_-_UI_element">gw </span>→ <span class="ui_-_UI_element">plugin </span>→ <span class="ui_-_UI_element">upgrade</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">c.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941391">Right-click </a><span class="ui_-_UI_element">IDatabaseUpgrade</span> and select <span class="ui_-_UI_element">Implement</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">d.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941392">On the </a><span class="ui_-_UI_element">IDatabaseUpgrade</span> tab, click <span class="ui_-_UI_element">Add...</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">e.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941393">Select </a><span class="ui_-_UI_element">Gosu</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">f.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941394">Enter your class, including the package.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI2A_-_List_Item_002c_Level_2_Alpha_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">g.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI2A_-_List_Item_002c_Level_2_Alpha_inner"><a name="1941398">Select </a><span class="ui_-_UI_element">File</span> → <span class="ui_-_UI_element">Save Changes</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><a name="1941399">When you start the server to perform the database upgrade from a prior major version, the upgrade calls the </a>plugin and converts the foreign keys to edge foreign keys.</div>
+      <div class="H2_-_Heading_2"><a name="1941401">Upgrading Archived Entities</a></div>
+      <div class="B_-_Body"><a name="1941405">ClaimCenter 6.0.5 and newer include a file-based archiving feature. If you implement archiving, and you make </a>custom data model changes, then you can upgrade the archived XML using the <span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin.</div>
+      <div class="B_-_Body"><a name="1941406">Simple data model changes do not require a custom trigger. These include:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941407">Adding a new entity</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941408">Updating denormalization columns</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941409">Adding editable columns such as </a><span class="cv_-_computer_voice">updatetime</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941410">Adding new columns</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941411">Changing the nullability of a column</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1941412">More complex transformations or those that could result in loss of data require a version trigger. These include:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941413">changing a datatype (other than just length)</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941414">migrating data from one table or column to another</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941415">dropping a column</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941416">dropping a table</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941417">renaming a column</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1941418">renaming a table</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1941422">ClaimCenter upgrades an archived entity as the entity is restored. </a></div>
+      <div class="B_-_Body"><a name="1941423">The </a><span class="cv_-_computer_voice">IDatabaseUpgrade</span> plugin interface includes the following properties:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941424">get BeforeUpgradeArchivedDocumentChanges() : List&lt;ArchivedDocumentUpgradeVersionTrigger&gt;</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941425">get AfterUpgradeArchivedDocumentChanges() : List&lt;ArchivedDocumentUpgradeVersionTrigger&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1941426">You can define custom </a><span class="cv_-_computer_voice">ArchivedDocumentUpgradeVersionTrigger</span> entities to modify archived XML. The <span class="cv_-_computer_voice">ArchivedDocumentUpgradeVersionTrigger</span> is an abstract class that you can extend to create your custom triggers.</div>
+      <div class="B_-_Body"><a name="1941427">Define the constructor of your custom </a><span class="cv_-_computer_voice">ArchivedDocumentUpgradeVersionTrigger</span> to call the constructor of the superclass and pass it a numeric value. For example:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1941428">construct() {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1941429">&nbsp;</a>&nbsp;super(171)</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1941430">}</a></PRE>
+      <div class="B_-_Body"><a name="1941431">This numeric value is the extension version to which your trigger applies. If you run the upgrade against a data</a>base with a lower extension version, then your custom trigger is called. The current extension version is defined in <span class="cv_-_computer_voice">modules\cc\config\extensions\extensions.properties.</span></div>
+      <div class="B_-_Body"><a name="1941435">Provide an override definition of the </a><span class="cv_-_computer_voice">get Description</span> property to return a <span class="cv_-_computer_voice">String</span> that describes the actions of your trigger.</div>
+      <div class="B_-_Body"><a name="1941436">Provide an override definition for the </a><span class="cv_-_computer_voice">execute</span> function to define the actions that you want your custom trigger to make on archived XML. </div>
+      <div class="B_-_Body"><a name="1941437">When the upgrade executes your custom trigger, it wraps each XML entity in an </a><span class="cv_-_computer_voice">IArchivedEntity</span> object. Each typekey is wrapped in an <span class="cv_-_computer_voice">IArchivedTypekey</span> object. The upgrade operates on a single XML document at a time.</div>
+      <div class="B_-_Body"><span class="cv_-_computer_voice"><a name="1941438">ArchivedDocumentUpgradeVersionTrigger</a></span> provides the following key operations:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="1941439">getArchivedEntitySet(</a></span><span class="ps_-_parameter_in_code_snippets">entityName</span><span class="cv_-_computer_voice"> : String)</span> – returns an <span class="cv_-_computer_voice">IArchivedEntitySet</span> object that contains all <span class="cv_-_computer_voice">IArchivedEntity</span> objects of the given type in the XML document.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><span class="cv_-_computer_voice"><a name="1941440">IArchivedEntitySet</a></span> provides the following key methods:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941441">rename(</a></span><span class="ps_-_parameter_in_code_snippets">newEntityName</span><span class="cv_-_computer_voice"> : String)</span> – renames all rows in the set to the new name.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941442">delete()</a></span> – deletes all rows in the set.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941443">search(</a></span><span class="ps_-_parameter_in_code_snippets">predicate</span><span class="cv_-_computer_voice"> : Predicate&lt;IArchivedEntity&gt;)</span> – returns a <span class="cv_-_computer_voice">List</span> of <span class="cv_-_computer_voice">IArchivedEntity</span> objects that match the given predicate.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941444">create(</a></span><span class="ps_-_parameter_in_code_snippets">referenceInfo</span><span class="cv_-_computer_voice"> : String, </span><span class="ps_-_parameter_in_code_snippets">properties</span><span class="cv_-_computer_voice"> : List&lt;Pair&lt;String, Object&gt;&gt;)</span> – returns a new <span class="cv_-_computer_voice">IArchivedEntity</span> with the given properties. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><span class="cv_-_computer_voice"><a name="1941445">IArchivedEntity</a></span> provides the following key methods:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941446">delete()</a></span> – deletes just this row.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941447">getPropertyValue(</a></span><span class="ps_-_parameter_in_code_snippets">propertyName</span><span class="cv_-_computer_voice"> : </span>String<span class="cv_-_computer_voice">)</span> – returns the value of the property of the given name. If the property value is a reference to another entity, this method returns an <span class="cv_-_computer_voice">IArchivedEntity</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941448">move(</a></span><span class="ps_-_parameter_in_code_snippets">newEntityName</span><span class="cv_-_computer_voice"> : String)</span> – moves this to a new entity type of the given name. The type is created if it did not exist. You must add any required properties to the type.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941449">updatePropertyValue(</a></span><span class="ps_-_parameter_in_code_snippets">propertyName</span><span class="cv_-_computer_voice"> : String, </span><span class="ps_-_parameter_in_code_snippets">newValue</span><span class="cv_-_computer_voice"> : String)</span> – updates the property of the given name to the given value.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="1941450">getArchivedTypekeySet(</a></span><span class="ps_-_parameter_in_code_snippets">typekeyName</span><span class="cv_-_computer_voice"> : String)</span> – returns an <span class="cv_-_computer_voice">IArchivedTypekeySet</span> object that contains all <span class="cv_-_computer_voice">IArchivedTypekey</span> objects in the given typelist.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cv_-_computer_voice"><a name="1941451">getArchivedTypekey(typelistName : String, code : String)</a></span> – Returns an <span class="cv_-_computer_voice">IArchivedTypekey</span> representing the typekey.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LP_-_List_Para"><span class="cv_-_computer_voice"><a name="1941452">IArchivedTypekey</a></span> provides the following key method:</div>
+      <div class="BI2_-_Bullet_Item_002c_Level_2_outer" style="margin-left: 67pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI2_-_Bullet_Item_002c_Level_2_inner"><span class="cv_-_computer_voice"><a name="1941453">delete()</a></span> – deletes the typekey from the XML. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1941454">More methods are available for </a><span class="cv_-_computer_voice">IArchivedEntitySet</span>, <span class="cv_-_computer_voice">IArchivedEntity</span> and <span class="cv_-_computer_voice">IArchivedTypekey</span>. See the Gosu documentation for a full listing. Generate the Gosu documentation by navigating to the ClaimCenter bin directory and entering the following command:</div>
+      <div class="CS_-_Code_Single_Line"><a name="1941461">gwcc regen-gosudoc</a></div>
+      <div class="H3_-_Heading_3"><a name="1941462">Incremental Upgrade</a></div>
+      <div class="B_-_Body"><a name="1941469">When ClaimCenter archives an entity, it records the current data model version on the entity. ClaimCenter </a>upgrades an archived entity as the entity is restored. The upgrader executes the necessary archive upgrade triggers incrementally on each archived XML entity, according to the data model version of the archived entity. </div>
+      <div class="B_-_Body"><a name="1941470">An entity archived at one version might not be restored and upgraded until several intermediate data model </a>upgrades have been performed. Therefore, do not delete your custom upgrade triggers.</div>
+      <div class="B_-_Body"><a name="1941471">Consider the following situation. Note that this example is for demonstration purposes only. The version </a>numbers included do not represent actual ClaimCenter versions but are included to explain the incremental upgrade process. Each ’+’ after a version number indicates a custom data model change.</div>
+      <div class="B_-_Body" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; margin-bottom: 2.0pt; margin-top: 5.0pt; text-transform: none; vertical-align: baseline"><span class="ri_-_run_in_header"><a name="1941475">Guidewire data model changes</a></span></div>
+      <div class="B_-_Body"><a name="1941476">v6.0.0 – Entity does not have column X.</a></div>
+      <div class="B_-_Body"><a name="1941477">v6.0.1 – Guidewire adds column X to the entity with a default value of 100.</a></div>
+      <div class="B_-_Body"><a name="1941478">v6.0.2 – Guidewire updates the default value of column X to 200.</a></div>
+      <div class="B_-_Body" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; margin-bottom: 2.0pt; margin-top: 5.0pt; text-transform: none; vertical-align: baseline"><span class="ri_-_run_in_header"><a name="1941479">Implementation #1 upgrade path</a></span></div>
+      <div class="B_-_Body"><a name="1941480">v6.0.0+ – Start with version 6.0.0 data model with custom changes.</a></div>
+      <div class="B_-_Body"><a name="1941481">v6.0.0++ – More custom data model changes.</a></div>
+      <div class="B_-_Body"><a name="1941482">v6.0.0+++ – More custom data model changes.</a></div>
+      <div class="B_-_Body"><a name="1941483">v6.0.2+ – column X introduced with a default value of 200. </a></div>
+      <div class="B_-_Body"><a name="1941484">Result of upgrade of a claim archived at v6.0.0+: column X has value 200.</a></div>
+      <div class="B_-_Body"><a name="1941485">In this situation, version 6.0.1 was skipped in the upgrade path. Therefore, column X is added with the default </a>value of 200 that it has in version 6.0.2.</div>
+      <div class="B_-_Body" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; margin-bottom: 2.0pt; margin-top: 5.0pt; text-transform: none; vertical-align: baseline"><span class="ri_-_run_in_header"><a name="1941486">Implementation #2 upgrade path</a></span></div>
+      <div class="B_-_Body"><a name="1941487">v6.0.0+ – Start with version 6.0.0 data model with custom changes.</a></div>
+      <div class="B_-_Body"><a name="1941488">v6.0.0++ – More custom data model changes.</a></div>
+      <div class="B_-_Body"><a name="1941489">v6.0.1+ – column X introduced with a default value of 100.</a></div>
+      <div class="B_-_Body"><a name="1941490">v6.0.2+ – column X already exists.</a></div>
+      <div class="B_-_Body"><a name="1941491">Result of upgrade of a claim archived at v6.0.0+: column X has value 100.</a></div>
+      <div class="B_-_Body"><a name="1941492">In this situation, column X is added in version 6.0.1 with the default value of 100. During the upgrade from </a>version 6.0.1 to version 6.0.2, column X already exists. Therefore, the upgrader does not add the column. A custom trigger would be required to update the value of X from 100 to 200 during the upgrade from version 6.0.1 to 6.0.2.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

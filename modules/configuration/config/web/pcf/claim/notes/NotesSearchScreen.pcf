@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="NotesSearchScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Activity"
+      type="Activity"/>
+    <Variable
+      initialValue="true"
+      name="hideHeaders"
+      type="Boolean"/>
+    <Variable
+      initialValue="true"
+      name="hideWrongFile"
+      type="Boolean"/>
+    <Toolbar
+      reflectOnBottom="true"/>
+    <SearchPanel
+      criteriaName="NoteSearchCriteria"
+      maxSearchResults="gw.api.search.MaxSearchResults.forNotes()"
+      resultsName="NotesList"
+      search="NoteSearchCriteria.Activity = Activity; return NoteSearchCriteria.performSearch(Claim)"
+      searchCriteria="return createSearchCriteria()"
+      searchOnEnter="true"
+      searchResultsType="NoteQuery">
+      <DetailViewPanel
+        id="NoteSearchDV">
+        <InputColumn>
+          <TypeKeyInput
+            editable="true"
+            id="Language"
+            label="displaykey.Web.ClaimNotes.NotesSearch.Language"
+            noneSelectedLabel="displaykey.Web.ClaimNotes.NotesSearch.Any"
+            value="NoteSearchCriteria.Language"
+            visible="LanguageType.getTypeKeys( false ).Count &gt; 1"/>
+        </InputColumn>
+        <InputColumn>
+          <Input
+            editable="true"
+            id="TextSearch"
+            label="displaykey.Web.ClaimNotes.NotesSearch.Text"
+            numCols="15"
+            value="NoteSearchCriteria.Text"/>
+          <RangeInput
+            editable="true"
+            id="Author"
+            label="displaykey.Web.ClaimNotes.NotesSearch.Author"
+            noneSelectedLabel="displaykey.Web.ClaimNotes.NotesSearch.Any"
+            value="NoteSearchCriteria.Author"
+            valueRange="Claim.ViewableNoteAuthors"/>
+          <RangeInput
+            editable="true"
+            id="RelatedToSearch"
+            label="displaykey.Web.ClaimNotes.NotesSearch.RelatedTo"
+            optionLabel="VALUE typeis Claim ? displaykey.Web.ClaimNotes.NotesSearch.Any : VALUE.DisplayName"
+            showNoneSelected="false"
+            sortValueRange="false"
+            value="NoteSearchCriteria.RelatedTo"
+            valueRange="Claim.RelatedToCandidates"
+            valueWidth="120"/>
+          <TypeKeyInput
+            editable="true"
+            id="Topic"
+            label="displaykey.Web.ClaimNotes.NotesSearch.Topic"
+            noneSelectedLabel="displaykey.Web.ClaimNotes.NotesSearch.Any"
+            value="NoteSearchCriteria.Topic"/>
+        </InputColumn>
+        <InputColumn>
+          <DateCriterionChoiceInput
+            editable="true"
+            id="DateSearch2"
+            label="displaykey.Web.ClaimNotes.NotesSearch.DateRange"
+            value="NoteSearchCriteria.DateCriterionChoice"/>
+        </InputColumn>
+        <InputColumn>
+          <TypeKeyInput
+            editable="true"
+            id="SortByOption"
+            label="displaykey.Web.ClaimNotes.NotesSearch.SortBy"
+            showNoneSelected="false"
+            value="NoteSearchCriteria.SortBy"/>
+          <BooleanRadioInput
+            editable="true"
+            falseLabel="displaykey.Web.ClaimNotes.NotesSearch.SortDescending"
+            id="SortAscending"
+            stacked="true"
+            trueLabel="displaykey.Web.ClaimNotes.NotesSearch.SortAscending"
+            value="NoteSearchCriteria.SortAscending"/>
+          <BooleanRadioInput
+            editable="true"
+            id="HideHeadersOption"
+            label="displaykey.Web.ClaimNotes.NotesSearch.HideHeaders"
+            postOnChange="true"
+            value="hideHeaders"/>
+          <BooleanRadioInput
+            editable="true"
+            id="HideWrongFile"
+            label="displaykey.Web.ClaimNotes.NotesSearch.HideWrongFile"
+            postOnChange="true"
+            value="hideWrongFile"/>
+        </InputColumn>
+        <InputFooterSection>
+          <InputSetRef
+            def="SearchAndResetInputSet()"/>
+        </InputFooterSection>
+      </DetailViewPanel>
+      <PanelRef>
+        <TitleBar
+          appendListViewPaging="true"
+          id="ClaimNotesTitle"
+          title="displaykey.Web.ClaimNotes.ClaimNotesLV"/>
+        <ListViewPanel
+          border="true"
+          id="ClaimNotesLV">
+          <RowIterator
+            editable="false"
+            elementName="Note"
+            pageSize="25"
+            value="viewNote(NotesList)">
+            <Row>
+              <ContentCell
+                id="col1"
+                visible="hideHeaders==false"
+                width="25%">
+                <DetailViewPanel>
+                  <InputColumn>
+                    <ContentInput
+                      align="left"
+                      id="Edit">
+                      <Link
+                        action="EditNote.drilldown(Note, Note.Claim)"
+                        available="perm.Note.edit( Note )"
+                        id="EditLink"
+                        label="displaykey.Java.Note.Edit"/>
+                      <Link
+                        desc="spacer link"
+                        id="SpacerLink0"
+                        label="&quot; &quot;"
+                        visible="true"/>
+                      <Link
+                        action="print.PrintNoteAction.printNote(Note)"
+                        download="true"
+                        id="PrintLink"
+                        label="displaykey.Java.Note.Print"/>
+                    </ContentInput>
+                    <Input
+                      boldLabel="true"
+                      id="AuthoringDate"
+                      label="displaykey.Java.Criterion.Option.Recovery.CreateDate"
+                      value="gw.api.util.StringUtil.formatDate(Note.AuthoringDate, &quot;short&quot;) + &quot; &quot;+ gw.api.util.StringUtil.formatTime(Note.AuthoringDate, &quot;short&quot;)"/>
+                    <Input
+                      action="UserContactDetailPopup.push(Note.Author)"
+                      boldLabel="true"
+                      id="Author"
+                      label="displaykey.Web.ClaimNotes.NotesSearch.Author"
+                      value="Note.Author.DisplayName"/>
+                    <Input
+                      boldLabel="true"
+                      id="AllowExternalViewing"
+                      label="displaykey.NVV.Claim.NoteDetail.Note.AllowExternalViewing"
+                      required="true"
+                      value="Note.AllowExternalViewing"/>
+                    <Input
+                      boldLabel="true"
+                      id="RelatedTo"
+                      label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+                      value="Note.getNoteRelatedTo()"/>
+                    <Input
+                      boldLabel="true"
+                      id="Topic"
+                      label="displaykey.NVV.Claim.NoteDetail.Note.Topic"
+                      value="Note.Topic"/>
+                    <!-- GW ADDED -->
+                    <Input
+                      boldLabel="true"
+                      editable="Note.New and Note.SIUInvestigationExt==null"
+                      id="Subject"
+                      label="displaykey.NVV.Claim.NoteDetail.Note.Subject"
+                      value="Note.Subject"/>
+                    <!-- <NoteBodyInput
+                      align="left"
+                      id="BodyDisabled"
+                      labelAbove="true"
+                      value="Note.Body"/> -->
+                  </InputColumn>
+                </DetailViewPanel>
+              </ContentCell>
+              <ContentCell
+                id="colHide"
+                visible="hideHeaders==true"
+                width="25%">
+                <DetailViewPanel>
+                  <InputColumn>
+                    <Input
+                      id="AuthoringDateInput"
+                      labelAbove="true"
+                      value="gw.api.util.StringUtil.formatDate(Note.AuthoringDate, &quot;medium&quot;) + &quot; &quot;+ gw.api.util.StringUtil.formatTime(Note.AuthoringDate, &quot;short&quot;)"/>
+                    <Input
+                      action="UserContactDetailPopup.push(Note.Author)"
+                      id="AuthorInput"
+                      labelAbove="true"
+                      value="Note.Author.DisplayName"/>
+                    <Input
+                      editable="Note.New and Note.SIUInvestigationExt==null"
+                      id="SubjectInput"
+                      labelAbove="true"
+                      value="Note.Subject"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </ContentCell>
+              <ContentCell>
+                <DetailViewPanel>
+                  <InputColumn>
+                    <NoteBodyInput
+                      align="left"
+                      id="Body"
+                      labelAbove="true"
+                      value="Note.Body"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </ContentCell>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </PanelRef>
+    </SearchPanel>
+    <Code><![CDATA[function createSearchCriteria() : NoteSearchCriteria {
+        var searchCriteria = new NoteSearchCriteria();
+        searchCriteria.Claim = Claim;
+        return searchCriteria;
+      }
+      
+function viewNote(argList:NoteQuery) : Note[] {
+  var returnList = hideWrongFile ? argList.toTypedArray().where(\ n -> n.Topic != typekey.NoteTopicType.TC_WRONG_FILE) : argList.toTypedArray()
+  
+ if(gw.plugin.util.CurrentUserUtil.getCurrentUser().User.underwriterRestrictionsELD()== false){
+    return returnList.where(\ n ->n.Topic=="underwriteclaimnote" )
+  }
+  
+  return returnList
+}]]></Code>
+  </Screen>
+</PCF>

@@ -1,0 +1,45 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUWCO1000WorkersCompOnlyTransactionPreupdateRules_dir
+
+@gw.rules.RuleName("TPUWCO1100 - WC Only Medical Preupdate Rules")
+internal class TPUWCO1100WCOnlyMedicalPreupdateRules {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="CheckSet" and
+(transactionSet.Claim.State == ClaimState.TC_OPEN and !transactionSet.Claim.checkDisconnectedFeatures()) and
+(!transactionSet.Claim.Activities.where(\ a -> a.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "cms_report_threshold")).HasElements)
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//**
+ * Defect: 8388 - cprakash - This Rule will fire CMS Reporting Threshold Activity when the 
+ * Total Loss Payments on the claim exceeds 750$ and There exists Medical Feature
+ * and Claimant is Medicare Eligible
+ */
+var pattern : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "cms_report_threshold" )
+
+transactionSet.Claim.Exposures.each(\ exp ->
+{
+   //this condition checks for applicable exposure types, will set to validExp to true if condition satisfies
+   if(exp.ExposureType == "wc_medical_details")
+   {
+    if((typeof exp.Claimant  == Person  or typeof exp.Claimant == InjuredWorkerExt) && 
+      (exp.Claimant as Person).DateOfMedicareEligibleExt != null &&
+      (exp.Claimant as Person).MedicareEligibleExt) 
+     {
+       var totalPaid = gw.api.financials.FinancialsCalculationUtil.getTotalPayments().getAmount(transactionSet.Claim, CostType.TC_CLAIMCOST)
+        
+       if(totalPaid >= ScriptParameters.CMSReportingThreshold)
+       {
+          if(not exists(act in transactionSet.Claim.Activities where act.ActivityPattern == pattern) )
+          {
+           transactionSet.Claim.createActivityFromPattern( null, pattern)
+          }
+       }
+     }
+   }
+})
+
+
+     /*end00rule*/
+  }
+}

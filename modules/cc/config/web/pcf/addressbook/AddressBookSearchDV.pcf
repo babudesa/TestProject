@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookSearchDV">
+    <Require
+      name="searchCriteria"
+      type="ContactSearchCriteria"/>
+    <Require
+      name="proximitySearchPageHelper"
+      type="contact.CCProximitySearchPageHelper"/>
+    <Require
+      name="requiredContactType"
+      type="Type"/>
+    <Require
+      name="externalSearchEnabled"
+      type="boolean"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="SearchType"
+        label="displaykey.Web.AddressBook.Search.SearchType"
+        postOnChange="true"
+        required="true"
+        value="searchCriteria.SearchType"
+        visible="externalSearchEnabled and ContactSearchType.getTypeKeys(false).Count &gt; 1"/>
+      <RangeInput
+        editable="true"
+        filter="not(VALUE == &quot;UserContact&quot;)"
+        id="ContactSubtype"
+        label="displaykey.Web.AddressBook.Search.Type"
+        postOnChange="true"
+        required="true"
+        showNoneSelected="false"
+        value="searchCriteria.ContactSubtype"
+        valueRange="searchCriteria.getAvailableSubtypes(requiredContactType)"/>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Person)">
+        <Input
+          editable="true"
+          id="FirstName"
+          label="displaykey.Web.AddressBook.Search.FirstName"
+          value="searchCriteria.FirstName"/>
+      </InputSet>
+      <Input
+        editable="true"
+        id="Keyword"
+        label=" searchCriteria.isSearchFor(entity.Person) ? displaykey.Web.AddressBook.Search.LastName : ( (searchCriteria.isSearchFor(entity.Company) or searchCriteria.isSearchFor(entity.Place))? displaykey.Web.AddressBook.Search.Name : displaykey.Web.AddressBook.Search.ContactName)"
+        value="searchCriteria.Keyword"/>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Company) or (searchCriteria.isSearchFor(entity.Person) and !searchCriteria.isSearchFor(entity.UserContact) and !searchCriteria.isSearchFor(entity.Adjudicator))">
+        <Input
+          editable="true"
+          id="TaxID"
+          label="displaykey.Web.AddressBook.Search.TaxID"
+          value="searchCriteria.TaxID"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Person) and !(searchCriteria.isSearchFor(entity.PersonVendor) or searchCriteria.isSearchFor(entity.UserContact))">
+        <Input
+          editable="true"
+          id="OrganizationName"
+          label="displaykey.Web.AddressBook.Search.OrganizationName"
+          value="searchCriteria.OrganizationName"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Attorney)">
+        <Input
+          editable="true"
+          id="AttorneySpecialty"
+          label="displaykey.Web.AddressBook.Search.AttorneySpecialty"
+          value="searchCriteria.AttorneySpecialty"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Doctor)">
+        <Input
+          editable="true"
+          id="DoctorSpecialty"
+          label="displaykey.Web.AddressBook.Search.DoctorSpecialty"
+          value="searchCriteria.DoctorSpecialty"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.Adjudicator)">
+        <Input
+          editable="true"
+          id="AdjudicativeDomain"
+          label="displaykey.Web.AddressBook.Search.AdjudicativeDomain"
+          value="searchCriteria.AdjudicativeDomain"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.MedicalCareOrg)">
+        <Input
+          editable="true"
+          id="MedicalSpecialty"
+          label="displaykey.Web.AddressBook.Search.MedicalSpecialty"
+          value="searchCriteria.MedicalOrgSpecialty"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.LawFirm)">
+        <Input
+          editable="true"
+          id="LawFirmSpecialty"
+          label="displaykey.Web.AddressBook.Search.LawFirmSpecialty"
+          value="searchCriteria.LawFirmSpecialty"/>
+      </InputSet>
+      <InputSet
+        visible="searchCriteria.isSearchFor(entity.PersonVendor) or searchCriteria.isSearchFor(entity.CompanyVendor)">
+        <Input
+          editable="true"
+          id="PreferredVendors"
+          label="displaykey.Web.AddressBook.Search.PreferredVendors"
+          value="searchCriteria.PreferredVendors"/>
+        <RangeInput
+          editable="true"
+          id="MinimumScore"
+          label="displaykey.Web.Reviews.MinimumScore"
+          value="searchCriteria.Score"
+          valueRange="scoreRange()"
+          visible="gw.api.contact.ReviewUtil.haveReviewTypeForContactSubtype( searchCriteria.ContactSubtype ) "/>
+      </InputSet>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookSearchLocationInputSet(searchCriteria)"
+        mode="searchCriteria.Address.Country != null ? searchCriteria.Address.Country : gw.api.admin.BaseAdminUtil.getDefaultCountry()"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookSearchProximityAddressInputSet(searchCriteria, proximitySearchPageHelper, claim)"
+        mode="searchCriteria.ProximitySearchCenter.Country != null ? searchCriteria.ProximitySearchCenter.Country : gw.api.admin.BaseAdminUtil.getDefaultCountry()"
+        visible="proximitySearchPageHelper.useGeocodeUIinAddressBook()"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputSetRef
+        def="SearchAndResetInputSet()"/>
+    </InputFooterSection>
+    <Code><![CDATA[
+function scoreRange() : String[] {
+        return new String[]{ "0", "10", "20", "30", "40", "50", "60", "70", "80", "90" };
+      }
+      
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

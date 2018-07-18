@@ -1,0 +1,50 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1230 - Set Check Reportability (New Checks)")
+internal class TPUXX1230SetCheckReportabilityNewChecks {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Set the Reportability field on New Checks
+//Updated: Kelly Otteson - Defect 508 - Payee should be a vendor for reportability
+//Updated: Stephanie Przygocki - Defect 3546 - Tax Status should not be reportable
+//  on vendors with a tax status of 9
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var check = (transactionSet as CheckSet).PrimaryCheck;
+uses util.financials.CheckFunctions
+
+if((check.New or check.Status=="pendingapproval" or check.Status=="awaitingsubmission") and 
+    !check.Transferred and check.TransferredCheck == null and 
+    check.LoadCommandID != ScriptParameters.CurrentConversionLoadCommandID)
+  { //if speciality accounting changes reportability we don't want to run this
+  for(payee in check.Payees){ //check all payees
+    if(payee.PayeeType == "vendor") { 
+      if(payee.Payee.Ex_TaxStatusCode=="9" || check.LoadCommandID!=null){
+        check.Reportability = "notreportable";}
+        
+      else {
+         // added condition to check for the TPA 1099 preferences
+         if (util.admin.ExternalUserAdminUtil.is1099Enabled(check)){
+           check.Reportability = "reportable";
+         }else {
+           check.Reportability = "notreportable";
+         }
+      }
+    }
+  }
+
+  if(exists(costType in check.Payments*.CostType 
+     where CheckFunctions.is1099ReportableCostType(costType)) == false) {
+        check.Reportability = typekey.ReportabilityType.TC_NOTREPORTABLE
+  }
+
+  if(check.Payees*.PayeeType == "NonVendorPayeeCompanyExt" or check.Payees*.PayeeType == "NonVendorPayeePersonExt"){
+    check.Reportability = "notreportable"
+  } 
+  
+}
+
+/*end00rule*/
+  }
+}

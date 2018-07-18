@@ -1,0 +1,26 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX4000 - Do Not Allow Negative Incurred")
+internal class ECVXX4000DoNotAllowNegativeIncurred {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claim.LossType != typekey.LossType.TC_PERSONALAUTO
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var totalIncurred = exposure.Claim.getTotalIncurred()
+
+  if(exposure.OpenReserves != 0 ){
+    totalIncurred = totalIncurred - exposure.OpenReserves.Amount
+  }
+
+  if(totalIncurred < 0.0){
+   exposure.reject("newloss", displaykey.Error.TotalIncurred.NegativeIncurred, null, null)
+  }
+} catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

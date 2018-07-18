@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsChecksDetail.go(Claim, check)"
+    afterCommit="ClaimFinancialsChecksDetail.go(Claim, check)"
+    canEdit="true"
+    canVisit="perm.Claim.viewpayments(Claim)"
+    countsAsWork="false"
+    id="ReissueCheck"
+    parent="ClaimFinancialsChecksDetail(Claim, check)"
+    startInEditMode="true"
+    title="displaykey.JSP.ReissueCheck.Title">
+    <LocationEntryPoint
+      signature="ReissueCheck(Claim : Claim, check : Check)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="check"
+      type="Check"/>
+    <Variable
+      initialValue="check"
+      name="oldCheck"
+      type="Check"/>
+    <Variable
+      initialValue="oldCheck.createCheckForReissue()"
+      name="newCheck"
+      type="Check"/>
+    <Screen
+      id="ReissueCheckScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="voidAndReissueCheck()"
+          available=" check.VoidableForReissue and perm.Payment.void(check)"
+          confirmMessage="displaykey.JSP.VoidStopCheck.Void.Confirm"
+          id="ReissueCheck_VoidAndReissueButton"
+          label="displaykey.Button.Check.VoidAndReissue"
+          visible="perm.Payment.void(check)"/>
+        <ToolbarButton
+          action="stopAndReissueCheck();"
+          available=" check.StoppableForReissue and perm.Payment.stop(check)"
+          confirmMessage="displaykey.JSP.VoidStopCheck.Stop.Confirm"
+          id="ReissueCheck_StopAndReissueButton"
+          label="displaykey.Button.Check.StopAndReissue"
+          visible="perm.Payment.stop(check)"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="ReissueCheckDV(newCheck, !oldCheck.isPrimary())"/>
+    </Screen>
+    <Code><![CDATA[
+function voidAndReissueCheck() {
+  try {
+    gw.api.util.CCLocationUtil.runAndCommit( \ -> newCheck.voidAndReissue(oldCheck), CurrentLocation )
+  } catch ( e : com.guidewire.pl.system.exception.IllegalTransactionStatusException ) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Financials.CheckCancel.Error.IllegalFinancialsStatus, e)
+  }
+}
+
+function stopAndReissueCheck() {
+  try {
+    gw.api.util.CCLocationUtil.runAndCommit( \ -> newCheck.stopAndReissue(oldCheck), CurrentLocation )
+  } catch ( e : com.guidewire.pl.system.exception.IllegalTransactionStatusException ) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Financials.CheckCancel.Error.IllegalFinancialsStatus, e)
+  }
+}
+    ]]></Code>
+  </Page>
+</PCF>

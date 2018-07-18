@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCommit="Wizard.saveDraft(); setIncidentReportToFalse()"
+    afterEnter="LossDateOutsideCvgDates(Claim, Coverage, Exposure)"
+    beforeCancel="Wizard.removeExposureFromAssignments(Exposure)"
+    canEdit="true"
+    id="NewClaimWizard_NewExposurePopup"
+    parent="NewClaimWizard()"
+    startEditing="Exposure.setInitialValues()"
+    startInEditMode="true"
+    title="displaykey.Wizard.NewClaimWizard.NewClaimExposure.New(Claim.LossType, Claim.getNewExposureType(CoverageSubtype))">
+    <LocationEntryPoint
+      signature="NewClaimWizard_NewExposurePopup(Claim : Claim, Wizard : claim.NewClaimWizardInfo, Coverage : Coverage, CoverageType : CoverageType, CoverageSubtype : CoverageSubtype)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      name="CoverageType"
+      type="CoverageType"/>
+    <Variable
+      name="CoverageSubtype"
+      type="CoverageSubtype"/>
+    <Variable
+      initialValue="Wizard.addExposureWithNoIncident(Claim, Coverage, CoverageType, CoverageSubtype)"
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="exposure.initializeIncident()"
+      name="Incident"
+      type="Incident"/>
+    <Variable
+      initialValue="util.CoverageValidation.invalidCoverageForCause(Claim, CoverageType)"
+      name="invalidCoverageForCause"
+      type="boolean"/>
+    <Variable
+      initialValue="util.CoverageValidation.incompatibleNewExposure(Claim, CoverageType)"
+      name="incompatibleNewExposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="util.CoverageValidation.invalidCoverageForFaultRatingMessage(Claim, CoverageType)"
+      name="CoverageAndFaultConflict"
+      type="String"/>
+    <Screen
+      id="NewClaimWizard_ExposurePageScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <!-- Visible was added due to problems with multiple animals and new claim wizard, this turns off if the user selected a horse that hasn't been used on the claim yet but other features exist. kmboyd - 4/8/2009 -->
+        <EditButtons
+          updateVisible="equineHideUpdate()"/>
+      </Toolbar>
+      <AlertBar
+        id="invalidCoverageForCauseAlert"
+        label="displaykey.JSP.NewExposure.ClaimMenu.NewExposure.invalidCoverageForCause(Claim.LossCause.Description)"
+        visible="invalidCoverageForCause == true"/>
+      <AlertBar
+        id="incompatibleNewExposureAlert"
+        label="displaykey.JSP.NewExposure.ClaimMenu.NewExposure.incompatibleNewExposure(incompatibleNewExposure.CoverageSubType.Description)"
+        visible="incompatibleNewExposure != null"/>
+      <AlertBar
+        id="CoverageAndFaultConflictAlert"
+        label="CoverageAndFaultConflict"
+        visible="CoverageAndFaultConflict != null"/>
+      <PanelRef
+        def="NewClaimExposureDV(Exposure)"
+        mode="Exposure.ExposureType"/>
+    </Screen>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+
+//Validates exposures
+function validateExposures() {
+  if(gw.api.system.CCConfigParameters.EnableClaimantCoverageUniquenessConstraint.Value and Claim.Exposures.hasMatch(\ e -> !e.isClaimantCoverageUnique()))
+      throw new UserDisplayableException(displaykey.Java.Error.Exposure.ClaimantCoverageNotUnique);
+}
+function equineHideUpdate(): boolean{
+     		if(Claim.BusinessLineExt == "EQUINE" and Claim.Exposures.length > 1 and exists(exp in Claim.Exposures where exp.FixedPropertyIncident != Exposure.FixedPropertyIncident) and Exposure.Coverage.Subtype != "PolicyCoverage"){
+     			return false;
+     		}
+     		return true;
+     	}
+     	function LossDateOutsideCvgDates(clm: Claim, cvg: Coverage, exp: Exposure): void{
+     	  if(clm.ClaimsMadePolicyExt == false){
+  			if(clm.LossDate!=null and cvg.EffectiveDate!=null and cvg.ExpirationDate!=null){
+    			if((gw.api.util.DateUtil.compareIgnoreTime(clm.LossDate,cvg.EffectiveDate)<0)
+       			  || (gw.api.util.DateUtil.compareIgnoreTime(clm.LossDate,cvg.ExpirationDate)>0)){
+       				var errString : String;
+    				errString = displaykey.Libraries.ClassExt.PolCovDateError(util.custom_Ext.DateTime.formatDate(clm.LossDate), cvg.Type.DisplayName, util.custom_Ext.DateTime.formatDateString( cvg.EffectiveDate, cvg.ExpirationDate ));
+    				if (!(exists(hist in clm.History where hist.Description == "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+exp.DisplayName))){
+      					GeneralErrorWorksheet.goInWorkspace(errString);
+      					clm.createCustomHistoryEvent("DataChange", "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+exp.DisplayName);        
+      				}	
+    			}
+  			}
+		}
+     	}
+     	
+     	function setIncidentReportToFalse() : void {
+				Claim.IncidentReport = false;
+		}]]></Code>
+  </Popup>
+</PCF>

@@ -1,0 +1,21 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TXV11000 - Block Payments that Exceed Reserves")
+internal class TXV11000BlockPaymentsthatExceedReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype =="CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for (trans in TransactionSet.Transactions) {
+  if (trans.CostType == "claimcost") {
+    var availableReserves = gw.api.financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(trans.Exposure, trans.CostType, trans.CostCategory);
+    availableReserves = (null == availableReserves ? java.math.BigDecimal.ZERO : availableReserves.Amount);
+    if (trans.ClaimAmount > availableReserves) {
+      TransactionSet.reject( "loadsave", displaykey.Rules.Validation.Transaction.CheckExceedsAvailableReserves, null, null);
+    }
+  }
+}/*end00rule*/
+  }
+}

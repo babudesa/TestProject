@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<!-- END Property Attributes  An example of a retireable entity that contains both a virtual array and a join array.
+		The join array joins up to one ExampleRetireableEntity per permission type to one ExampleKeyableEntity object.
+		
+		The exportable="false" attribute (which is actually the default and is just here to make it explicit)
+		means that this entity won't show up in the generated toolkit, and requires that the
+		foreign keys pointing to it are also marked as exportable="false".
+		
+		retireable entities have the ID, UpdateUser, UpdateTime, CreateUser, CreateTime, BeanVersion, and Retired columns
+		automatically added, which means that editable entities can be referred to by foreign keys or virtual arrays,
+		can be edited in place, and can be object of queries.
+		Examples of existing editable entities include User and Activity
+	
+		<entity entity="ex_ExampleRetireableEntity" table="exampleret" type="retireable" exportable="false">
+		<foreignkey name="ExampleFKID" fkentity="ex_ExampleKeyableEntity"/>
+		<array name="JoinArray" arrayentity="ex_ExampleJoinArrayEntity" desc="A join array of ex_ExampleJoinArray objects" virtual="false"/>
+		<typekey name="TypekeyColumn" typelist="SystemPermissionType" desc="A test typekey column"/>
+		<column name="IntegerColumn" type="integer" default="12" nullok="false" desc="integer extension; default value of '12'"/>
+		
+		<index name="internal1">
+		<indexcol name="TypekeyColumn" keyposition="1"/>
+		<indexcol name="IntegerColumn" keyposition="2"/>
+		</index>
+		</entity>
+	 An example of a keyable, but not retireable (and thus not editable either) entity.  Note that you can't
+		have an array of plain keyable entities on a retireable entity.
+		
+		keyable entities aren't particularly useful by themselves due to this and other limitations,
+		except perhaps as reference tables (see the example below).
+	
+		<entity entity="ex_ExampleKeyableEntity" table="examplekeyable" type="keyable">
+		<column name="StringColumn" type="shorttext"/>
+		</entity>
+	 An example of a joinarray entity that contains a foreign key back to the retireable entity and a foreign key to
+		the keyable entity.  The unique index (which is required for a join array) is on RetireableFKID and TypekeyColumn,
+		making this a many-to-many relationship of ExampleRetireableEntities to ExampleKeyableEntities where there can only
+		be one mapping for a given retireable entity and typekey combination.
+		
+		joinarray entities are exactly the same as the now-deprecated extensionarray entities; they don't have an ID,
+		they aren't editable (meaning that they can't be updated in place, and rows must be deleted and added),
+		and they can only be committed to the database in the context of a containing entity that refers to them
+		in an array declaration.  Examples of existing joinarray entities include the ClaimAccess and GroupUser elements.
+		
+		In general, you might find that you only ever use editable entities, but the joinarray entities are still there
+		if you need a lighter-weight table that isn't treated like a top-level object in its own right, or if
+		data or relationships will be added and removed frequently and you want the data deleted instead of just retired.
+	
+		<entity entity="ex_ExampleJoinArrayEntity" table="examplejoin" type="joinarray">
+		<column name="StringColumn" type="shorttext"/>
+		<typekey name="TypekeyColumn" typelist="SystemPermissionType" desc="A test typekey column"/>
+		
+		<foreignkey name="RetireableFKID" fkentity="ex_ExampleRetireableEntity" desc="FK back to ExampleRetireableEntity" exportable="false"/>
+		<foreignkey name="KeyableFKID" fkentity="ex_ExampleKeyableEntity" desc="FK through to ExampleKeyableEntity" exportable="false"/>
+		<index name="internal1" unique="true">
+		<indexcol name="RetireableFKID" keyposition="1"/>
+		<indexcol name="TypekeyColumn" keyposition="2"/>
+		</index>
+		</entity>
+	 An example of a reference entity that has some columns for data along with one index.  In production the indices
+		added should of course be based on the queries that will be run against the table.  The setterScritability="hidden"
+		attribute is what makes this a read-only table (i.e. all columns are read-only).  The entity is only keyable
+		because in general it shouldn't ever be edited, so we probably don't need the various editable and retireable
+		columns, but you could also use a retireable entity as a reference table if you wanted.
+	
+		<entity entity="ex_ExampleReferenceEntity" table="exampleref" type="keyable" setterScriptability="hidden">
+		<column name="StringColumn" type="shorttext"/>
+		<column name="IntegerColumn" type="integer"/>
+		<column name="BooleanColumn" type="bit"/>
+		<column name="TextColumn" type="longtext"/>
+		
+		<index name="internal1">
+		<indexcol name="StringColumn" keyposition="1"/>
+		<indexcol name="IntegerColumn" keyposition="2"/>
+		</index>
+		</entity>
+	 GAIC MODIFICATION________________________________________________________________________________________________ -->
+<extension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="PolicyLocation">
+  <!-- USE LOCATION NUMBER FOR HORSE NAME -->
+  <column
+    desc="The nickname of the horse"
+    name="ex_BarnName"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="255"/>
+  </column>
+  <typekey
+    desc="Breed of the animal"
+    name="ex_Breed"
+    typelist="EquineBreed"/>
+  <typekey
+    desc="The sex/status of the animal"
+    name="ex_Sex"
+    typelist="EquineSex"/>
+  <typekey
+    desc="How is the animal used?"
+    name="ex_AnimalUse"
+    typelist="EquineUse"/>
+  <typekey
+    desc="Secondary use of the animal"
+    name="AnimalUse2Ext"
+    typelist="EquineUse"/>
+  <column
+    desc="This is the birth year of the horse, used for calculating the horse age"
+    name="ex_DateofBirth"
+    type="year"/>
+  <column
+    desc="This is the value of the Property. For animals (Equine) this is the value of the animal"
+    name="ex_AmountofInsurance"
+    type="nonnegativemoney"/>
+  <foreignkey
+    desc="Primary trainer"
+    fkentity="Contact"
+	owner="true"
+    name="ex_PrimaryTrainer"/>
+  <foreignkey
+    desc="Alternate trainer"
+    fkentity="Contact"
+	owner="true"
+    name="ex_AlternateTrainer"/>
+  <array
+    arrayentity="ex_PropertyReinsurance"
+    desc="Reinsurances related to this property"
+    name="ex_Reinsurances"/>
+  <typekey
+    desc="Is the animal domiciled at an alternate location?"
+    name="ex_AnimalAddressType"
+    typelist="PropertyAddressType"/>
+  <column
+    desc="The PhysicalProperty Enterprise Business Index (EBI)"
+    name="PhysicalPropertyEBIExt"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="36"/>
+  </column>
+  <column
+    desc="The PhysicalProperty Enterprise Business Index (EBI) Instance"
+    name="PhysicalPropertyEBIInstExt"
+    type="integer"/>
+  <array
+    arrayentity="CoverageReinsuranceExt"
+    desc="Reinsurances releated to the coverages on this property"
+    name="CoverageReinsurances"/>
+  <array
+    arrayentity="RiskPartyExt"
+    desc="Additional interest risks"
+    name="AdditionalInterestRisksExt"
+    triggersValidation="true"/>
+  <column
+    desc="Claimant's value of the horse"
+    name="AnimalValueExt"
+    type="money"/>
+  <column
+    desc="Vet bills incurred on the horse"
+    name="VetBillsExt"
+    type="money"/>
+  <column
+    default="false"
+    desc="Is there a boarding agreement for the horse?"
+    name="BoardingExt"
+    nullok="true"
+    type="bit"/>
+  <column
+    desc="Year the property was built"
+    name="YearBuiltExt"
+    nullok="true"
+    type="year"/>
+  <column
+    desc="The construction company for the property"
+    name="ConstructedByExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="50"/>
+  </column>
+  <column
+    desc="The effective date on a property"
+    name="PhyPropEffDateExt"
+    nullok="true"
+    type="datetime"/>
+  <column
+    desc="The expiration date on a property"
+    name="PhyPropExpDateExt"
+    nullok="true"
+    type="datetime"/>
+  <typekey
+    desc="What type of Risk is this Property?"
+    name="RiskTypeExt"
+    typelist="EDWRiskType"/>
+  <column
+    desc="The identifying number of the risk on the policy"
+    name="RiskNumberExt"
+    type="integer"/>
+  <column
+    name="BulkLocationIndExt"
+    type="shorttext"
+    desc="Bulk Location Indicator"/>
+  <column
+    desc="The alphanumeric &quot;number&quot; associated with this building."
+    name="BuildingNumberExt"
+    type="shorttext"/>
+</extension>

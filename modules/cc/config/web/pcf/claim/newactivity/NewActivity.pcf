@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimWorkplanForward.go(Claim)"
+    afterCommit="ClaimWorkplanForward.go(Claim)"
+    beforeCommit="Activity.setUp(AssigneeHolder[0])"
+    canEdit="true"
+    canVisit="perm.Claim.createactivity(Claim)"
+    id="NewActivity"
+    parent="Claim(Claim)"
+    startEditing="Activity.setInitialValues()"
+    startInEditMode="true"
+    title="displaykey.JSP.NewActivity.New.Title(Claim)">
+    <LocationEntryPoint
+      signature="NewActivity(Claim : Claim, ActivityPattern : ActivityPattern)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="ActivityPattern"
+      type="ActivityPattern"/>
+    <Variable
+      initialValue="Claim.newActivity(ActivityPattern, null)"
+      name="Activity"
+      type="Activity"/>
+    <Variable
+      initialValue="new assignment.Assignee[] {assignment.AutoAssignAssignee.INSTANCE}"
+      name="AssigneeHolder"
+      type="assignment.Assignee[]"/>
+    <Screen
+      id="NewActivityScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <ToolbarButton
+          action="checkAndCommit()"
+          id="NewActivity_UpdateButton"
+          label="displaykey.Button.Update"
+          shortcut="U"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="NewActivity_CancelButton"
+          label="displaykey.Button.Cancel"
+          shortcut="L"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim)"
+          id="NewActivity_AddDocumentButton"
+          label="displaykey.Button.Activity.AddDocument"
+          onPick="gw.api.activity.ActivityUtil.onPickDocument(PickedValue, Activity)"
+          visible="gw.document.DocumentsUtil.claimHasDocuments(Claim) and perm.Claim.view(Claim) and perm.System.viewdocs"/>
+      </Toolbar>
+      <PanelRef
+        def="NewActivityDV(Activity, AssigneeHolder, Claim)"/>
+    </Screen>
+    <Code><![CDATA[
+        function checkAndCommit(){
+          Activity.ensureIsAllowedIfClaimClosed();
+          CurrentLocation.commit();
+        }
+      
+    ]]></Code>
+  </Page>
+</PCF>

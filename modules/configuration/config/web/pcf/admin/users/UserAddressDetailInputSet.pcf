@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="UserAddressDetailInputSet">
+    <Require
+      name="User"
+      type="User"/>
+    <!-- <Variable
+      initialValue="new contact.AddressAutoFillHelper()"
+      name="AutoFillHelper"
+      type="contact.AddressAutoFillHelper"/>  nscavelli 12/27/07 no longer using AutoFill functionality
+        
+     11/20/2007 - zthomas - Defect 560, moved country and address type to the top of the address inputs.  
+      Modified available on other address inputs to only be visible when a country and address type are selected. -->
+    <TypeKeyInput
+      editable="!(User.Contact.PrimaryAddress.StandardizedExt)"
+      id="Country"
+      label="displaykey.Web.ContactDetail.AddressDetail.Country"
+      onChange="User.Contact.PrimaryAddress.PostalCode = null"
+      postOnChange="true"
+      value="User.Contact.PrimaryAddress.Country"/>
+    <Input
+      available="User.Contact.PrimaryAddress.Country != null"
+      editable="true"
+      id="AddressType"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressType"
+      value="User.Contact.PrimaryAddress.AddressType"/>
+    <Input
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="true"
+      id="AddressLine1"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressLine1"
+      value="User.Contact.PrimaryAddress.AddressLine1"/>
+    <Input
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="true"
+      id="AddressLine2"
+      label="displaykey.Web.ContactDetail.AddressDetail.AddressLine2"
+      value="User.Contact.PrimaryAddress.AddressLine2"/>
+    <!-- slp modified below 9/21/07 sprint 7 -->
+    <Input
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="!(User.Contact.PrimaryAddress.StandardizedExt)"
+      id="City"
+      label="displaykey.Web.ContactDetail.AddressDetail.City"
+      value="User.Contact.PrimaryAddress.City"
+      visible="true"/>
+    <TypeKeyInput
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="!(User.Contact.PrimaryAddress.StandardizedExt)"
+      id="State"
+      label="displaykey.Web.ContactDetail.AddressDetail.State"
+      value="User.Contact.PrimaryAddress.State"/>
+    <!-- 11/20/2007 zthomas - Defect 558, replaced requestValidationExpression with validationExpression for postal code using newly create function.  11/20/2007 zthomas - Defect 555, modified validationExpression to use new created function to display proper message depending on country. -->
+    <TextInput
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="!(User.Contact.PrimaryAddress.StandardizedExt)"
+      id="PostalCode"
+      inputMask="util.custom_Ext.finders.getPostCodeMask(User.Contact.PrimaryAddress.Country.Code)"
+      label="displaykey.Web.ContactDetail.AddressDetail.Postalcode"
+      validationExpression="util.custom_Ext.finders.postCodeValidation(User.Contact.PrimaryAddress) ? null : &quot;Invalid zip code format.&quot;"
+      value="User.Contact.PrimaryAddress.PostalCode"
+      visible="true"/>
+    <Input
+      available="User.Contact.PrimaryAddress.Country != null and User.Contact.PrimaryAddress.AddressType != null"
+      editable="!(User.Contact.PrimaryAddress.StandardizedExt)"
+      id="County"
+      label="displaykey.Web.ContactDetail.AddressDetail.County"
+      value="User.Contact.PrimaryAddress.County"
+      visible="true"/>
+    <Input
+      editable="(User.Contact.PrimaryAddress.StandardizedExt == &quot;true&quot;)"
+      id="StandardizationIndicator"
+      label="displaykey.Web.ContactDetail.AddressDetail.StandardizedExt"
+      postOnChange="true"
+      value="User.Contact.PrimaryAddress.StandardizedExt"
+      visible="true"/>
+    <ButtonInput
+      action="StandardizationPopup.push(User.Contact.PrimaryAddress)"
+      hideIfReadOnly="true"
+      id="StandardizeAddressButton"
+      value="displaykey.Web.ContactDetail.AddressDetail.StandardizeButtonText"
+      visible="true"/>
+    <!-- end modifications -->
+    <Input
+      editable="true"
+      id="ValidUntil"
+      label="displaykey.Web.ContactDetail.AddressDetail.ValidUntil"
+      value="User.Contact.PrimaryAddress.ValidUntil"/>
+    <Input
+      id="ProximitySearchStatus"
+      label="displaykey.Web.ContactDetail.AddressDetail.ProximitySearchStatus"
+      value="gw.api.geocode.GeocodeScriptHelper.categorizeGeocodeStatus(User.Contact.PrimaryAddress.GeocodeStatus)"/>
+  </InputSet>
+</PCF>

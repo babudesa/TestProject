@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ClaimSummaryReinsurancesExtLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Exposures"
+      type="Exposure[]"/>
+    <Variable
+      initialValue="new util.gaic.reinsurance.ReserveReinsuranceExtUtil(Claim.ClaimNumber)"
+      name="reinsuranceUtil"
+      type="util.gaic.reinsurance.ReserveReinsuranceExtUtil"/>
+    <RowIterator
+      editable="false"
+      elementName="Exposure"
+      value="Exposures">
+      <Row>
+        <Cell
+          action="ReserveReinsurancesExtDetail.go(Claim, Exposures)"
+          id="Exposure"
+          label="displaykey.GAIC.LV.ClaimSummary.ReinsurancessExtLV.Header.Label"
+          printWidth="0.15"
+          sortOrder="1"
+          value="getExposureCoverageName(Exposure)"/>
+        <Cell
+          align="right"
+          id="CededReserveAmount"
+          label="displaykey.GAIC.LV.ClaimSummary.ReinsurancessExtLV.CededReserveAmount"
+          printWidth="0.1"
+          value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtCededReserveAmount(Exposure))"/>
+        <Cell
+          align="right"
+          id="TotalPaid"
+          label="displaykey.GAIC.LV.ClaimSummary.ReinsurancessExtLV.TotalPaid"
+          printWidth="0.1"
+          value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtTotalPaid(Exposure))"/>
+        <Cell
+          align="right"
+          id="RecoveryReceipts"
+          label="displaykey.GAIC.LV.ClaimSummary.ReinsurancessExtLV.RecoveryReceipts"
+          printWidth="0.1"
+          value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtRecoveryReceipts(Exposure))"/>
+      </Row>
+    </RowIterator>
+    <Row>
+      <Cell
+        bold="true"
+        id="Totals"
+        value="displaykey.GAIC.LV.ClaimSummary.ReinsurancessExtLV.Footer.Label"/>
+      <Cell
+        align="right"
+        bold="true"
+        id="TotalCededReserveAmount"
+        value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtCededReserveAmount())"/>
+      <Cell
+        align="right"
+        bold="true"
+        id="TotalTotalPaid"
+        value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtTotalPaid())"/>
+      <Cell
+        align="right"
+        bold="true"
+        id="TotalRecoveryReceipts"
+        value="reinsuranceUtil.formatReinsuranceValue(reinsuranceUtil.calculateReinsurancesExtRecoveryReceipts())"/>
+    </Row>
+    <Code><![CDATA[function getExposureCoverageName(exp:Exposure):String{
+  var sb:java.lang.StringBuffer = new java.lang.StringBuffer()
+    sb.append(exp + " / ")
+    if(!util.WCHelper.isWCorELLossType(Claim)){
+      if(exp.Coverage.Type!= null and exp.Coverage.Policy.Verified){
+        sb.append(exp.Coverage.covTypeDisplayName())
+      }else{
+        sb.append(exp.Coverage.Type.DisplayName)
+      }
+    }else{
+      return displaykey.Web.PrintValue(exp.ExposureType)
+    }
+    return sb.toString()
+}]]></Code>
+  </ListViewPanel>
+</PCF>

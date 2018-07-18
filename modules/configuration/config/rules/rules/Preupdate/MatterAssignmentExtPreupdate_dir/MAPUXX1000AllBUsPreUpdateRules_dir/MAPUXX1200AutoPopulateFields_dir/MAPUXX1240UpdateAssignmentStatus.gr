@@ -1,0 +1,36 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1200AutoPopulateFields_dir
+
+@gw.rules.RuleName("MAPUXX1240 - Update Assignment Status")
+internal class MAPUXX1240UpdateAssignmentStatus {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/!matterAssignmentExt.New &&
+matterAssignmentExt.MatterAssignmentStatusExt != typekey.MatterAssignmentStatus.TC_DECLINED and 
+matterAssignmentExt.MatterAssignmentStatusExt != typekey.MatterAssignmentStatus.TC_DISABLED/*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.MatterActivator
+uses gw.api.util.DateUtil
+
+try{
+    
+    var matterActivator = new MatterActivator()    
+    
+    if(matterActivator.isLOBUsingLSS(matterAssignmentExt.Matter.Claim.LossType)){
+      if (!util.gaic.LitAdvisorFunctions.matterInError(matterAssignmentExt)) { 
+        if(matterAssignmentExt.MatterAssignmentStatusExt == typekey.MatterAssignmentStatus.TC_ACCEPTED){
+          if(matterAssignmentExt.StaffBudgetRequiredExt == false || matterAssignmentExt.WorkOnContingency == true){
+            matterAssignmentExt.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ASSIGNED
+          } 
+        }else if(matterAssignmentExt.StaffBudgetRequiredExt == false || matterAssignmentExt.DefenseAcceptedDate != null){
+            matterAssignmentExt.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_ASSIGNED
+        }else{
+            matterAssignmentExt.MatterAssignmentStatusExt = typekey.MatterAssignmentStatus.TC_PENDING
+        }
+      }
+    }
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

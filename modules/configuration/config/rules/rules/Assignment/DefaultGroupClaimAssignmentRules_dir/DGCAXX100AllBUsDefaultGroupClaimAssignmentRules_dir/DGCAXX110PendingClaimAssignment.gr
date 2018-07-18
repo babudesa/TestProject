@@ -1,0 +1,63 @@
+package rules.Assignment.DefaultGroupClaimAssignmentRules_dir.DGCAXX100AllBUsDefaultGroupClaimAssignmentRules_dir
+
+@gw.rules.RuleName("DGCAXX110 - Pending Claim Assignment")
+internal class DGCAXX110PendingClaimAssignment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///sprzygocki - 10/26/11 - disabled this rule. The rules run earlier during the NCW
+//  now, which is causing a default assignment to happen which shows up in the history
+//  of the claim. Ref defect #4637
+
+claim.IncidentReport == false || 
+(claim.IncidentReport == false && claim.Policy.UnverifiedRsnExt == "iphoneclaim")
+
+/** ivorobyeva - 05/04/2015 - iphone-generated claims have claim.isFieldChanged("IncidentReport")=true
+ * added 'iphoneclaim' check to make them execute this rule and assign them to pending assignment queue.
+/* Defects #7568 and #7561
+
+/** ivorobyeva - 10/07/2015 - Defect #7692: reversed changes made in Defect #7408
+ * Now Incident Only claims changed to Non Incident Only claims will be assigned to Pending assignment queue
+ * instead of the adjuster
+ *//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var defaultcorpclaim:User = util.GlobalParameters.ParameterFinder.getUserParameter( "defaultcorpaccount", claim.LossType);
+var defaultcorpGroup:Group = defaultcorpclaim.AllGroups.first() as Group;
+  if(util.admin.SecurityUtil.isClaimCorporateAccount(claim.Policy.PolicyNumber)){
+    claim.CurrentAssignment.assign(defaultcorpGroup, defaultcorpclaim);
+    actions.exit()
+  }
+
+var user = util.GlobalParameters.ParameterFinder.getUserParameter( "defaultclaimassign", claim.LossType )
+try{
+  if(claim.CurrentAssignment.assignUserAndDefaultGroup(user) && claim.CurrentAssignment.confirmManually( user )){    
+    gw.api.util.Logger.logInfo("Assigned Group: " + claim.CurrentAssignment.AssignedGroup);
+    gw.api.util.Logger.logInfo("Assigned User: " + claim.CurrentAssignment.AssignedUser);
+    gw.api.util.Logger.logInfo("Exiting rule " + actions.Rule.DisplayName);            
+    actions.exit();
+  }else{
+      gw.api.util.Logger.logInfo("Assigned Group: " + claim.CurrentAssignment.AssignedGroup);
+      gw.api.util.Logger.logInfo("Not able to Assign to User: " + user);
+    }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+  if(java.lang.System.getProperty( "gw.cc.env" ) == "prod"){
+    gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Support", 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Support", 
+        "ClaimCenter Notification", "Could not assign default claim to " + user)
+  }
+  else{
+      gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+      gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenterDEV Support", 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Support", 
+        "ClaimCenter Notification", "Could not assign default claim to " + user)
+  }
+}/*end00rule*/
+  }
+}

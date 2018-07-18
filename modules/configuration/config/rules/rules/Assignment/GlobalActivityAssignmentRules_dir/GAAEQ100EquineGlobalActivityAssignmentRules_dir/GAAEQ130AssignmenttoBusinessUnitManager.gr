@@ -1,0 +1,21 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAEQ100EquineGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAEQ130 - Assignment to Business Unit Manager")
+internal class GAAEQ130AssignmenttoBusinessUnitManager {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*///* sdalal Sprint 3 11/13/06 - Manager Review activities
+//* djohnson defect 1365 - change the assignment to use a script parameter instead of the business unit.1/13/06 - Manager Review activities
+activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_mgrreview_100k") OR
+activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_mgrreview_fac_reins")/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var user:User = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType);
+//var group:Group = Group( "group:10001" /* Equine Business Unit */ );
+var group:Group = user.AllGroups.first() as Group
+
+activity.CurrentAssignment.assign( group, user )
+actions.exit();
+/*end00rule*/
+  }
+}

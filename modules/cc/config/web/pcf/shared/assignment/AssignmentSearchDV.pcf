@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AssignmentSearchDV">
+    <Require
+      name="AssignmentSearchTypes"
+      type="AssignmentSearchType[]"/>
+    <Require
+      name="SearchCriteria"
+      type="assignment.CCAssignmentSearchCriteria"/>
+    <Require
+      name="proximitySearchPageHelper"
+      type="contact.CCProximitySearchPageHelper"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.api.admin.AdminUtil.getAttributeNames() as java.lang.String[]"
+      name="AttributeSource"
+      type="String[]"/>
+    <InputColumn>
+      <RangeInput
+        editable="true"
+        id="SearchFor"
+        label="displaykey.Web.Assignment.Search.SearchFor"
+        postOnChange="true"
+        showNoneSelected="false"
+        value="SearchCriteria.SearchType"
+        valueRange="AssignmentSearchTypes"/>
+      <!-- List of User-specific searchable parameters -->
+      <InputSet
+        visible="SearchCriteria.SearchType == &quot;User&quot;">
+        <Input
+          editable="true"
+          id="LastName"
+          label="displaykey.Web.Assignment.Search.LastName"
+          value="SearchCriteria.UserCriteria.Contact.Keyword"/>
+        <Input
+          editable="true"
+          id="FirstName"
+          label="displaykey.Web.Assignment.Search.FirstName"
+          value="SearchCriteria.UserCriteria.Contact.FirstName"/>
+        <Input
+          editable="true"
+          id="Username"
+          label="displaykey.Web.Assignment.Search.Username"
+          value="SearchCriteria.UserCriteria.Username"/>
+        <GroupInput
+          editable="true"
+          id="Group"
+          label="displaykey.Web.Assignment.Search.GroupName"
+          selectLocation="AssignmentOrgGroupTreePopup.push()"
+          value="SearchCriteria.CCUserSearchCriteria.Group"/>
+        <RangeInput
+          editable="true"
+          id="UserRole"
+          label="displaykey.Web.UserSearch.Role"
+          value="SearchCriteria.UserCriteria.Role"
+          valueRange="SearchCriteria.UserCriteria.getAllRoles()"/>
+        <RangeInput
+          editable="true"
+          id="AttributeName"
+          label="displaykey.Web.Assignment.Search.AttributeName"
+          postOnChange="true"
+          sortValueRange="true"
+          value="SearchCriteria.CCUserSearchCriteria.AttributeName"
+          valueRange="AttributeSource"
+          visible="true"/>
+        <InputSet
+          visible="SearchCriteria.CCUserSearchCriteria.AttributeName != null">
+          <Input
+            editable="true"
+            id="AttributeValue"
+            label="displaykey.Web.Assignment.Search.AttributeValue"
+            value="SearchCriteria.CCUserSearchCriteria.AttributeValue"/>
+          <Input
+            editable="true"
+            id="AttributeState"
+            label="displaykey.Web.Assignment.Search.AttributeState"
+            value="SearchCriteria.CCUserSearchCriteria.AttributeState"/>
+        </InputSet>
+      </InputSet>
+      <!-- List of Group-specific searchable parameters -->
+      <InputSet
+        visible="SearchCriteria.SearchType == &quot;Group&quot;">
+        <Input
+          editable="true"
+          id="GroupCriteriaName"
+          label="displaykey.Web.Assignment.Search.GroupName"
+          value="SearchCriteria.GroupCriteria.GroupName"/>
+      </InputSet>
+      <!-- List of Queue-specific searchable parameters -->
+      <InputSet
+        visible="SearchCriteria.SearchType == &quot;Queue&quot;">
+        <Input
+          editable="true"
+          id="GroupName"
+          label="displaykey.Web.Assignment.Search.GroupName"
+          value="SearchCriteria.QueueCriteria.QueueGroupName"/>
+        <Input
+          editable="true"
+          id="QueueName"
+          label="displaykey.Web.Assignment.Search.QueueName"
+          value="SearchCriteria.QueueCriteria.QueueName"/>
+      </InputSet>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookSearchLocationInputSet(SearchCriteria.UserCriteria.Contact)"
+        mode="SearchCriteria.UserCriteria.Contact.Address.Country"
+        visible="SearchCriteria.SearchType == &quot;User&quot;"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookSearchProximityAddressInputSet(SearchCriteria.UserCriteria.Contact, proximitySearchPageHelper, claim)"
+        mode="SearchCriteria.UserCriteria.Contact.ProximitySearchCenter.Country"
+        visible="SearchCriteria.SearchType == &quot;User&quot; and proximitySearchPageHelper.useGeocodeUILocally()"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputSetRef
+        def="SearchAndResetInputSet()"/>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

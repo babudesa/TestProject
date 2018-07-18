@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>How Entities and Typekeys Convert to and from Java</title>
+    <link rel="StyleSheet" href="css/java-gosu.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="java-gosu.08.01.html#2074033">Java and Gosu</a> : How Entities and Typekeys Convert to and from Java</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H1_-_Heading_1"><a name="2074033">How Entities and Typekeys Convert to and from Java</a></div>
+      <div class="H2_-_Heading_2"><a name="2074034">Comparing Entities</a></div>
+      <div class="B_-_Body"><a name="2074042">If a ClaimCenter entity converts from internal form to external form, a dynamic proxy wraps the internal entity </a>and implements the external interface. If the entity converts back to internal objects, that proxy returns the original (internal) entity. This preserves references from the internal side (internal code and Gosu). If an <span class="cv_-_computer_voice">Address</span> passes to plugin code and the plugin returns it, the return value is the same object passed to the plugin from the internal code or Gosu world. However, this is not true from the Java side of the entity libraries. Since the libraries create a new proxy every time for Java code using these libraries, you <span class="s_-_strong">cannot</span> rely on the <span class="cv_-_computer_voice">==</span> operator to<span class="s_-_strong"> </span>determine equality. </div>
+      <div class="B_-_Body"><a name="2074044">For example, this expression always evaluates to </a><span class="cv_-_computer_voice">false</span>:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2074051">activity.getClaim() == activity.getClaim()</a></div>
+      <div class="B_-_Body"><a name="2074055">However, the methods </a><span class="cv_-_computer_voice">equals</span>, <span class="cv_-_computer_voice">toString</span>, and <span class="cv_-_computer_voice">hashCode</span> call through to the wrapped entity and they are safe to use. Thus, in contrast to the earlier example, the following expression evaluates to <span class="cv_-_computer_voice">true</span>:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2074062">activity.getClaim().equals(activity.getClaim()) </a></div>
+      <div class="B_-_Body"><a name="2074063">And this expression also evaluates to </a><span class="cv_-_computer_voice">true</span>:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2074070">activity.getClaim().hashCode() == activity.getClaim().hashCode() </a></div>
+      <div class="H2_-_Heading_2"><a name="2074071">Comparing Typekeys</a></div>
+      <div class="B_-_Body"><a name="2074073">As typekeys convert from internal objects to external objects, the external interface provides the appropriate </a>external <span class="cv_-_computer_voice">Typekey</span> constant. Or you can use the <span class="cv_-_computer_voice">getOrCreateByCode</span> method on the external <span class="cv_-_computer_voice">Typekey</span> class to get a typekey. As typekeys convert from external to internal format, Gosu retrieves the internal typekey based on the code. </div>
+      <div class="B_-_Body"><a name="2074080">This means that if you create an external </a><span class="cv_-_computer_voice">typekey</span> that does <span class="s_-_strong">not</span> actually exist in the system, the conversion attempt fails. Reasons that the external typekey would not exist include getting results from plugin code to <span class="cv_-_computer_voice">getOrCreateByCode</span> or if you remove type keys without regenerating external entity classes.</div>
+      <div class="B_-_Body"><a name="2074083">Since typekey instances are currently </a><span class="e_-_emphasis">singletons</span> (a single instance of the class) both internally and externally, <span class="cv_-_computer_voice">typekey</span> references preserved across calls unlike entity references. However, this behavior <span class="s_-_strong">will</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">change</span> in a future release and you cannot rely on the current behavior. To prepare for this future change, your Gosu code must now use <span class="cv_-_computer_voice">equals</span> instead of <span class="cv_-_computer_voice">==</span> for <span class="e_-_emphasis">typekey instances</span> as well as entities. Start to convert any code that relies on == for typekeys translated through the entity libraries, and write new ClaimCenter code to include this requirement. </div>
+      <div class="B_-_Body"><a name="2074088">For example, the following expressions return </a><span class="cv_-_computer_voice">true</span> in the current release but returns <span class="cv_-_computer_voice">false</span> in a future release:</div>
+      <PRE class="CF_-_Code_First_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2074095">claim.getState() == claim.getState()</a></span></PRE>
+      <PRE class="CL_-_Code_Last_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2074102">claim.getState() == ClaimState.OPEN</a></span></PRE>
+      <div class="B_-_Body"><a name="2074103">Instead, change similar expressions to something like:</a></div>
+      <PRE class="CL_-_Code_Last_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline"><span class="cv_-_computer_voice"><a name="2074110">claim.getState().equals(ClaimState.OPEN);</a></span></PRE>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2074111">In a future release, the behavior of the </a><span class="cv_-_computer_voice">==</span> operator will change for typekeys accessed through the entity libraries from Java code. Similarly, the behavior will change for typekeys passed back to Gosu from Java classes. Begin converting any existing code now, and write any new code to satisfy this requirement.</div>
+      <div class="H2_-_Heading_2"><a name="2074112">Comparing Keys</a></div>
+      <div class="B_-_Body"><a name="2074113">The entity libraries also wrap key objects (the Key type) when converting from internal to external format. The </a>libraries unwrap the object going from external to internal format. </div>
+      <div class="B_-_Body"><a name="2074114">As with entities, from the Java side, you </a><span class="s_-_strong">cannot</span> assume references preserve between calls, so use <span class="cv_-_computer_voice">equals()</span> instead of the equality operator <span class="cv_-_computer_voice">==</span> for equality comparisons.</div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

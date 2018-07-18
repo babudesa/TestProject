@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://guidewire.com/localization" xmlns="http://guidewire.com/localization">
+
+  <xsd:simpleType name="SortCollationStrength">
+    <xsd:restriction base="xsd:NMTOKEN">
+      <xsd:enumeration value="primary"/>
+      <xsd:enumeration value="secondary"/>
+      <xsd:enumeration value="tertiary"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="SearchCollationStrength">
+    <xsd:restriction base="xsd:NMTOKEN">
+      <xsd:enumeration value="primary"/>
+      <xsd:enumeration value="secondary"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:element name="SortCollation">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <!-- Defines the sorting collation "strength" for this locale. The meaning depends on the specific
+           locale, but generally, "primary" considers only character weights, "secondary" also
+           considers accent differences, and "tertiary" also considers case differences. See
+           the documentation for java.text.Collator for more information. -->
+      <xsd:attribute name="strength" type="SortCollationStrength" default="secondary"/>
+    </xsd:complexType>
+  </xsd:element>
+
+ <xsd:element name="LinguisticSearchCollation">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <!-- Defines the linguistic search collation "strength" for this locale.
+           Set to "primary" for linguistic searches that ignore case and accents,
+           and "secondary" to ignore case but not accents. "Tertiary" is not a valid search strength value. -->
+      <xsd:attribute name="strength" type="SearchCollationStrength" default="secondary"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="CurrencyFormat">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="negativePattern" type="xsd:string" use="required"/>
+      <xsd:attribute name="positivePattern" type="xsd:string" use="required"/>
+      <xsd:attribute name="zeroValue" type="xsd:string" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Same as CurrencyFormat, but everything is optional. -->
+  <xsd:element name="CurrencyFormatOverride">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="negativePattern" type="xsd:string"/>
+      <xsd:attribute name="positivePattern" type="xsd:string"/>
+      <xsd:attribute name="zeroValue" type="xsd:string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <!-- Currency display properties can be overriden by Locale. -->
+  <xsd:element name="CurrencyTypeOverride">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="CurrencyFormatOverride" minOccurs="0" maxOccurs="1"/>
+      </xsd:choice>
+      <xsd:attribute name="code" type="xsd:NMTOKEN" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="DateFormat">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="long" type="xsd:string" use="required"/>
+      <xsd:attribute name="medium" type="xsd:string" use="required"/>
+      <xsd:attribute name="short" type="xsd:string" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="JapaneseImperialDateFormat">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="long" type="xsd:string" use="required"/>
+      <xsd:attribute name="medium" type="xsd:string" use="required"/>
+      <xsd:attribute name="short" type="xsd:string" use="required"/>
+      <xsd:attribute name="yearSymbol" type="xsd:string" use="optional"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:simpleType name="CalendarType">
+    <xsd:restriction base="xsd:NMTOKEN">
+      <xsd:enumeration value="Gregorian"/>
+      <xsd:enumeration value="JapaneseImperial"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:element name="GWLocale">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="SortCollation" minOccurs="0" maxOccurs="1"/>
+        <xsd:element ref="LinguisticSearchCollation" minOccurs="0" maxOccurs="1"/>
+        <xsd:element ref="CurrencyFormat" minOccurs="1" maxOccurs="1"/>
+        <xsd:element ref="CurrencyTypeOverride" minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element ref="DateFormat" minOccurs="1" maxOccurs="1"/>
+        <xsd:element ref="JapaneseImperialDateFormat" minOccurs="0" maxOccurs="1"/>
+        <xsd:element ref="NumberFormat" minOccurs="1" maxOccurs="1"/>
+        <xsd:element ref="TimeFormat" minOccurs="1" maxOccurs="1"/>
+      </xsd:choice>
+      <xsd:attribute name="code" type="xsd:string" use="required"/>
+      <xsd:attribute name="name" type="xsd:string" use="required"/>
+      <xsd:attribute name="typecode" type="xsd:string" use="required"/>
+      <xsd:attribute name="defaultCalendar" type="CalendarType" use="optional"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="Localization">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element ref="GWLocale" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:choice>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="NumberFormat">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="decimalSymbol" type="xsd:string" use="required"/>
+      <xsd:attribute name="negativeEntryPattern" type="xsd:string"/>
+      <xsd:attribute name="thousandsSymbol" type="xsd:string" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="TimeFormat">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:attribute name="long" type="xsd:string" use="required"/>
+      <xsd:attribute name="medium" type="xsd:string" use="required"/>
+      <xsd:attribute name="short" type="xsd:string" use="required"/>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

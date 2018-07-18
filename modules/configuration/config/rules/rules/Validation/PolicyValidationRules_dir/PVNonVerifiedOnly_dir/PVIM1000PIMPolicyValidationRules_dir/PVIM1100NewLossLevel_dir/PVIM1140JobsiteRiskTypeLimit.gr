@@ -1,0 +1,19 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVIM1000PIMPolicyValidationRules_dir.PVIM1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVIM1140 - Jobsite Risk Type Limit")
+internal class PVIM1140JobsiteRiskTypeLimit {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified && policy.Properties.Count > 1 &&
+exists(prop in policy.Properties where prop typeis JobsiteRUExt)
+/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var validationError = policy.validateJobsiteRiskType()
+  
+if(!validationError.isEmpty()){
+  policy.reject(ValidationLevel.TC_NEWLOSS, validationError, null, null) 
+}
+/*end00rule*/
+  }
+}

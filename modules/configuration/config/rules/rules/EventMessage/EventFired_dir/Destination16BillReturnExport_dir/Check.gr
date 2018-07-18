@@ -1,0 +1,32 @@
+package rules.EventMessage.EventFired_dir.Destination16BillReturnExport_dir
+
+@gw.rules.RuleName("Check")
+internal class Check {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Check &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.Claim.LoadCommandID) &&
+messageContext.Root.SourceSystemExt == SourceSystemExt.TC_MITCHELL_SA &&
+messageContext.EventName == "CheckStatusChanged" && 
+messageContext.Root.isFieldChanged("Status") &&
+messageContext.Root.Status == TransactionStatus.TC_ISSUED/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/uses util.gaic.billreturnexport.gaigbillreturnexport.enums.RecordTypeEnum
+try {
+
+  var check = messageContext.Root as Check
+  var util = util.gaic.billreturnexport.BillReturnExportUtil
+  var message = util.buildBillReturnExportMessage(check)
+
+  if(message != null && message != ""){
+      util.sendMessage(messageContext, message)
+  }
+   
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

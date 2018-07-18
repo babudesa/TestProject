@@ -1,0 +1,28 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1210 - Assign Check Number")
+internal class TPUXX1210AssignCheckNumber {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Moved this into the CheckSet rule set. Was outside for some reason and didn't need to be - kmboyd
+true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkSet = transactionSet as CheckSet; 
+var check = checkSet.PrimaryCheck; 
+var payment = check.Payments[0]; 
+
+if ((check != null && check.CheckNumber == null && !check.ManualCheck && !check.isRecurringCheck)){
+  // || (check.isRecurringCheck && (check.Status == "requesting" || check.Status == "notifying"))) { 
+  // Need to add a catch for recurring checks when it's not the first check in the set.. 
+  
+  // Generating Check Numbers for NationalBank (check number start with 3) and RBC (check number start with 1) -dpenmetsa
+  if(check.BankAccount == "national_city"){
+  check.CheckNumber = util.UniqueNumberGenerators.generateNationalBankCheckNumber() ;
+}
+  else if(check.BankAccount =="royal_bank_of_canada"){
+  check.CheckNumber = util.UniqueNumberGenerators.genetateRBCCheckNumber()
+  }
+}/*end00rule*/
+  }
+}

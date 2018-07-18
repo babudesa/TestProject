@@ -1,0 +1,26 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUEL1000ELDTransactionPreUpdateRules_dir.TPUEL1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUEL1130 - Initial Potential Development")
+internal class TPUEL1130InitialPotentialDevelopment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(!exists(act in transactionSet.Claim.Activities where act.ActivityPattern.Code == "initial_potential")
+&& !exists(note in transactionSet.Claim.Notes where note.Topic == "potdev"))/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 - Modified not to generate this activity 
+ if a note topic of "Potential Development" exists on the claim.
+*/
+try {
+  var fintotal = gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(transactionSet.Claim)
+
+  if (fintotal + transactionSet.Claim.PotentialDevelopmentExt >= 100000 || fintotal >= 100000 || transactionSet.Claim.PotentialDevelopmentExt >=100000){
+    var ap = util.custom_Ext.finders.findActivityPattern("initial_potential")
+    transactionSet.Claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

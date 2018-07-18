@@ -1,0 +1,36 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1001 - Check for Claims Made Coverages")
+internal class CPUXX1001CheckforClaimsMadeCoverages {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimsMadeUsedExt or exists(cov in claim.Policy.Coverages where cov.ClaimsMadeIndicatorExt)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+02/27/13 - anicely - This rule sets ClaimsMadePolicyExt to false if there are no exposures with coverages that
+have ClaimsMadeIndicatorExt = true.  If there are no exposures, and no coverage exists where ClaimsMadeIndicatorExt = true,
+ClaimsMadePolicExt = false.
+4/24/14 - anicely - Updates for new Claims Made qualifications.
+*/
+
+try{
+  
+  if(claim.Exposures.length > 0){ 
+     for(exp in claim.Exposures){
+       if(exp.Coverage != null and !exp.Coverage.ClaimsMadeIndicatorExt){
+         claim.ClaimsMadePolicyExt = false
+         break
+       }
+       if(exp.Coverage != null and exp.Coverage.ClaimsMadeIndicatorExt){
+         claim.ClaimsMadePolicyExt = true
+         break
+       }
+     }
+  }  
+  
+  }catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

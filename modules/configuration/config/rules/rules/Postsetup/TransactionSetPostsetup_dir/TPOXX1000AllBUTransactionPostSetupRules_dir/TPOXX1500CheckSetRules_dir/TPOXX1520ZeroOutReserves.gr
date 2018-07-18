@@ -1,0 +1,46 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir
+
+@gw.rules.RuleName("TPOXX1520 - Zero Out Reserves")
+internal class TPOXX1520ZeroOutReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.Transactions where
+    trans.Claim.isNativeORUpdatedExt() and
+    trans.Subtype== "payment" and
+    (trans as Payment).PaymentType == "final" and 
+    ((trans as Payment).Status == "submitting" or (trans as Payment).Status == "awaitingsubmission"or (trans as Payment).Status =="submitted"  )and
+    !(trans as Payment).VoidOffset and
+    !(trans as Payment).StopOffset and
+    !(trans as Payment).TransferOnset and
+    ((trans.Exposure!=null)?(trans.Exposure.openReserves() != 0): false))==true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/
+
+for(trans in transactionSet.Transactions){
+  if(trans.Subtype == "payment" and
+    (trans as Payment).PaymentType == "final" and 
+    ((trans as Payment).Status == "submitting" or (trans as Payment).Status == "awaitingsubmission"
+     or (trans as Payment).Status == "submitted" )and
+    !(trans as Payment).VoidOffset and 
+    !(trans as Payment).StopOffset and
+    !(trans as Payment).TransferOnset and
+    ((trans.Exposure!=null)?(trans.Exposure.openReserves() != 0): false))
+  {
+    if(trans.Exposure!=null){
+      trans.Exposure.zeroOutReserves()
+    } 
+          
+          
+          
+    
+  }
+}
+      
+    
+
+
+
+/*end00rule*/
+  }
+}

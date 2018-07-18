@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1AC0 - Clear OrigVerifiedPolContactsExt array on policy")
+internal class CPUXX1AC0ClearOrigVerifiedPolContactsExtarrayonpolicy {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+* Deletes the values stored in the OrigVerifiedPolContactsExt array.
+* Date: 8/20/2010
+* Defect: 3583
+* @author Zach Thomas
+*/
+claim.State != "draft" and claim.Policy.OrigVerifiedPolContactsExt.length > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+
+  for(origVerPolCont in claim.Policy.OrigVerifiedPolContactsExt){
+    claim.Policy.removeFromOrigVerifiedPolContactsExt( origVerPolCont );
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

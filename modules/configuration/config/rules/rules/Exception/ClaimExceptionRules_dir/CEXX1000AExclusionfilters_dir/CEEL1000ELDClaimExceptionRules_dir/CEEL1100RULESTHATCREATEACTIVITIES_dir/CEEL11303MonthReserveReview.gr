@@ -1,0 +1,48 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEL1000ELDClaimExceptionRules_dir.CEEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEL1130 - 3 Month Reserve Review")
+internal class CEEL11303MonthReserveReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="3_month_reserve")) && 
+(claim.Policy.PolicyType.Code == "APL" || claim.Policy.PolicyType.Code == "AUE" ||
+claim.Policy.PolicyType.Code == "AUN" || claim.Policy.PolicyType.Code == "CDO" ||
+claim.Policy.PolicyType.Code == "CEP" || claim.Policy.PolicyType.Code == "CMP" ||
+claim.Policy.PolicyType.Code == "CPE" || claim.Policy.PolicyType.Code == "DOL" ||
+claim.Policy.PolicyType.Code == "DPL" || claim.Policy.PolicyType.Code == "DTE" ||
+claim.Policy.PolicyType.Code == "EPL" || claim.Policy.PolicyType.Code == "EPP" ||
+claim.Policy.PolicyType.Code == "FDP" || claim.Policy.PolicyType.Code == "GPP" ||
+claim.Policy.PolicyType.Code == "ICL" || claim.Policy.PolicyType.Code == "MEP" ||
+claim.Policy.PolicyType.Code == "MPL" || claim.Policy.PolicyType.Code == "NMP" ||
+claim.Policy.PolicyType.Code == "NPL" || claim.Policy.PolicyType.Code == "NSP" ||
+claim.Policy.PolicyType.Code == "PEP" || claim.Policy.PolicyType.Code == "SCL" ||
+claim.Policy.PolicyType.Code == "THP" || claim.Policy.PolicyType.Code == "DML")
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+Defect 6713 - jjesudhasan - 5/15/14 - Modified to generate the activity 75 calendar 
+days (rather than 80 calender days) and Start the 75 day count over when either
+there  is a "Reserve" Note topic added in addition to when the reserve amounts
+have changed. 
+*/
+
+var latestUpdate:DateTime;
+latestUpdate = claim.getLatestDate()
+
+try{
+  
+ 
+   if (gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(latestUpdate, 75)){
+    //create the activity
+    var res = gw.api.util.StringUtil.formatNumber(gw.api.financials.FinancialsCalculationUtil.getOpenReserves().getAmount(claim), "$#,##0.00")
+    var ap = util.custom_Ext.finders.findActivityPattern( "3_month_reserve" )
+    claim.createActivity(null, ap, null,"Current reserves are " + res + ", are reserves appropriate?",null, null, null,null)
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(claim, actions.getRule().DisplayName, e, "")
+}/*end00rule*/
+  }
+}

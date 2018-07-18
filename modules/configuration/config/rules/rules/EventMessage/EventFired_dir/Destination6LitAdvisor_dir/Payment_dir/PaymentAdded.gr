@@ -1,0 +1,15 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Payment_dir
+
+@gw.rules.RuleName("PaymentAdded")
+internal class PaymentAdded {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "PaymentAdded"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var payment = messageContext.Root as Payment;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==payment.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendLossPaymentChanges( messageContext, payment );/*end00rule*/
+  }
+}

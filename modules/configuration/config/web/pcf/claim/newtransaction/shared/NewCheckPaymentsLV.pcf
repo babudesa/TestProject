@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- Cost Category and Comments not available in 4.0 -->
+  <ListViewPanel
+    id="NewCheckPaymentsLV">
+    <Require
+      name="PaymentList"
+      type="Payment[]"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <RowIterator
+      editable="false"
+      elementName="Payment"
+      toCreateAndAdd="Wizard.addAdditionalPayment()"
+      toRemove="if (Payment.hasDeductibleLineItem()) Payment.unlinkDeductible(); Wizard.deletePayment(Payment)"
+      value="PaymentList">
+      <Row>
+        <Cell
+          id="Exposure"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.Exposure"
+          value="Payment.Exposure"/>
+        <RangeCell
+          id="Coverage"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.Coverage"
+          optionLabel="Payment.Exposure.Coverage.covTypeDisplayName()"
+          value="Payment.Exposure.PrimaryCoverage"
+          valueRange="getCoverages(Payment.Exposure.Coverage)"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.CostType"
+          value="Payment.CostType"/>
+        <Cell
+          id="CostCategory"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.CostCategory"
+          value="Payment.CostCategory"/>
+        <Cell
+          footerSumValue="Payment.Amount"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.Amount"
+          value="Payment.Amount"/>
+        <Cell
+          id="PaymentType"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.PaymentType"
+          value="Payment.PaymentType"/>
+        <!-- <Cell
+          id="Comments"
+          label="displaykey.LV.Financials.NewCheckPayments.Payments.Comments"
+          value="Payment.Comments"/> -->
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getCoverages(cov:Coverage):List{
+    
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+  
+}]]></Code>
+  </ListViewPanel>
+</PCF>

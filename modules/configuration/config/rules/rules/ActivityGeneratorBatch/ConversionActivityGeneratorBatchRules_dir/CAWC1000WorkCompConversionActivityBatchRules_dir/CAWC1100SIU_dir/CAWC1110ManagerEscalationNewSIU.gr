@@ -1,0 +1,38 @@
+package rules.ActivityGeneratorBatch.ConversionActivityGeneratorBatchRules_dir.CAWC1000WorkCompConversionActivityBatchRules_dir.CAWC1100SIU_dir
+
+@gw.rules.RuleName("CAWC1110 - Manager Escalation New SIU")
+internal class CAWC1110ManagerEscalationNewSIU {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for non-converted claims. 
+ */
+
+exists(act in claim.Activities 
+          where act.ActivityPattern.Code == "new_siu_referral") 
+&& !exists(act in claim.Activities
+          where act.ActivityPattern.Code == "review_new_siu_incomplete")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var currentDate = gw.api.util.DateUtil.currentDate().trimToMidnight()
+    
+    for(act in claim.Activities.where(\ a -> a.ActivityPattern.Code == "new_siu_referral" 
+    && a.Status == typekey.ActivityStatus.TC_OPEN 
+    && gw.api.util.DateUtil.daysBetween(a.UpdateTime, currentDate) >= ScriptParameters.Activity_SIUManagerEscalation)){
+      if (!exists(act in claim.Activities          
+          where act.ActivityPattern.Code == "review_new_siu_incomplete")){
+        var ap = util.custom_Ext.finders.findActivityPattern("review_new_siu_incomplete")
+        var newAct = claim.createActivity(null, ap, ap.Subject, ap.Description, ap.Priority, ap.Mandatory, null, null)
+        //set custom target date  
+        newAct.TargetDate = currentDate
+        newAct.AssignedUser = act.AssignedGroup.Supervisor
+        break
+      }
+    }
+} catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

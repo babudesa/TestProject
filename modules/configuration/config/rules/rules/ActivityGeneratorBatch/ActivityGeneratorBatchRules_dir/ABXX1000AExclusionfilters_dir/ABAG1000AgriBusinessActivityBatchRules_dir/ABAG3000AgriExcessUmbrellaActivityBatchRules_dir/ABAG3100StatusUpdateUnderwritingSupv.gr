@@ -1,0 +1,27 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir.ABAG3000AgriExcessUmbrellaActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG3100 - Status Update Underwriting Supv")
+internal class ABAG3100StatusUpdateUnderwritingSupv {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// if the 'generate a status update to underwriting' activity has not been completed within 7 days, 
+// this activity will be generated for the claim owner's supervisor.
+!claim.Activities.IsEmpty &&
+exists(act in claim.Activities where act.ActivityPattern.Code == "status_update_underwriting" 
+&& act.Status != "complete"
+&& gw.api.util.DateUtil.daysBetween(act.CreateTime.trimToMidnight(), gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 
+  ScriptParameters.Activity_AgriExcessStatusUpdateUnderwriting)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern("status_update_supv")
+
+for (act in claim.Activities){
+  if (act.ActivityPattern.Code == "status_update_underwriting" && act.Status != "complete"
+  && (gw.api.util.DateUtil.daysBetween(act.CreateTime.trimToMidnight(), gw.api.util.DateUtil.currentDate().trimToMidnight()) >= 
+  ScriptParameters.Activity_AgriExcessStatusUpdateUnderwriting)){
+    claim.createActivityFromPattern(act.Exposure, ap)
+  }
+}/*end00rule*/
+  }
+}

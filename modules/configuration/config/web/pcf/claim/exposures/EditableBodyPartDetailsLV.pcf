@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- Embedded LV for details of injured body part   This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    id="EditableBodyPartDetailsLV">
+    <Require
+      name="Incident"
+      type="InjuryIncident"/>
+    <Require
+      name="includeCompensabilityFields"
+      type="Boolean"/>
+    <RowIterator
+      autoAdd="Incident.BodyParts.IsEmpty and !Incident.Claim.IncidentReport"
+      editable="true"
+      elementName="BodyPartDetails"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="0"
+      toCreateAndAdd="Incident.newBodyPart()"
+      toRemove="Incident.removeFromBodyParts(BodyPartDetails)"
+      value="Incident.BodyParts">
+      <ToolbarFlag
+        condition="BodyPartDetails.Ordering == null || (BodyPartDetails.Ordering as Number)  &gt; ((Incident as snapshot.v600.InjuryIncident).FirstBodyPart.Ordering as Number)"
+        name="NotFirstBP"/>
+      <Row>
+        <Cell
+          id="Ordering"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.Ordering"
+          sortOrder="1"
+          value="BodyPartDetails.Ordering"
+          visible="false"/>
+        <Cell
+          editable="true"
+          id="PrimaryBodyPart"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.PrimaryBodyPart"
+          required="!Incident.Claim.IncidentReport"
+          value="BodyPartDetails.PrimaryBodyPart"/>
+        <TypeKeyCell
+          editable="true"
+          id="DetailedBodyPart"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.DetailedBodyPart"
+          required="!Incident.Claim.IncidentReport"
+          value="BodyPartDetails.DetailedBodyPart"
+          valueWidth="200"/>
+        <Cell
+          editable="true"
+          id="SideOfBody"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.SideOfBody"
+          required="false"
+          value="BodyPartDetails.SideOfBodyExt"/>
+        <Cell
+          editable="true"
+          id="CompensabilityDecision"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityDecision"
+          required="false"
+          value="BodyPartDetails.CompensabilityExt"
+          visible="includeCompensabilityFields"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="CompensabilityDecisionDate"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityDecisionDate"
+          required="false"
+          value="BodyPartDetails.CompensabilityDecisionDate"
+          visible="includeCompensabilityFields"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="PriorInjury"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.PriorInjury"
+          value="BodyPartDetails.PriorInjuryExt"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="PriorInjuryDate"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.PriorInjuryDate"
+          requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+          value="BodyPartDetails.PriorInjuryDateExt"
+          wrapLabel="true"/>
+        <RadioButtonCell
+          action="setPrimary(BodyPartDetails)"
+          editable="true"
+          id="Primary"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.Primary"
+          radioButtonGroup="BodyPartDetails"
+          value="BodyPartDetails.PrimaryExt"
+          wrapLabel="true"/>
+        <!-- <Cell
+          editable="true"
+          enableSort="false"
+          id="CompensabilityComments"
+          label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityComments"
+          required="false"
+          value="BodyPartDetails.CompensabilityComments"
+          visible="includeCompensabilityFields"
+          wrapLabel="true"/> -->
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function setPrimary(part : BodyPartDetails) : BodyPartDetails[]{
+  part.PrimaryExt = true
+  Incident.setFirstBodyPart(part)
+  for(each in Incident.BodyParts){
+    if(each != part){
+      each.PrimaryExt = false 
+    }
+  }
+  return Incident.BodyParts
+}]]></Code>
+  </ListViewPanel>
+</PCF>

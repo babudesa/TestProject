@@ -1,0 +1,26 @@
+package rules.Assignment.DefaultGroupActivityAssignmentRules_dir
+
+@gw.rules.RuleName("DGA07000 - Assign activity to named user")
+internal class DGA07000Assignactivitytonameduser {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var result = libraries.Activityassignment.getUserRoleGroupTypeBasedonActivityPattern(Activity.ActivityPattern.Code);
+var userrole = result[0];
+for (assign in Activity.Claim.RoleAssignments)
+{
+	if (assign.Role == userrole)
+	{
+	var currentuser = assign.AssignedUser
+	if (Activity.CurrentAssignment.assign(assign.AssignedGroup, currentuser))
+	{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Activity(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(Activity.AssignedUser))
+	actions.exit()
+	}
+	}
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,46 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir.MPUXX1400RulesthatcreateActivities_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("MPUXX1410 - Answer is Due for Legal Action")
+internal class MPUXX1410AnswerisDueforLegalAction {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.AnswerDueDate != null &&
+//matter.AnswerFiledDate == null &&
+matter.StatusExt != MatterStatus.TC_CLOSED
+and !exists(act in matter.Claim.Activities 
+    where act.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "answer_due" )
+    and act.Subject.contains(matter.DisplayName)
+    and act.Status == "open")
+
+/*
+* This rule generates the answer is due for legal action activity
+* if the user has filled in a value for answer filed date, but not
+* the answer due date
+*//*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  var pattern = util.custom_Ext.finders.findActivityPattern( "answer_due" )
+  var today = gw.api.util.DateUtil.currentDate()
+
+
+    //Create new activity from existing pattern and add the matter name to the pattern
+    //subject and description  
+    var newAct = matter.Claim.createActivity(null,
+                 pattern, pattern.Subject + " (" + matter.DisplayName +")",
+                 pattern.Description + " (" + matter.DisplayName +")", pattern.Priority, pattern.Mandatory,
+                 matter.AnswerDueDate.addDays(-3) , null)
+    
+    //associate matter
+    newAct.Matter = matter
+    //assign user
+    newAct.AssignedUser = matter.Claim.AssignedUser
+
+}catch(e) {
+util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    desc=""
+    id="NewExpCvgDetailsPanelSet"
+    mode="PolicyCoverage">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Coverages"
+      type="Coverage[]"/>
+    <ListDetailPanel
+      selectionName="selectedCoverage"
+      selectionType="Coverage">
+      <PanelRef
+        def="PolicyCoverageSelectionLV(filterCoveragesWC())"
+        mode="Claim.LossType"/>
+      <CardViewPanel>
+        <Card
+          id="NewExpCvGDetailsCard"
+          title="displaykey.Web.newexposure.menu.gaic.custom.featureselection">
+          <PanelRef
+            def="ExposureSelectionDV(Claim, selectedCoverage)"/>
+        </Card>
+      </CardViewPanel>
+    </ListDetailPanel>
+    <Code><![CDATA[function filterCoveragesWC(): Coverage[]{
+  if (util.WCHelper.isWCorELLossType(Claim)){
+    var list = new java.util.ArrayList<Coverage>()
+    for (cov in Coverages){
+      if (cov == Claim.CoverageSelectedExt){
+        list.add(cov)
+      }
+    }
+    return list as Coverage[]
+  }
+  else {
+    return Coverages
+  }
+}]]></Code>
+  </PanelSet>
+</PCF>

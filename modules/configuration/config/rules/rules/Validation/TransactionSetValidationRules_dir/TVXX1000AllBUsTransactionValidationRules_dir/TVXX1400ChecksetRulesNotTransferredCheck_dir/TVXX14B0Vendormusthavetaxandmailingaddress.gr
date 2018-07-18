@@ -1,0 +1,53 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14B0 - Vendor must have tax and mailing address")
+internal class TVXX14B0Vendormusthavetaxandmailingaddress {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet" and 
+transactionSet.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///Modified by Rhathaway: 
+//Defect 424: djohnson : Must have a mailing and Tax address.
+
+var check = (transactionSet as CheckSet).PrimaryCheck;
+if(check.Status!="voided" and check.Status!="pendingvoid" and
+   check.Status!="transferred" and check.Status!="pendingtransfer" and
+   check.Status!="stopped" and check.Status!="pendingstop" and
+   check.Status!="issued" and check.Status!="cleared"){
+  if(check.New or check.Changed){
+    for(trans in transactionSet.Transactions){
+      var payment = trans as Payment
+      for (payee in payment.Check.Payees)
+      {
+   
+        if (payee.PayeeType == "vendor" and 
+          !exists(addy in payee.Payee.AllAddresses where addy.AddressType =="mailing") and
+          !exists(addy in payee.Payee.AllAddresses where addy.AddressType =="Tax")){
+           
+          transactionSet.reject( "payment", "Cannot issue a payment to a vendor without a mailing and tax address.", null, null );      
+        }
+    
+        if (payee.PayeeType == "vendor" and 
+          exists(addy in payee.Payee.AllAddresses where addy.AddressType =="mailing") and
+         !exists(addy in payee.Payee.AllAddresses where addy.AddressType =="Tax")){
+           
+          transactionSet.reject("payment", "Cannot issue a payment to a vendor without a tax address.", null, null);      
+        }
+    
+        /*
+        if (payee.PayeeType == "vendor" and 
+          (!exists(addy in payee.Payee.AllAddresses where addy.AddressType =="mailing") or
+          !exists(addy in payee.Payee.AllAddresses where addy.AddressType =="Tax"))){
+           
+          TransactionSet.reject( "payment", "Cannot issue a payment to a vendor without a mailing and tax address.", null, null );      
+        }
+        */
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

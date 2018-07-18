@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1A00 - Add Agency to Parties Involved")
+internal class CPUXX1A00AddAgencytoPartiesInvolved {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.ex_Agency != null and
+!claim.DisplayName.startsWith("T")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*Add Agency to parties involved. 
+  Sprint/Maintenance Release: EM 10 - Defect 1276
+  Author: Zach Thomas
+  Updated: 07/15/08
+*/
+try{
+  if(!exists(contact in claim.Contacts where contact.Contact == claim.Policy.ex_Agency)){
+    claim.Policy.addRole( "Agency", claim.Policy.ex_Agency )
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

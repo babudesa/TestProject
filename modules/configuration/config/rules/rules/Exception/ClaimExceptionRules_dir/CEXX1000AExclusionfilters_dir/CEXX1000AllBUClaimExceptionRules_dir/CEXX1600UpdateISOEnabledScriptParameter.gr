@@ -1,0 +1,27 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir
+
+@gw.rules.RuleName("CEXX1600 - Update ISOEnabled Script Parameter")
+internal class CEXX1600UpdateISOEnabledScriptParameter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Updated this rule because the old rule did not work.
+//Updated sprzygocki 10/29/10 - Now using the ISO reference tables
+claim.ISOEnabled == null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(claim.LossType!=null){
+    if(util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )!=null){
+      claim.ISOEnabled = util.custom_Ext.finders.getISOEnabledStatus( claim.LossType )
+    } else {
+      claim.ISOEnabled = false
+    }
+  } else {
+    claim.ISOEnabled = false
+  }
+} 
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().getDisplayName(), e, null )  
+}/*end00rule*/
+  }
+}

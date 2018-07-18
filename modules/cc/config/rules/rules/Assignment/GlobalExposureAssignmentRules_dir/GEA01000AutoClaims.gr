@@ -1,0 +1,18 @@
+package rules.Assignment.GlobalExposureAssignmentRules_dir
+
+@gw.rules.RuleName("GEA01000 - Auto Claims")
+internal class GEA01000AutoClaims {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.Claim.LossType == "auto"
+and exists (exp in Exposure.Claim.Exposures 
+  where (exp.ExposureType <> "BodilyInjuryDamage" or exp.LossParty == "insured"))
+  
+/* If all we had were 3rd-party injury exposures, this claim was already assigned to 
+   a liability adjuster, and all exposures should go to that adjuster
+*//*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// For auto claims, injury exposures should go to a liability adjuster/*end00rule*/
+  }
+}

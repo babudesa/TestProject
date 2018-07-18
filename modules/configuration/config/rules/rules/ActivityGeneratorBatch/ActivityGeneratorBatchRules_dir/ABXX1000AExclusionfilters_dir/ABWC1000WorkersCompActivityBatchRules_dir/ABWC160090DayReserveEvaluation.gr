@@ -1,0 +1,28 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir
+
+@gw.rules.RuleName("ABWC1600 - 90 Day Reserve Evaluation")
+internal class ABWC160090DayReserveEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType == typekey.LossType.TC_TRUCKINGWC || claim.LossType == typekey.LossType.TC_TRUCKINGEL ||
+claim.LossType == typekey.LossType.TC_ALTMARKETSWC || claim.LossType == typekey.LossType.TC_ALTMARKETSEL)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern( "reserve_evaluation" )
+try{
+  if(!exists(act in claim.Activities where act.ActivityPattern.Code=="reserve_evaluation")){
+    if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_WCReserveEvaluation )){
+      claim.createActivityFromPattern(null, ap)
+    }
+  }else{
+    var lastActivity = claim.Activities.sortBy(\ a -> a.CreateTime).lastWhere(\ a -> a.ActivityPattern.Code=="reserve_evaluation")
+    if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( lastActivity.AssignmentDate, ScriptParameters.Activity_WCReserveEvaluationRecurrence )){
+      claim.createActivityFromPattern(null, ap)
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

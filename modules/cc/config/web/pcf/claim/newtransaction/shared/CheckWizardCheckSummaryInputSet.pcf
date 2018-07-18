@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <InputSet
+    id="CheckWizardCheckSummaryInputSet">
+    <Require
+      name="Check"
+      type="Check"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <ListViewInput
+      boldLabel="true"
+      def="NewCheckGroupChecksLV(Check.Group)"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Group.Checks"
+      visible="Check.isGroupMember(false)">
+      <Toolbar/>
+    </ListViewInput>
+    <Input
+      boldLabel="true"
+      id="Check_PayTo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.PayTo"
+      value="Check.PayTo"
+      visible="!Check.isGroupMember(false) and Check.PaymentMethod == PaymentMethod.TC_CHECK"/>
+    <TextAreaInput
+      boldLabel="true"
+      id="PayTo_AccountName"
+      label="displaykey.Web.Financials.Check.BankData.BankAcctHolderName"
+      numRows="1"
+      value="Check.PayTo"
+      visible="Check.PaymentMethod == PaymentMethod.TC_EFT"/>
+    <Input
+      boldLabel="true"
+      id="Check_MailTo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.MailTo"
+      value="Check.MailToAddress"
+      visible="!Check.isGroupMember(false) and Check.PaymentMethod == PaymentMethod.TC_CHECK"/>
+    <Input
+      boldLabel="true"
+      formatType="currency"
+      id="Amount_Gross"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Amount.Gross"
+      value="(!Check.isGroupMember(false) ? Check.GrossAmountPair : Check.Group.GrossAmountPair)"/>
+    <Input
+      action="CheckWizard_PaymentDeductionsPagePopup.push(Check.Claim, Wizard, Check)"
+      available="Check.Deductions.Length != 0"
+      boldLabel="true"
+      formatType="currency"
+      id="Check_Deductions"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Deductions"
+      value="Check.DeductionsTotalPair"/>
+    <Input
+      boldLabel="true"
+      formatType="currency"
+      id="Amount_Net"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Amount.Net"
+      value="(!Check.isGroupMember(false) ? Check.NetAmountPair : Check.Group.NetAmountPair)"/>
+    <ClaimContactInput
+      boldLabel="true"
+      claim="Check.Claim"
+      id="Check_Claimant"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Claimant"
+      value="Check.Claimant"
+      valueRange="Check.Claim.relatedContacts"/>
+    <Input
+      boldLabel="true"
+      editable="true"
+      id="Check_DateOfService"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService"
+      value="Check.DateOfService"
+      visible="!Check.hasExposureWithServicePeriod()"/>
+    <Input
+      boldLabel="true"
+      editable="Check.Editable and !Check.CheckSet.Recurring"
+      id="ServicePeriod_Start"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.ServicePeriod.Start"
+      value="Check.ServicePdStart"
+      visible="Check.hasExposureWithServicePeriod()"/>
+    <Input
+      boldLabel="true"
+      editable="Check.Editable and !Check.CheckSet.Recurring"
+      id="ServicePeriod_End"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.ServicePeriod.End"
+      validationExpression="validateServicePeriod()"
+      value="Check.ServicePdEnd"
+      visible="Check.hasExposureWithServicePeriod()"/>
+    <Input
+      boldLabel="true"
+      id="Check_PrevServiceDate"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.PrevServiceDate"
+      value="Check.PrevPaidOrScheduledServicePeriod"
+      visible="Check.hasExposureWithServicePeriod()"/>
+    <Input
+      boldLabel="true"
+      editable="true"
+      id="Check_InvoiceNumber"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.InvoiceNumber"
+      value="Check.InvoiceNumber"/>
+    <Input
+      boldLabel="true"
+      editable="true"
+      id="Check_Memo"
+      label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.Memo"
+      value="Check.Memo"/>
+    <InputDivider/>
+    <ListViewInput
+      boldLabel="true"
+      def="TransactionSetDocumentsLV(Check.CheckSet)"
+      label="displaykey.NVV.Financials.NewPaymentInstructions.Check.Documents"
+      visible="perm.System.viewdocs">
+      <Toolbar/>
+    </ListViewInput>
+    <Code><![CDATA[function validateServicePeriod() : String {
+  var result : String = null
+  
+  if ((Check.ServicePdStart != null and Check.ServicePdEnd == null)
+      or (Check.ServicePdStart == null and Check.ServicePdEnd != null)) {
+    result = displaykey.Web.Financials.Check.ServicePeriodNotInSync
+  } else if (Check.ServicePdEnd != null and !Check.ServicePdEnd.after(Check.ServicePdStart)) {
+    result = displaykey.Web.Financials.Check.ServicePeriodRangeError
+  }
+  
+  return result
+}]]></Code>
+  </InputSet>
+</PCF>

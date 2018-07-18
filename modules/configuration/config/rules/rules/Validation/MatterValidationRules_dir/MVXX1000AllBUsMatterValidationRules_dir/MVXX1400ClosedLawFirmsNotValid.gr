@@ -1,0 +1,21 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir
+
+@gw.rules.RuleName("MVXX1400 - Closed Law Firms Not Valid")
+internal class MVXX1400ClosedLawFirmsNotValid {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (ae in matter.MatterAssignmentsExt where
+        ae.CounselLawFirmExt.CloseDateExt != null and ae.StatusExt != AssignmentStatusExt.TC_CLOSED) or
+exists (ae in matter.MatterAssignmentsExt*.AssignmentExposuresExt where
+        ae.OpposingCounselFirmExt.CloseDateExt != null)/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/for( lawFirm in matter.MatterAssignmentsExt*.CounselLawFirmExt.where(\ a -> a.CloseDateExt != null )){
+ matter.reject(null, null, "newloss", lawFirm.DisplayName + ": This Law Firm is closed.  Open a new Law Firm Assignment and select a valid Law Firm.")
+}
+
+for(opposingLawFirm in matter.MatterAssignmentsExt*.AssignmentExposuresExt.where(\ a -> a.OpposingCounselFirmExt.CloseDateExt != null)) {
+  matter.reject(null, null, "newloss", opposingLawFirm.DisplayName + ": This Law Firm is closed.  Open a new Law Firm Assignment and select a valid Law Firm.") 
+}/*end00rule*/
+  }
+}

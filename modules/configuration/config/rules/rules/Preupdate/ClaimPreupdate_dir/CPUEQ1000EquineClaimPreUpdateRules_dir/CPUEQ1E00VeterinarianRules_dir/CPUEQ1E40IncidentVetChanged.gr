@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1E00VeterinarianRules_dir
+
+@gw.rules.RuleName("CPUEQ1E40 - Incident Vet Changed")
+internal class CPUEQ1E40IncidentVetChanged {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(inc in claim.FixedPropertyIncidentsOnly where inc.OriginalVersion != null and 
+  inc.VeterinarianExt != (inc.OriginalVersion as FixedPropertyIncident).VeterinarianExt)==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var cont : ClaimContact
+for(inc in claim.FixedPropertyIncidentsOnly){
+  if(inc.OriginalVersion != null and inc.VeterinarianExt != (inc.OriginalVersion as FixedPropertyIncident).VeterinarianExt){
+    cont = claim.getClaimContact( (inc.OriginalVersion as FixedPropertyIncident).VeterinarianExt )
+    for(role in cont.Roles){
+      if((role.Role == "doctor" or role.Role == "other" or role.Role == "hospital") and role.getOwnerExt() == inc){
+        if(cont.Roles.length > 1){
+          cont.removeFromRoles( role )
+        }else{
+          role.Incident = null
+        }
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

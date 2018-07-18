@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableMoreNamedInsuredLV">
+    <Require
+      name="ClaimContactRoleList"
+      type="ClaimContactRole[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ClaimContactRoleOwner"
+      type="contact.ClaimContactRoleOwner"/>
+    <Require
+      name="role"
+      type="ContactRole"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimContactRole"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="4"
+      toCreateAndAdd="addMNIClaimContactRole()"
+      toRemove="ClaimContactRoleOwner.removeRole(ClaimContactRole)"
+      value="ClaimContactRoleList">
+      <Row
+        visible="ClaimContactRole.isMNIClaimContact()">
+        <ClaimContactCell
+          claim="ClaimContactRole.ClaimContact.Claim"
+          editable="true"
+          forceContactSubtype="ClaimContactRoleOwner.getContactType(role)"
+          id="Contact"
+          label="displaykey.LV.Policy.MoreNamedInsured.Contact"
+          newContactMenu="ClaimNewContactNoVendPickerMenuItemSet"
+          required="true"
+          searchLocation=""
+          sortBy="ClaimContactRole.Contact.Name"
+          sortOrder="1"
+          sortValueRange="false"
+          unique="true"
+          validationExpression="ClaimContactRole.Contact == null ? displaykey.LV.Policy.EditableMoreNamedInsured.Contact.ContactRequired : null"
+          value="ClaimContactRole.Contact"
+          valueRange="getMNIRelatedContacts()"/>
+        <Cell
+          id="MoreNamedInsuredDBA"
+          label="displaykey.LV.Policy.MoreNamedInsured.DBA"
+          value="(ClaimContactRole.CoveredPartyType == &quot;morenameinsureddba&quot;) ? &quot;*&quot; : null"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses java.util.ArrayList
+function addMNIClaimContactRole():ClaimContactRole{        
+        var CCR:ClaimContactRole = ClaimContactRoleOwner.addEmptyRole( role );
+        CCR.CoveredPartyType = "addnlnameinsured";
+        return CCR;  
+      }
+      function getMNIRelatedContacts():Contact[]{
+        var mniRelatedContacts:ArrayList = new ArrayList();
+        
+        for(cont in Claim.getRelatedContacts( ClaimContactRoleOwner.getContactType( role ) )) {
+          if(cont != Claim.Policy.insured and cont != Claim.Policy.doingbusinessas){
+            mniRelatedContacts.add( cont );
+          }
+        }
+        return (mniRelatedContacts.toArray() as Contact[]);
+      }]]></Code>
+  </ListViewPanel>
+</PCF>

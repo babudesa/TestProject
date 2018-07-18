@@ -1,0 +1,24 @@
+package rules.EventMessage.EventFired_dir.Destination11LDM_dir
+
+@gw.rules.RuleName("Claim changed")
+internal class Claimchanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Claim &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.LoadCommandID) &&
+messageContext.EventName == "ClaimChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var claim = messageContext.Root as Claim
+    var f = util.gaic.LDM.LDMFunctionsFactory.getClaimFunctions()
+
+    f.sendClaimChanges(messageContext, claim)
+
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}
+
+/*end00rule*/
+  }
+}

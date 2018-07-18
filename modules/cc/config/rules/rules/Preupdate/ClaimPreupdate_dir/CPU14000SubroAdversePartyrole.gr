@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleName("CPU14000 - Subro Adverse Party role")
+internal class CPU14000SubroAdversePartyrole {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.SubrogationSummary != null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for (thisparty in Claim.SubrogationSummary.SubroAdverseParties)
+   { if (thisparty.getOriginalValue( "AdverseParty" ) as Key  <> thisparty.AdverseParty as Key )
+     { for (thiscontact in Claim.Contacts) 
+       { if (thisparty.AdverseParty as Key == thiscontact.Contact as Key )
+           { if (not exists (thisrole in thiscontact.Roles where thisrole.Role == "adverseparty"))
+             {  var ccc = new ClaimContactRole(thiscontact) ; 
+                ccc.Role = "adverseparty";
+                ccc.Active = true;
+                thiscontact.addToRoles( ccc );
+             }
+           }
+       
+        } // for this contact
+     }  // if (this party
+   }  // for (thisparty/*end00rule*/
+  }
+}

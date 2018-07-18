@@ -1,0 +1,36 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11J0 - Reject policy if no matching feature types")
+internal class PVXX11J0Rejectpolicyifnomatchingfeaturetypes {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//* Rpampush - 7/30/09
+*  Moved from PVAG1130 - zthomas - 9/15/11
+*  This rule checks to make sure on a policy select that every exposure
+*  has at least one coverage that shares the same exposure type as the 
+*  exposures already on the claim.  This is to avoid unworkable claims
+*  being created as a result of a policy refresh or select.
+*/
+policy.Claim.Exposures.length > 0 and policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var foundMatch:boolean = false;
+for(exp in policy.Claim.Exposures){
+  if(!(exp.Closed and exp.ClosedOutcome == "invalidfeature")){
+    for(cvg in policy.AllCoverages){
+      for(cvgSubtype in CoverageSubtype.getTypeKeys(false)){
+        if(cvgSubtype.hasCategory( cvg.Type ) and exp.ExposureType.hasCategory( cvgSubtype )){
+          foundMatch = true;    
+        }
+      }
+    }
+    if(!foundMatch){
+      policy.Claim.setPolicyRefreshFailed()
+      policy.reject( "newloss", displaykey.Rules.Validation.Policy.AgriBusiness.Exposure.NoMatchingFound , null, null )  
+    }
+    foundMatch = false;
+  }
+  
+}/*end00rule*/
+  }
+}

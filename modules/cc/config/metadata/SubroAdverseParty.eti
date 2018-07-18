@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="A subrogations Adverse Parties"
+  entity="SubroAdverseParty"
+  exportable="true"
+  javaClass="com.guidewire.cc.domain.claim.SubroAdverseParty"
+  platform="false"
+  table="subroadverseparty"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <column
+    desc="Contact's probable percentage of fault."
+    name="Fault"
+    type="percentagedec"/>
+  <column
+    desc="expected recovery percentage from this Contact"
+    name="expectedrecovery"
+    type="percentagedec"/>
+  <typekey
+    desc="Classification of the Adverse Party"
+    name="Classification"
+    typelist="Subroclassification"/>
+  <typekey
+    default="nongov"
+    desc="For Subrogation - Government entity involved as an Adverse Party"
+    name="SubroGovernmentInvolved"
+    typelist="SubroGovernmentInvolved"/>
+  <typekey
+    desc="Strategy for the Adverse Party"
+    name="Strategy"
+    typelist="SubroStrategy">
+    <keyfilters>
+      <keyfilter
+        name="Classification"/>
+    </keyfilters>
+  </typekey>
+  <foreignkey
+    columnName="SubrogationSummaryID"
+    desc="Related Subrogation Summary"
+    exportable="false"
+    fkentity="SubrogationSummary"
+    name="SubrogationSummary"
+    nullok="false"/>
+  <foreignkey
+    columnName="AdversePartyID"
+    deletefk="true"
+    desc="The Adverse Party related to the Subrogation"
+    fkentity="Contact"
+    name="AdverseParty"
+    nullok="false"/>
+  <typekey
+    desc="Relationship of the main contact to the Adverse Party"
+    name="MainContactType"
+    typefilter="adversemain"
+    typelist="PersonRelationType"/>
+  <!-- Scheduled Recovery Payment -->
+  <column
+    default="false"
+    desc="If the adverse party has agreed to make payments aka Subro Recovery"
+    name="ScheduleRecovery"
+    type="bit"/>
+  <typekey
+    desc="Type of scheduled recovery such as Promissory Note"
+    name="ScheduleRecoveryType"
+    typelist="SubroSchedRecoveryType"/>
+  <column
+    desc="Date the prommisory note was sent"
+    name="NoteSent"
+    type="datetime"/>
+  <column
+    desc="Date the prommisory note was received"
+    name="NoteReceived"
+    type="datetime"/>
+  <array
+    arrayentity="SubroPaymentSchedule"
+    desc="A list of applicable PaymentPlans for this claim."
+    name="ScheduledPayments"
+    triggersValidation="true"/>
+  <index
+    desc="Enforce uniqueness - a particular adverse party should only appear once on a subrogation summary"
+    name="subroadvptyu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="SubrogationSummaryID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="AdversePartyID"/>
+  </index>
+</entity>

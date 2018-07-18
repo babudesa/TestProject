@@ -1,0 +1,355 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    editable="true"
+    id="NewTripIncidentScreen">
+    <Require
+      name="aTripIncident"
+      type="TripIncident"/>
+    <Require
+      name="checkedTripSegments"
+      type="TripSegment[]"/>
+    <TitleBar
+      icon="aTripIncident.HeaderIcon"/>
+    <Toolbar>
+      <EditButtons
+        pickValue="aTripIncident"/>
+    </Toolbar>
+    <PanelRow
+      editable="true">
+      <PanelColumn>
+        <DetailViewPanel
+          editable="true"
+          id="TripIncidentDV">
+          <InputColumn>
+            <Label
+              label="displaykey.Web.TripIncidentDV.Trip"/>
+            <RangeInput
+              editable="true"
+              id="TripRU"
+              label="displaykey.Web.TripIncidentDV.Trip.Picker"
+              postOnChange="true"
+              required="true"
+              value="aTripIncident.TripRU"
+              valueRange="aTripIncident.Claim.Policy.getRiskUnits( TripRU )"
+              valueWidth="200"/>
+            <TypeKeyInput
+              id="GeographicalRegion"
+              label="displaykey.Web.ClaimPolicy.Trips.GeographicalRegion"
+              value="aTripIncident.TripRU.GeographicalRegion"/>
+            <DateInput
+              id="StartDate"
+              label="displaykey.Web.ClaimPolicy.Trips.StartDate"
+              value="aTripIncident.TripRU.StartDate"/>
+            <DateInput
+              id="EndDate"
+              label="displaykey.Web.ClaimPolicy.Trips.EndDate"
+              value="aTripIncident.TripRU.EndDate"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <PanelColumn>
+        <DetailViewPanel>
+          <InputColumn>
+            <TextAreaInput
+              boldLabel="true"
+              editable="true"
+              id="Description"
+              label="displaykey.Web.TripIncidentDV.Description"
+              labelAbove="true"
+              numRows="6"
+              required="true"
+              value="aTripIncident.Description"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+      <PanelColumn>
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="displaykey.Web.TripIncidentDV.TripCancellationFinancialImpact"/>
+            <Input
+              formatType="currency"
+              id="SegmentTotalIncurred"
+              label="displaykey.Web.TripIncidentDV.TransportationImpact"
+              value="aTripIncident.getSegmentsFinancialImpact(AssessmentAction.TC_APPROVE)"/>
+            <Input
+              formatType="currency"
+              id="TripTotalIncurred"
+              label="displaykey.Web.TripIncidentDV.AccommodationImpact"
+              value="aTripIncident.getAccommodationsFinancialImpact(AssessmentAction.TC_APPROVE)"/>
+            <InputDivider/>
+            <Input
+              formatType="currency"
+              id="AccommodationTotalIncurred"
+              label="displaykey.Web.TripIncidentDV.TotalImpact"
+              value="aTripIncident.getTotalFinancialImpact(AssessmentAction.TC_APPROVE)"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+    </PanelRow>
+    <PanelDivider
+      visible="aTripIncident.TripRU != null"/>
+    <CardViewPanel>
+      <Card
+        id="TripIncident_TripCard"
+        title="displaykey.Web.TripIncidentScreen.TripCard"
+        visible="aTripIncident.TripRU != null">
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="displaykey.Web.TripIncidentScreen.TripCard.OriginalTransport"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <ListDetailPanel
+          selectionName="eachTripSegment"
+          selectionType="TripSegment">
+          <PanelRef
+            def="TripIncidentSegmentsLV(aTripIncident)"
+            editable="true"
+            id="TripIncidentAffectedSegmentLV">
+            <Toolbar>
+              <IteratorButtons
+                addLabel="displaykey.Web.TripIncidentScreen.TripCard.Add"
+                addVisible="true"
+                removeConfirmMessage="displaykey.Web.TripIncidentScreen.TripCard.Remove.Confirm"
+                removeLabel="displaykey.Web.TripIncidentScreen.TripCard.Remove"
+                removeVisible="true"/>
+              <ToolbarDivider/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripSegment.Assessment = &quot;approve&quot;"
+                flags="no approve_trav, any row_trav"
+                hideIfReadOnly="true"
+                id="SegmentApprovalButton"
+                iterator="TripIncidentSegmentsLV"
+                label="displaykey.Web.TripIncidentScreen.TripCard.Approve"
+                shortcut="A"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripSegment.Assessment = &quot;Review&quot;"
+                flags="no review_trav, any row_trav"
+                hideIfReadOnly="true"
+                id="SegmentReviewButton"
+                iterator="TripIncidentSegmentsLV"
+                label="displaykey.Web.TripIncidentScreen.TripCard.Review"
+                shortcut="R"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripSegment.Assessment = &quot;Deny&quot;"
+                flags="no deny_trav, any row_trav"
+                hideIfReadOnly="true"
+                id="SegmentDenyButton"
+                iterator="TripIncidentSegmentsLV"
+                label="displaykey.Web.TripIncidentScreen.TripCard.Deny"
+                shortcut="N"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripSegment.Assessment = null"
+                flags=" no clear_trav, any row_trav"
+                hideIfReadOnly="true"
+                id="SegmentClearButton"
+                iterator="TripIncidentSegmentsLV"
+                label="displaykey.Web.TripIncidentScreen.TripCard.Clear"
+                shortcut="L"/>
+            </Toolbar>
+          </PanelRef>
+          <CardViewPanel
+            hideTabIfSingle="true">
+            <Card
+              id="AdditionalTripSegmentCard"
+              title="&quot;&quot;"
+              visible="eachTripSegment.AddnlTripSegments.length &gt; 0">
+              <PanelRef>
+                <DetailViewPanel>
+                  <Variable
+                    initialValue="eachTripSegment.AddnlTripSegments.length == 1 ? eachTripSegment.AddnlTripSegments.first() : null"
+                    name="firstAddnlTripSegment"
+                    recalculateOnRefresh="true"
+                    type="AddnlTripSegment"/>
+                  <InputColumn>
+                    <ListViewInput
+                      boldLabel="true"
+                      def="AdditionalTripSegmentLV(eachTripSegment)"
+                      editable="true"
+                      id="AdditionalTripSegmentLV_Panel"
+                      label="displaykey.Web.TripIncidentScreen.TripCard.AddnlTripSegments"
+                      labelAbove="true"
+                      visible="firstAddnlTripSegment == null ">
+                      <Toolbar>
+                        <IteratorButtons/>
+                        <ToolbarDivider/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripSegment.Assessment = &quot;approve&quot;"
+                          flags="no approve_add_trav, any row_add_trav"
+                          hideIfReadOnly="true"
+                          id="SegmentApprovalButton"
+                          iterator="AdditionalTripSegmentLV"
+                          label="displaykey.Web.TripIncidentScreen.TripCard.Approve"
+                          shortcut="A"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripSegment.Assessment = &quot;Review&quot;"
+                          flags="no review_add_trav, any row_add_trav"
+                          hideIfReadOnly="true"
+                          id="SegmentReviewButton"
+                          iterator="AdditionalTripSegmentLV"
+                          label="displaykey.Web.TripIncidentScreen.TripCard.Review"
+                          shortcut="R"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripSegment.Assessment = &quot;Deny&quot;"
+                          flags="no deny_add_trav, any row_add_trav"
+                          hideIfReadOnly="true"
+                          id="SegmentDenyButton"
+                          iterator="AdditionalTripSegmentLV"
+                          label="displaykey.Web.TripIncidentScreen.TripCard.Deny"
+                          shortcut="N"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripSegment.Assessment = null"
+                          flags="no clear_add_trav, any row_add_trav"
+                          hideIfReadOnly="true"
+                          id="SegmentClearButton"
+                          iterator="AdditionalTripSegmentLV"
+                          label="displaykey.Web.TripIncidentScreen.TripCard.Clear"
+                          shortcut="L"/>
+                      </Toolbar>
+                    </ListViewInput>
+                    <InputSetRef
+                      def="AdditionalTripSegmentInputSet(firstAddnlTripSegment, aTripIncident)"
+                      visible="firstAddnlTripSegment != null"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </PanelRef>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="TripIncident_AccommodationCard"
+        title="displaykey.Web.TripIncidentScreen.AccommodationCard"
+        visible="aTripIncident.TripRU != null">
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="displaykey.Web.TripIncidentScreen.AccommodationCard.OriginalAccommodation"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <ListDetailPanel
+          selectionName="eachTripAccommodation"
+          selectionType="TripAccommodation">
+          <PanelRef
+            def="TripIncidentAccommodationsLV(aTripIncident)"
+            editable="true"
+            id="TripIncidentAffectedAccommodationLV">
+            <Toolbar>
+              <IteratorButtons
+                addLabel="displaykey.Web.TripIncidentScreen.AccommodationCard.Add"
+                addVisible="true"
+                removeConfirmMessage="displaykey.Web.TripIncidentScreen.AccommodationCard.Remove.Confirm"
+                removeLabel="displaykey.Web.TripIncidentScreen.AccommodationCard.Remove"
+                removeVisible="true"/>
+              <ToolbarDivider/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripAccommodation.Assessment = &quot;approve&quot;"
+                flags="no approve_acc, any row_acc"
+                hideIfReadOnly="true"
+                id="AccommodationApprovalButton"
+                iterator="TripIncidentAccommodationsLV"
+                label="displaykey.Web.TripIncidentScreen.Approve"
+                shortcut="A"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripAccommodation.Assessment = &quot;Review&quot;"
+                flags="no review_acc, any row_acc"
+                hideIfReadOnly="true"
+                id="AccommodationReviewButton"
+                iterator="TripIncidentAccommodationsLV"
+                label="displaykey.Web.TripIncidentScreen.Review"
+                shortcut="R"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripAccommodation.Assessment = &quot;Deny&quot;"
+                flags="no deny_acc, any row_acc"
+                hideIfReadOnly="true"
+                id="AccommodationDenyButton"
+                iterator="TripIncidentAccommodationsLV"
+                label="displaykey.Web.TripIncidentScreen.Deny"
+                shortcut="N"/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="aTripAccommodation.Assessment = null"
+                flags="no clear_acc, any row_acc"
+                hideIfReadOnly="true"
+                id="AccommodationClearButton"
+                iterator="TripIncidentAccommodationsLV"
+                label="displaykey.Web.TripIncidentScreen.Clear"
+                shortcut="L"/>
+            </Toolbar>
+          </PanelRef>
+          <CardViewPanel
+            hideTabIfSingle="true">
+            <Card
+              id="AffectedTripAccommodationCard"
+              title="&quot;&quot;"
+              visible="eachTripAccommodation.AddnlTripAccommodations.length &gt; 0">
+              <PanelRef>
+                <DetailViewPanel>
+                  <Variable
+                    initialValue="eachTripAccommodation.AddnlTripAccommodations.length == 1 ? eachTripAccommodation.AddnlTripAccommodations.first() : null"
+                    name="getFirstAddnlTripAccommodation"
+                    recalculateOnRefresh="true"
+                    type="AddnlTripAccommodation"/>
+                  <InputColumn>
+                    <ListViewInput
+                      boldLabel="true"
+                      def="AdditionalTripAccommodationLV(eachTripAccommodation)"
+                      editable="true"
+                      id="AdditionalTripAccommodationLV_Panel"
+                      label="displaykey.Web.TripIncidentScreen.TripCard.AddnlTripAccommodations"
+                      labelAbove="true"
+                      visible="getFirstAddnlTripAccommodation == null ">
+                      <Toolbar>
+                        <IteratorButtons/>
+                        <ToolbarDivider/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripAccommodation.Assessment = &quot;approve&quot;"
+                          flags="no approve_add_acc, any row_add_acc"
+                          hideIfReadOnly="true"
+                          id="AddnlAccommodationApprovalButton"
+                          iterator="AdditionalTripAccommodationLV"
+                          label="displaykey.Web.TripIncidentScreen.Approve"
+                          shortcut="P"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripAccommodation.Assessment = &quot;Review&quot;"
+                          flags="no review_add_acc, any row_add_acc"
+                          hideIfReadOnly="true"
+                          id="AddnlAccommodationReviewButton"
+                          iterator="AdditionalTripAccommodationLV"
+                          label="displaykey.Web.TripIncidentScreen.Review"
+                          shortcut="V"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripAccommodation.Assessment = &quot;Deny&quot;"
+                          flags="no deny_add_acc, any row_add_acc"
+                          hideIfReadOnly="true"
+                          id="AddnlAccommodationDenyButton"
+                          iterator="AdditionalTripAccommodationLV"
+                          label="displaykey.Web.TripIncidentScreen.Deny"
+                          shortcut="N"/>
+                        <CheckedValuesToolbarButton
+                          checkedRowAction="anAddnlTripAccommodation.Assessment = null"
+                          flags="no clear_add_acc, any row_add_acc"
+                          hideIfReadOnly="true"
+                          id="AddnlAccommodationClearButton"
+                          iterator="AdditionalTripAccommodationLV"
+                          label="displaykey.Web.TripIncidentScreen.Clear"
+                          shortcut="L"/>
+                      </Toolbar>
+                    </ListViewInput>
+                    <InputSetRef
+                      def="AdditionalTripAccommodationInputSet(getFirstAddnlTripAccommodation, aTripIncident)"
+                      editable="getFirstAddnlTripAccommodation != null"
+                      visible="getFirstAddnlTripAccommodation != null"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </PanelRef>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+    </CardViewPanel>
+  </Screen>
+</PCF>

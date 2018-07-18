@@ -1,0 +1,23 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1100 - Default Features")
+internal class CPUWC1100DefaultFeatures {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.State !="draft" 
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if (claim.Policy.Coverages.IsEmpty){
+    claim.rejectSubField(claim.Policy, "Coverages", "newloss", "At least one Policy-level Coverage is required.", null, null)
+  }else if(claim.CoverageSelectedExt==null){
+    claim.rejectField("CoverageSelectedExt", "newloss", "Select Coverage is required.", null, null)
+  }else{
+    claim.createRelevantWorkCompExposures()
+  }
+}catch(e) {
+   util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

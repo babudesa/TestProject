@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    desc="List of Related Contacts"
+    id="ClaimContactRelatedContactsLV"
+    validationExpression="claim != null and claim.checkDisconnectedFeatures() ? &quot;Cannot change Related Contacts for a suspended claim.&quot; : null">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    Because it is verbose to have to write "contactHandle.Contact" instead of, simply, "contact", this shared section
+    defines a read-only property, "Contact", which can be used to access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="ClaimContactContactLVWrapper"
+      type="util.lvwrapper.ClaimContactContactLVWrapper"/>
+    <RowIterator
+      editable="true"
+      elementName="contactContact"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="10"
+      toAdd="Contact.addContactContact(contactContact)"
+      toRemove="Contact.removeContactContact(contactContact)"
+      value="Contact.AllContactContacts">
+      <ToolbarFlag
+        name="relationship"/>
+      <Row
+        editable="isRelatedContactEditable(contactContact)">
+        <ClaimRelatedContactCell
+          claim="claim"
+          editable="true"
+          forceContactSubtype="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).OtherContactType"
+          id="Contact"
+          label="displaykey.Web.RelatedContactsLV.Contact"
+          newContactMenu="ClaimNewRelatedContactPickerMenuItemSet"
+          onPick="addRoleOnPick(contactContact)"
+          parentContact="Contact"
+          postOnChange="true"
+          required="true"
+          sortBy="contactContact.getOtherContact(Contact).PrimarySortValue,contactContact.getOtherContact(Contact).SecondarySortValue,contactContact.getOtherContact(Contact).TertiarySortValue,contactContact.getOtherContact(Contact).QuaternarySortValue"
+          sortOrder="2"
+          validationExpression="Contact.validateMNIDBARelatedContact(contactContact) "
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).OtherContact"
+          valueRange="claim.getContactsFromRelatedContacts(Contact)"/>
+        <RangeCell
+          editable="true"
+          id="Rel"
+          label="displaykey.Web.RelatedContactsLV.Rel"
+          required="true"
+          sortOrder="1"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).RelatedBidiRel"
+          valueRange="Contact.getFilteredContactRelationships(contactContact.getOtherContact(Contact)) //Contact.getAllRelationships(contactContact.getOtherContact(Contact))"/>
+        <Cell
+          id="Role"
+          label="displaykey.LV.Claim.PeopleInvolvedDetailed.PeopleInvolved.Roles"
+          value="displayContactRoles(contactContact,getCorrectContact(contactContact, Contact))"
+          valueVisible="contactContact.RelatedContact != null"/>
+        <!-- <Cell
+          action="ClaimRelatedContactDetailPopup.push(contactContact.RelatedContact, claim)"
+          id="AddRole"
+          label="&quot;Role&quot;"
+          outputConversion="CurrentLocation.InEditMode? &quot;Additional Role?&quot; : &quot;&quot;"
+          required="false"
+          value="Additional Role?"
+          valueVisible="isRelatedContactEditable(contactContact)"
+          visible="CurrentLocation.InEditMode ? true : false"/> -->
+        <!-- <Cell
+          editable="true"
+          id="bendpnd"
+          label="displaykey.Web.RelatedContactsLV.BenDepend"
+          postOnChange="true"
+          required="false"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).BeneficiaryDepnd"/> -->
+        <RangeCell
+          editable="true"
+          id="bendpnd"
+          label="displaykey.Web.RelatedContactsLV.BenDepend"
+          required="false"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).BeneficiaryDepnd"
+          valueRange="getBenDepCode(contactContact, Contact)"
+          visible="util.WCHelper.isWCorELLossType(claim)"/>
+        <!-- <Cell
+          editable="true"
+          id="BenRelCode"
+          label="displaykey.Web.RelatedContactsLV.BenReltn"
+          required="false"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).BeneficiaryRelCd"
+          visible="util.WCHelper.isWCorELLossType(claim)"/> -->
+        <RangeCell
+          editable="true"
+          id="BenRelCode"
+          label="displaykey.Web.RelatedContactsLV.BenReltn"
+          required="false"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, Contact, claim).BeneficiaryRelCd"
+          valueRange="getBenRelCode(contactContact, Contact)"
+          visible="util.WCHelper.isWCorELLossType(claim)"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[property get Contact() : Contact { return contactHandle.Contact; }
+      
+function isRelatedContactEditable(contContact:ContactContact):Boolean{
+         if(contContact.getBidiRel(Contact) == "morenamedinsured" || contContact.getBidiRel(Contact) == "morenamedinsureddba" 
+           
+           || contContact.InjuredPartyFlagExt || contContact.ClaimantAddRepFlagExt || contContact.ClaimantFlagExt || (Contact != contContact.SourceContact and contContact.Relationship == null)
+           ){
+          
+	      return false;
+	 }else{
+	      return true;
+	}
+
+}
+
+
+function getCorrectContact(contCont: ContactContact,con:Contact):Contact{
+ 
+  if(con == contCont.RelatedContact){
+   return contCont.SourceContact 
+  }
+  return contCont.RelatedContact
+  
+  
+}
+
+
+function displayContactRoles(conCon:ContactContact,cont:Contact):String{
+
+  for(con in claim.Contacts){
+   if(cont == con.Contact){
+          
+      if(new util.lvwrapper.ClaimContactContactLVWrapper(conCon, cont, claim).RelatedBidiRel=="decedent"){
+       
+        return  con.formatBenRoleDisplay()
+      }
+    else{ 
+       
+       return con.formatRolesDisplay()
+    }
+   }
+  }
+  return null
+}
+
+/**
+ * A hideous way of ensuring a related contact is added as a claim contact if they are picked from AB.
+ */
+function addRoleOnPick(conContact : ContactContact){
+  if(conContact.RelatedContact != null && !claim.Contacts*.Contact.contains(conContact.RelatedContact)){
+    AddExistingRelatedContactPopup.push(claim, conContact) 
+    
+  }
+}
+
+function getBenRelCode(conCon: ContactContact, con: Contact):java.util.ArrayList{
+  var benArray: java.util.ArrayList = new java.util.ArrayList()
+  if(new util.lvwrapper.ClaimContactContactLVWrapper(conCon, con, claim).RelatedBidiRel=="beneficiary"){
+  benArray.add(BeneficiaryRelatnExt.TC_BROTHERSORSISTERS)
+   benArray.add(BeneficiaryRelatnExt.TC_HANDICAPPEDCHILD)
+  benArray.add(BeneficiaryRelatnExt.TC_INJUREDWORKER)
+  benArray.add(BeneficiaryRelatnExt.TC_MOTHERSORFATHERS)
+  benArray.add(BeneficiaryRelatnExt.TC_OTHER)
+  benArray.add(BeneficiaryRelatnExt.TC_SONSORDAUGHTERS)
+  benArray.add(BeneficiaryRelatnExt.TC_WIDOW)
+  benArray.add(BeneficiaryRelatnExt.TC_WIDOWER)
+  
+   
+  }
+      
+   return benArray;
+}
+
+
+function getBenDepCode(conCon: ContactContact, con: Contact):java.util.ArrayList{
+  var benArray: java.util.ArrayList = new java.util.ArrayList()
+  if(new util.lvwrapper.ClaimContactContactLVWrapper(conCon, con, claim).RelatedBidiRel=="beneficiary"){
+  benArray.add(BeneficiaryDepndExt.TC_PARTIALLYDEPENDENT)
+   benArray.add(BeneficiaryDepndExt.TC_TOTALLYDEPENDENT)
+  }
+   return benArray;
+}]]></Code>
+  </ListViewPanel>
+</PCF>

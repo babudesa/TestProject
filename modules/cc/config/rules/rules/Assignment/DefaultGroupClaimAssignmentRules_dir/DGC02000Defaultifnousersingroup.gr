@@ -1,0 +1,18 @@
+package rules.Assignment.DefaultGroupClaimAssignmentRules_dir
+
+@gw.rules.RuleName("DGC02000 - Default - if no users in group")
+internal class DGC02000Defaultifnousersingroup {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* As long as the group contains at least 1 user */
+(null != Claim.CurrentAssignment.AssignedGroup.Supervisor)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//* Let the supervisor assign manually */
+Claim.CurrentAssignment.assignManually( Claim.CurrentAssignment.AssignedGroup.Supervisor )
+
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Claim(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(Claim.AssignedUser))
+	actions.exit()/*end00rule*/
+  }
+}

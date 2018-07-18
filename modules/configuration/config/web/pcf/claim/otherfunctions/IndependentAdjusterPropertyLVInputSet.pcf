@@ -1,0 +1,256 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- gwelch: I used an inputset in these instances because the visibility on the add buttons
+        is dependent on the IA and the number coverages.
+ GAB List View -->
+  <InputSet
+    id="IndependentAdjusterPropertyLVInputSet"
+    mode="IAGABExt">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="ia"
+      type="IndepAdjusterExt"/>
+    <Variable
+      initialValue="(ia as IAGABExt)"
+      name="ia_gab"
+      type="IAGABExt"/>
+    <Variable
+      initialValue="(ia_gab.IACoverages as IAGABPropCvgExt[])"
+      name="ia_gab_coverages"
+      recalculateOnRefresh="true"
+      type="IAGABPropCvgExt[]"/>
+    <ListViewInput
+      id="IA_GABCoverages"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons
+          addVisible="ia.IACoverages.length &lt; 4"/>
+      </Toolbar>
+      <ListViewPanel
+        id="IA_GABPropertyLV"
+        mode="IAGABExt"
+        validationExpression="validateGABCoverages()">
+        <RowIterator
+          editable="true"
+          elementName="IA_GABPropertyCoverage"
+          toAdd="ia_gab.addToIACoverages(IA_GABPropertyCoverage)"
+          toRemove="ia_gab.removeFromIACoverages(IA_GABPropertyCoverage)"
+          value="ia_gab_coverages">
+          <Row>
+            <TypeKeyCell
+              editable="true"
+              filter="VALUE.hasCategory(claim.LossType)"
+              id="GABLimitType"
+              label="displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.LimitType"
+              value="IA_GABPropertyCoverage.GABLimitType"/>
+            <TextCell
+              editable="true"
+              id="GABLimitAmount"
+              label="displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.LimitAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_GABPropertyCoverage.GABLimitAmount"/>
+            <TypeKeyCell
+              editable="true"
+              filter="VALUE.hasCategory(claim.LossType)"
+              id="GABDeductibleType"
+              label="displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.DeductibleType"
+              value="IA_GABPropertyCoverage.GABDeductibleType"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="GABDeductibleAmount"
+              label="displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.DeductibleAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_GABPropertyCoverage.GABDeductibleAmount"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </ListViewInput>
+    <Code><![CDATA[
+function validateGABCoverages() : String
+            {
+                for(cvg in ia_gab_coverages)
+                {
+                    if (cvg.GABLimitAmount != null and cvg.GABLimitType == null)
+                        return displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.LimitException;
+                    
+                    if(cvg.GABDeductibleAmount != null and cvg.GABDeductibleType == null)
+                        return displaykey.NVV.NewIndepAdjuster.GAB.Property.LV.DeductException;
+                }
+                return null;
+            }
+    ]]></Code>
+  </InputSet>
+  <!-- Crawford List View -->
+  <InputSet
+    id="IndependentAdjusterPropertyLVInputSet"
+    mode="IACrawfordExt">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="ia"
+      type="IndepAdjusterExt"/>
+    <Variable
+      initialValue="(ia as IACrawfordExt)"
+      name="ia_crawford"
+      type="IACrawfordExt"/>
+    <ListViewInput
+      id="IA_CFCoverages"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons
+          addVisible="ia.IACoverages.length &lt; 6"/>
+      </Toolbar>
+      <ListViewPanel
+        id="IA_CrawfordPropertyLV"
+        mode="IACrawfordExt">
+        <RowIterator
+          editable="true"
+          elementName="IA_CrawfordPropertyCoverage"
+          toAdd="ia_crawford.addToIACoverages(IA_CrawfordPropertyCoverage)"
+          toRemove="ia_crawford.removeFromIACoverages(IA_CrawfordPropertyCoverage)"
+          value="(ia_crawford.IACoverages as IACrawfordPropCvgExt[])">
+          <Row>
+            <TextCell
+              editable="true"
+              id="PropDescription"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgDescription"
+              maxChars="30"
+              value="IA_CrawfordPropertyCoverage.CFCovgDescription"/>
+            <Cell
+              editable="true"
+              id="CovgType"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgType"
+              value="IA_CrawfordPropertyCoverage.CFCovgType"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="CovgLimitAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgLimitAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_CrawfordPropertyCoverage.CFCovgLimitAmount"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="CovgDeductAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgDeductAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_CrawfordPropertyCoverage.CFCovgDeductAmount"/>
+            <Cell
+              editable="true"
+              id="CovgApplyTo"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgApplyTo"
+              value="IA_CrawfordPropertyCoverage.CFCovgApplyTo"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="CovgITVAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgITVAmount"
+              numCols="15"
+              value="IA_CrawfordPropertyCoverage.CFCovgITVAmount"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="CovgReserveAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Crawford.Property.LV.CovgReserveAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_CrawfordPropertyCoverage.CFCovgReserveAmount"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </ListViewInput>
+  </InputSet>
+  <!-- Other List View -->
+  <InputSet
+    id="IndependentAdjusterPropertyLVInputSet"
+    mode="IAOtherExt">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="ia"
+      type="IndepAdjusterExt"/>
+    <Variable
+      initialValue="(ia as IAOtherExt)"
+      name="ia_other"
+      type="IAOtherExt"/>
+    <ListViewInput
+      id="IA_OtherCoverages"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons
+          addVisible="ia.IACoverages.length &lt; 6"/>
+      </Toolbar>
+      <ListViewPanel
+        id="IA_OtherPropertyLV"
+        mode="IAOtherExt">
+        <RowIterator
+          editable="true"
+          elementName="IA_OtherPropertyCoverage"
+          toAdd="ia_other.addToIACoverages(IA_OtherPropertyCoverage)"
+          toRemove="ia_other.removeFromIACoverages(IA_OtherPropertyCoverage)"
+          value="(ia_other.IACoverages as IAOtherPropCvgExt[])">
+          <Row>
+            <TextCell
+              editable="true"
+              id="IA_OtherPropDescription"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgDescription"
+              maxChars="30"
+              value="IA_OtherPropertyCoverage.IAOtherCovgDescription"/>
+            <Cell
+              editable="true"
+              id="IA_OtherCovgType"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgType"
+              value="IA_OtherPropertyCoverage.IAOtherCovgType"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="IA_OtherCovgLimitAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgLimitAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_OtherPropertyCoverage.IAOtherCovgLimitAmount"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="IA_OtherCovgDeductAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgDeductAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_OtherPropertyCoverage.IAOtherCovgDeductAmount"/>
+            <Cell
+              editable="true"
+              id="IA_OtherCovgApplyTo"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgApplyTo"
+              value="IA_OtherPropertyCoverage.IAOtherCovgApplyTo"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="IA_OtherCovgITVAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgITVAmount"
+              numCols="15"
+              value="IA_OtherPropertyCoverage.IAOtherCovgITVAmount"/>
+            <TextCell
+              editable="true"
+              formatType="currency"
+              id="IA_OtherCovgReserveAmount"
+              label="displaykey.NVV.NewIndepAdjuster.Other.Property.LV.CovgReserveAmount"
+              maxChars="9"
+              numCols="15"
+              value="IA_OtherPropertyCoverage.IAOtherCovgReserveAmount"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </ListViewInput>
+  </InputSet>
+</PCF>

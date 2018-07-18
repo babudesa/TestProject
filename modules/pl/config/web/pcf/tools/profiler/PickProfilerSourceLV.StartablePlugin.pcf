@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<PCF>
+  <!-- WARNING: Internal Guidewire file. DO NOT EDIT. -->
+  <ListViewPanel
+    id="PickProfilerSourceLV"
+    mode="StartablePlugin">
+    <RowIterator
+      editable="false"
+      elementName="startablePluginHistory"
+      pickValue="startablePluginHistory.ProfilerData"
+      toRemove="deleteProfilerData(startablePluginHistory)"
+      value="find(startablePluginHistory in StartablePluginHistory where startablePluginHistory.ProfilerData != null)">
+      <ToolbarFilter
+        label="displaykey.Web.Profiler.StartablePluginProfilerPluginName"
+        name="startablePluginChooser">
+        <ToolbarFilterOptionGroup
+          filters="gw.api.startable.StartablePluginPageHelper.getPluginNameFilters()"/>
+      </ToolbarFilter>
+      <ToolbarFlag
+        condition="startablePluginHistory.CompleteDate != null"
+        name="CanDelete"/>
+      <ToolbarFlag
+        condition="startablePluginHistory.CompleteDate == null"
+        name="CannotDelete"/>
+      <Row>
+        <Cell
+          id="ServiceName"
+          label="displaykey.Web.Profiler.StartablePluginProfilerPluginName"
+          sortOrder="1"
+          value="startablePluginHistory.PluginName"/>
+        <DateCell
+          dateFormat="short"
+          id="StartDate"
+          label="displaykey.Web.InternalTools.BatchProcessInfo.Start"
+          sortDirection="descending"
+          sortOrder="2"
+          timeFormat="short"
+          value="startablePluginHistory.StartDate"/>
+        <DateCell
+          dateFormat="short"
+          id="CompleteDate"
+          label="displaykey.Web.InternalTools.BatchProcessInfo.ProcessHistoryLV.CompleteDate"
+          timeFormat="short"
+          value="startablePluginHistory.CompleteDate"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function deleteProfilerData(startablePluginHistory : StartablePluginHistory) {
+  gw.transaction.Transaction.runWithNewBundle( \ bundle -> {
+      bundle.remove( startablePluginHistory )
+    }
+  )
+}
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

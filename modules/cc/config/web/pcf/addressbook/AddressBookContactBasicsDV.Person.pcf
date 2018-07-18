@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookContactBasicsDV"
+    mode="Person|PersonVendor|Adjudicator|UserContact|Doctor|Attorney">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="contact.CategoryScores != null AND contact.CategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      type="Boolean"/>
+    <InputColumn>
+      <InputSetRef
+        def="AddressBookPersonNameInputSet(contact as Person, contact typeis Adjudicator or contact typeis UserContact)"/>
+      <InputSetRef
+        def="AddressBookPersonContactInfoInputSet(contact as Person, null)"
+        visible="!(contact typeis PersonVendor)"/>
+      <InputDivider/>
+      <InputSetRef
+        def="AddressBookPrimaryAddressInputSet(contact)"/>
+      <InputDivider
+        visible="hasCategoryScores OR (contact.Score != null)"/>
+      <Label
+        label="displaykey.Web.Reviews.ReviewPerformance"
+        visible="hasCategoryScores or (contact.Score != null)"/>
+      <Input
+        id="score"
+        label="displaykey.Web.Reviews.OverallScore"
+        value="contact.Score"
+        visible="contact.Score != null"/>
+      <ListViewInput
+        label="displaykey.Web.Reviews.CategoryScores"
+        visible="hasCategoryScores">
+        <Toolbar/>
+        <ListViewPanel
+          id="CategoryScoresLV">
+          <RowIterator
+            editable="false"
+            elementName="categoryScore"
+            pageSize="0"
+            value="contact.getSortedCategoryScores()">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="Category"
+                label="displaykey.Web.Reviews.Category"
+                value="categoryScore.ReviewCategory"/>
+              <Cell
+                enableSort="false"
+                id="Score"
+                label="displaykey.Web.Reviews.Score"
+                value="categoryScore.Score"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ContactDetail.AdditionalInfo"/>
+      <InputSetRef
+        def="AddressBookAdditionalInfoInputSet(contact as Person, externalContactSource)"
+        mode="contact.SubType"/>
+      <InputSetRef
+        def="AddressBookDriversLicenseInfoInputSet(contact as Person)"
+        visible="contact.subtype==&quot;Person&quot;"/>
+      <InputDivider/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="Notes"
+        label="displaykey.Web.ContactDetail.Notes"
+        numRows="3"
+        value="(contact as Person).Notes"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

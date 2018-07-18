@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!-- Extension to claim table -->
+<extension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="Claim">
+  <column
+    default="foo"
+    desc="varchar(30) extension; default value of 'foo'"
+    name="VarcharExt"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="30"/>
+  </column>
+  <column
+    default="12"
+    desc="integer extension; default value of '12'"
+    name="IntegerExt"
+    nullok="true"
+    type="integer"/>
+  <!-- <array arrayentity="GWXExtArray" desc="Sample array extension, using an entity type defined only in the extensions file." name="GWXExtArray"/> -->
+  <typekey
+    desc="Sample TypeKey extension."
+    name="TypeKeyExt"
+    nullok="true"
+    typelist="LossType"/>
+  <!-- <typekey desc="Whether the deductible has been paid." name="DeductibleStatus" typelist="DeductibleStatus"/> -->
+  <index
+    desc="Covering index for helping to speed up Claim Search by Insured's last name, when including lossdate as one of the criteria"
+    expectedtobecovering="true"
+    name="claimu6"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="InsuredDenormID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="LossDate"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+  <index
+    desc="This covering index exists to help the performance of the claim search                  feature as configured out of the box, which is to constrain on Lost Date                  by default. If this default search configuration is changed then it may                  be worth considering removal of this index. This index also has ClaimNumber                  in it to address execution plan problems with Team Group Activities page in                  MS SQL Server and will be used in places where claimnumber on claim is used."
+    expectedtobecovering="true"
+    name="claimu7u"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="LossDate"/>
+    <indexcol
+      keyposition="4"
+      name="ClaimNumber"/>
+    <indexcol
+      keyposition="5"
+      name="Flagged"/>
+  </index>
+  <index
+    desc="This covering index exists to help the performance of querying for claims                  related to a specified catastrophe."
+    expectedtobecovering="true"
+    name="claimu9"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="LossCause"/>
+    <indexcol
+      keyposition="2"
+      name="LossDate"/>
+    <indexcol
+      keyposition="3"
+      name="LossType"/>
+    <indexcol
+      keyposition="4"
+      name="CatastropheID"/>
+    <indexcol
+      keyposition="5"
+      name="Retired"/>
+    <indexcol
+      keyposition="6"
+      name="LossLocationID"/>
+    <indexcol
+      keyposition="7"
+      name="ID"/>
+  </index>
+</extension>

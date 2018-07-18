@@ -1,0 +1,39 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABEX1000ExcessActivityBatchRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("ABEX1100-Manager Reserve Review")
+internal class ABEX1100ManagerReserveReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!util.user.GroupsHelper.isClaimManager(claim.AssignedUser)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var reportedDate = claim.ReportedDate.trimToMidnight()
+  var today = gw.api.util.DateUtil.currentDate().trimToMidnight()
+  var pattern = util.custom_Ext.finders.findActivityPattern("manager_reserve_review")
+
+  // create the initial activity 30 days for the reported date
+  if (!exists (act in claim.Activities where act.ActivityPattern.Code == "manager_reserve_review")){
+    if (gw.api.util.DateUtil.daysBetween(reportedDate, today) >= 
+        ScriptParameters.Activity_ExcessManagerReserveReviewShort == true){
+          claim.createActivityFromPattern(null, pattern)
+    }
+  } else{
+    // generate the activity every 3 months
+    for (act in claim.Activities){
+      if (act.ActivityPattern.Code == "manager_reserve_review" && act.CreateTime.trimToMidnight() > reportedDate){
+        reportedDate = act.CreateTime.trimToMidnight()
+      }
+    }
+    if (gw.api.util.DateUtil.daysBetween(reportedDate, today) >= ScriptParameters.Activity_ExcessManagerReserveReviewLong == true){
+      claim.createActivityFromPattern(null, pattern)
+    }
+  }/*end00rule*/
+
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

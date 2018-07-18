@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="SecurityZoneDetailDV">
+    <Require
+      name="SecurityZone"
+      type="SecurityZone"/>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.Admin.SecurityZoneDetailDV.SecurityZone"/>
+      <Input
+        editable="User.util.getCurrentUser().hasPermission(&quot;ignoreacl&quot;)"
+        id="Name"
+        label="displaykey.Web.Admin.SecurityZoneDetailDV.Name"
+        required="true"
+        value="SecurityZone.Name"/>
+      <TextAreaInput
+        editable="User.util.getCurrentUser().hasPermission(&quot;ignoreacl&quot;)"
+        id="Description"
+        label="displaykey.Web.Admin.SecurityZoneDetailDV.Description"
+        numRows="3"
+        value="SecurityZone.Description"/>
+      <Input
+        editable="User.util.getCurrentUser().hasPermission(&quot;ignoreacl&quot;)"
+        id="GenericUser"
+        label="displaykey.LV.Admin.SecurityManage.UserValue"
+        required="true"
+        value="SecurityZone.GenericUserExt"/>
+      <BooleanRadioInput
+        editable="User.util.getCurrentUser().hasPermission(&quot;ignoreacl&quot;) and SecurityZone.IsSecurityZoneTPAExt == false"
+        id="CanSeeUnsecure"
+        label="displaykey.Web.Admin.SecurityZoneDetailDV.CanSeeUnsecure"
+        required="true"
+        value="SecurityZone.CanSeeUnsecureClaimsExt"/>
+      <BooleanRadioInput
+        editable="User.util.getCurrentUser().hasPermission(&quot;ignoreacl&quot;)"
+        id="IsSecurityZoneTPA"
+        label="displaykey.Web.Admin.SecurityZoneDetailDV.IsSecurityZoneExternal"
+        onChange="util.admin.SecurityUtil.retrictCanViewUnsecureButton(SecurityZone)"
+        postOnChange="true"
+        required="true"
+        value="SecurityZone.IsSecurityZoneTPAExt"/>
+      <ListViewInput
+        visible="SecurityZone.IsSecurityZoneTPAExt">
+        <Toolbar>
+          <ToolbarButton
+            hideIfReadOnly="true"
+            id="ToolbarButton"
+            label="&quot;Add&quot;">
+            <MenuItem
+              action="NewClaimsBusinessUnitSecurityFilterPopup.push(SecurityZone)"
+              id="BUMenuItem"
+              label="&quot;Claims Business Unit&quot;"/>
+            <MenuItem
+              action="NewProfitCenterSecurityFilterPopup.push(SecurityZone)"
+              id="PCMenuItem"
+              label="&quot;Profit Center Grouping&quot;"/>
+          </ToolbarButton>
+          <RemoveButton
+            hideIfReadOnly="true"
+            id="FilterRemove"
+            label="&quot;Remove&quot;"/>
+        </Toolbar>
+        <ListViewPanel>
+          <RowIterator
+            editable="true"
+            elementName="filter"
+            id="FilterIt"
+            toRemove="filter.remove()"
+            type="entity.SecurityFilterExt"
+            value="SecurityZone.SecurityFilters">
+            <Row>
+              <Cell
+                id="Type"
+                label="displaykey.Web.Admin.Security.type"
+                value="getTypeName(filter)"/>
+              <Cell
+                action="editFilter(filter)"
+                hasCheckBox="true"
+                id="FilterValue"
+                label="displaykey.Web.Admin.Security.filtervalue"
+                value="filter.Value"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[function editFilter(filter:entity.SecurityFilterExt) {
+  if (filter typeis entity.ProfitCenterSecurityFilterExt) {
+    pcf.EditProfitCenterSecurityFilterPopup.push(filter, CurrentLocation.InEditMode);
+  } else if (filter typeis entity.ClaimsBusinessUnitSecurityFilterExt) {
+    pcf.EditClaimsBusinessUnitSecurityFilterPopup.push(filter, CurrentLocation.InEditMode);
+  }
+}
+
+function getTypeName (filter :entity.SecurityFilterExt) : String {
+  var type = ""
+  if (filter typeis entity.ProfitCenterSecurityFilterExt) {
+    type = displaykey.Web.Admin.Security.grouping
+  } else if (filter typeis entity.ClaimsBusinessUnitSecurityFilterExt) {
+    type = displaykey.Web.Admin.Security.CBU
+  }
+  return type
+}
+
+]]></Code>
+  </DetailViewPanel>
+</PCF>

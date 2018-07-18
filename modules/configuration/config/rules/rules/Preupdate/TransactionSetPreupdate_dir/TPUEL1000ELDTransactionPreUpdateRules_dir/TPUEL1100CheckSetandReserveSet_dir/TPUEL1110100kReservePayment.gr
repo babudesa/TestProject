@@ -1,0 +1,28 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUEL1000ELDTransactionPreUpdateRules_dir.TPUEL1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUEL1110 - 100k Reserve/Payment")
+internal class TPUEL1110100kReservePayment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!exists(act in transactionSet.Claim.Activities where act.ActivityPattern.Code == "reserve_payment_report" && act.Status == "open")
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/if (transactionSet.Subtype == "CheckSet"){
+  var checkAmount = (transactionSet as CheckSet).PrimaryCheck.GrossAmountExt
+  var prevCheckAmount = (transactionSet.OriginalVersion as CheckSet).PrimaryCheck.GrossAmountExt
+  transactionSet.create100kUpdateMonthlyReport(checkAmount, prevCheckAmount)
+}
+
+if (transactionSet.Subtype == "ReserveSet"){
+  for (res in transactionSet.AllTransactions){
+    var reserveAmount = res.Amount
+    // each change is a new transaction so the Amount is the Amount of a change
+    if (res.New && !res.ReserveLine.New){
+      // new transaction and this is a change to an existing reserve
+      transactionSet.create100kUpdateMonthlyReport(reserveAmount, 0)
+    }
+  }
+}/*end00rule*/
+  }
+}

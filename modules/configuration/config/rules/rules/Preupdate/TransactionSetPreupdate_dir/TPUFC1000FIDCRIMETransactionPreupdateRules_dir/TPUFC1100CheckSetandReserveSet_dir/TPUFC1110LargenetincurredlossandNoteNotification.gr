@@ -1,0 +1,41 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUFC1000FIDCRIMETransactionPreupdateRules_dir.TPUFC1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUFC1110 -Large net incurred loss and Note Notification")
+internal class TPUFC1110LargenetincurredlossandNoteNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet.New and transactionSet.LoadCommandID != null) and 
+gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNet().getAmount(transactionSet.Claim) >= 1000000 and
+!exists(ref in transactionSet.Claim.Notes where ref.Subject==displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredNoteSubject)
+
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+var body : String = templates.email.FidCrimeLargePayment.renderToString(transactionSet)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var note : Note
+var emailHelper=new EmailHelper()
+//corporateClaimsPerson name currently is Pam Kobin
+var corporateClaimPersonName = util.GlobalParameters.ParameterFinder.getUserParameter("ccproperty", transactionSet.Claim.LossType) as java.lang.String
+var corporateClaimPersonEmail = util.GlobalParameters.ParameterFinder.getUserParameter("ccproperty", transactionSet.Claim.LossType).Contact.EmailAddress1
+//corporateClaimsBITPerson name currently is Karen Birdseye
+var corporatClaimBITPersonName = util.GlobalParameters.ParameterFinder.getUserParameter("ccbit", transactionSet.Claim.LossType) as java.lang.String
+var corporateClaimBITPersonEmail = util.GlobalParameters.ParameterFinder.getUserParameter("ccbit", transactionSet.Claim.LossType).Contact.EmailAddress1
+
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  //goes to Pam Kobin
+  emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, corporateClaimPersonEmail+","+corporateClaimBITPersonEmail, corporateClaimPersonName+";"+corporatClaimBITPersonName, "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredSubject(transactionSet.Claim.ClaimNumber), body);
+  //goes to Karen Birdseye
+ // gw.api.email.EmailUtil.sendEmailWithBody(null, corporateClaimBITPersonEmail, corporatClaimBITPersonName, "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredSubject(transactionSet.Claim.ClaimNumber), body);   
+} else {
+  emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing", ScriptParameters.ClaimCenterDevEmail, environmentInformation, displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredSubject(transactionSet.Claim.ClaimNumber), body)
+}
+
+//Generate a note
+note = transactionSet.Claim.addNote( "Check", displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredNote(corporateClaimPersonName))
+note.Subject = displaykey.Rules.Preupdate.Transaction.FIDCRIME.LargeNetIncurredNoteSubject
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,44 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MAPUXX1110 - Counsel Law Firm Changed")
+internal class MAPUXX1110CounselLawFirmChanged {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("CounselLawFirmExt")
+/* When the law firm is changed on a matterAssignment this rule replaces the current roles of
+* the current law firm on the matterAssignment and replaces the roles with "former" roles
+*  on the matter.
+*//*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/var mapper = new libraries.Matter_Entity.AttorneyTypeMapper()
+var originalMatterAssignment = matterAssignmentExt.OriginalVersion as MatterAssignmentExt
+var roleHelper = new libraries.Matter_Entity.MatterRoleHelper(matterAssignmentExt.Matter)
+
+try{
+  
+   
+   // If the law firm is not null and thc contact doesn't exist
+   // anywhere else on the legal action with the same role
+   // then set the firms role to former 
+   if(originalMatterAssignment.CounselLawFirmExt != null){
+     
+     roleHelper.setLawFirmFormer(originalMatterAssignment)     
+   }  
+   
+   //if the currently selected firm is not null then
+   //add the correct new roles and remove corresponding former roles 
+   if(matterAssignmentExt.CounselLawFirmExt != null){
+      
+      var roleToAdd = mapper.AttorneyTypeRoleMap.get(matterAssignmentExt.AttorneyTypeExt)
+      matterAssignmentExt.Matter.addRole(roleToAdd, matterAssignmentExt.CounselLawFirmExt)
+      roleHelper.removeFormerRole(roleToAdd, matterAssignmentExt.CounselLawFirmExt)   
+   
+   }
+  
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

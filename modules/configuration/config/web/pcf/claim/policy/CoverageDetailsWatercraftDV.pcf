@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="CoverageDetailsWatercraftDV">
+    <Require
+      name="cov"
+      type="VehicleCoverage"/>
+    <Variable
+      initialValue="cov.setClassDefaults()"
+      name="setDefaults"/>
+    <Variable
+      initialValue="false"
+      name="required"
+      type="boolean"/>
+    <!-- Sprint Agri 11 ER: The variable below used to populate coverage eff/exp dates to policy dates -->
+    <Variable
+      initialValue="cov.policyCoveragedates()"
+      name="setcoveragedates"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="cov.Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <InputColumn>
+      <RangeInput
+        editable="true"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="cov.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(cov)"
+        optionLabel="(cov.Type!= null) ? cov.covTypeDisplayName() : VALUE.toString()"
+        postOnChange="true"
+        required="true"
+        value="cov.Type"
+        valueRange="(cov.EngineExt!=null)? (cov.getEngineCoverages()): ((cov.TrailerExt!=null)? (cov.getTrailerCoverages()): (cov.getCoverages()))"/>
+      <RangeInput
+        editable="true"
+        id="RiskState"
+        label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+        onChange="cov.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(cov)"
+        postOnChange="true"
+        required="cov.Policy.insured.PrimaryAddress.Country==&quot;US&quot;"
+        value="cov.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      <Input
+        id="Subline"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+        required="false"
+        value="cov.SublineExt"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+        value="cov.ClassCodeExt"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+        value="cov.ClassCodeDescExt"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+        onChange="//ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? cov.effDateWarn() : null"
+        postOnChange="true"
+        validationExpression="cov.effDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(cov.Policy.EffectiveDate, cov.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(cov.EffectiveDate, cov.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="cov.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+        onChange="//ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? cov.expDateWarn() : null"
+        postOnChange="true"
+        validationExpression="cov.expDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(cov.Policy.EffectiveDate, cov.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(cov.EffectiveDate, cov.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="cov.ExpirationDate"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="CoverageLimitsInputSet(cov)"
+        mode="cov.Policy.Claim.LossType"/>
+    </InputColumn>
+    <!-- Added Sprint 8 Agribusiness Eric Rawe 11/15/07 -->
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        def="EditableCoverageReinsuranceLV(cov)"
+        id="Reinsurance"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurance"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,54 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXXZZZ4 - History update on Recurring Check Edit")
+internal class TPUXXZZZ4HistoryupdateonRecurringCheckEdit {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis CheckSet && transactionSet.PrimaryCheck.isRecurringCheck==true
+
+// rule to create a history entry for recurring check update/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses java.text.DecimalFormat
+var transaction  : History
+var totalAmount=(new DecimalFormat("$#########0.00;($-#########0.00)")).format(transactionSet.ClaimAmount.Amount)
+var primaryCheck: Check =  (transactionSet as CheckSet).PrimaryCheck
+var issuedCheckAmount=(new DecimalFormat("$#########0.00;($-#########0.00)")).format(primaryCheck.NetAmount.Amount)
+var claimant = primaryCheck.PayTo
+
+if(transactionSet.New){
+ transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", User.util.CurrentUser+" issued a Recurring Check Schedule for " + claimant +" for the total amount " + totalAmount)
+         transaction.TransactionSet =transactionSet  
+}
+else{
+if(primaryCheck.getOriginalValue("Status").toString() == "Rejected"
+    and primaryCheck.Status == "awaitingsubmission"){
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Previously Rejected Payment Approved "+totalAmount )
+        transaction.TransactionSet =transactionSet 
+}
+else if((primaryCheck.getOriginalValue("Status").toString() == "Rejected" or primaryCheck.getOriginalValue("Status").toString() == "Pending approval" or
+primaryCheck.getOriginalValue("Status").toString() == "Awaiting submission")
+    and primaryCheck.Status == "pendingapproval"){
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", User.util.CurrentUser+" issued a Recurring Check Schedule for " + claimant + " for the total amount "+ totalAmount)
+        transaction.TransactionSet =transactionSet 
+}
+
+else if(primaryCheck.getOriginalValue("Status").toString() == "Awaiting submission"
+    and primaryCheck.Status == "awaitingsubmission"){
+       transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Recurring Check Schedule for "+ claimant +" in Awaiting Submission Status was Edited and Approved")
+        transaction.TransactionSet =transactionSet 
+}
+else if(primaryCheck.getOriginalValue("Status").toString() == "Pending approval"
+     and primaryCheck.Status == "awaitingsubmission" and  !exists(act in transactionSet.Claim.Activities where act.ActivityPattern.Code == "approve_payment" 
+     && act.Status == "Complete" and act.TransactionSet.ClaimAmount == transactionSet.ClaimAmount.Amount) ){   
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Recurring Check Schedule for "+ claimant +" in Pending Approval Status was Edited and Approved")
+         transaction.TransactionSet =transactionSet 
+}
+if(primaryCheck.Status == "requesting"){
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", primaryCheck.CreateUser+" issued Recurring Check # "+primaryCheck.CheckNumber+" for "+issuedCheckAmount)
+        transaction.User = primaryCheck.CreateUser
+        transaction.TransactionSet =transactionSet 
+}
+}/*end00rule*/
+  }
+}

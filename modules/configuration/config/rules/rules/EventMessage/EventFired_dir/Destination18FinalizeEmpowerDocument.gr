@@ -1,0 +1,28 @@
+package rules.EventMessage.EventFired_dir
+
+@gw.rules.RuleName("Destination 18 - Finalize Empower Document")
+internal class Destination18FinalizeEmpowerDocument {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.DestID == 18 &&
+messageContext.EventName == "DocumentAdded" &&
+messageContext.Root typeis Document &&
+gaic.plugin.cc.document.EmpowerDocumentUtil.isUnFinalizedEmpowerDocument(messageContext.Root)/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+
+  var doc=messageContext.Root as Document
+
+  var message = messageContext.createMessage("Finalizing Empower Document: " + doc.ECFIDExt + "\nClaim Number: "+doc.Claim.ClaimNumber + 
+  "\nAuthor: " + doc.Author + "\nDate Created: " + doc.DocumentDateExt)
+  //make the messages non-safe ordered
+  //messages don't need to be safe ordered since they are individual documents and 
+  //can be sent in any order
+  message.Claim = null
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(messageContext, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

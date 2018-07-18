@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1500 - New Feature on Incident Only Claim")
+internal class CPUXX1500NewFeatureonIncidentOnlyClaim {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.IncidentReport and exists(exp in claim.Exposures where exp.New)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exp in claim.Exposures){
+  if(exp.New){
+    //Claim.IncidentReport is set at the pcf level so that Equine and Agri behave the same way
+    //Please see defect 1557
+    //Claim.IncidentReport = false;
+    if(claim.State == "closed"){
+      claim.reopen( "other", "A new feature was added to an Incident Only claim." )   
+    }
+  }
+}/*end00rule*/
+  }
+}

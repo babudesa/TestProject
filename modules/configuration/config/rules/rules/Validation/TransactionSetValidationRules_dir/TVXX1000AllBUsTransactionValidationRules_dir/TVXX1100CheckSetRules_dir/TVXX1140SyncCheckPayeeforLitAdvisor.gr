@@ -1,0 +1,23 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1140 - Sync Check Payee for LitAdvisor")
+internal class TVXX1140SyncCheckPayeeforLitAdvisor {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet typeis CheckSet) == true &&
+(transactionSet as CheckSet).PrimaryCheck != null &&
+(transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == CheckCategoryExt.TC_LIT_ADVISOR/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var payee = (transactionSet as CheckSet).PrimaryCheck.Payees[0].ClaimContact;
+
+var linkStatusValue = payee.Contact.generateLinkStatus().LinkStatusValue;
+gw.api.util.Logger.logInfo ("Link Status :" + linkStatusValue);
+if (linkStatusValue == "notsynced") {
+    payee.Contact.syncToAB();
+}
+
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,30 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1200TypeofLoss_dir
+
+@gw.rules.RuleName("EPUXX1210 - Reset Risk State Flag")
+internal class EPUXX1210ResetRiskStateFlag {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///This rule resets the risk state flag after the policy has been refreshed so that you won't get stopped during
+//a reconnect for not having type of loss
+//sprzygocki - date unknown
+//updated sprzygocki 1/30/10 - got rid of the conditions for resetting the risk state flag.
+exposure.Claim.Policy.isPolicyInRefresh( 0 ) and !exposure.ReconnectFailExt/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(!exposure.New){
+  if(exposure.Coverage.SublineExt=="920" and exposure.typeOfLossIsIncomplete()){
+    actions.exitToNext()
+  } else if((exposure.Coverage.SublineExt=="615" || exposure.Coverage.SublineExt=="625" || exposure.Coverage.SublineExt=="635")
+     and exposure.typeOfLossIsIncomplete()){
+    actions.exitToNext()   
+  } else if((exposure.Coverage.SublineExt=="611" || exposure.Coverage.SublineExt=="620" || exposure.Coverage.SublineExt=="621" || exposure.Coverage.SublineExt=="622" || exposure.Coverage.SublineExt=="623")
+     and (exposure.ExposureType==  "ab_AGG_auto_BodInjury"|| exposure.ExposureType=="ab_AGG_gl_BodInjury"|| exposure.ExposureType== "ab_BodilyInjury") 
+     and exposure.typeOfLossIsIncomplete()){
+    actions.exitToNext()   
+  }
+}
+
+exposure.CvgStateChangedExt = false
+/*end00rule*/
+  }
+}

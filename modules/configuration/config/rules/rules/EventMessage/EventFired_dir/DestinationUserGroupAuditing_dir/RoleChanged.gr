@@ -1,0 +1,36 @@
+package rules.EventMessage.EventFired_dir.DestinationUserGroupAuditing_dir
+
+@gw.rules.RuleName("RoleChanged")
+internal class RoleChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Role == true
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var r:Role=messageContext.Root as Role;
+  var emailAddy:String="";
+
+
+  var body = templates.email.RoleChanged.renderToString(r)
+
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    emailAddy=ScriptParameters.ClaimCenterProdEmail;
+  }
+  else{
+    emailAddy=ScriptParameters.ClaimCenterDevEmail;
+  }
+  util.Email.sendMail(emailAddy, "Role Change to " + r +" - ENV: " +gw.api.system.server.ServerUtil.getEnv(), body)
+
+}
+catch(e){
+  //Eat the exception, if this fails we don't want to limit functionality
+  //as this is just for root cause analysis
+  gw.api.util.Logger.logError("Role Change Auditing Failed") 
+  var emailAddy = (java.lang.System.getProperty("gw.cc.env") == "prod" ? ScriptParameters.ClaimCenterProdEmail : ScriptParameters.ClaimCenterDevEmail)
+  util.Email.sendMail(emailAddy, "Role Auditing Failed", e.StackTraceAsString)
+  e.printStackTrace()
+}/*end00rule*/
+  }
+}

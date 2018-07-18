@@ -1,0 +1,110 @@
+package rules.EventMessage.EventFired_dir.CashReceiptForm_dir
+
+@gw.rules.RuleName("Bulk Recovery Cash Received Ticket Document")
+internal class BulkRecoveryCashReceivedTicketDocument {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.Root as Recovery).Status == "submitting" &&
+messageContext.EventName == "RecoveryAdded"
+and (messageContext.Root as Recovery).LoadCommandID == null
+and (messageContext.Root as Recovery).IsBulkedExt == true/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var recov = messageContext.Root as Recovery
+
+
+
+  if(!recov.OffsetRecovery and recov.IsBulkedExt==true and
+      recov.New and recov.Status == "submitting" and recov.LoadCommandID == null and
+      recov.Amount > 0 and recov.LastBulkExt==true){
+    
+    uses com.guidewire.external.entity.EntityFactory;
+    uses java.util.HashMap;
+   // var insuredName = insurer.Insured
+    var recs = find(x in Recovery where x.ex_CashReceiptNumber == recov.ex_CashReceiptNumber)
+    if (!exists(doc in recov.Claim.Documents where doc.Name=="BulkCashReceivedTicket_" + recov.BulkRecoveryExt.CashReceiptNumberExt)){
+      var rec : BulkRecoveryExt = find(x in BulkRecoveryExt where (x.CashReceiptNumberExt == recov.ex_CashReceiptNumber)).getAtMostOneRow()
+    
+      //build table
+      var table:String = "";
+      for(r in recs){
+        table = table + "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + r.Claim.ClaimNumber + "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + r.Claim.Policy.PolicyNumber + "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + gw.api.util.StringUtil.formatNumber(r.Amount as java.lang.Double, "$###,###.00") + "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + r.CostType.DisplayName + "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + r.CostCategory.DisplayName + "</td>"
+        if(r.LineItems[0].LineCategory!=null){
+          table = table + "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + r.LineItems[0].LineCategory.DisplayName + "</td></tr>"
+        } else {
+          table = table + "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">&nbsp;</td></tr>"
+        }
+      }
+      table = table + "<tr><td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + recov.Claim.ClaimNumber +  "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + recov.Claim.Policy.PolicyNumber +  "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + gw.api.util.StringUtil.formatNumber(recov.Amount as java.lang.Double, "$###,###.00") + "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + recov.CostType.DisplayName +  "</td>" +
+                        "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + recov.CostCategory.DisplayName +  "</td>"
+      if(recov.LineItems[0].LineCategory!=null){
+        table = table + "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">" + recov.LineItems[0].LineCategory.DisplayName + "</td></tr>"
+      } else {
+        table = table + "<td style=\"vertical-align: top; font-family: Verdana; font-size: 11px; font-weight: bold;\">&nbsp;</td></tr>"
+      }
+    
+      //generate list of claims to add the document onto
+      var claimNumbers : List = new java.util.ArrayList();
+      for (stuff in recs){
+        if(!exists(id in claimNumbers where id.toString()==stuff.Claim.PublicID)){
+          claimNumbers.add(stuff.Claim.PublicID)
+        }
+      }
+      if(!exists(id in claimNumbers where id.toString()==recov.Claim.PublicID)){
+        claimNumbers.add(recov.Claim.PublicID)
+      }
+
+      //generate template
+      var formID : String = "ENT0009"
+     //for insured name
+      var insuredName=recov.Claim.Insured.DisplayName
+      var body = templates.documents.CashReceivedTicket.renderToString(recov.BulkRecoveryExt, table, formID,insuredName)
+      var values = new HashMap();
+      values.put( "CashTicketHTML", body)  
+    //print("the values are " +body)
+      //Add the document to each claim
+      //Added description to match that of the regular recoveries.
+      var count=0
+      for(z in claimNumbers){  
+        var c:Claim = EntityFactory.getEntityFactory().getEntityByRef( Claim, z.toString() ) as Claim
+        var doc : Document = new Document(c);
+        doc.MimeType = "text/html";
+        doc.Claim = c;
+        doc.Name = "BulkCashReceivedTicket" + "_" + recov.BulkRecoveryExt.CashReceiptNumberExt;
+        //doc.Exposure = recov.Exposure;
+        doc.ex_Type = "Recovery";
+        doc.ex_SubType = "Other";
+        doc.Privileged = "No";
+        doc.ProcessMethod = "Sent_to_File";
+        //doc.Claimant = recov.Claim.claimant;
+        doc.Status = "approved";
+        doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+        doc.Description = "BulkCashReceivedTicket" + "_" + recov.BulkRecoveryExt.CashReceiptNumberExt;
+        doc.FormIDExt = formID
+        if(count == 0){
+          doc.DMSOnlyExt=true
+        }
+        // bestor 09/21/2011 - use synchronous call instead of asynchronous
+        //          since the ECF integration is not handling it properly
+        //var docDescriptor = util.document.DocumentDescriptor.getDescriptorFromDoc( "CashReceivedTicket.html") 
+        //if (gw.document.DocumentProduction.synchronousDocumentCreationSupported( docDescriptor )) {
+        //gw.document.DocumentProduction.createDocumentAsynchronously( docDescriptor, values, doc )
+        //if (util.document.DocumentProduction.asynchronousDocumentCreationSupported("CashReceivedTicket.html")) {
+        util.document.DocumentProduction.createAndStoreDocumentSynchronously("CashReceivedTicket.html", values, doc)
+       
+        //} else {
+        //  print("ERROR: COULD NOT CREATE DOCUMENT");
+        //} //end if document
+        count = count + 1
+      }//end for(z in claimNumbers)
+    }//end if
+  }//end if/*end00rule*/
+  }
+}

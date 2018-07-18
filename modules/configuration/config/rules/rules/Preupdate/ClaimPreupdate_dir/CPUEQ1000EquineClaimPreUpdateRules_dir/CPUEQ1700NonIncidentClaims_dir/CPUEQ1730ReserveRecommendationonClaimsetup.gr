@@ -1,0 +1,32 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1700NonIncidentClaims_dir
+
+@gw.rules.RuleName("CPUEQ1730 - Reserve Recommendation on Claim setup")
+internal class CPUEQ1730ReserveRecommendationonClaimsetup {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///For ALL States, there should be a 30-day activity of "Reserve Recommendation/Entry Due".
+//For CA send a 25 day letter
+//defect 1682 - djohnson
+claim.State != "closed" and
+claim.LoadCommandID==null and 
+not exists( 
+ Activity in claim.Activities
+     where (Activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_reserve_recommendation")) ||
+            Activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_CA_25day_status_letter"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///defect 8870 - pdash2 
+if(claim.Policy.PolicyStateExt == "CA" or (claim.Policy.PolicyStateExt == null && claim.Insured.PrimaryAddress.State == "CA")){
+  // claim.createActivityFromPattern( null,  util.custom_Ext.finders.findActivityPattern("eq_CA_25day_status_letter"))
+  claim.createActivity( null,  util.custom_Ext.finders.findActivityPattern("eq_CA_25day_status_letter"), "CA Status Ltr/Reserve Rec Entry Due 25", null, "normal", true, null, null)
+}
+else {
+  //claim.createActivity( exposure, pattern, subject, description, priority, mandatory, targetStartDate, escalationStartDate )
+  //1970  claim.createActivity( null,  util.custom_Ext.finders.findActivityPattern("eq_reserve_recommendation"), "Reserve Recommendation/Entry Due 30", null, "normal", true, 1, 1) 
+  claim.createActivity( null,  util.custom_Ext.finders.findActivityPattern("eq_reserve_recommendation"), "Reserve Recommendation/Entry Due 30", null, "normal", true, null, null) 
+}
+
+
+/*end00rule*/
+  }
+}

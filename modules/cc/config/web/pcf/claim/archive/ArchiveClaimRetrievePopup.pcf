@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    autosaveable="false"
+    canEdit="true"
+    countsAsWork="false"
+    id="ArchiveClaimRetrievePopup"
+    startInEditMode="true"
+    title="displaykey.Web.ClaimSearch.Restore.Title">
+    <LocationEntryPoint
+      signature="ArchiveClaimRetrievePopup(restoreSet : claim.ClaimArchiveRestoreSet)"/>
+    <Variable
+      name="restoreSet"
+      type="gw.api.claim.ClaimArchiveRestoreSet"/>
+    <Variable
+      initialValue="new ArchivedClaimInfo()"
+      name="retrieveClaimInfo"
+      type="ArchivedClaimInfo"/>
+    <Screen
+      id="ArchiveClaimRetrievePopupScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="restoreAction()"
+          default="true"
+          id="Restore"
+          label="displaykey.Web.Claim.Restore"
+          shortcut="R"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="Done"
+          label="displaykey.Button.Cancel"
+          shortcut="C"/>
+      </Toolbar>
+      <PanelRef
+        def="RetrieveClaimInfoDV(retrieveClaimInfo)"/>
+      <ListViewPanel
+        id="ArchiveClaimRetrieveLV">
+        <RowIterator
+          checkBoxVisible="false"
+          editable="false"
+          elementName="ClaimInfoSearchView"
+          pageSize="0"
+          value="restoreSet.getClaimInfoSearchViews()">
+          <Variable
+            initialValue="ClaimInfoSearchView.getClaimantNames()"
+            name="claimantList"/>
+          <Row>
+            <Cell
+              action="SimpleClaimForward.go(ClaimInfoSearchView.ClaimInfo)"
+              id="IDOrder"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.ID"
+              sortOrder="2"
+              value="ClaimInfoSearchView.ClaimNumber"
+              wrap="false"/>
+            <Cell
+              id="Insured"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.Insured"
+              value="ClaimInfoSearchView.Insured"
+              wrap="false"/>
+            <Cell
+              id="PolicyID"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.PolicyID"
+              value="ClaimInfoSearchView.PolicyNumber"
+              wrap="false"/>
+            <ContentCell
+              id="Claimant"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.Claimant">
+              <LinkIterator
+                elementName="claimantName"
+                id="ClaimantInfoName"
+                value="claimantList">
+                <Link
+                  id="Claimant"
+                  label="claimantName"/>
+                <Link
+                  id="ClaimantSeperator"
+                  label="displaykey.Web.Claim.Claimant.Seperator"
+                  visible="claimantList.length &gt; 1 and claimantName != claimantList[claimantList.length - 1]"/>
+              </LinkIterator>
+            </ContentCell>
+            <Cell
+              id="LossDate"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.LossDate"
+              value="ClaimInfoSearchView.LossDate"
+              wrap="false"/>
+            <Cell
+              id="Assignee"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.Assignee"
+              value="ClaimInfoSearchView.ArchivedAdjuster"
+              wrap="false"/>
+            <Cell
+              id="Status"
+              label="displaykey.LV.Claim.ClaimSearchResults.Claims.Status"
+              value="ClaimInfoSearchView.ArchiveState"/>
+          </Row>
+        </RowIterator>
+      </ListViewPanel>
+    </Screen>
+    <Code><![CDATA[/**
+ * Restores and commits the archived claims
+ */
+function restoreAction() {
+  if(not retrieveClaimInfo.Comment.HasContent) {
+    throw new gw.api.util.DisplayableException(displaykey.Java.Validation.MissingRequired(displaykey.Web.ArchivedClaim.Comment))
+  }
+  restoreSet.restore(retrieveClaimInfo)
+  CurrentLocation.commit()
+}]]></Code>
+  </Popup>
+</PCF>

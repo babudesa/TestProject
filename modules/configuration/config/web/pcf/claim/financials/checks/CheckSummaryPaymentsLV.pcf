@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="CheckSummaryPaymentsLV">
+    <Require
+      name="PaymentList"
+      type="Payment[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <RowIterator
+      editable="false"
+      elementName="Payment"
+      pageSize="5"
+      value="PaymentList">
+      <Variable
+        name="Claim"
+        type="Claim"/>
+      <Row>
+        <Cell
+          id="Check_ScheduledSendDate"
+          label="displaykey.LV.Financials.Payments.Check.ScheduledSendDate"
+          sortOrder="1"
+          value="Payment.Check.ScheduledSendDate"/>
+        <!-- Explicitly wrap column name once, set width = 75 -->
+        <Cell
+          action="ClaimFinancialsTransactionsDetail.goInMain(Payment.Claim, Payment)"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.Payments.Amount"
+          value="Payment.Amount"/>
+        <Cell
+          id="Exposure"
+          label="displaykey.LV.Financials.Payments.Exposure"
+          outputConversion="((null == VALUE) ? displaykey.LV.Financials.NewCheckPayments.Payments.Exposure.None : Payment.Exposure.getFullDescription())"
+          value="Payment.Exposure.ClaimOrder"/>
+        <RangeCell
+          id="CoverageType"
+          label="displaykey.LV.Financials.Payments.CoverageType"
+          optionLabel="Payment.Exposure.Coverage.covTypeDisplayName()"
+          value="Payment.Exposure.PrimaryCoverage"
+          valueRange="Payment.Exposure.Coverage.getCoverages()"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.Payments.CostType"
+          value="Payment.CostType"/>
+        <Cell
+          id="InjuryType"
+          label="displaykey.LV.Financials.Payments.InjuryType"
+          value="Payment.WCInjuryTypeExt"
+          visible="util.WCHelper.isWCorELLossType(Payment.Claim)"/>
+        <!-- <Cell
+          id="CostCategory"
+          label="displaykey.LV.Financials.Payments.CostCategory"
+          value="Payment.CostCategory"/> -->
+        <!-- GAIC -->
+        <Cell
+          id="Status"
+          label="displaykey.LV.Financials.Payments.Status"
+          value="Payment.Status"/>
+        <Cell
+          id="PaymentType"
+          label="displaykey.LV.Financials.Payments.PaymentType"
+          value="Payment.PaymentType"/>
+        <Cell
+          available="Claim.LossType == &quot;EXECLIABDIV&quot; || Claim.LossType == typekey.LossType.TC_MERGACQU || Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV"
+          id="PaymentCategory"
+          label="displaykey.LV.Financials.Payments.PaymentCategory"
+          value="Payment.PaymentCategoryExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function pmtCategoryVisible() : Boolean {
+  var vis :Boolean
+  if(Claim.LossType == "EXECLIABDIV" || Claim.LossType == typekey.LossType.TC_MERGACQU || Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+    vis = true
+  }else{
+    vis = false
+  }
+  return vis
+}]]></Code>
+  </ListViewPanel>
+</PCF>

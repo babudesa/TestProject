@@ -1,0 +1,26 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX1110 - Claim Number is Required")
+internal class CVXX1110ClaimNumberisRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*It is possible that a DRAFT claim might not yet have a claim number, so we exclude draft claims, and verify that
+all other claims have a claim number by checking to make sure that the field is not NULL
+*/
+claim.State!="draft" and
+claim.ClaimNumber==Null
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//* This is implemented as a WARNING, because if this error occurs, Claim Numbers are automatically generated and the user
+does not have a mechanism to enter or create a new claim number.  They need to contact the help desk.  
+There is a 99.99% chance this rule will never fire, but it is here for completeness for the business.
+*/
+
+var msg:String
+msg="This Claim does not have a claim number.  Please contact the help desk"
+
+claim.reject(Null,Null, "newloss", msg )/*end00rule*/
+  }
+}

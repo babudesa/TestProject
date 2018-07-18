@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  desc="A representation of a coverage based on the coverage's subtype, type, and any associated exposure unit."
+  entity="CoverageLine"
+  exportable="true"
+  javaClass="com.guidewire.cc.domain.aggregatelimit.CoverageLine"
+  platform="false"
+  table="coverageline"
+  type="retireable">
+  <column
+    desc="Number of the exposure unit on the policy."
+    name="ExposureUnitNumber"
+    nullok="true"
+    type="integer"/>
+  <typekey
+    desc="Coverage subtype, e.g., policy, vehicle, or property."
+    name="CoverageSubtype"
+    nullok="true"
+    typelist="Coverage"/>
+  <typekey
+    desc="Coverage type."
+    name="CoverageType"
+    nullok="false"
+    typelist="CoverageType"/>
+  <foreignkey
+    columnName="PolicyPeriodID"
+    desc="PolicyPeriod with which this coverageline is associated."
+    fkentity="PolicyPeriod"
+    name="PolicyPeriod"
+    nullok="false"/>
+  <array
+    arrayentity="LineCoverage"
+    desc="Coverages that reference this coverage line."
+    exportable="false"
+    name="Coverages"
+    owner="true"
+    setterScriptability="hidden"/>
+  <index
+    desc="Index to ensure there is only one CoverageLine per unique combination of PolicyPeriod, CoverageSubtype, CoverageType and EposureUnitNumber"
+    name="coveragelineu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="PolicyPeriodID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="CoverageSubtype"/>
+    <indexcol
+      keyposition="4"
+      name="CoverageType"/>
+    <indexcol
+      keyposition="5"
+      name="ExposureUnitNumber"/>
+  </index>
+  <dbcheckbuilder
+    className="com.guidewire.cc.domain.aggregatelimit.dbchecks.CoverageLineDBCheckBuilder"/>
+</entity>

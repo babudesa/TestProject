@@ -1,0 +1,25 @@
+package rules.Assignment.GlobalClaimAssignmentRules_dir.GCAXX100AllBUsGlobalClaimAssignmentRules_dir
+
+@gw.rules.RuleName("GCAXX110 - Incident Only")
+internal class GCAXX110IncidentOnly {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.IncidentReport == true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/// get group using the 'user' from script parameter
+var user = util.GlobalParameters.ParameterFinder.getUserParameter( "incidentassign", claim.LossType )
+
+Try{
+  if(claim.CurrentAssignment.assignGroup( user.AllGroups.first() as Group)){
+    actions.exit();
+  }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+  gw.api.util.Logger.logError( "Group not found "+ actions.getRule().DisplayName)
+}/*end00rule*/
+  }
+}

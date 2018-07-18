@@ -1,0 +1,221 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="WCIndemnityBenefitsDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <InputColumn>
+      <Label
+        label="&quot;Benefit Details&quot;"/>
+      <RangeInput
+        editable="true"
+        id="BureauBenefitType"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.BureauBenefit"
+        value="Exposure.BureauBenefitTypeExt"
+        valueRange="util.WCHelper.getBureauBenefitExtList(Exposure.Claim)"
+        valueWidth="220"/>
+      <Input
+        editable="true"
+        id="EmploymentData_WorkCompAWW"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.WorkCompAWW"
+        value="Exposure.Claim.EmploymentData.WageAmount"/>
+      <TypeKeyInput
+        editable="true"
+        id="NumberofDaysWorkWeek"
+        label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek"
+        value="Exposure.Claim.EmploymentData.NumDaysWeekExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="AWW"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.WageAmountPreInjury  "
+        value="Exposure.Claim.EmploymentData.WageAmountPreInjuryExt  "/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="WageAmtPostInjury"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.WageAmountPostInjury  "
+        value="Exposure.Claim.EmploymentData.WageAmountPostInjury  "/>
+      <TypeKeyInput
+        editable="true"
+        id="WageDetermination"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.WageDetermin"
+        value="Exposure.WeeklyWageDeterminExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="RemarriagePayment"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.Remarriage"
+        value="Exposure.RemarriagePaymentExt"/>
+      <InputDivider/>
+      <Label
+        label="&quot;Death&quot;"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="FuneralAllowance"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.Funeral"
+        value="Exposure.FuneralAmountExt"/>
+      <InputDivider/>
+      <Label
+        label="&quot;Waiting Period&quot;"/>
+      <Input
+        id="Jurisdiction"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.JurisdictionState"
+        value="Exposure.Claim.JurisdictionState "
+        visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+      <BooleanRadioInput
+        editable="true"
+        id="WaitingPeriodApplied"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.WaitingPeriod.Applied"
+        onChange="waitingPeriodListClear()"
+        postOnChange="true"
+        value="Exposure.Claim.ClaimWorkComp.WaitingPeriodApplied"/>
+      <ListViewInput
+        available="if(Exposure.Claim.ClaimWorkComp.WaitingPeriodApplied == true){return true}else if(Exposure.Claim.ClaimWorkComp.isFieldChanged(&quot;WaitingPeriodApplied&quot;) == false || Exposure.Claim.ClaimWorkComp.WaitingPeriodApplied == false){return false}"
+        def="EditableWaitingPeriodsLV(Exposure.Claim)"
+        id="WaitingPeriodDetail"
+        labelAbove="true"
+        width="200">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="&quot;Return to Work&quot;"/>
+      <InputSet
+        id="ReturnToWorkInputSet">
+        <Variable
+          initialValue="gw.api.util.DateUtil.currentDate()"
+          name="Today"
+          type="DateTime"/>
+        <BooleanRadioInput
+          id="ModDutyAvailable"
+          label="&quot;Modified Duty Available?&quot;"
+          required="false"
+          value="Exposure.Claim.ModifiedDutyAvail"/>
+        <BooleanRadioInput
+          editable="true"
+          id="ReturnToModWorkValid"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToModWorkValid"
+          onChange="if (Exposure.ReturnToModWorkValidExt == false){Exposure.ReturnToModWorkActualExt = null; Exposure.ReturnToModWorkDateExt = null}"
+          postOnChange="true"
+          required="Exposure.Claim.ModifiedDutyAvail == true"
+          value="Exposure.ReturnToModWorkValidExt"
+          visible="Exposure.Claim.ModifiedDutyAvail == true"/>
+        <DateInput
+          editable="true"
+          id="ReturnToModWorkDate"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToModWorkDate"
+          onChange="util.WCHelper.validateModDutyDate(Exposure)"
+          postOnChange="true"
+          validationExpression="((Exposure.ReturnToModWorkActualExt AND Exposure.ReturnToModWorkDateExt &gt; util.DateUtil.currentDate()) ?  displaykey.Warning.Date.RTW.IfActualForbidFuture : null)"
+          value="Exposure.ReturnToModWorkDateExt"
+          visible="Exposure.Claim.ModifiedDutyAvail == true"/>
+        <BooleanRadioInput
+          editable="true"
+          falseLabel="displaykey.Term.Projected.Proper"
+          id="ReturnToModWorkActual"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToModWorkActual"
+          required="Exposure.ReturnToModWorkDateExt != null"
+          trueLabel="displaykey.Term.Actual.Proper"
+          value="Exposure.ReturnToModWorkActualExt"
+          visible="Exposure.Claim.ModifiedDutyAvail == true"/>
+        <BooleanRadioInput
+          editable="true"
+          id="ReturnToWorkValid"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToWorkValid"
+          onChange="Exposure.ReturnToWorkDateExt = null; Exposure.ReturnToWorkActualExt = null"
+          postOnChange="true"
+          value="Exposure.ReturnToWorkValidExt"/>
+        <BooleanRadioInput
+          editable="true"
+          id="RTWOffered"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToWorkOffered"
+          value="Exposure.ReturnToWorkOfferedExt"/>
+        <TypeKeyInput
+          editable="true"
+          id="RTWAccepted"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToWorkAccept"
+          value="Exposure.ReturnToWorkAcceptExt"/>
+        <DateInput
+          editable="true"
+          id="ReturnToWorkDate"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToWorkDate"
+          onChange="util.WCHelper.validateRTWdate(Exposure)"
+          postOnChange="true"
+          validationExpression="((Exposure.ReturnToWorkActualExt AND Exposure.ReturnToWorkDateExt &gt; util.DateUtil.currentDate()) ?  displaykey.Warning.Date.RTW.IfActualForbidFuture : null)"
+          value="Exposure.ReturnToWorkDateExt"
+          visible="Exposure.ReturnToWorkValidExt == true"/>
+        <BooleanRadioInput
+          editable="true"
+          falseLabel="displaykey.Term.Projected.Proper"
+          id="ReturnToWorkActual"
+          label="displaykey.NVV.Incident.Injury.RTW.ReturnToWorkActual"
+          required="Exposure.ReturnToWorkDateExt != null"
+          trueLabel="displaykey.Term.Actual.Proper"
+          value="Exposure.ReturnToWorkActualExt"
+          visible="Exposure.ReturnToWorkValidExt == true"/>
+      </InputSet>
+      <InputDivider/>
+      <Label
+        label="&quot;Impairment&quot;"/>
+      <TextInput
+        editable="true"
+        formatType="percentagePoints"
+        id="LWImpairment"
+        label="displaykey.NVV.Exposure.LostWagesSummary.Exposure.LWImpairment"
+        maxChars="3"
+        numCols="3"
+        validationExpression="Exposure.WCImpairmentExt != null &amp;&amp; (Exposure.WCImpairmentExt &lt; 0 or Exposure.WCImpairmentExt &gt; 100 ) ? displaykey.Java.Validation.Number.NotAnIntegerInRangeExt(0,100) : null"
+        value="Exposure.WCImpairmentExt"/>
+      <TypeKeyInput
+        editable="true"
+        id="ImpairmentPercBasis"
+        label="&quot;Impairment Percentage Basis&quot;"
+        value="Exposure.ImpairPercBasisExt"
+        valueWidth="200"/>
+      <InputDivider/>
+      <Label
+        label="&quot;Temporary Partial Disability (TPD)&quot;"/>
+      <Input
+        editable="true"
+        id="WeeklyCompRateTPD"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.TPD.WeeklyCompRate"
+        value="Exposure.TPDBenefits.WeeklyCompRate"/>
+      <Label
+        label="&quot;Temporary Total Disability (TTD)&quot;"/>
+      <Input
+        editable="true"
+        id="TTDCompRate"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.TTD.WeeklyCompRate"
+        value="Exposure.TTDBenefits.WeeklyCompRate"/>
+      <Label
+        label="&quot;Permanent Partial Disability (PPD)&quot;"/>
+      <Input
+        editable="true"
+        id="PPDCompRate"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.PPD.WeeklyCompRate"
+        value="Exposure.PPDBenefits.WeeklyCompRate"/>
+      <Label
+        label="&quot;Permanent Total Disability (PTD)&quot;"/>
+      <Input
+        editable="true"
+        id="PTDCompRate"
+        label="displaykey.NVV.Exposure.LostWagesBenefits.PTD.WeeklyCompRate"
+        value="Exposure.PTDBenefits.WeeklyCompRate"/>
+    </InputColumn>
+    <Code><![CDATA[function waitingPeriodListClear(){
+  if(!Exposure.Claim.ClaimWorkComp.WaitingPeriodApplied){
+    var ex: java.util.ArrayList<WCWaitingPeriod> = new java.util.ArrayList<WCWaitingPeriod>();
+    Exposure.Claim.ClaimWorkComp.WaitingPeriodDetails= ex as entity.WCWaitingPeriod[]
+  }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,41 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVWC1000WorkersCompTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVWC1201 - Set Injury Type for Offset RecoveryReserves")
+internal class TVWC1201SetInjuryTypeforOffsetRecoveryReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.AllTransactions where trans.Subtype=="recoveryreserve"
+ && trans.WCInjuryTypeExt == null)
+/* Defect 8208 - 3/2/16
+ * Based on rule to handle offset recovery injury types, this rule adds injury
+ * type to offset recoveryreserves by getting the matching Offsetting Recovery
+ * or the most recent transaction with matching Cost Type / Exposure. 
+ *
+ * This rule will only catch system-generated reserves in this Validation
+ * ruleset, not Preupdate etc.
+ *//*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var recoveries : List<Recovery> = transactionSet.Claim.getRecoveriesIterator(true).
+        toList().sortBy(\ r -> (r as Recovery).CreateTime) as List<Recovery>
+
+  for(trans in transactionSet.AllTransactions){
+    if(trans.Subtype=="recoveryreserve" and trans.WCInjuryTypeExt==null
+    ){
+      /*Only new recoveries grabbed, so this *should* only trigger from
+        RecoveryReserve offseting a new Recovery
+      */
+      for(recv in recoveries){ // Should only ever be one...but just in case...
+        if(recv.ReserveLine==trans.ReserveLine and recv.WCInjuryTypeExt!=null){
+          trans.WCInjuryTypeExt = recv.WCInjuryTypeExt
+          break
+        }
+      }
+    }
+  }  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

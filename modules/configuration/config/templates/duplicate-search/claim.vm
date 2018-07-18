@@ -1,0 +1,38 @@
+#*
+Sample Velocity template for duplicate claim SQL.
+INPUT:  $Util -- an instance of com.guidewire.cc.domain.duplicatesearch.VelocityUtil that can be used to access various util classes.
+        $Claim -- the claim we are testing for duplicates
+OUTPUT: The SQL that should produce a list of claim IDs that match this check, or an empty list of none match
+*#
+  Select cc_claim_head.ID col0
+  FROM cc_claim cc_claim_head
+  WHERE
+  cc_claim_head.retired = 0
+  AND cc_claim_head.LossDate BETWEEN $Util.makeParam("Claim.LossDate",$Util.date.addDays($Claim.lossDate,-3,true))
+   AND $Util.makeParam("Claim.LossDate", $Util.date.addDays($Claim.lossDate,3,true))
+  AND cc_claim_head.ID <> $Util.makeParam("Claim.ID", $Claim.id)
+  AND
+   (cc_claim_head.PolicyID IN (
+    Select cc_policy_head.ID col0
+    FROM cc_policy cc_policy_head
+    WHERE cc_policy_head.PolicyNumber = $Util.makeParam( "Claim.Policy.policyNumber", $Claim.policy.policyNumber)
+    AND cc_policy_head.Retired = 0))
+## IF claim.insured is not null
+#if ($Claim.insured)
+   UNION
+    Select cc_claim_head.ID col0
+    FROM
+      cc_claim cc_claim_head INNER JOIN cc_contact cc_contact_2 ON cc_claim_head.InsuredDenormID = cc_contact_2.ID
+    WHERE
+      cc_claim_head.LossDate BETWEEN $Util.makeParam("Claim.LossDate",$Util.date.addDays($Claim.lossDate,-3,true))
+      AND $Util.makeParam("Claim.LossDate",$Util.date.addDays($Claim.lossDate,3,true))
+      AND cc_claim_head.ID <> $Util.makeParam("Claim.ID", $Claim.id)
+## If the contact subtype is person than search on the person fields, else search on the company fields
+#if ($Util.getEntityIntrinsicType("Person").isAssignableFrom($Claim.insured.entityIntrinsicType))
+      AND cc_contact_2.FirstNameDenorm = $Util.makeParam("Claim.Insured.Name", $Claim.insured.firstName)
+      AND cc_contact_2.LastNameDenorm = $Util.makeParam("Claim.Insured.Name", $Claim.insured.lastName)
+#else
+      AND cc_contact_2.NameDenorm = $Util.makeParam("Claim.Insured.Name", $Claim.insured.name)
+#end
+      AND cc_contact_2.Retired = 0 AND cc_claim_head.Retired = 0
+#end

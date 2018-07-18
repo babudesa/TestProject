@@ -1,0 +1,32 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1110 - Can't write checks at claim level")
+internal class TVXX1110Cantwritechecksatclaimlevel {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///if(check.Payments[0].ReserveLine.Exposure == null){
+//  TransactionSet.reject( "payment", "You must select a reserve line to create a check against.", null, null )
+
+var check = (transactionSet as CheckSet).PrimaryCheck;
+
+for (payment in check.Payments)
+{
+   if (payment.ReserveLine.Exposure == null) 
+     { 
+       if (payment.OnsetOriginPayment != null)
+           {
+           transactionSet.reject( "payment", "You must select a reserve line with a feature to recode the payment.", null, null )  
+           actions.exitToNext()
+           }
+       else
+           {
+           transactionSet.reject( "payment", "You must select a reserve line to create a check against.", null, null )  
+           actions.exitToNext()
+           }
+     }
+}/*end00rule*/
+  }
+}

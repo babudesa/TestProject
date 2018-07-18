@@ -1,0 +1,192 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableReservesLV"
+    mode="SetByNewTotalIncurred">
+    <Require
+      name="WizardHelper"
+      type="financials.ReserveWizardHelper"/>
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="addNew"
+      type="Boolean"/>
+    <Require
+      name="validateReserveSet"
+      type="util.custom_Ext.ValidateReserveSet"/>
+    <RowIterator
+      autoAdd="addNew"
+      checkBoxVisible="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+      editable="true"
+      elementName="ReserveWrapper"
+      pageSize="5"
+      toCreateAndAdd="WizardHelper.addNewTransactionWrapper(Exposure)"
+      toRemove="WizardHelper.removeTransaction(ReserveWrapper)"
+      type="TransactionEditWrapper"
+      value="WizardHelper.TransactionWrappers">
+      <Variable
+        initialValue="ReserveWrapper.Transaction.Exposure.DisplayName"
+        name="valueVariable"
+        type="String"/>
+      <ToolbarFlag
+        condition="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+        name="Removeable"/>
+      <Row>
+        <!-- <TextCell
+          editable="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+          footerLabel="displaykey.Java.ListView.Sum"
+          hideIfEditable="true"
+          id="Exposure_Readonly"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Exposure"
+          outputConversion="VALUE == null ? displaykey.Web.Financials.Exposure.ClaimLevel : VALUE"
+          required="false"
+          sortOrder="1"
+          value="valueVariable"
+          width="100"
+          wrapLabel="true"/> -->
+        <!-- GW ADDED -->
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+          footerLabel="displaykey.Java.ListView.Sum"
+          hideIfReadOnly="true"
+          id="Exposure"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Exposure"
+          noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+          onChange="WizardHelper.updateWrapperOnChangePost(ReserveWrapper)"
+          optionLabel="(VALUE as Exposure).FullDescriptionwithLossParty"
+          postOnChange="true"
+          required="false"
+          sortOrder="1"
+          value="ReserveWrapper.Transaction.Exposure"
+          valueRange="WizardHelper.getValidExposures(ReserveWrapper.Transaction)"/>
+        <RangeCell
+          id="Coverage"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Coverage"
+          optionLabel="ReserveWrapper.Transaction.Exposure.Coverage.covTypeDisplayName()"
+          required="false"
+          sortOrder="2"
+          value="ReserveWrapper.Transaction.Exposure.PrimaryCoverage"
+          valueRange="getCoverages(ReserveWrapper.Transaction.Exposure.Coverage)"/>
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+          id="CostType"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.CostType"
+          onChange="WizardHelper.updateWrapperOnChangePost(ReserveWrapper)"
+          postOnChange="true"
+          required="true"
+          sortOrder="3"
+          value="ReserveWrapper.Transaction.CostType"
+          valueRange="util.financials.CheckFunctions.getCostTypeValues(ReserveWrapper.Transaction.Claim, null, null)"/>
+        <RangeCell
+          editable="WizardHelper.isTransactionFullyEditable(ReserveWrapper.Transaction)"
+          id="LV_Financials_ReserveSet_Reserves_CostCategories"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.CostCategories"
+          onChange="WizardHelper.updateWrapperOnChangePost(ReserveWrapper)"
+          postOnChange="true"
+          required="true"
+          sortDirection="descending"
+          sortOrder="4"
+          value="ReserveWrapper.Transaction.CostCategory"
+          valueRange="WizardHelper.getValidCostCategories(ReserveWrapper.Transaction)"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="LV_Financials_ReserveSet_Reserves_AvailableReserves"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.AvailableReserves"
+          value="financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(ReserveWrapper.Transaction.Claim, ReserveWrapper.Transaction.Exposure, ReserveWrapper.Transaction.CostType, ReserveWrapper.Transaction.CostCategory)"
+          wrapLabel="true">
+          <ColumnFooter>
+            <FinancialsSumCell
+              formatType="currency"
+              id="AvailableReservesSum"
+              value="WizardHelper.AvailableReservesSum"/>
+          </ColumnFooter>
+        </Cell>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="LV_Financials_ReserveSet_Reserves_TotalIncurred"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.TotalIncurred"
+          value="financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(ReserveWrapper.Transaction.Claim, ReserveWrapper.Transaction.Exposure, ReserveWrapper.Transaction.CostType, ReserveWrapper.Transaction.CostCategory)"
+          wrapLabel="true">
+          <ColumnFooter>
+            <FinancialsSumCell
+              formatType="currency"
+              id="TotalIncurredSum"
+              value="WizardHelper.TotalIncurredSum"/>
+          </ColumnFooter>
+        </Cell>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="LV_Financials_ReserveSet_Reserves_PendingReserves"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.PendingReserves"
+          value="financials.FinancialsCalculationUtil.getFinancialsCalculation(financials.FinancialsCalculationUtil.getPendingApprovalReservesExpression()).getAmount(ReserveWrapper.Transaction.Claim, ReserveWrapper.Transaction.Exposure, ReserveWrapper.Transaction.CostType, ReserveWrapper.Transaction.CostCategory)"
+          wrapLabel="true">
+          <ColumnFooter>
+            <FinancialsSumCell
+              formatType="currency"
+              id="PendingReservesSum"
+              value="WizardHelper.PendingApprovalReservesSum"/>
+          </ColumnFooter>
+        </Cell>
+        <TransactionNewAmountCell
+          editable="not ReserveWrapper.Transaction.Exposure.Closed"
+          enableSort="false"
+          formatType="currency"
+          id="LV_Financials_ReserveSet_Reserves_NewTotalIncurred"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.NewTotalIncurred"
+          numCols="12"
+          required="true"
+          value="ReserveWrapper.NewAmount"
+          wrapLabel="true">
+          <ColumnFooter>
+            <!-- Use special renderer to reflect footer value at client side: -->
+            <FinancialsSumCell
+              formatType="currency"
+              id="NewAmountSum"
+              value="WizardHelper.NewAmountSum"/>
+          </ColumnFooter>
+        </TransactionNewAmountCell>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="LV_Financials_ReserveSet_Reserves_ChangeAmount"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.ChangeAmount"
+          value="WizardHelper.getChangeAmount(ReserveWrapper)">
+          <Reflect
+            custom="var newVal = (NumberUtil.safeConvertToNumber(VALUE3) == NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE1)) ? 0 : (NumberUtil.safeConvertToNumber(VALUE3) - NumberUtil.safeConvertToNumber(VALUE1)); var delta = newVal - NumberUtil.safeConvertToNumber(DHTML.getValue(REFLECTOR));DHTML.setValue(REFLECTOR, newVal); updateChangeSum(delta)"
+            triggerIds="LV_Financials_ReserveSet_Reserves_TotalIncurred,LV_Financials_ReserveSet_Reserves_PendingReserves,LV_Financials_ReserveSet_Reserves_NewTotalIncurred"/>
+          <ColumnFooter>
+            <!-- Use special renderer to reflect footer value at client side: -->
+            <FinancialsSumCell
+              formatType="currency"
+              id="ChangeSum"
+              value="WizardHelper.ChangeAmountSum"/>
+          </ColumnFooter>
+        </Cell>
+        <Cell
+          editable="true"
+          enableSort="false"
+          id="LV_Financials_ReserveSet_Reserves_Comments"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.Comments"
+          validationExpression="ReserveWrapper.Transaction.isFieldChanged(&quot;Comments&quot;) and WizardHelper.getChangeClaimAmount(ReserveWrapper).Amount == null ? &quot;New Available Reserve must also be updated.&quot; : null"
+          value="ReserveWrapper.Transaction.Comments"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getCoverages(cov:Coverage):List{
+    
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+  
+}]]></Code>
+  </ListViewPanel>
+</PCF>

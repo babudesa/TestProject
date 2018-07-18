@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- Removed visibility from TotalLossInputSet for Defect 3911, will be 
+		put back in EM29. tnewcomb 02/24/2011  tnewcomb 03/14/2011 - re-enabled for EM29 -->
+  <InputSet
+    id="TotalLossInputSet"
+    visible="Exposure.needsTotalLossReporting()">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.populateVehicleIncident()"
+      name="setVehicle"/>
+    <!-- Vehicle VIN, Make, Model, and Year and not editable unless this is 
+			a third party loss or unverified policy -->
+    <Variable
+      initialValue="Exposure.LossParty == LossPartyType.TC_THIRD_PARTY ? true : false"
+      name="isThirdPartyLoss"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="Exposure.OwnLienAtAccidentExt == Exposure.salvagebuyer"
+      name="isSalvageBuyerOwnerAtAccident"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Label
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.TotalLossReporting"/>
+    <Input
+      editable="vehicleFieldsAreEditable()"
+      id="VIN"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.VIN"
+      postOnChange="true"
+      required="Exposure.TotalLossIndExt == true"
+      validationExpression="Exposure.validateVin()"
+      value="Exposure.VehicleIncident.Vehicle.Vin"/>
+    <Input
+      boldLabel="true"
+      id="VehicleOwnerLabel"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.VehOwnLien"
+      value=""/>
+    <ClaimContactInput
+      claim="Exposure.Claim"
+      editable="true"
+      id="AtAccident"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.VehOwnLien.AtAccident"
+      newContactMenu="ClaimNewPersonCompanyOnlyPickerMenuItemSet"
+      onChange="determineOwnerAtClaimEnd()"
+      onPick="determineOwnerAtClaimEnd()"
+      postOnChange="true"
+      required="false"
+      value="Exposure.VehicleIncident.OwnLienAtAccidentExt"
+      valueRange="Exposure.getOwnerAtAccidentValueRange()"/>
+    <Input
+      editable="true"
+      id="IsOwnerRetainingSalvage"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.IsOwnerRetainingSalvage"
+      onChange="Exposure.salvagebuyer = null;determineOwnerAtClaimEnd()"
+      postOnChange="true"
+      required="false"
+      value="Exposure.VehicleIncident.IsOwnerRetainingExt"/>
+    <ClaimContactInput
+      claim="Exposure.Claim"
+      editable="!Exposure.VehicleIncident.IsOwnerRetainingExt"
+      id="SalvageBuyer"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.SalvageBuyer"
+      newContactMenu="ClaimNewPersonCompanyOnlyPickerMenuItemSet"
+      onChange="determineOwnerAtClaimEnd()"
+      onPick="determineOwnerAtClaimEnd()"
+      postOnChange="true"
+      required="false"
+      value="Exposure.salvagebuyer"
+      valueRange="Exposure.getSalvageBuyerValueRange()"/>
+    <ClaimContactInput
+      claim="Exposure.Claim"
+      id="AtClaimEnd"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.VehOwnLien.AtClaimEnd"
+      required="false"
+      value="Exposure.VehicleIncident.OwnLienAtClaimCloseExt"
+      valueRange="Exposure.Claim.getRelatedContacts()"/>
+    <Input
+      editable="true"
+      id="Odometer"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Odometer"
+      value="Exposure.VehicleIncident.OdomRead"/>
+    <Input
+      editable="vehicleFieldsAreEditable()"
+      id="Make"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Make"
+      postOnChange="true"
+      value="Exposure.VehicleIncident.Vehicle.Make"/>
+    <Input
+      editable="vehicleFieldsAreEditable()"
+      id="Model"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Model"
+      postOnChange="true"
+      value="Exposure.VehicleIncident.Vehicle.Model"/>
+    <Input
+      editable="vehicleFieldsAreEditable()"
+      id="Year"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Year"
+      postOnChange="true"
+      value="Exposure.VehicleIncident.Vehicle.Year"/>
+    <TypeKeyInput
+      editable="true"
+      id="Type"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Type"
+      required="false"
+      value="Exposure.VehicleIncident.Vehicle.VehicleTypeExt"/>
+    <TypeKeyInput
+      editable="true"
+      id="Style"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.Style"
+      value="Exposure.VehicleIncident.Vehicle.VehicleStyleExt"/>
+    <TextAreaInput
+      editable="true"
+      id="ReasonForTotalLoss"
+      label="displaykey.NVV.Exposure.SubView.TotalLoss.Vehicle.ReasonForTotalLoss"
+      numCols="32"
+      numRows="3"
+      required="false"
+      value="Exposure.VehicleIncident.ReasonForTotalLossExt"/>
+    <Code><![CDATA[/* Used to determine the value of OwnLienAtClaimCloseExt which is dependent on AtAccident, 
+		    * IsOwnerRetaining, and SalvageBuyer.
+		    * tnewcomb 03/25/2011
+		    */			
+			function determineOwnerAtClaimEnd() {
+
+			    var ownerAtClaimClose : Contact = null;
+
+				if(Exposure.VehicleIncident.IsOwnerRetainingExt){     
+	     			ownerAtClaimClose = Exposure.VehicleIncident.OwnLienAtAccidentExt;
+	     			Exposure.salvagebuyer = Exposure.VehicleIncident.OwnLienAtAccidentExt;
+  				} 
+  				else if(Exposure.VehicleIncident.IsOwnerRetainingExt == false and Exposure.salvagebuyer != null){
+	      			ownerAtClaimClose = Exposure.salvagebuyer;
+  				}
+  				else if(Exposure.VehicleIncident.IsOwnerRetainingExt == false and Exposure.salvagebuyer == null){
+
+  					//Create a Contact to represent GAI if owner is not retaining and salvagebuyer is null (none selected).
+	      			var gaiContact : Company = new Company();
+					gaiContact.Name = "Great American Insurance";
+					gaiContact.PrimaryAddress.Country = Country.TC_US;
+					gaiContact.PrimaryAddress.AddressType = AddressType.TC_MAILING;
+					gaiContact.PrimaryAddress.AddressLine1 = "301 E Fourth Street";
+					gaiContact.PrimaryAddress.City = "Cincinnati";
+					gaiContact.PrimaryAddress.State = State.TC_OH;
+					gaiContact.PrimaryAddress.PostalCode = "45202-4201";
+
+					ownerAtClaimClose = gaiContact; 			
+  				}
+  				else{
+  					ownerAtClaimClose = null;
+  				}
+  				
+  				Exposure.VehicleIncident.OwnLienAtClaimCloseExt = ownerAtClaimClose;						 
+			}
+			
+			function vehicleFieldsAreEditable(): boolean{
+				return !(Exposure.LossParty==LossPartyType.TC_INSURED and Exposure.Coverage.Subtype=="VehicleCoverage")or (Exposure.Claim.Policy.ex_PolicyVersion.contains("Z"));
+			}]]></Code>
+  </InputSet>
+</PCF>

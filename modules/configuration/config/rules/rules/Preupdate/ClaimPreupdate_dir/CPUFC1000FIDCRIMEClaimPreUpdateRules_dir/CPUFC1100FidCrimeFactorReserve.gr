@@ -1,0 +1,58 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUFC1000FIDCRIMEClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUFC1100 - FidCrime Factor Reserve")
+internal class CPUFC1100FidCrimeFactorReserve {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.isNativeORUpdatedExt() &&
+(!claim.IncidentReport &&
+claim.State != "closed" &&
+claim.State != "draft" &&
+!claim.checkDisconnectedFeatures())/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var policyRes = claim.Policy.safeValidate();
+  var results = claim.safeValidate( false );
+  var newReserveAdded : boolean = false
+  var errors = results.getErrors(ValidationLevel.TC_PAYMENT)
+  if ((policyRes.ValidationLevelPassed ==  "payment" and errors.length == 1)  or results.ValidationLevelPassed == "payment"){
+    for(exp in claim.Exposures){  
+      if(!exp.Closed){
+        var expRes = exp.safeValidate( false);
+        if(expRes.ValidationLevelPassed == "payment" and !exp.typeOfLossIsIncomplete()){
+          var checkReserve:Boolean = false;
+            for(trans in claim.getAllTransactions()){
+              if(trans.Exposure == exp and trans.CostType == "claimcost"){
+                checkReserve = true;     
+              }
+            } 
+            if(checkReserve == false){
+              if (claim.LoadCommandID == null) {
+               try{
+                 if(com.guidewire.pl.system.dependency.PLDependencies.getWebController().Request !=null){
+                 var _data : java.util.Map = gw.api.web.Scopes.getRequest()
+                 _data["AutoRes"] = true
+                 }
+               }catch(e){
+                 util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+               }
+              }
+              var newReserve =  exp.setAvailableReserves("claimcost", "unspecified", 1, gw.plugin.util.CurrentUserUtil.getCurrentUser().User)
+              if(newReserve != null){
+                newReserve.FactorReserveExt = true
+                newReserveAdded = true
+              }
+            }
+        }
+        if(newReserveAdded == true){
+          claim.createCustomHistoryEvent( "DataChange", "Factor Reserve for FidCrime" )
+        }
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

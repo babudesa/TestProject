@@ -1,0 +1,42 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1270 - Add Contact Role To New Vendors")
+internal class TPUXX1270AddContactRoleToNewVendors {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///changes made by KameshGopalan on 05/11/10
+//If the check is bulked and it created using an SOAP API 
+//then we have to check the bulkinvoicetype. If the type is lit advisor
+//then we have to set the role as LegalCaseManagement. For all other type
+//by default the role will be checkpayee.
+
+//Commented the code on 05/19/10 by Kamesh
+//We need to have both the roles (CheckPayee and LegalCaseManagement)
+try{
+  for(check in (transactionSet as CheckSet).Checks){
+    for(payee in check.Payees){
+      if(check.Bulked)
+      {
+       if(check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.BulkInvoiceTypeExt == "lit_advisor")
+        {
+          if(check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.PayeeAdditionalRoleExt != null)
+          {
+            transactionSet.Claim.addRole(check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.PayeeAdditionalRoleExt, payee.ClaimContact.Contact ) 
+          }
+        }
+      }
+      if(payee.CheckPayeeRoleExt != null and payee.ClaimContact.New){      
+        transactionSet.Claim.addRole( payee.CheckPayeeRoleExt, payee.ClaimContact.Contact )
+      }
+    }
+  }
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, "" )  
+}
+/*end00rule*/
+  }
+}

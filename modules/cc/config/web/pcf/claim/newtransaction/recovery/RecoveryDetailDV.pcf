@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="RecoveryDetailDV">
+    <Require
+      name="Recovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="Recovery.ReserveLine"
+      name="reserveLine"
+      type="ReserveLine"/>
+    <Require
+      name="helper"
+      type="financials.NewRecoverySetHelper"/>
+    <InputColumn>
+      <ClaimContactInput
+        claim="Recovery.Claim"
+        editable="true"
+        id="Payer"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Payer"
+        onChange="reflectCurrency()"
+        onPick="reflectCurrency()"
+        postOnChange="true"
+        required="true"
+        value="Recovery.Payer"
+        valueRange="Recovery.Claim.relatedContacts"/>
+      <RangeInput
+        editable="true"
+        id="ReserveLine"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.ReserveLine"
+        onChange="Recovery.setReserveLine(ReserveLine); financials.FinancialsUtil.ensureRecoveryHasOneLineItem(Recovery)"
+        optionLabel="helper.getReserveLinePickerOptionLabel(VALUE)"
+        postOnChange="true"
+        required="true"
+        value="reserveLine"
+        valueRange="helper.getPossibleReserveLines(Recovery)"
+        valueWidth="199"/>
+      <RangeInput
+        editable="true"
+        id="Exposure"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Exposure"
+        noneSelectedLabel="displaykey.Web.Financials.Exposure.ClaimLevel"
+        required="false"
+        value="Recovery.Exposure"
+        valueRange="helper.getPossibleExposures(Recovery)"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <Input
+        id="CoverageType"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CoverageType"
+        value="Recovery.Exposure.PrimaryCoverage">
+        <Reflect
+          triggerIds="Exposure"
+          value="VALUE.PrimaryCoverage"/>
+      </Input>
+      <RangeInput
+        editable="true"
+        id="CostType"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CostType"
+        postOnChange="true"
+        required="true"
+        value="Recovery.CostType"
+        valueRange="helper.getPossibleCostTypes(Recovery)"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <RangeInput
+        editable="true"
+        id="CostCategory"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.CostCategory"
+        postOnChange="true"
+        required="true"
+        value="Recovery.CostCategory"
+        valueRange="helper.getPossibleCostCategories(Recovery)"
+        valueWidth="150"
+        visible="Recovery.ReserveLine != null and Recovery.ReserveLine.isNew()"/>
+      <Input
+        editable="true"
+        id="Currency"
+        label="displaykey.Financials.Multicurrency.Currency"
+        postOnChange="true"
+        value="Recovery.Currency"
+        visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode()"/>
+      <InputSetRef
+        def="TransactionExchangeRateInputSet(Recovery)"/>
+    </InputColumn>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="RecoveryCategory"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.RecoveryCategory"
+        value="Recovery.RecoveryCategory"/>
+      <Input
+        editable="true"
+        id="Comments"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Comments"
+        numCols="14"
+        value="Recovery.Comments"/>
+      <Input
+        formatType="currency"
+        id="OpenRecoveryReserves"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.OpenRecoveryReserves"
+        value="(!Recovery.ReserveLine.New) ? financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(Recovery.ReserveLine) : financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(Recovery.Claim, Recovery.Exposure, Recovery.CostType, Recovery.CostCategory)"
+        visible="Recovery.isUseRecoveryReserves() &amp;&amp; perm.Claim.viewrecoveryreserves(Recovery.Claim)"/>
+      <Input
+        formatType="currency"
+        id="Payments"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.Payments"
+        value="(!Recovery.ReserveLine.New) ? financials.FinancialsCalculationUtil.getTotalPayments().getAmount(Recovery.ReserveLine) : financials.FinancialsCalculationUtil.getTotalPayments().getAmount(Recovery.Claim, Recovery.Exposure, Recovery.CostType, Recovery.CostCategory)"
+        visible="perm.Claim.viewpayments(Recovery.Claim)"/>
+      <Input
+        formatType="currency"
+        id="PastRecoveries"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.PastRecoveries"
+        value="(!Recovery.ReserveLine.New) ? financials.FinancialsCalculationUtil.getTotalRecoveries().getAmount(Recovery.ReserveLine) : financials.FinancialsCalculationUtil.getTotalRecoveries().getAmount(Recovery.Claim, Recovery.Exposure, Recovery.CostType, Recovery.CostCategory)"
+        visible="perm.Claim.viewrecoveries(Recovery.Claim)"/>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableRecoveryLineItemsLV(Recovery)"
+        editable="Recovery.ReserveLine != null"
+        label="displaykey.NVV.Financials.RecoveryDetail.Recovery.LineItems"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons
+            addLabel="displaykey.Java.Financials.TransactionLineItem.AddItem"
+            addShortcut="I"
+            addVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"
+            removeVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[
+function reflectCurrency() {
+        var currency = Recovery.Payer.PreferredCurrency;
+        if (currency != null) {
+          Recovery.Currency = currency;
+        }
+      }
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

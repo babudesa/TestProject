@@ -1,0 +1,45 @@
+package rules.EventMessage.EventFired_dir.Destination8Taxport1099_dir.BulkInvoice_dir
+
+@gw.rules.RuleName("Stop/Void")
+internal class StopVoid {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/MessageContext.EventName == "BulkInvoiceStatusChanged" &&
+((MessageContext.Root as BulkInvoice).Status == "stopped" ||
+ (MessageContext.Root as BulkInvoice).Status == "voided")&&
+ (MessageContext.Root as BulkInvoice).PaymentMethod == "check"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var blkinvoice : BulkInvoice = MessageContext.Root as BulkInvoice;
+
+if(blkinvoice.Status == "issued"){
+  foreach ( e in blkinvoice.InvoiceItems){
+   var amountToSend : java.math.BigDecimal;
+       // amountToSend1 = msgCheck.NetAmount;
+        for (p in e.BulkInvoiceItemInfo.Check.Payments){
+        for (l in p.LineItems){
+          if (l.LineCategory != null){ // if line category is not null (not specified)									
+            for (bn in IRS1099BoxNumber.getTypeKeys(false)){ // loop through all 1099 Box Numbers													
+              if(bn.hasCategory( l.LineCategory )){ // if this box number has the line category as a category													
+               // l.IRS1099BoxNumberExt=bn // set the box number                
+                if((p.Status=="stopped")||(p.Status=="voided")){               
+                          amountToSend = -(l.Amount);
+                
+            var messageContentxx = util.financials.CheckFunctions.generateTaxport1099Message(e.BulkInvoiceItemInfo.Check, amountToSend,l.IRS1099BoxNumberExt.Code);
+             if (messageContentxx != "") {
+             var messagexx = messageContext.createMessage(messageContentxx);
+            
+                   }
+                 }
+               }
+             }
+           } 
+         }      
+       }
+     }
+}
+
+
+ /*end00rule*/
+  }
+}

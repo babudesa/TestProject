@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="CompensableInputSet">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.getCompensableActivity()"
+      name="CompensableActivity"/>
+    <Variable
+      initialValue="(CompensableActivity != null  or true ) and CompensableActivity.Status == &quot;open&quot;"
+      name="OpenCompensableActivity"
+      type="Boolean"/>
+    <Label
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision"/>
+    <BooleanDropdownInput
+      editable="true"
+      id="Controverted"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Controverted"
+      value="Claim.ControvertedExt"/>
+    <DateInput
+      editable="not OpenCompensableActivity"
+      id="CompensabilityDecision_DueDate"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.DueDate"
+      value="Claim.DateCompDcsnDue"
+      visible="false"/>
+    <ButtonInput
+      action="ActivityDetailViaClaimWorksheet.goInWorkspace(Claim,CompensableActivity)"
+      id="UpdateCompensabilityActivity"
+      value="displaykey.Button.LossDetails.WC.UpdateCompensableActivity"
+      visible="false //OpenCompensableActivity"/>
+    <Input
+      editable="true //not OpenCompensableActivity"
+      id="CompensableStatus"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.CompensableStatus"
+      onChange="Claim.addToHistory( Claim.createCustomHistoryEvent( &quot;DataChange&quot;, displaykey.Rules.PreUpdate.Claim.CompensableDecisionHistory(Claim.Compensable) ) )"
+      postOnChange="true"
+      value="Claim.Compensable"/>
+    <!-- <DateInput
+      id="CompensabilityDecision_DecisionMadeDate"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.DecisionMadeDate"
+      value="Claim.DateCompDcsnMade"/> -->
+    <TextAreaInput
+      editable="not OpenCompensableActivity"
+      id="CompensabilityDecision_BenefitsDecisionReason"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityDecision.BenefitsDecisionReason"
+      numRows="3"
+      required="Claim.Compensable == &quot;denied&quot;"
+      value="Claim.BenefitsDecisionReason"
+      visible="false"/>
+    <BooleanDropdownInput
+      editable="true"
+      id="Apportionment"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Apportionment"
+      postOnChange="true"
+      value="Claim.ApportionmentExt"/>
+    <Input
+      editable="true"
+      id="ApportionmentPct"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ApportionmentPct"
+      requestValidationExpression="VALUE == null or VALUE.integerBetween(1, 100) ? null : displaykey.Java.Validation.Number.NotAnIntegerInRangeExt(1, 100)"
+      value="Claim.ApportionmentPctExt"
+      visible="Claim.ApportionmentExt == &quot;yes&quot;"/>
+  </InputSet>
+</PCF>

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    compress="true"
+    desc="List of addresses"
+    id="AddressBookAddressesLV">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <RowIterator
+      checkBoxVisible="CurrentLocation.InEditMode? true : address.AddressType != AddressType.TC_BILLING"
+      editable="true"
+      elementName="address"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="4"
+      toAdd="addNewAddress(address)"
+      toRemove="contact.removeAddress(address)"
+      value="contact.AllAddresses">
+      <Row
+        editable="address.AddressType == AddressType.TC_FEES ? gw.plugin.util.CurrentUserUtil.getCurrentUser().User.hasPermission(SystemPermissionType.TC_EDITFEEADDRESS) : (!contact.Preferred or address.AddressBookUID == null or User.util.getCurrentUser().hasCreatePreferred())">
+        <RadioButtonCell
+          action="Contact.makePrimaryAddress(address)"
+          align="center"
+          editable="!contact.Preferred or User.util.getCurrentUser().hasCreatePreferred()"
+          id="Primary"
+          label="displaykey.Web.Addresses.Primary"
+          printWidth="0.2"
+          radioButtonGroup="PrimaryAddress"
+          value="address == contact.PrimaryAddress"
+          width="10"/>
+        <Cell
+          id="AddressType"
+          label="displaykey.Web.Addresses.AddressType"
+          printWidth="0.2"
+          value="address.AddressType"/>
+        <Cell
+          id="DisplayName"
+          label="displaykey.Web.Addresses.Address"
+          printWidth="0.6"
+          value="address.displayName"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function addNewAddress(address : Address) {
+  if(contact.Preferred && !gw.plugin.util.CurrentUserUtil.getCurrentUser().User.hasCreatePreferred()){
+    address.AddressType = AddressType.TC_MAILING 
+  }
+  contact.addAddress(address)
+}]]></Code>
+  </ListViewPanel>
+</PCF>

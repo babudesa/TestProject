@@ -1,0 +1,22 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXXZZZ1SecurityZoneRules_dir
+
+@gw.rules.RuleName("CPUXXZZZA - Add Generic Users to Claims")
+internal class CPUXXZZZAAddGenericUserstoClaims {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.PermissionRequired != null
+and (
+  claim.isFieldChanged("AssignedGroup") 
+  or claim.isFieldChanged("PermissionRequired")
+  or claim.isFieldChanged("AssignedUser")
+  or claim.Policy.New
+  or claim.Policy.isFieldChanged("ProducerCode")
+)
+and (claim.AssignmentStatus == typekey.AssignmentStatus.TC_ASSIGNED
+or claim.AssignmentStatus == typekey.AssignmentStatus.TC_MANUAL))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/util.admin.SecurityUtil.updateClaim(claim)/*end00rule*/
+  }
+}

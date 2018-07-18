@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCancel="if (IsNew) { Wizard.cancelClaimContact(ClaimContact) }"
+    canEdit="true"
+    id="NewClaimWizard_PartyInvolvedPopup"
+    startInEditMode="true"
+    title="isNew ? displaykey.Wizard.NewClaimWizard.NewClaimPartyInvolved.New : displaykey.Wizard.NewClaimWizard.NewClaimPartyInvolved.Edit">
+    <LocationEntryPoint
+      signature="NewClaimWizard_PartyInvolvedPopup(Wizard : claim.NewClaimWizardInfo, ClaimContact : ClaimContact, IsNew : boolean)"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      name="ClaimContact"
+      type="ClaimContact"/>
+    <Variable
+      name="IsNew"
+      type="boolean"/>
+    <Variable
+      initialValue="ClaimContact.Claim"
+      name="Claim"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <Screen
+      id="NewClaimWizard_PartyInvolvedScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+      </Toolbar>
+      <CardViewPanel>
+        <Card
+          id="NewClaimWizard_PartyInvolvedBasicsCard"
+          title="displaykey.Web.ContactDetail.PageLinks.Basics">
+          <PanelRef
+            def="ContactBasicsDV(claimContact, true, linkStatus, Claim)"
+            mode="Contact.subtype">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+        <Card
+          id="NewClaimWizard_PartyInvolvedAddressesCard"
+          title="displaykey.Web.ContactDetail.PageLinks.Addresses"
+          visible="!(Contact typeis Place)">
+          <PanelRef
+            def="AddressesPanelSet(claimContact)">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+        <Card
+          id="NewClaimWizard_PartyInvolvedRelatedContactsCard"
+          title="displaykey.Web.ContactDetail.PageLinks.RelatedContacts">
+          <PanelRef
+            def="ContactRelatedContactsDV(claimContact, Claim)">
+            <Toolbar/>
+          </PanelRef>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+    <Code><![CDATA[
+      property get Contact() : Contact { return claimContact.Contact; }
+    ]]></Code>
+  </Popup>
+</PCF>

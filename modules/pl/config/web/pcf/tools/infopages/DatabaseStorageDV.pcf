@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="DatabaseStorageDV"
+    mode="OneAtATime">
+    <Require
+      name="ParameterSet"
+      type="database.DatabaseParameterSet"/>
+    <Variable
+      initialValue="ParameterSet.AttributeValues[0]"
+      name="StorageAttributes"
+      type="Object[]"/>
+    <InputColumn>
+      <ListViewInput>
+        <Toolbar>
+          <ToolbarRangeInput
+            editable="true"
+            id="rangeInput"
+            label="ParameterSet.RowItemLabel"
+            optionLabel="getOptionLabel(VALUE) as java.lang.String"
+            postOnChange="true"
+            showNoneSelected="false"
+            sortValueRange="false"
+            value="StorageAttributes"
+            valueRange="ParameterSet.AttributeValues"/>
+        </Toolbar>
+        <ListViewPanel
+          border="true"
+          editable="true"
+          id="DatabaseStorageLV">
+          <RowIterator
+            editable="false"
+            elementName="onerow"
+            transposed="true"
+            value="new Boolean[] {true}">
+            <Row
+              useHeaderStyle="true">
+              <CellIterator
+                elementName="Name"
+                id="headerCells"
+                value="ParameterSet.AttributeNames">
+                <Cell
+                  id="HeaderCell"
+                  value="Name"/>
+              </CellIterator>
+            </Row>
+            <Row>
+              <CellIterator
+                elementName="StorageAttribute"
+                value="StorageAttributes">
+                <Cell
+                  id="ValueCell"
+                  value="StorageAttribute"/>
+              </CellIterator>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[
+function getOptionLabel(attributeValues: Object[]) : Object {
+      var optionLabel = "";
+      for (i in ParameterSet.KeyColumns) {
+      if (i != 0) {
+      optionLabel = optionLabel + " ";
+      }
+      optionLabel = optionLabel + (attributeValues[i] == "<null>" ? "" : attributeValues[i] as String);
+      }
+      return optionLabel;
+      }
+      
+    ]]></Code>
+  </DetailViewPanel>
+  <DetailViewPanel
+    id="DatabaseStorageDV"
+    mode="AllAtOnce">
+    <Require
+      name="ParameterSet"
+      type="database.DatabaseParameterSet"/>
+    <InputColumn>
+      <ListViewInput>
+        <Toolbar/>
+        <ListViewPanel
+          border="true"
+          id="DatabaseParametersLV">
+          <Row
+            useHeaderStyle="true">
+            <CellIterator
+              elementName="Name"
+              id="headerCells"
+              value="ParameterSet.AttributeNames">
+              <Cell
+                id="HeaderCell"
+                value="Name"/>
+            </CellIterator>
+          </Row>
+          <RowIterator
+            editable="false"
+            elementName="Values"
+            value="ParameterSet.AttributeValues">
+            <Row>
+              <CellIterator
+                elementName="Value"
+                value="Values">
+                <Cell
+                  id="ValueCell"
+                  value="Value"/>
+              </CellIterator>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

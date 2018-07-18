@@ -1,0 +1,19 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir
+
+@gw.rules.RuleName("Security Zone Changed")
+internal class SecurityZoneChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "SecurityZoneChanged" ||
+messageContext.EventName == "SecurityZoneAdded"
+
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var secZon = messageContext.Root as SecurityZone;
+
+for(grp in secZon.Groups){
+  util.gaic.EDW.EDWFunctionsFactory.getUserFunctions().sendGroupDataChanges( messageContext, grp );
+}/*end00rule*/
+  }
+}

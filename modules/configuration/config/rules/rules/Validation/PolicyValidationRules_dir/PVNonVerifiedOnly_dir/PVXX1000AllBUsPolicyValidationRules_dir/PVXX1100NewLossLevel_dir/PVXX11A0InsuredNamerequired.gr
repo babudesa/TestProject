@@ -1,0 +1,36 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11A0 - Insured Name required")
+internal class PVXX11A0InsuredNamerequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*Check for presence of company name or last name. 
+  EC sprint 3
+  Author: Eric Rawe
+  Updated: 09/30/2008
+*/
+!policy.Verified and 
+policy.insured != null/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/if( policy.insured typeis Person )
+{
+  var person = policy.insured;
+   if( person.LastName == null || person.LastName.length() == 0 )
+  {
+    policy.reject( "newloss",displaykey.Rules.Validation.Policy.Enterprise.NewLoss.LastName, null, null )
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+  }
+}
+else if( policy.insured typeis Company )
+{
+  var company = policy.insured;
+  if( company.Name == null || company.Name.length() == 0 )
+  {
+    policy.reject( "newloss",displaykey.Rules.Validation.Policy.Enterprise.NewLoss.Name, null, null )
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+  }
+}
+/*end00rule*/
+  }
+}

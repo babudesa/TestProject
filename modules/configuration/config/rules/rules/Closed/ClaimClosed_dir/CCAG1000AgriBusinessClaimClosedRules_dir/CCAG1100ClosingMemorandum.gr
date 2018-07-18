@@ -1,0 +1,37 @@
+package rules.Closed.ClaimClosed_dir.CCAG1000AgriBusinessClaimClosedRules_dir
+
+@gw.rules.RuleName("CCAG1100 - Closing Memorandum")
+internal class CCAG1100ClosingMemorandum {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var note:String;
+var noteSubject:Note;
+var emailBody = templates.email.AgriClaimClosed.renderToString(claim)
+var subject:String="Claim Closed Notification"
+var emailHelper=new EmailHelper()
+
+if(java.lang.System.getProperty( "gw.cc.env" ) == "prod") {
+     emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.AgribusinessClaims_Email, ScriptParameters.AgribusinessClaims_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        "Claim Closed Notification", emailBody)
+     note = "Email notification of closed claim has been sent to " + ScriptParameters.AgribusinessClaims_Name + " for distribution to the underwriter and agency."
+     noteSubject = claim.addNote("general", note); 
+     noteSubject.Subject = "Closed Claim Notification"
+} else {
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenterDevEmail", 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        "Claim Closed Notification", emailBody)  
+    note = "Email notification of closed claim has been sent to " + ScriptParameters.AgribusinessClaims_Name + " for distribution to the underwriter and agency."
+    noteSubject = claim.addNote("general", note)
+    noteSubject.Subject = "Closed Claim Notification"
+}/*end00rule*/
+  }
+}

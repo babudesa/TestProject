@@ -1,0 +1,44 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir.CPUXX1430SIU_dir
+
+@gw.rules.RuleName("CPUXX1432 - ECF Imported SIU Document Available")
+internal class CPUXX1432ECFImportedSIUDocumentAvailable {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///This rule creates an activity for SIU when an SIU-related document is
+//created in ECF and brought in by the sweep.
+//Stephanie Przygocki - 3/15/11
+//Updated: Stephanie Przygocki - 3/30/11 - Updated the document subtype to be
+//  SIU Data Research instead of SIU Investigation. This is a new subtype that will
+//  come in from ECF that is not available in ClaimCenter.
+//Updated: Stephanie Przygocki - 4/18/11 - Updated the activity message to display the claimant
+//  name from ECF if one comes in.
+//added condition for defect 5518
+exists(document in claim.Documents where
+  document.ex_Type=="Investigation") and exists(document in claim.Documents where
+  document.ex_SubType=="SIU Data Research" ) and
+  not exists(Activity in claim.Activities where Activity.ActivityPattern.Code == "data_research_reports")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var activityPattern = util.custom_Ext.finders.findActivityPattern( "data_research_reports" )
+  var conversionDate : java.util.Date = 2016-06-27 as java.util.Date
+  for(document in claim.Documents){
+    // Defect 8512: add in a line of code to only generate post conversion date on converted claims
+    if(claim.LoadCommandID == null or (claim.isUpdatedExt() and !document.checkForID() and java.util.Date.CurrentDate >= conversionDate)){
+      if(document.ex_Type=="Investigation" and document.ex_SubType=="SIU Data Research"){ 
+              var act = claim.createActivityFromPattern( null, activityPattern )
+       var assgdUser = claim.AssignedUser
+       act.assignUserAndDefaultGroup(assgdUser)
+       if(document.ex_ClaimantName==null || document.ex_ClaimantName==""){
+          act.Description = "SIU Data Research reports are in ECF for an unknown claimant"
+        } else {
+          act.Description = "The SIU Data Research reports for claimant " + document.ex_ClaimantName + " are in ECF"
+        }
+      }
+    }
+  }
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="EditableRecurrenceChecksLV"
+    validationExpression="CheckSet.Checks.HasElements ? util.RecurringCheckHelper.validateRecurringAmount(CheckSet.Checks.first()) : null">
+    <Require
+      name="CheckSet"
+      type="CheckSet"/>
+    <Variable
+      initialValue="CheckSet.getPrimaryChecksSortedByDate()"
+      name="CheckList"
+      type="Check[]"/>
+    <RowIterator
+      checkBoxVisible="Check.Editable"
+      editable="true"
+      elementName="Check"
+      toRemove="Check.delete();// if (Check.CheckSet.Checks.length &gt; 0) {Check.CheckSet.updateServicePeriods(true)}"
+      value="CheckSet.PrimaryChecksSortedByDate">
+      <ToolbarFlag
+        condition="Check.Editable"
+        name="Removeable"/>
+      <Row
+        editable="Check.Editable">
+        <Cell
+          id="ScheduledSendDate"
+          label="displaykey.LV.Financials.EditableRecurrenceChecks.ScheduledSendDate"
+          required="true"
+          sortOrder="1"
+          value="Check.ScheduledSendDate"/>
+        <Cell
+          editable="Check.Payments.length == 1 and Check.Payments[0].LineItems.length == 1"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.EditableRecurrenceChecks.Amount"
+          required="true"
+          value="Check.GrossAmountSettableComponent"/>
+        <Cell
+          id="ServicePeriodStart"
+          label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.RecurringStart"
+          required="true"
+          validationExpression="replaceStartDate(Check)"
+          value="Check.ServicePdStart"/>
+        <Cell
+          id="ServicePeriodEnd"
+          label="displaykey.NVV.Financials.SubView.CheckWizardCheckSummary.Check.DateOfService.RecurringEnd"
+          required="true"
+          validationExpression="replaceEndDate(Check)"
+          value="Check.ServicePdEnd"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function replaceStartDate(chk: Check): String{
+  var dateFormat : java.text.SimpleDateFormat = new java.text.SimpleDateFormat("MM/dd/yyyy")
+  var prevDateString = dateFormat.format((chk.OriginalVersion as Check).ServicePdStart)
+  
+  if (chk.Memo != null && chk.ServicePdStart != null && prevDateString != null){
+    if (chk.Memo.contains(prevDateString)){
+      chk.Memo = chk.Memo.replace(prevDateString, dateFormat.format(chk.ServicePdStart))
+    }
+  }
+  return null
+}
+
+function replaceEndDate(chk: Check): String{
+  var dateFormat : java.text.SimpleDateFormat = new java.text.SimpleDateFormat("MM/dd/yyyy")
+  var prevDateString = dateFormat.format((chk.OriginalVersion as Check).ServicePdEnd)
+  
+  if (chk.ServicePdEnd!=null && chk.ServicePdStart!=null && gw.api.util.DateUtil.compareIgnoreTime(chk.ServicePdEnd, chk.ServicePdStart)<=0) {
+    return  displaykey.NVV.Financials.Check.ValidationExpression.ServicePdEnd 
+  }
+  
+  if (chk.Memo != null && chk.ServicePdEnd != null && prevDateString != null){
+    if (chk.Memo.contains(prevDateString)){
+      chk.Memo = chk.Memo.replace(prevDateString, dateFormat.format(chk.ServicePdEnd))
+    }
+  }
+  return null
+}]]></Code>
+  </ListViewPanel>
+</PCF>

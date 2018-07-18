@@ -1,0 +1,30 @@
+package rules.Reopened.ClaimReopened_dir.CRXX1000AllBUClaimReopenedRules_dir
+
+@gw.rules.RuleName("CRXX1300 - Claim Reopened")
+internal class CRXX1300ClaimReopened {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Activity when a claim is reopened
+author: erawe
+date: 8/14/09
+updates: defect 2343
+*/
+true
+//!exists(Activity in Claim.Activities where (Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_reopen_review")))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///1/19/10 erawe:defect 2856 remove Equine specific from the first if condition
+//23/19/2012 mbendure defect 5225: added description to reopenning claim
+try{
+  if(!exists(change in claim.ChangedFields where change =="IncidentReport")){
+    if(claim.ReOpenDate != null){
+      claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_reopen_review"), "Review this Reopened Claim", "A Closed Claim has been reopened.", "normal", false, null, null )
+      //actions.exitToNext()
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}
+/*end00rule*/
+  }
+}

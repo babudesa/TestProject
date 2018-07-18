@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_exposure.xml -->
+  <ListViewPanel
+    id="SubroReserveLinesLV">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="ReserveLineList"
+      type="ReserveLine[]"/>
+    <RowIterator
+      editable="false"
+      elementName="ReserveLine"
+      value="ReserveLineList">
+      <Row>
+        <Cell
+          id="RLOrder"
+          label="displaykey.LV.Subro.RLFinancials.Order"
+          outputConversion="if (null != VALUE) {return VALUE;} else {return displaykey.Financials.ReserveLine.NoExposure;}"
+          printWidth="0.05"
+          sortOrder="1"
+          value="ReserveLine.DisplayName"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="OpenRecoveryReservesClaimCost"
+          label="displaykey.LV.Subro.RLFinancials.OpenRecoveryReserves"
+          printWidth="0.12"
+          value="gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(ReserveLine)"
+          valueVisible="ScriptParameters.GlobalUtilizeRecoveryReserves AND perm.Claim.viewrecoveryreserves(Claim)"
+          visible="ScriptParameters.GlobalUtilizeRecoveryReserves"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="ClaimCostsPaid"
+          label="displaykey.LV.Subro.RLFinancials.ClaimCostPaid"
+          printWidth="0.1"
+          value="gw.api.financials.FinancialsCalculationUtil.getTotalPayments().getAmount(ReserveLine)"
+          valueVisible="perm.Claim.viewpayments(ReserveLine.Claim)"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="NetClaimCostsPaid"
+          label="displaykey.LV.Subro.RLFinancials.NetClaimCostPaid"
+          printWidth="0.1"
+          value="ReserveLine.getNetPaidExcludingSubroRecovery()"
+          valueVisible="perm.Claim.viewpayments(ReserveLine.Claim)"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="ClaimCostsRecovSubro"
+          label="displaykey.LV.Subro.RLFinancials.ClaimCostRecovSubro"
+          printWidth="0.1"
+          value="ReserveLine.getSubroRecovery()"
+          valueVisible="perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <Cell
+          align="right"
+          enableSort="false"
+          id="ExpClaimCostsRecovSubroPercentage"
+          label="displaykey.LV.Subro.RLFinancials.ExpCostRecovSubroPer"
+          printWidth="0.1"
+          tooltip="displaykey.LV.Subro.RLFinancials.ExpCostRecovSubroPer.Tooltip"
+          value="util.Display.DisplayPercent((gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(ReserveLine) + ReserveLine.getSubroRecovery()) as double, ReserveLine.getNetPaidExcludingSubroRecovery() as double)"
+          valueVisible="perm.Claim.viewpayments(Claim) and perm.Claim.viewrecoveries(Claim) and ScriptParameters.GlobalUtilizeRecoveryReserves"
+          visible="ScriptParameters.GlobalUtilizeRecoveryReserves"
+          wrapLabel="true"/>
+        <Cell
+          align="right"
+          enableSort="false"
+          id="ClaimCostsRecovSubroPercentage"
+          label="displaykey.LV.Subro.RLFinancials.ClaimCostRecovSubroPer"
+          printWidth="0.1"
+          tooltip="displaykey.LV.Subro.RLFinancials.ClaimCostRecovSubroPer.Tooltip"
+          value="util.Display.DisplayPercent(ReserveLine.getSubroRecovery() as double, ReserveLine.getNetPaidExcludingSubroRecovery() as double)"
+          valueVisible="perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Row
+      useHeaderStyle="true">
+      <Cell
+        colspan="1"
+        id="emptyLabel"
+        value="displaykey.LV.Subro.AdverseParty.Sum"/>
+      <Cell
+        formatType="currency"
+        id="OpenRecoveryReservesClaimCostSum"
+        value="gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(Claim, CostType.TC_CLAIMCOST )"
+        valueVisible="ScriptParameters.GlobalUtilizeRecoveryReserves AND perm.Claim.viewrecoveryreserves(Claim)"
+        visible="ScriptParameters.GlobalUtilizeRecoveryReserves"/>
+      <Cell
+        formatType="currency"
+        id="ClaimCostsPaidSum"
+        value="gw.api.financials.FinancialsCalculationUtil.getTotalPayments().getAmount(Claim, CostType.TC_CLAIMCOST)"
+        valueVisible="perm.Claim.viewpayments(Claim)"
+        wrapLabel="true"/>
+      <Cell
+        formatType="currency"
+        id="NetClaimCostsExclSubroRecSum"
+        value="Claim.getClaimNetPaidExcludingSubroRecovery()"
+        valueVisible="perm.Claim.viewpayments(Claim) and perm.Claim.viewrecoveries(Claim)"/>
+      <Cell
+        formatType="currency"
+        id="ClaimCostsRecovSubroSum"
+        value="Claim.getClaimCostsRecovSubroOnly()"
+        valueVisible="perm.Claim.viewrecoveries(Claim)"/>
+      <Cell
+        align="right"
+        bold="true"
+        colspan="1"
+        id="SummaryExpectedRecoveredPercentage"
+        value="util.Display.DisplayPercent((Claim.getClaimCostsRecovSubroOnly()+gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReserves().getAmount(Claim, CostType.TC_CLAIMCOST)) as double, Claim.getClaimNetPaidExcludingSubroRecovery() as double)"
+        valueVisible="perm.Claim.viewpayments(Claim) and perm.Claim.viewrecoveries(Claim) and ScriptParameters.GlobalUtilizeRecoveryReserves"
+        visible="ScriptParameters.GlobalUtilizeRecoveryReserves"/>
+      <Cell
+        align="right"
+        bold="true"
+        colspan="1"
+        id="SummaryRecoveredPercentage"
+        value="util.Display.DisplayPercent(Claim.getClaimCostsRecovSubroOnly(),claim.getClaimNetPaidExcludingSubroRecovery())"
+        valueVisible="perm.Claim.viewpayments(Claim) and perm.Claim.viewrecoveries(Claim)"/>
+    </Row>
+  </ListViewPanel>
+</PCF>

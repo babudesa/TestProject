@@ -1,0 +1,23 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir.PVXX1120CoverageRequirements_dir
+
+@gw.rules.RuleName("PVXX1123 - Coverage Changed with Exposures")
+internal class PVXX1123CoverageChangedwithExposures {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///Disallows changing a coverage that already has an exposure associated
+//Sprint/Maintenance Release: EM12
+//Author: Stephanie Przygocki
+//Date: 7/17/08
+//10.5.15 - cmullin - removed this validation for Work Comp claims. WC
+//features are created automatically and this rule was in conflict with 
+//that process.  
+policy.isPolicyInRefresh( 0 ) &&
+policy.Claim != null && 
+!util.WCHelper.isWCorELLossType(policy.Claim) && 
+!policy.Claim.checkDisconnectedFeatures() &&
+exists(exposure in policy.Claim.Exposures where exposure.Coverage != null and exposure.Coverage.isFieldChanged( "Type" ))/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/policy.reject( "newloss", "You cannot change a coverage where features exist", null, null )/*end00rule*/
+  }
+}

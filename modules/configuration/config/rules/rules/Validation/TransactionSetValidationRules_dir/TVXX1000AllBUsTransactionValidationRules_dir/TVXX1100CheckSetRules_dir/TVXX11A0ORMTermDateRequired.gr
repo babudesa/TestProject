@@ -1,0 +1,27 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX11A0 - ORM Term Date Required")
+internal class TVXX11A0ORMTermDateRequired {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for(trans in transactionSet.Transactions.where(\ t -> t.New )){
+  var payment = trans as Payment
+
+    if(payment.PaymentType == "final" and payment.Exposure.IsMedicareExposureExt and payment.RecodingOnset){
+      if(payment.Exposure.Claimant typeis Person and payment.Exposure.Claimant.ContactISOMedicareExt != null){
+        if(payment.Exposure.Claimant.ContactISOMedicareExt.ORMIndExt and 
+           (payment.Exposure.Claimant as Person).MedicareEligibleExt){
+           if(payment.Exposure.Claimant.ContactISOMedicareExt.ExhaustDateExt == null and
+              payment.Exposure.Claimant.ContactISOMedicareExt.ORMEndDateExt == null){
+                 transactionSet.reject( null, null, "newloss", "ORM is open with Medicare.  Medicare requires ORM to remain open until coverage for MedPay or PIP has ended.  You should either provide an ORM Termination Date or set a reminder to close ORM when coverage ends.")
+           }
+        }
+      }
+    }
+}
+/*end00rule*/
+  }
+}

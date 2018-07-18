@@ -1,0 +1,154 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1G00 - Loss Date Updated -Change Amount of Insurance")
+internal class CPUEQ1G00LossDateUpdatedChangeAmountofInsurance {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.ChangedFields.contains("LossDate")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Developer: Amulya Saikumar
+//Defect# : 7380 Date : 03/24/2015
+//Added FMDED coverages to also be included for generating the Amount of Insurance
+for(prop in claim.Policy.Properties){
+  var bestCvgAmount = 0
+  var bestCvgPriority = 0
+  var badDateAmount = 0
+  var badDateAmountPriority = 0
+  var hasGoodDates = false
+  var priority = 0
+  for(cov in prop.Coverages){
+   if((cov.Type=="eq_fullmortality" || cov.Type=="eq_specifiedperils" ||
+        cov.Type=="eq_stalIncomeLoss" || cov.Type=="eq_stalCI" ||
+        cov.Type=="eq_stalAv" || cov.Type=="eq_barrennesPF" ||
+        cov.Type=="eq_profoal" || cov.Type=="eq_frustImEx" ||
+        cov.Type=="eq_asd_FMDED"|| cov.Type=="eq_colic_FMDED" ||
+        cov.Type=="eq_freeColSg_FMDED"|| cov.Type=="eq_fulMorDed_FMDED" ||
+        cov.Type=="eq_losExt_FMDED"|| cov.Type=="eq_mjm_FMDED" ||
+        cov.Type=="eq_mjm_FMDED10"|| cov.Type=="eq_mjm_FMDED15" ||
+        cov.Type=="eq_manScr_FMDED"|| cov.Type=="eq_surEnd_FMDED" ||
+        cov.Type=="eq_tran_FMDED"|| cov.Type=="eq_wobSyn_FMDED" ||
+        cov.Type=="eq_ane_FMDED") and (cov.IncidentLimit!=null and cov.IncidentLimit>0)){
+        switch(cov.Type){
+          //EQM-Full Mortality
+          case "eq_fullmortality":
+            priority = 21
+            break;
+          //FMDED-Full Mortality Deductible
+           case "eq_fulMorDed_FMDED":
+           priority = 20
+           break; 
+          //EQM - Specified Perils
+          case "eq_specifiedperils":
+            priority = 19
+            break;
+          //EQM - Prospective Foal
+          case "eq_profoal":
+            priority = 18
+            break;
+          //EQM - Barrenness Pro-Foal
+          case "eq_barrennesPF":
+            priority = 17
+            break;  
+          //EQM - Stallion Availability
+          case "eq_stalAv":
+            priority = 16
+            break;                
+          //EQM - Stallion First Season Infertility
+          case "eq_stalCI":
+            priority = 15
+            break;
+          //EQM - Stallion Loss of Income
+          case "eq_stalIncomeLoss":
+            priority = 14
+            break;
+          //EQM - Frustration of Import/Export
+          case "eq_frustImEx":
+            priority = 13
+            break;
+          //FMDED - Accident Sickness Disease Infertility  
+          case "eq_asd_FMDED":
+            priority = 12
+            break;
+          //FMDED - Anesthesia  
+          case "eq_ane_FMDED":
+            priority = 11
+            break;
+          //FMDED - Colic 
+          case "eq_colic_FMDED":
+            priority = 10
+            break;
+          //FMDED - Free Colic Surgery-Specified Animal 
+          case "eq_freeColSg_FMDED":
+            priority = 9
+            break;
+          //FMDED - Loss of Use Extension 
+          case "eq_losExt_FMDED":
+            priority = 8
+            break;
+          //FMDED - Major medical 
+          case "eq_mjm_FMDED":
+            priority = 7
+            break;
+          //FMDED - Major medical 10K  
+          case "eq_mjm_FMDED10":
+            priority = 6
+            break;
+          //FMDED - Major medical 15K
+          case "eq_mjm_FMDED15":
+            priority = 5
+            break;
+          //FMDED - Manuscript   
+          case "eq_manScr_FMDED":
+            priority = 4
+            break;
+          //FMDED - Surgical Endorsement  
+          case "eq_surEnd_FMDED":
+            priority = 3
+            break;
+          //FMDED - Transit  
+          case "eq_tran_FMDED":
+            priority = 2
+            break;
+          //FMDED - Wobbler Syndrome   
+          case "eq_wobSyn_FMDED":
+            priority = 1
+            break;
+          default:
+            priority = 0
+            break;
+        }//end switch
+        if(priority > badDateAmountPriority){
+          if(cov.IncidentLimit!=null){
+            badDateAmount = cov.IncidentLimit as int
+          } else {
+            badDateAmount = 0
+          }
+          badDateAmountPriority = priority
+        } else if(priority==badDateAmountPriority and cov.IncidentLimit!=null and cov.IncidentLimit>badDateAmount){
+              badDateAmount = cov.IncidentLimit as int
+        }
+        if((cov.ExpirationDate!=null and cov.EffectiveDate!=null) and 
+            !(gw.api.util.DateUtil.compareIgnoreTime( prop.Policy.Claim.LossDate, cov.ExpirationDate )>0 or
+            gw.api.util.DateUtil.compareIgnoreTime( prop.Policy.Claim.LossDate, cov.EffectiveDate )<0)){   
+          hasGoodDates = true
+          if(bestCvgAmount==0 || bestCvgPriority<priority){
+            if(cov.IncidentLimit!=null){
+              bestCvgAmount = cov.IncidentLimit as int
+            }
+            bestCvgPriority = priority
+          } else if(bestCvgPriority==priority and cov.IncidentLimit!=null and cov.IncidentLimit > bestCvgAmount){
+              bestCvgAmount = cov.IncidentLimit as int
+          }
+        }//end if(check dates)
+    }//end if(check which coverage)
+  }//end for(loop through coverages)
+  if(hasGoodDates){
+    prop.Property.ex_AmountofInsurance = bestCvgAmount
+  } else {
+    prop.Property.ex_AmountofInsurance = badDateAmount
+  }
+  claim.Policy.touch()
+}//end for(loop through properties)/*end00rule*/
+  }
+}

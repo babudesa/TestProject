@@ -1,0 +1,632 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_claim.xml -->
+  <DetailViewPanel
+    id="ClaimLiabilityEvaluationDetailDV">
+    <Require
+      name="Evaluation"
+      type="Evaluation"/>
+    <!-- <Variable
+      initialValue="Evaluation.calculateSpecialDamage()"
+      name="holdSpecDam"/> -->
+    <!-- <Variable
+      initialValue="Evaluation.getReserveLineReserveTotal(Evaluation.RelatedTo,&quot;claimcost&quot;,1)"
+      name="holdLossRes"
+      recalculateOnRefresh="true"/> -->
+    <!-- <Variable
+      initialValue="Evaluation.getReserveLineReserveTotal(Evaluation.RelatedTo,&quot;expense&quot;,Evaluation,1)"
+      name="holdExpRes"
+      recalculateOnRefresh="true"/> -->
+    <!-- <Variable
+      initialValue="util.Math.Nz(evaluation.HospitalER) + util.Math.Nz(evaluation.TreatingPhysician) + util.Math.Nz(Evaluation.TherapyDamagesPastExt) + util.Math.Nz(evaluation.Diagnostic) + util.Math.Nz(evaluation.MedicalEquipment) + util.Math.Nz(evaluation.FutureMedical) + util.Math.Nz(evaluation.ClmtOutOfPocket) + util.Math.Nz(evaluation.Other)"
+      name="Total"
+      recalculateOnRefresh="true"/> -->
+    <Variable
+      initialValue="Evaluation!=null?Evaluation.calculateReserveChange():&quot;&quot;"
+      name="reserveChange"
+      recalculateOnRefresh="true"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.LiabilityDistribution"/>
+      <Input
+        id="CreatedBy"
+        label="displaykey.NVV.Matter.SubView.Matter.CreatedBy"
+        value="Evaluation.CreateUser"/>
+      <Input
+        editable="true"
+        id="SettlementCostEstimate_Name"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.Name"
+        required="true"
+        value="Evaluation.Name"/>
+      <RangeInput
+        editable="true"
+        id="Note_RelatedTo"
+        label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+        onChange="setClaimant()"
+        optionLabel="VALUE typeis Claim ? displaykey.Java.NoteView.EntireClaim : VALUE.DisplayName"
+        postOnChange="true"
+        required="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="Evaluation.RelatedTo"
+        valueRange="Evaluation.filterRelatedTo()"/>
+      <!-- <RangeInput
+        editable="true"
+        id="Evaluation_RelatedTo"
+        label="displaykey.NVV.Claim.NoteDetail.Note.RelatedTo"
+        required="true"
+        showNoneSelected="false"
+        sortValueRange="false"
+        value="Evaluation.Exposure"
+        valueRange="Evaluation.filterRelatedTo()"/> -->
+      <!-- The line below is used to get rid of claim-level from the related to field. As of 11/29, they want the claim-level option. JLMILLER -->
+      <Input
+        id="ClaimNumber"
+        label="displaykey.NVV.Matter.SubView.Matter.ClaimNumber"
+        value="Evaluation.Claim.ClaimNumber"/>
+      <Input
+        id="Insured"
+        label="displaykey.NVV.Matter.SubView.Matter.InsuredName"
+        value="Evaluation.Claim.Insured"/>
+      <Input
+        id="ClaimantName"
+        label="displaykey.NVV.Matter.SubView.Matter.Claimant"
+        postOnChange="true"
+        value="Evaluation.ClaimantNameExt"/>
+      <Input
+        id="DateOfBirth"
+        label="displaykey.NVV.Matter.SubView.Matter.DateOfBirth"
+        value="Evaluation.Claimant typeis Person ? Evaluation.Claimant.DateOfBirth : null"/>
+      <Input
+        id="ClaimantOccupation"
+        label="displaykey.NVV.Matter.SubView.Matter.ClaimantOcc"
+        value="Evaluation.Claimant typeis Person ?Evaluation.Claimant.Occupation : null"/>
+      <Input
+        id="Damage_LossLocation"
+        label="displaykey.NVV.Matter.SubView.Matter.LossLocation"
+        value="Evaluation.LossLocationExt"/>
+      <TextAreaInput
+        id="LossDescription"
+        label="displaykey.NVV.Matter.SubView.Matter.LossDescription"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.Claim.Description"/>
+      <TextAreaInput
+        editable="true"
+        id="CoverageIssues"
+        label="displaykey.NVV.Matter.SubView.Matter.CoverageIssues"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.CoverageIssuesExt"/>
+      <TextAreaInput
+        editable="true"
+        id="DescriptionOfDamages"
+        label="displaykey.NVV.Matter.SubView.Matter.DOD"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.DamageDescriptionExt"/>
+      <TextAreaInput
+        editable="true"
+        id="LiabilityEvaluation"
+        label="displaykey.NVV.Matter.SubView.Matter.LiabilityEval"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.LiabilityEvalExt"/>
+      <TextAreaInput
+        editable="true"
+        id="DefenseEvaluation"
+        label="displaykey.NVV.Matter.SubView.Matter.DefenseEval"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.DefenseEvalExt"/>
+      <TextAreaInput
+        editable="true"
+        id="AdditionalComments"
+        label="displaykey.NVV.Matter.SubView.Matter.Property.AdditionalComments"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.CommentsExt"/>
+      <InputDivider/>
+      <!-- <Input
+        editable="true"
+        id="LiabilityDistribution_InsuredLiability"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.LiabilityDistribution.InsuredLiability"
+        required="false"
+        value="evaluation.InsuredLiability"/> -->
+      <!-- <Input
+        editable="true"
+        id="LiabilityDistribution_ClaimantLiability"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.LiabilityDistribution.ClaimantLiability"
+        required="false"
+        value="evaluation.ClaimantLiability"/> -->
+      <!-- <Input
+        editable="true"
+        id="LiabilityDistribution_OtherLiability"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.LiabilityDistribution.OtherLiability"
+        required="false"
+        value="evaluation.OtherLiability"/> -->
+      <!-- <InputDivider/> -->
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEst.EconomicDamages"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Ambulance"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Ambulance"
+        required="false"
+        value="Evaluation.AmbulanceDamagesPastExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_ER"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.ER"
+        required="false"
+        value="Evaluation.EmergencyRoomDamagesPastExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_HospitalER"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.HospitalER"
+        required="false"
+        value="Evaluation.HospitalER"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Surgery"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Surgery"
+        required="false"
+        value="Evaluation.SurgeryDamagesPastExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_TreatingPhysician"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.TreatingPhysician"
+        required="false"
+        value="Evaluation.TreatingPhysician"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Therapy"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Therapy"
+        required="false"
+        value="Evaluation.TherapyDamagesPastExt"/>
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_PhysicalTherapy"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.PhysicalTherapy"
+        required="false"
+        value="evaluation.PhysicalTherapy"/> -->
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_MedicalEquipment"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.MedicalEquipment"
+        required="false"
+        value="Evaluation.MedicalEquipment"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Medication"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Medication"
+        required="false"
+        value="Evaluation.MedicationDamagesPastExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Diagnostic"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Diagnostic"
+        required="false"
+        value="Evaluation.Diagnostic"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_OtherMedical"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.OtherMedical"
+        required="false"
+        value="Evaluation.OtherMedicalDamagesPastExt"/>
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_FutureMedical"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.FutureMedical"
+        required="false"
+        value="evaluation.FutureMedical"/> -->
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_ClmtOutOfPocket"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.ClmtOutOfPocket"
+        required="false"
+        value="evaluation.ClmtOutOfPocket"/> -->
+      <!-- TotalPastMedical added for agri sprint 8,10/30/07, JLMILLER -->
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="EconomicDamages_TotalPastMedical"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.TotalPastMedical"
+        required="false"
+        value="Evaluation.calculateTotalPastMedical()">
+        <Reflect
+          triggerIds="EconomicDamages_Ambulance,EconomicDamages_ER,EconomicDamages_HospitalER,EconomicDamages_Surgery,EconomicDamages_TreatingPhysician,EconomicDamages_Therapy,EconomicDamages_MedicalEquipment,EconomicDamages_Medication,EconomicDamages_Diagnostic,EconomicDamages_OtherMedical"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2) +              NumberUtil.safeConvertToNumber(VALUE3) + NumberUtil.safeConvertToNumber(VALUE4) + NumberUtil.safeConvertToNumber(VALUE5) +              NumberUtil.safeConvertToNumber(VALUE6) + NumberUtil.safeConvertToNumber(VALUE7) + NumberUtil.safeConvertToNumber(VALUE8) +              NumberUtil.safeConvertToNumber(VALUE9) + NumberUtil.safeConvertToNumber(VALUE10)"/>
+      </Input>
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_ClmtOutOfPocket"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.ClmtOutOfPocket"
+        required="false"
+        value="evaluation.ClmtOutOfPocket"/> -->
+      <Input
+        boldLabel="true"
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_WageLoss"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.WageLoss"
+        required="false"
+        value="Evaluation.WageLossDamagesPastExt"/>
+      <Input
+        boldLabel="true"
+        editable="true"
+        formatType="currency"
+        id="EconomicDamages_Other"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Other"
+        required="false"
+        value="Evaluation.Other"/>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="EconomicDamages_Total"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.EconomicDamages.Total"
+        required="false"
+        value="Evaluation.calculateSpecialDamage()">
+        <Reflect
+          triggerIds="EconomicDamages_TotalPastMedical,EconomicDamages_WageLoss,EconomicDamages_Other"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)"/>
+      </Input>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.FutureDamages"/>
+      <Input
+        editable="true"
+        id="FutureMedical"
+        label="displaykey.NVV.Matter.FutureMedical"
+        value="Evaluation.FutureMedical"/>
+      <Input
+        editable="true"
+        id="FutureWages"
+        label="displaykey.NVV.Matter.FutureWages"
+        value="Evaluation.FutureWagesDamagesExt"/>
+      <Input
+        editable="true"
+        id="FutureOther"
+        label="displaykey.NVV.Matter.FutureOther"
+        value="Evaluation.FutureOtherDamagesExt"/>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="FutureDamages_Total"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.FutureDamges.Total"
+        required="false"
+        value="Evaluation.calculateFutureDamagesTotal()">
+        <Reflect
+          triggerIds="FutureMedical,FutureWages,FutureOther"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)"/>
+      </Input>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="Damages_Total"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalEverything"
+        required="false"
+        value="Evaluation.getAllDamagesTotal()">
+        <Reflect
+          triggerIds="FutureDamages_Total,EconomicDamages_Total"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2)"/>
+      </Input>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.GeneralDamages"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="Disfigurement"
+        label="displaykey.NVV.Matter.Disfigurement"
+        value="Evaluation.DisfigurementDamagesLowExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="DisfigurementHigh"
+        label="displaykey.NVV.Matter.DisfigurementHigh"
+        value="Evaluation.DisfigurementDamagesHighExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="PainSuffering"
+        label="displaykey.NVV.Matter.PainSuffering"
+        value="Evaluation.PainSufferingDamagesLowExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="PainSufferingHigh"
+        label="displaykey.NVV.Matter.PainSufferingHigh"
+        value="Evaluation.PainSufferingDamagesHighExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="OtherDamages"
+        label="displaykey.NVV.Matter.OtherGeneral"
+        value="Evaluation.OtherDamagesLowExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="OtherDamagesHigh"
+        label="displaykey.NVV.Matter.OtherGeneralHigh"
+        value="Evaluation.OtherDamagesHighExt"/>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="GeneralDamages_Total"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.GeneralDamages.Total"
+        required="false"
+        value="Evaluation.getTotalGeneralDamagesLow()">
+        <Reflect
+          triggerIds="Disfigurement,PainSuffering,OtherDamages"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3) "/>
+      </Input>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="GeneralDamages_TotalHigh"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.GeneralDamages.TotalHigh"
+        required="false"
+        value="Evaluation.getTotalGeneralDamagesHigh()">
+        <Reflect
+          triggerIds="DisfigurementHigh,OtherDamagesHigh,PainSufferingHigh"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)"/>
+      </Input>
+      <!-- The following two fields added per Karen 4/3/08. jlmiller -->
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="GeneralDamages_TotalDamagesLow"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.GeneralDamages.TotalDamagesLow"
+        required="false"
+        value="Evaluation.getTotalDamageLow()">
+        <Reflect
+          triggerIds="GeneralDamages_Total,Damages_Total"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2)"/>
+      </Input>
+      <Input
+        boldLabel="true"
+        formatType="currency"
+        id="GeneralDamages_TotalDamagesHigh"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.GeneralDamages.TotalDamagesHigh"
+        required="false"
+        value="Evaluation.getTotalDamageHigh()">
+        <Reflect
+          triggerIds="GeneralDamages_TotalHigh,Damages_Total"
+          value="javascript:NumberUtil.safeConvertToNumber(VALUE1) + NumberUtil.safeConvertToNumber(VALUE2)"/>
+      </Input>
+      <!-- <Label
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue"/> -->
+      <!-- <Input
+        formatType="currency"
+        id="TotalValue_Low"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.Low"
+        required="false"
+        value="util.Math.roundNearest((Total + util.Math.Nz(evaluation.Low)) * (util.Math.Nz(evaluation.InsuredLiability)/100))">
+        <Reflect
+          triggerIds="LiabilityDistribution_InsuredLiability,EconomicDamages_Total,NonEconomicDamages_Low"
+          value="javascript:Math.round((NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)) * (NumberUtil.safeConvertToNumber(VALUE1)/100) )"/>
+      </Input> -->
+      <TextAreaInput
+        editable="true"
+        id="OtherFactors"
+        label="displaykey.NVV.Matter.OtherFactors"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.OtherFactorsExt"/>
+      <Label
+        label="displaykey.NVV.Matter.SubView.Matter.ReserveCalc"/>
+      <!-- <RangeInput
+        editable="true"
+        id="ReserveLine"
+        label="displaykey.NVV.Matter.SubView.Matter.ReserveLine"
+        value="evaluation.ReserveExt"
+        valueRange="evaluation.Claim.ReserveLines"/> -->
+      <!-- <Input
+        editable="true"
+        id="EvaluationFor"
+        label="displaykey.NVV.Matter.EvaluationFor"
+        postOnChange="true"
+        value="Evaluation.EvaluationForExt"/> -->
+      <!-- Added EvaluationFor for Agri sprint 10/11  1/9/08 jlmiller but removed it per Karen 4/3/08. This is used for absolutely nothing, just display. -->
+      <Input
+        editable="true"
+        formatType="currency"
+        id="JVVRangeLow"
+        label="displaykey.NVV.Matter.JVVRangeLow"
+        onChange="Evaluation.calcFeatureRangeLow()"
+        postOnChange="true"
+        value="Evaluation.JVVRangeLowExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="JVVRangeHigh"
+        label="displaykey.NVV.Matter.JVVRangeHigh"
+        onChange="Evaluation.calcFeatureRangeHigh()"
+        postOnChange="true"
+        value="Evaluation.JVVRangeHighExt"/>
+      <Input
+        editable="true"
+        formatType="percentagePoints"
+        id="LowInsuredRange"
+        label="displaykey.NVV.Matter.InsuredRangeLow"
+        onChange="Evaluation.calcFeatureRangeLow()"
+        postOnChange="true"
+        value="Evaluation.LowInsuredLiabilityExt"/>
+      <!-- requestValidationExpression="(VALUE &lt; 0 or VALUE &gt; 100) ? displaykey.Java.Validation.Percentage(VALUE) : null" -->
+      <Input
+        editable="true"
+        formatType="percentagePoints"
+        id="HighInsuredRange"
+        label="displaykey.NVV.Matter.InsuredRangeHigh"
+        onChange="Evaluation.calcFeatureRangeHigh()"
+        postOnChange="true"
+        value="Evaluation.HighInsuredLiabilityExt"/>
+      <!-- 8/31/09 blawless - Defect 2407 - took out reflect and added function to EvaluationUtil  to work around poor Guidewire rounding functions and update issues. -->
+      <Input
+        formatType="currency"
+        id="PotentialFeatureRangeLow"
+        label="displaykey.NVV.Matter.PotentialExposureRangeLow"
+        required="false"
+        value="Evaluation.PotFeatRangeLowExt"/>
+      <Input
+        formatType="currency"
+        id="PotentialFeatureRangeHigh"
+        label="displaykey.NVV.Matter.PotentialExposureRangeHigh"
+        required="false"
+        value="Evaluation.PotFeatRangeHighExt"/>
+      <Input
+        editable="true"
+        id="Advances"
+        label="displaykey.NVV.Matter.Advances"
+        value="Evaluation.AdvancesExt"/>
+      <!-- Added the CurrentLossReserve for sprint 8, 11/6/07 JLMILLER, will reflect the loss reserve amount of the line chosen. -->
+      <Input
+        formatType="currency"
+        id="CurrentLossReserve"
+        label="displaykey.NVV.Matter.CurrentLossReserve"
+        value="Evaluation.CurrentLossReserveExt"/>
+      <Input
+        editable="true"
+        id="AnticipatedDefenseCosts"
+        label="displaykey.NVV.Matter.AnticipatedDefenseCosts"
+        value="Evaluation.DefenseCostExt"/>
+      <!-- Added the CurrentExpenseReserve for sprint 10, 1/10/08 JLMILLER, will reflect the expense reserve amount of the line chosen. -->
+      <Input
+        formatType="currency"
+        id="CurrentExpenseReserve"
+        label="displaykey.NVV.Matter.CurrentExpenseReserve"
+        value="Evaluation.CurrentExpenseReserveExt"/>
+      <Input
+        editable="true"
+        id="RecommendedReserve"
+        label="displaykey.NVV.Matter.RecommendedReserve"
+        postOnChange="true"
+        value="Evaluation.RecReserveExt"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="ReserveChange"
+        label="displaykey.NVV.Matter.ReserveChange"
+        required="false"
+        value="reserveChange"/>
+      <TextAreaInput
+        editable="true"
+        id="ReasonForChange"
+        label="displaykey.NVV.Matter.ReasonForChange"
+        numCols="60"
+        numRows="3"
+        value="Evaluation.ReserveChangeReasonExt"/>
+      <Input
+        editable="true"
+        id="ApprReserveAmt"
+        label="displaykey.NVV.Matter.ApprReserveAmt"
+        value="Evaluation.ApprReserveAmtExt"/>
+      <Input
+        editable="true"
+        id="ChangeAmt"
+        label="displaykey.NVV.Matter.ChangeAmt"
+        value="Evaluation.ChangeAmtGrossExt"/>
+      <Input
+        editable="true"
+        id="ChangeAmtNew"
+        label="displaykey.NVV.Matter.ChangeAmtNew"
+        value="Evaluation.ChangeAmtNewExt"/>
+      <!-- <RangeInput
+        editable="true"
+        id="ApprovedBy"
+        label="displaykey.NVV.Matter.ApprovedBy"
+        value="Evaluation.ApprovedByExt"
+        valueRange="evaluation.Claim.AssignedUser.buildApprovedByList()"/> -->
+      <!-- <Input
+        editable="true"
+        id="SavedToECF"
+        label="displaykey.NVV.Matter.Settlement.SavedToECF"
+        value="Evaluation.SaveToECFExt"/> -->
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="NonEconomicDamages_Low"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.NonEconomicDamages.Low"
+        required="false"
+        value="evaluation.Low"/> -->
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="NonEconomicDamages_High"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.NonEconomicDamages.High"
+        required="false"
+        value="evaluation.High"/> -->
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="NonEconomicDamages_Likely"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.NonEconomicDamages.Likely"
+        required="false"
+        value="evaluation.Likely"/> -->
+      <!-- <InputDivider/> -->
+      <!-- <Input
+        formatType="currency"
+        id="TotalValue_High"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.High"
+        required="false"
+        value="util.Math.roundNearest((Total + util.Math.Nz(evaluation.High)) * (util.Math.Nz(evaluation.InsuredLiability)/100))">
+        <Reflect
+          triggerIds="LiabilityDistribution_InsuredLiability,EconomicDamages_Total,NonEconomicDamages_High"
+          value="javascript:Math.round((NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)) * (NumberUtil.safeConvertToNumber(VALUE1)/100) )"/>
+      </Input> -->
+      <!-- <Input
+        formatType="currency"
+        id="TotalValue_Likely"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.Likely"
+        required="false"
+        value="util.Math.roundNearest((Total + util.Math.Nz(evaluation.Likely)) * (util.Math.Nz(evaluation.InsuredLiability)/100))">
+        <Reflect
+          triggerIds="LiabilityDistribution_InsuredLiability,EconomicDamages_Total,NonEconomicDamages_Likely"
+          value="javascript:Math.round((NumberUtil.safeConvertToNumber(VALUE2) + NumberUtil.safeConvertToNumber(VALUE3)) * (NumberUtil.safeConvertToNumber(VALUE1)/100) )"/>
+      </Input> -->
+      <!-- <Input
+        editable="true"
+        formatType="currency"
+        id="TotalValue_Amount"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.Amount"
+        required="true"
+        value="evaluation.Amount"/> -->
+      <!-- <Input
+        id="TotalValue_AvailableReserves"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.AvailableReserves"
+        value="evaluation.getAvailableReservesAsCurrency()"/> -->
+      <!-- <Input
+        id="TotalValue_TotalIncurredNet"
+        label="displaykey.NVV.Matter.SubView.Matter.SettlementCostEstimate.TotalValue.TotalIncurredNet"
+        value="evaluation.getTotalIncurredNetAsCurrency()"/> -->
+      <!-- Commented out by GAIC - rpampush 3/19/07 -->
+      <InputDivider/>
+    </InputColumn>
+    <Code><![CDATA[function setClaimant(){
+     if(Evaluation.RelatedTo!=null and Evaluation.RelatedTo typeis Exposure){
+     	Evaluation.Claimant = (Evaluation.getRelatedToValue() as Exposure).Claimant
+     	Evaluation.ClaimantNameExt = Evaluation.Claimant.DisplayName
+     } else {
+     	Evaluation.Claimant = null
+     	Evaluation.ClaimantNameExt = null
+     }
+    }]]></Code>
+  </DetailViewPanel>
+</PCF>

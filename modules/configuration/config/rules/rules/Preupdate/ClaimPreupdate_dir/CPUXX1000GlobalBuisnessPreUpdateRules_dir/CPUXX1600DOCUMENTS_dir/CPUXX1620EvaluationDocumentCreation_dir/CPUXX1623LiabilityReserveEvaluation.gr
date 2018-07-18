@@ -1,0 +1,151 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1600DOCUMENTS_dir.CPUXX1620EvaluationDocumentCreation_dir
+
+@gw.rules.RuleName("CPUXX1623 - Liability Reserve Evaluation")
+internal class CPUXX1623LiabilityReserveEvaluation {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(evaluation in Claim.Evaluations where evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "liability")
+and Claim.BeanVersion == find(clm in Claim where clm.ClaimNumber == Claim.ClaimNumber).getAtMostOneRow().BeanVersion/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.HashMap;
+uses gw.api.util.Logger //Added for logging in Debug - SR
+var values = new HashMap();
+for(evaluation in Claim.Evaluations){
+  if(evaluation.Changed and evaluation.SaveToECFExt and evaluation.EvaluationTypeExt == "liability"){
+    var doc = new Document(Claim);
+    //var TotalMedical = evaluation.AmbulanceDamagesPastExt + evaluation.EmergencyRoomDamagesPastExt + evaluation.HospitalER + evaluation.SurgeryDamagesPastExt +evaluation.MedicalEquipment + evaluation.TreatingPhysician + evaluation.TherapyDamagesPastExt + evaluation.Diagnostic
+    // + evaluation.OtherMedicalDamagesPastExt + evaluation.MedicationDamagesPastExt;
+    var TotalMedical = evaluation.calculateTotalPastMedical()
+    //var TotalSpecials = TotalMedical + evaluation.WageLossDamagesPastExt + evaluation.Other;
+    var TotalSpecials = evaluation.calculateSpecialDamage()
+    //var TotalFuture = evaluation.FutureMedical + evaluation.FutureWagesDamagesExt + evaluation.FutureOtherDamagesExt;
+    var TotalFuture = evaluation.calculateFutureDamagesTotal()
+    //var TotalGenDamageLow = evaluation.DisfigurementDamagesLowExt + evaluation.PainSufferingDamagesLowExt + evaluation.OtherDamagesLowExt;
+    var TotalGenDamageLow = evaluation.getTotalGeneralDamagesLow()
+    //var TotalGenDamageHigh = evaluation.DisfigurementDamagesHighExt + evaluation.PainSufferingDamagesHighExt + evaluation.OtherDamagesHighExt;
+    var TotalGenDamageHigh = evaluation.getTotalGeneralDamagesHigh()
+    var Total = TotalSpecials + TotalFuture;
+    var TotalDamageHigh = Total + TotalGenDamageHigh;
+    var TotalDamageLow = Total + TotalGenDamageLow;
+    var TotalAllSpecial = TotalSpecials + TotalFuture;
+    
+    //The line below was commented out because as of sprint 8, documents are no
+    //longer editable after they are saved to ECF.
+    //evaluation.SaveToECFExt = false;  //reset the save to ECF flag so it&apos;s not saved multiple times
+    values.put( "EvaluationName", evaluation.Name);
+    values.put( "RelatedTo", evaluation.getRelatedToValue());
+    values.put( "Claim", Claim );
+    values.put( "Insured", Claim.Insured);
+    values.put( "LossD", evaluation.claim.Description);
+    values.put( "CovIssues", evaluation.CoverageIssuesExt);
+    values.put( "DescDamages", evaluation.DamageOverviewExt);
+    values.put( "ResBasis", evaluation.ReserveBasisExt);
+    values.put( "OthrInfo", evaluation.OtherInfoExt);
+    values.put( "LossEst", evaluation.LossEstimateExt);
+    values.put( "Deduct", evaluation.DeductibleExt);
+    values.put( "Deprec", evaluation.DepreciationExt);
+    values.put( "CoIns", evaluation.CoinsuranceExt);
+    //values.put( "Othr", evaluation.OtherFactorsExt);
+    values.put( "RecReserve", evaluation.RecReserveExt);
+    values.put( "AddComments", evaluation.CommentsExt);
+    values.put( "Claimant", util.StringUtils.getDisplayNameWithoutFormerAndClosed(evaluation.Claimant));
+    values.put( "ClaimantOcc", evaluation.Claimant.Person.Occupation);
+    values.put( "DescOfLoss", evaluation.LossDescriptionExt);
+    values.put( "DescOfInjury", evaluation.DamageDescriptionExt);
+    values.put( "LiabilityEval", evaluation.LiabilityEvalExt);
+    values.put( "DefenseEval", evaluation.DefenseEvalExt);
+    values.put( "AmbulanceDMG", evaluation.AmbulanceDamagesPastExt);
+    values.put( "ER", evaluation.EmergencyRoomDamagesPastExt);
+    values.put( "HospitalCost", evaluation.HospitalER);
+    values.put( "SurgeryCost", evaluation.SurgeryDamagesPastExt);
+    values.put( "PhysicianCost", evaluation.TreatingPhysician);
+    values.put( "TherapyCost", evaluation.TherapyDamagesPastExt);
+    values.put( "MedEquipment", evaluation.MedicalEquipment);
+    values.put( "MedCost", evaluation.MedicationDamagesPastExt);
+    values.put( "Diag", evaluation.Diagnostic);
+    values.put( "OtherMed", evaluation.OtherMedicalDamagesPastExt);
+    values.put( "LostWages", evaluation.WageLossDamagesPastExt);
+    values.put( "OtherNonMedical", evaluation.Other);
+    values.put( "FutureMed", evaluation.FutureMedical);
+    values.put( "WageFuture", evaluation.FutureWagesDamagesExt);
+    values.put( "OtherFuture", evaluation.FutureOtherDamagesExt);
+    //values.put( "Disfigure", "$"+evaluation.DisfigurementDamagesLowExt+" "+"-"+" "+"$"+evaluation.DisfigurementDamagesHighExt);
+    values.put("Disfigure",evaluation.getDamageRange(evaluation.DisfigurementDamagesLowExt,evaluation.DisfigurementDamagesHighExt,"$"));
+    //values.put( "PainAndSuffer", "$"+evaluation.PainSufferingDamagesLowExt+" "+"-"+" "+"$"+evaluation.PainSufferingDamagesHighExt);
+    values.put("PainAndSuffer",evaluation.getDamageRange(evaluation.PainSufferingDamagesLowExt,evaluation.PainSufferingDamagesHighExt,"$"));
+    //values.put( "GenOther", "$"+evaluation.OtherDamagesLowExt+" "+"-"+" "+"$"+evaluation.OtherDamagesHighExt);
+    values.put("GenOther",evaluation.getDamageRange(evaluation.OtherDamagesLowExt,evaluation.OtherDamagesHighExt,"$"));
+    values.put( "OtherMitigatingFactors", evaluation.OtherFactorsExt);
+    //values.put( "InsuredRangeValues", "$"+evaluation.LowInsuredLiabilityExt+" "+"-"+" "+"$"+ evaluation.HighInsuredLiabilityExt);
+    values.put("InsuredRangeValues",evaluation.getDamageRange(evaluation.LowInsuredLiabilityExt,evaluation.HighInsuredLiabilityExt,"%"));
+    values.put( "AdvOtherCredits", evaluation.AdvancesExt);
+    values.put( "AntDefense", evaluation.DefenseCostExt);
+    values.put( "RecommendedReserve", evaluation.RecReserveExt);
+    values.put( "ResChange", evaluation.ReserveChangeExt);
+    values.put( "ApprReserve", evaluation.ApprReserveAmtExt);
+    values.put( "ResChange", evaluation.ReserveChangeExt);
+    //values.put( "FeatRange", "$"+evaluation.PotFeatRangeLowExt+" "+"-"+" "+"$"+evaluation.PotFeatRangeHighExt); 
+    values.put("FeatRange",evaluation.getDamageRange(evaluation.PotFeatRangeLowExt,evaluation.PotFeatRangeHighExt,"$"));
+    //values.put( "RangeJVV", "$"+evaluation.JVVRangeLowExt+" "+"-"+" "+"$"+evaluation.JVVRangeHighExt); 
+    values.put("RangeJVV",evaluation.getDamageRange(evaluation.JVVRangeLowExt,evaluation.JVVRangeHighExt,"$"));
+    values.put( "TotalMed", TotalMedical);
+    values.put( "TotSpecials", TotalSpecials);
+    values.put( "TotFuture", TotalFuture);
+    values.put( "TotalAllSpecial", TotalAllSpecial);
+    //values.put( "GenDamage", "$"+TotalGenDamageLow+" "+"-"+" "+"$"+TotalGenDamageHigh);
+    values.put ("GenDamage",evaluation.getDamageRange( TotalGenDamageLow, TotalGenDamageHigh, "$"));
+    values.put( "DamageTot", Total);
+    values.put( "DateofBirth", evaluation.Claimant.Person.DateOfBirth);
+    values.put( "ReasonforChange", evaluation.ReserveChangeReasonExt);
+    values.put( "ChangeGross", evaluation.ChangeAmtGrossExt);
+    values.put( "ChangeNew", evaluation.ChangeAmtNewExt);
+    values.put( "LossLoc", evaluation.LossLocationExt);   
+    values.put( "CurrentLossReserve", evaluation.CurrentLossReserveExt);
+    values.put( "CurrentExpenseReserve", evaluation.CurrentExpenseReserveExt);
+    //values.put( "TotalDamageRange", "$"+TotalDamageLow+" "+"-"+" "+"$"+TotalDamageHigh);
+    values.put ("TotalDamageRange",evaluation.getDamageRange( TotalDamageLow, TotalDamageHigh, "$"));
+    values.put( "AddComments", evaluation.CommentsExt);
+     //values.put( "ApprdBy", evaluation.ApprovedByExt); 
+     //values.put( "CurrentReserve", Evaluation.ReserveExt.Exposure.ExposureRpt.OpenReserves);
+     //values.put( "EvaluationFor", evaluation.EvaluationForExt);
+     
+    //Grab the exposure and claimant to be saved to the document
+    if(evaluation.getRelatedToValue() typeis Exposure){
+      doc.Exposure = (evaluation.getRelatedToValue() as Exposure)
+      doc.Ex_ECFFeatureType = doc.Exposure.DisplayName
+    }
+    if(evaluation.Claimant!=null){
+      doc.ex_ClaimantName = doc.Exposure.claimant.DisplayName
+    } 
+    doc.Claim = Claim;
+    doc.DocUID = "ID-" + java.util.Calendar.getInstance().getTimeInMillis();
+    doc.Name = "Liability Reserve Evaluation";
+    doc.MimeType = "application/rtf";
+    doc.Status = "approved";
+    doc.ex_SubType = "Reserve Recommendation"
+    doc.ex_Type = "Internal Report"
+    doc.ProcessMethod = "Sent_to_File"
+    doc.Description = "Liability Reserve Evaluation"
+    doc.Privileged = "No"
+    doc.FormIDExt = "ENT0011"
+    
+    values.put( "FormID", doc.FormIDExt );
+    
+    if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "LiabilityReserveEvaluation.gosu.rtf" )) {
+      util.document.DocumentProduction.createAndStoreDocumentSynchronously( "LiabilityReserveEvaluation.gosu.rtf", values, doc );
+      var note:String = "Liability reserve evaluation document successfully generated.";
+      var noteSubject:Note;
+      noteSubject = Claim.addNote("general", note);
+      noteSubject.Subject = "Liability Reserve Evaluation Created";
+    }
+    else {
+      //changed to logging in Debug - SR
+	  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT");
+    }
+    values.clear();
+  }
+  
+}/*end00rule*/
+  }
+}

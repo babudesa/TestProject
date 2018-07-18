@@ -1,0 +1,23 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG1700 - AltMkts 21 Day Adj Review")
+internal class ABAG1700AltMkts21DayAdjReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType==LossType.TC_ALTMARKETSAUTO AND !claim.Closed AND
+exists(exp in claim.Exposures where exp.ExposureType==ExposureType.TC_AB_AUTOPROPDAM OR 
+exp.ExposureType==ExposureType.TC_AB_PROPERTYDAMAGE OR exp.ExposureType==ExposureType.TC_AB_PHYSICALDAMAGE OR 
+exp.ExposureType==ExposureType.TC_AB_BODILYINJURY OR exp.ExposureType==ExposureType.TC_AB_PIP OR 
+exp.ExposureType==ExposureType.TC_AB_MEDPAY)
+AND (!exists(act in claim.Activities where act.ActivityPattern.Code=="altmkts_adj_21dayreview"))
+AND gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.ReportedDate,ScriptParameters.Activity_AltMktsAdjusterReview)
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.createActivityFromPattern(null, util.custom_Ext.finders.findActivityPattern("altmkts_adj_21dayreview"))
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

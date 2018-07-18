@@ -1,0 +1,82 @@
+package rules.Reopened.ClaimReopened_dir.CRXX1000AllBUClaimReopenedRules_dir
+
+@gw.rules.RuleName("CRXX1200 - Reopend notification and Incident only Reopen")
+internal class CRXX1200ReopendnotificationandIncidentonlyReopen {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* In order to sync the incident only value on the email and the incident
+only flag in the UI the Claim.IncidentReport getting set to false needs
+to happen in the reopend rule set.  The email is created only if the 
+LossType is Equine. So we moved the incidentreport for reopen from claim
+preupdate to claim reopened.
+author:erawe
+date: 4/17/09
+updated: 3/24/10 erawe -defect 3227
+*/
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+try{
+  //12/17/07 - zthomas - Defect 479, Set IncidentReport to false if an IncidentOnly 
+  //Claim is reopened.
+  if(claim.IncidentReport and claim.Changed and
+    exists(reopen in claim.History where reopen.Type == "reopened" and
+    reopen.New and reopen.Changed)){
+    claim.IncidentReport = false;}
+    
+  //4/17/09 erawe - for Equine Reopen notification email
+  if(claim.LossType == "EQUINE"){
+  var body : String = templates.email.ClaimCloseOpen.renderToString(claim)
+  var note:String;
+  var noteSubject:Note;
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+  var agent : String = claim.Policy.ex_Agency.DisplayName
+  var emailHelper=new util.custom_Ext.EmailHelper()
+
+if(agent!=null){ //this will add the producer(agency) to the subject in the email
+var subject:String="Reopened Claim Notification: " + agent
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    //Should be the underwriters e-mail
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.Underwriters_Email, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+       subject, body)
+    note = "Email notification of reopened claim has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+  }
+  else{
+    //Should be the underwriters e-mail
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+    note = "Email notification of reopened claim has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+  }
+ //if the producer(agency) is null we then hard code the email subject with No Producer Entered
+}else{
+  var subject:String="Reopened Claim Notification: No Producer Entered"
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    //Should be the underwriters e-mail
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.Underwriters_Email, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        subject, body)
+    note = "Email notification of reopened claim has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+  }
+  else{
+    //Should be the underwriters e-mail
+    emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+    note = "Email notification of reopened claim has been sent to the Underwriter for claim number "+claim.ClaimNumber;
+  }
+}
+  noteSubject = claim.addNote("general", note);
+  noteSubject.Subject = "Reopened Claim Notification" 
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUSP1000SpecialtyESClaimPreUpdateRules_dir.CPUSP1100RULESTHATCREATEACTIVTIES_dir
+
+@gw.rules.RuleName("CPUSP1140 - 90 Day Manager File Review")
+internal class CPUSP114090DayManagerFileReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.Policy.PolicyType == PolicyType.TC_UM ||
+claim.Policy.PolicyType == PolicyType.TC_UMB ||
+claim.Policy.PolicyType == PolicyType.TC_XS ||
+claim.Policy.PolicyType == PolicyType.TC_PRX) && 
+(!exists(act in claim.Activities where act.ActivityPattern.Code == "90day_manager_review_spec"))    /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+     
+    var ap = util.custom_Ext.finders.findActivityPattern("90day_manager_review_spec")
+    claim.createActivityFromPattern(null, ap)
+ 
+ 
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

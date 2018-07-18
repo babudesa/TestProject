@@ -1,0 +1,22 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUXX0000 - Prevent Assignment to Default Owner")
+internal class EPUXX0000PreventAssignmenttoDefaultOwner {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.AssignedUser != null and
+!exposure.AssignedUser.hasPermission(SystemPermissionType.TC_CLAIMOWN)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{  
+  var group = exposure.Claim.AssignedGroup
+  var user = exposure.Claim.AssignedGroup.Supervisor
+  if(group != null and user != null){
+    exposure.Claim.assign(group, user)
+  }
+}
+catch(e){
+  gw.api.util.Logger.logError("Unable to prevent assignment to Default Owner: " + actions.getRule().displayName)
+}/*end00rule*/
+  }
+}

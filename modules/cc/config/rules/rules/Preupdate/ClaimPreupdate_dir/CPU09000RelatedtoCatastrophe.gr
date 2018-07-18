@@ -1,0 +1,27 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleName("CPU09000 - Related to Catastrophe")
+internal class CPU09000RelatedtoCatastrophe {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// Rules below are to determine if any Catastrophe are related to this Claim 
+// If Cat is null AND a key field has changed AND the activity doesn't already exist
+(claim.Catastrophe == null) and
+( (claim.getOriginalValue("Catastrophe") <> null) or 
+  (claim.LossCause != claim.getOriginalValue("LossCause")) or 
+  (claim.LossType != claim.getOriginalValue("LossType")) or
+  (claim.LossDate != claim.getOriginalValue("LossDate") as java.util.Date) or 
+  (claim.LossLocation <> null ? (claim.LossLocation.Changed) : false)
+)  
+  
+and not exists(act in (claim.Activities) where (act.ActivityPattern == ActivityPattern.Finder.getActivityPatternByCode("catastrophe_review")))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.util.DateUtil
+
+var numMatches = claim.getCatastropheMatchesByZone().length
+if (numMatches > 0) { 
+  claim.createActivityFromPattern( null, ActivityPattern.finder.getActivityPatternByCode("catastrophe_review") )
+}/*end00rule*/
+  }
+}

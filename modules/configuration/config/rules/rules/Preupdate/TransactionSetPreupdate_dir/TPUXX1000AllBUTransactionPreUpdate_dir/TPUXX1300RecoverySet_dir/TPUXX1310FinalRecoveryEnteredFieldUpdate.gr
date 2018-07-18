@@ -1,0 +1,18 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1300RecoverySet_dir
+
+@gw.rules.RuleName("TPUXX1310 - Final Recovery Entered - Field Update")
+internal class TPUXX1310FinalRecoveryEnteredFieldUpdate {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype=="RecoverySet" and transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var transactions = transactionSet as RecoverySet
+
+for(rec in transactions.Recoveries){
+  if(rec.IsBulkedExt and rec.LastBulkExt==true){
+    rec.BulkRecoveryExt.RecoveryIsCompleteExt = true
+  }
+}/*end00rule*/
+  }
+}

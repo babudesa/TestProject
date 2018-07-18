@@ -1,0 +1,31 @@
+package rules.EventMessage.EventFired_dir.Destination3EDW_dir.Reserve_dir
+
+@gw.rules.RuleName("Reserve Status Change")
+internal class ReserveStatusChange {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "ReserveStatusChanged"
+/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var msgReserve = (messageContext.Root as Reserve);
+var f = util.gaic.EDW.EDWFunctionsFactory.getFinancialFunctions();
+var voidStopFound = false;
+var aQuery = gw.api.database.Query.make(Payment);
+var p : Payment
+aQuery.compare("Claim", Equals, msgReserve.Claim);
+var payments = aQuery.select().toList()
+for(payment in payments){
+  if(msgReserve.TransactionSet == payment.TransactionSet && (exists(trans in msgReserve.TransactionSet.Transactions where trans.Status == "pendingvoid" || trans.Status  == "pendingstop"))){
+    voidStopFound = true;
+    msgReserve.Status = "submitted"
+    break;
+  }
+}
+
+if(!voidStopFound){
+  f.sendReserveChanges(messageContext, msgReserve);
+}
+/*end00rule*/
+  }
+}

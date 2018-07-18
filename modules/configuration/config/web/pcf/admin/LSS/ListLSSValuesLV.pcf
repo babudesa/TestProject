@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ListLSSValuesLV">
+    <Require
+      name="LSSAdminList"
+      type="LSSAdminExt[]"/>
+    <Require
+      name="lssHash"
+      type="java.util.HashMap"/>
+    <Variable
+      name="matter"
+      type="Matter"/>
+    <RowIterator
+      canPick="false"
+      checkBoxVisible="false"
+      editable="true"
+      elementName="LSSAdminExt"
+      toCreateAndAdd="new LSSAdminExt()"
+      toRemove="LSSAdminExt.remove()"
+      value="LSSAdminList">
+      <Row>
+        <!-- <RangeCell
+          id="LossType"
+          label="displaykey.Web.Admin.ISOReferenceValuesLV.LossType"
+          optionLabel="VALUE.Description"
+          required="true"
+          unique="true"
+          validationExpression="validatedate(LSSAdminExt)"
+          value="LSSAdminExt.LossTypeExt"
+          valueRange="LossType.getTypeKeys(false)"/> -->
+        <Cell
+          id="LossType"
+          label="displaykey.Web.Admin.ISOReferenceValuesLV.LossType"
+          required="true"
+          sortOrder="1"
+          unique="true"
+          validationExpression="validatedate(LSSAdminExt)"
+          value="LSSAdminExt.LossTypeExt.Description"/>
+        <Cell
+          editable="true"
+          id="MatterEnabled"
+          label="displaykey.Matter.Admin.LegalActionEnabled"
+          onChange="LSSAdminExt.EffectiveDateExt=DateTime.CurrentDate"
+          postOnChange="true"
+          required="true"
+          validationExpression="validatecombination(LSSAdminExt)"
+          value="LSSAdminExt.MatterModuleExt"/>
+        <Cell
+          editable="true"
+          id="LSSVersion"
+          label="displaykey.Matter.Admin.SendClaimLSS"
+          onChange="lssHash.put(LSSAdminExt.LossTypeExt, LSSAdminExt.EnableLSSExt);  LSSAdminExt.EffectiveDateExt=DateTime.CurrentDate"
+          postOnChange="true"
+          required="true"
+          value="LSSAdminExt.EnableLSSExt"/>
+        <Cell
+          editable="true"
+          id="EnableLitAdvisorFees"
+          label="displaykey.Matter.Admin.EnableLitAdvisorFees"
+          required="true"
+          value="LSSAdminExt.EnableLitAdvisorFees"/>
+        <DateCell
+          editable="false //dateEffectiveEditable(LSSAdminExt)"
+          id="DateEffective"
+          label="displaykey.Matter.Admin.EffectiveDate"
+          validationExpression="validatedate(LSSAdminExt)   "
+          value="LSSAdminExt.EffectiveDateExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function validatedate(LSSitem : LSSAdminExt) : String {
+ if(LSSitem.EffectiveDateExt == null)
+   return("An Effective Date must be entered and should be a current or future date")
+ if(!LSSitem.EffectiveDateExt.verifyDateOnOrAfterToday()
+ && exists(change in LSSitem.ChangedFields where change == "EffectiveDateExt")){
+
+   return("Effective Date can only be set to the current or a future date")
+   }else
+ return(null)
+}
+
+function validateLSS(LSSitem : LSSAdminExt) : String {
+  if(LSSitem.EffectiveDateExt != null && LSSitem.EnableLSSExt == false)
+    return("LSS must be set to yes if there is a date present")
+  return(null)
+}
+
+function dateEffectiveEditable(LSSitem : LSSAdminExt) : boolean {
+  if((LSSitem.Changed 
+  || (LSSitem.EnableLSSExt==true && LSSitem.EffectiveDateExt == null))
+  || (!(LSSitem.EffectiveDateExt == null)) && LSSitem.EffectiveDateExt.verifyDateOnOrAfterToday())
+    return true
+   else
+    return false
+    
+}
+
+function validatecombination(LSSitem : LSSAdminExt) : String {
+  if(LSSitem.MatterModuleExt == false && LSSitem.EnableLSSExt == true)
+    return("The Legal Action Module Enabled/Send claim information to LSS combination is not valid.  Select a valid combination.")
+  return(null)
+}]]></Code>
+  </ListViewPanel>
+</PCF>

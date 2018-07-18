@@ -1,0 +1,31 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir
+
+@gw.rules.RuleName("EVXX1900 - Reject during Reconnect/Refresh")
+internal class EVXX1900RejectduringReconnectRefresh {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.ReconnectFailExt || exposure.Claim.Policy.isPolicyInRefresh( 1 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var reason = "Features must be reconnected before they can be escalated"
+
+switch(exposure.ValidationLevel){
+  case "loadsave":
+    exposure.Claim.setPolicyRefreshFailed()
+    exposure.reject("newloss", reason, null, null)
+    break;
+  case "newloss":
+    exposure.Claim.setPolicyRefreshFailed()
+    exposure.reject("iso", reason, null, null)
+    break;
+  case "iso":
+    exposure.Claim.setPolicyRefreshFailed()
+    exposure.reject("external", reason, null, null)
+    break;
+  case "external":
+    exposure.Claim.setPolicyRefreshFailed()
+    exposure.reject("payment", reason, null, null)
+    break;
+}/*end00rule*/
+  }
+}

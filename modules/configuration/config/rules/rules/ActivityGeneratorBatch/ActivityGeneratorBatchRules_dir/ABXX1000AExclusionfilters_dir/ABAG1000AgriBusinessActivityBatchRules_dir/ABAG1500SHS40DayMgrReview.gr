@@ -1,0 +1,29 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG1500 - SHS 40 Day Mgr Review")
+internal class ABAG1500SHS40DayMgrReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType==LossType.TC_SHSAUTO AND !claim.Closed AND
+exists(exp in claim.Exposures where exp.ExposureType==ExposureType.TC_AB_BODILYINJURY OR 
+exp.ExposureType==ExposureType.TC_AB_PIP OR exp.ExposureType==ExposureType.TC_AB_MEDPAY) AND
+claim.ReserveLines.Count == 0 AND
+!exists(act in claim.Activities where act.ActivityPattern.Code == "shs_mgr_40dayreview")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exposure in claim.Exposures){
+    if(exposure.ExposureType == ExposureType.TC_AB_BODILYINJURY OR 
+    exposure.ExposureType==ExposureType.TC_AB_PIP OR exposure.ExposureType==ExposureType.TC_AB_MEDPAY){
+      if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_SHSManagerReview)){
+        var ap = util.custom_Ext.finders.findActivityPattern("shs_mgr_40dayreview")
+        var act = claim.createActivityFromPattern(exposure, ap)
+        act.AssignedUser = claim.AssignedGroup.Supervisor
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

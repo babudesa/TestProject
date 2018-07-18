@@ -1,0 +1,25 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir
+
+@gw.rules.RuleName("PVXX1270 - Coverage Required")
+internal class PVXX1270CoverageRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///This is for unverified only because PSAR lags if this rule runs on verified
+//UD has promised us they will always send a coverage
+//Author: Santosh Dalal
+//Updated: Stephanie Przygocki - 5/25/11 - a lot of unnecessary logic here, cleaned up the rule
+
+!policy.Verified   /*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var hasCoverage = policy.AllCoverages.length > 0
+  if(policy.AllCoverages.length <= 0) {
+    policy.rejectField("", "payment", "A coverage is required on the policy for it to be at the Ability to Pay level.", null, null )
+  }
+}
+catch (e) {
+  gw.api.util.Logger.logError( "Unknown Error Occurred in Policy Validation Rules "+gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8))  
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPU10000PrimaryDiagnosisCodeChanged_dir
+
+@gw.rules.RuleName("CPU10100 - WC")
+internal class CPU10100WC {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.LossType == "WC"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var newCode = Claim.ensureClaimInjuryIncident().InjuryDiagnoses.firstWhere( \ i -> i.IsPrimary == true )
+var oldCode  = (Claim.ensureClaimInjuryIncident().InjuryDiagnoses.firstWhere( \ i -> i.getOriginalValue( "IsPrimary" ) == true ))
+
+// Add this history event if setting a diagnosis to primary for the first time on a claim
+if(oldCode == null and newCode!=null)
+{
+  Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.PreUpdate.Claim.SetPrimaryDiagnosis(newCode.ICDCode.Code))
+}
+
+// Add this history event if the primary diagnosis code is changed
+if( oldCode != newCode and oldCode !=null) 
+{
+  Claim.createCustomHistoryEvent( "DataChange", displaykey.Rules.PreUpdate.Claim.ChangedPrimaryDiagnosis(oldCode.ICDCode.Code, newCode.ICDCode.Code))
+}
+/*end00rule*/
+  }
+}

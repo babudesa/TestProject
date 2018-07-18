@@ -1,0 +1,16 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir.EVXX1270MinorChild_dir
+
+@gw.rules.RuleName("EVXX1272 - Date of Birth Required (Minor Child Yes)")
+internal class EVXX1272DateofBirthRequiredMinorChildYes {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.MinorChildExt==true and exposure.Claimant.Person.DateOfBirth==null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  exposure.reject("payment", "A date of birth is required on features where there is a minor child", null, null)
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

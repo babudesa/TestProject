@@ -1,0 +1,25 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir.PVXX1260TypeofLoss_dir
+
+@gw.rules.RuleName("PVXX1261 - Risk State Changed - Policy")
+internal class PVXX1261RiskStateChangedPolicy {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/if(exists(cov in policy.Coverages where cov.isFieldChanged( "State" ) and !cov.New 
+    and cov.State!=null
+    and exists(exp in policy.Claim.Exposures where  
+    (exp.Coverage==cov and exp.CvgStateChangedExt and (exp.Coverage.SublineExt=="920" ||
+                            exp.Coverage.SublineExt=="615" ||
+                            exp.Coverage.SublineExt=="625" ||
+                            exp.Coverage.SublineExt=="635" ||
+                            exp.Coverage.SublineExt=="611" ||
+                            exp.Coverage.SublineExt=="620" ||
+                            exp.Coverage.SublineExt=="621" ||
+                            exp.Coverage.SublineExt=="622" ||
+                            exp.Coverage.SublineExt=="623"))))){
+    policy.reject(null, null, "newloss", displaykey.Rules.Validation.Policy.Enterprise.TypeOfLoss)
+  }/*end00rule*/
+  }
+}

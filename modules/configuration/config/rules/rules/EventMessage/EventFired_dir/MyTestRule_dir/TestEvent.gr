@@ -1,0 +1,38 @@
+package rules.EventMessage.EventFired_dir.MyTestRule_dir
+
+@gw.rules.RuleName("Test Event")
+internal class TestEvent {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "GroupUserChanged" or 
+messageContext.EventName == "GroupUserRemoved" or 
+messageContext.EventName == "GroupUserAdded"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var GrpUser = MessageContext.Root as GroupUser
+//print ("Group Change occurred here")
+//print (GrpUSer.User + "'s Group was chanaged or added by" + GrpUser.User.UpdateUser)
+if (messageContext.EventName == "GroupUserAdded")
+{
+  gw.api.util.Logger.logInfo(GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was added by user "  + messageContext.CurrentUser + "." ) 
+  //print (GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was added by user "  + messageContext.CurrentUser + "." )
+}
+else 
+{
+  if (messageContext.EventName == "GroupUserChanged")
+  {
+    gw.api.util.Logger.logInfo(GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was changed by user "  + messageContext.CurrentUser + "." ) 
+    //print (GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was changed by user "  + messageContext.CurrentUser + "." )
+  }
+  else 
+  {
+    if (messageContext.EventName == "GroupUserRemoved")
+    {
+      gw.api.util.Logger.logInfo(GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was removed by user "  + messageContext.CurrentUser + "." ) 
+      //print (GrpUser.Group.UpdateTime.formatDateTime(LONG, LONG) + "  " + messageContext.EventName + ": " + GrpUser.User +  "'s Group" + GrpUser.Group +  " was removed by user "  + messageContext.CurrentUser + "." )
+    }
+  }
+}
+/*end00rule*/
+  }
+}

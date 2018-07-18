@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <InputSet
+    id="PropertyDetailInputSet"
+    mode="FIDCRIME">
+    <Require
+      name="aLocationBasedRU"
+      type="LocationBasedRU"/>
+    <Input
+      editable="true"
+      id="LocationNumber"
+      label="displaykey.Web.Address.Default.LocationNumber"
+      postOnChange="true"
+      required="true"
+      value="(aLocationBasedRU as PropertyRU).PropertyNumberExt"/>
+    <Input
+      editable="true"
+      id="RiskNumber"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskNumber"
+      onChange="(aLocationBasedRU as PropertyRU).checkRiskType()"
+      postOnChange="true"
+      required="true"
+      validationExpression="(aLocationBasedRU as PropertyRU).riskValidate()"
+      value="aLocationBasedRU.Property.BuildingNumberExt"/>
+    <TypeKeyInput
+      available="aLocationBasedRU.Property.BuildingNumberExt != &quot;0&quot; &amp;&amp; aLocationBasedRU.Coverages.length == 0"
+      editable="true"
+      filter="VALUE.hasCategory(LossType.TC_AGRIPROPERTY) &amp;&amp; VALUE.hasCategory(RiskType.TC_PROPERTY) &amp;&amp; VALUE != &quot;FPOPS&quot;"
+      id="RiskType"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskType"
+      onChange="(aLocationBasedRU as PropertyRU).checkRiskNumber()"
+      postOnChange="true"
+      required="true"
+      showNoneSelected="false"
+      value="aLocationBasedRU.Property.RiskTypeExt"/>
+    <TextAreaInput
+      editable="true"
+      id="RiskDescription"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskDescription"
+      numCols="50"
+      numRows="3"
+      required="false"
+      value="aLocationBasedRU.Property.LocationNumber"/>
+    <Input
+      editable="true"
+      id="YearBuilt"
+      label="displaykey.NVV.Policy.LocationDetail.Property.Year"
+      required="false"
+      value="aLocationBasedRU.Property.YearBuiltExt"
+      visible="aLocationBasedRU.Property.RiskTypeExt == EDWRiskType.TC_FRMDWL || aLocationBasedRU.Property.RiskTypeExt == EDWRiskType.TC_FRMSTRUCT || aLocationBasedRU.Property.RiskTypeExt == null"/>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskEffDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskEffectiveDate"
+      validationExpression="aLocationBasedRU.effDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropEffDateExt"/>
+    <DateInput
+      editable="!aLocationBasedRU.Policy.Verified"
+      id="RiskExpDate"
+      label="displaykey.GAIC.Policy.Properties.PropertyDetails.RiskExpirationDate"
+      validationExpression="aLocationBasedRU.expDateError() ? displaykey.NVV.Policy.LocationDetail.Property.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(aLocationBasedRU.Policy.EffectiveDate, aLocationBasedRU.Policy.ExpirationDate)) : util.custom_Ext.DateTime.isDateAfter(aLocationBasedRU.Property.PhyPropEffDateExt, aLocationBasedRU.Property.PhyPropExpDateExt) ? displaykey.Web.Dates.EffDateAfterExpDate : null"
+      value="aLocationBasedRU.Property.PhyPropExpDateExt"/>
+  </InputSet>
+</PCF>

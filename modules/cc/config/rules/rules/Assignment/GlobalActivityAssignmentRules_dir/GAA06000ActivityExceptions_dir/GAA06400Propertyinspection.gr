@@ -1,0 +1,38 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAA06000ActivityExceptions_dir
+
+@gw.rules.RuleName("GAA06400 - Property inspection")
+internal class GAA06400Propertyinspection {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/Activity.ActivityPattern.Code == "property_inspection"
+&& Activity.Claim.Insured.PrimaryAddress <> null/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/
+var usergroup : Group;
+var currentuser : String;
+var result = libraries.Activityassignment.getUserRoleGroupTypeBasedonActivityPattern(Activity.ActivityPattern.Code);
+var userrole = result[0];
+var grouptype = result[1];
+for (assign in Activity.Claim.RoleAssignments)
+{
+if (assign.Role == userrole)
+	{
+	usergroup = assign.AssignedGroup
+	if (Activity.CurrentAssignment.assignGroup( usergroup ))
+	{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Activity(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Activity.AssignedGroup))
+	actions.exit()
+	}
+	}
+} 
+
+if ( Activity.CurrentAssignment.assignGroupByLocation( grouptype, Activity.Claim.Insured.PrimaryAddress, true, Activity.CurrentAssignment.AssignedGroup ) )
+	{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.Global.Activity(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedGroupIs(Activity.AssignedGroup))
+	actions.exit()
+	}/*end00rule*/
+  }
+}

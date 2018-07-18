@@ -1,0 +1,6 @@
+package examples.plugins.authenticationsourcecreator;
+
+import com.guidewire.pl.plugin.security.AuthenticationSourceCreatorPlugin;
+
+public class BasicAuthenticationSourceCreatorPlugin extends BasicAuthenticationSourceCreatorPluginBase implements AuthenticationSourceCreatorPlugin {
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="SIDetails.go(Claim)"
+    afterCommit="SIDetails.go(Claim)"
+    beforeCommit="Claim.sendDataResearchEmail(Investigation, false); sendNewUpdateActivity();"
+    canEdit="(perm.System.editSIUDataResearch || perm.System.editSIUInvestigation) and perm.Claim.edit(Claim) and !Claim.checkDisconnectedFeatures()"
+    canVisit="(perm.System.viewSIUDataResearch || perm.System.viewSIUInvestigation) and perm.Claim.view(Claim) and perm.System.viewclaimbasics and Claim.SIUInvestigationsExt.length&gt;0"
+    id="EditDataResearchDetails"
+    parent="SIDetails(Claim)"
+    startInEditMode="true"
+    title="displaykey.Web.Claim.DataResearch">
+    <LocationEntryPoint
+      signature="EditDataResearchDetails(Claim : Claim, Investigation : SIUInvestigationExt)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Screen
+      id="EditDataResearchDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim, Investigation)"
+          id="LinkDocument"
+          label="displaykey.NVV.SIU.LinkDocument"
+          onPick="Claim.linkDocumentToInvestigation(PickedValue, Investigation)"
+          visible="perm.System.viewdocs and CurrentLocation.InEditMode"/>
+      </Toolbar>
+      <PanelRef
+        def="DataResearchDetailsDV(Claim, Investigation)"/>
+    </Screen>
+    <Code><![CDATA[function sendNewUpdateActivity() {
+  if(exists(act in Claim.Activities where act.ActivityPattern == util.custom_Ext.finders.findActivityPattern("new_siu_referral") and act.SIUInvestigationExt == Investigation)){
+    if(Investigation.isFieldChanged("siuinvestigator")){
+      Claim.createReassignmentActivity(Investigation); 
+    } else{
+     // Claim.createUpdateSIUActivity(Investigation); 
+    }
+  } else{
+    Claim.createNewSIUActivity(Investigation)
+  }
+}]]></Code>
+  </Page>
+</PCF>

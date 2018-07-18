@@ -1,0 +1,27 @@
+package rules.Validation.ClaimValidationRules_dir.CLV09000ISOValidation_dir.CLV09900Insured_dir
+
+@gw.rules.RuleName("CLV09930 - Address")
+internal class CLV09930Address {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.InsuredDenorm != null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var address = Claim.InsuredDenorm.PrimaryAddress;
+if( address.AddressLine1 == null || address.AddressLine1.length() == 0 )
+{
+  Claim.rejectSubField( Claim.InsuredDenorm, "PrimaryAddress.AddressLine1", "iso", displaykey.Rules.Validation.Claim.InsuredPrimaryAddressNotEmpty(displaykey.Term.Line1.Lower), null, null )
+}
+
+if( address.City == null || address.City.length() == 0 )
+{
+  Claim.rejectSubField( Claim.InsuredDenorm, "PrimaryAddress.City", "iso", displaykey.Rules.Validation.Claim.InsuredPrimaryAddressNotEmpty(displaykey.Term.City.Lower), null, null )
+}
+
+if( address.State == null && 
+    (address.Country == null || address.Country == Country.TC_US || address.Country == Country.TC_CA))
+{
+  Claim.rejectSubField( Claim.InsuredDenorm, "PrimaryAddress.State", "iso", displaykey.Rules.Validation.Claim.InsuredPrimaryAddressNotEmpty(displaykey.Term.State.Lower), null, null )
+}/*end00rule*/
+  }
+}

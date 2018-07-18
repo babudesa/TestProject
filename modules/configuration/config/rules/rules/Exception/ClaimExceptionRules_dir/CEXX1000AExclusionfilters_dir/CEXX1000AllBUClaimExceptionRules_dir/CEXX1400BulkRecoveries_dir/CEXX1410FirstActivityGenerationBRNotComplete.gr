@@ -1,0 +1,62 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1400BulkRecoveries_dir
+
+@gw.rules.RuleName("CEXX1410 - First Activity Generation - BR Not Complete")
+internal class CEXX1410FirstActivityGenerationBRNotComplete {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Author: Stephanie Przygocki
+//EM: 14.1
+//date: 3-31-09
+
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.util.Date
+uses gw.api.database.Query
+
+var tonight = new Date().trimToMidnight()
+var qry = Query.make(Recovery)
+
+qry.compare("Claim", Equals, claim)
+qry.compare("FirstBulkExt", Equals, true)
+qry.compare("IsBulkedExt", Equals, true)
+qry.compare("CreateTime", LessThan, tonight)
+qry.join("BulkRecoveryExt").compare("RecoveryIsCompleteExt", Equals, false)
+qry.subselect("ex_CashReceiptNumber", CompareNotIn, Recovery, "ex_CashReceiptNumber").compare("Status", Equals, TransactionStatus.TC_VOIDED)
+
+
+
+var results = qry.select()
+for(recovery in results) {
+  var act = Query.make(Activity).compare("Claim", Equals, claim)
+  act.or( \ or1 -> {
+                      or1.and(\ and1 -> { 
+                                          and1.compare("Status", Equals, ActivityStatus.TC_OPEN);
+                                          and1.compare("UpdateTime", lessThan, tonight);
+                                        }
+                             )
+                      or1.and(\ and2 -> {
+                                          and2.compare("Status", Equals, ActivityStatus.TC_COMPLETE);
+                                          and2.compare("UpdateTime", GreaterThanOrEquals, tonight);
+                                        }
+                             )
+                  }
+        )                 
+  act.join("ActivityPattern").compare("Code", Equals, "bulk_recov_not_comp_ext");
+  act.contains("Description", recovery.ex_CashReceiptNumber, false);
+  
+  var resultAct = act.select();
+  if (resultAct.Empty) {
+    var actPatt : ActivityPattern = util.custom_Ext.finders.findActivityPattern( "bulk_recov_not_comp_ext" )
+    var desc = displaykey.Rules.ClaimException.CEXX1400.BulkRecovery(recovery.BulkRecoveryExt.CashReceiptNumberExt, recovery.BulkRecoveryExt.CreateUser.DisplayName)
+    var act2 = claim.createActivity( null, actPatt, null, desc, null, null, null, null )
+  }
+}
+
+
+
+
+
+/*end00rule*/
+  }
+}

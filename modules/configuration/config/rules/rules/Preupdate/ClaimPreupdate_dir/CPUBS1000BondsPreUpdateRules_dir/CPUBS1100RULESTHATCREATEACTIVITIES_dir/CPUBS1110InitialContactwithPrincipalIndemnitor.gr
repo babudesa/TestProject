@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUBS1000BondsPreUpdateRules_dir.CPUBS1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CPUBS1110 - Initial Contact with Principal/Indemnitor")
+internal class CPUBS1110InitialContactwithPrincipalIndemnitor {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.AssignmentStatus == "assigned" &&
+claim.IncidentReport == false &&
+claim.State != "closed" &&
+(!exists(act in claim.Activities where act.ActivityPattern.Code=="initial_cont_with_princ_indem"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var today = gw.api.util.DateUtil.currentDate()
+  var ap = util.custom_Ext.finders.findActivityPattern( "initial_cont_with_princ_indem" )
+   
+  var act = claim.createActivityFromPattern( null, ap)
+    
+  act.TargetDate = today.addBusinessDays(ScriptParameters.Activity_BondsInitialContactWithPrincipalIndemnitor)
+  act.AssignedUser = claim.AssignedUser
+
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="ExposureISOMedicareDataInputSet">
+    <Require
+      name="contactISO"
+      type="ContactISOMedicareExt"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <Variable
+      name="Contact"
+      type="Contact"/>
+    <Variable
+      initialValue="&quot;&quot;"
+      name="code"
+      type="String"/>
+    <Variable
+      initialValue="&quot;Cause of Injury Lookup&quot;"
+      name="CauseInjuryButton"
+      type="String"/>
+    <Variable
+      initialValue="true"
+      name="isValid"
+      type="boolean"/>
+    <Variable
+      initialValue="util.WCHelper.isWCLossType(claim)"
+      name="isWCLossType"
+      type="Boolean"/>
+    <Variable
+      initialValue="setNFILDefault()"
+      name="setNFIL"/>
+    <!-- <Label
+      label="displaykey.Web.Exposure.MedicareData"/> -->
+    <!-- <ButtonInput
+      action="ICD9CodePopup.push(pageProc, &quot;CauseOfInjury&quot;)"
+      hideIfReadOnly="true"
+      id="CauseButton"
+      value="CauseInjuryButton"
+      visible="pageProc.DiagnosticCodes.last().ContactICD.ICDCode == null  and pageProc.DiagnosticCodes.Count &gt; 0 ? false : true"/> -->
+    <!-- <TextInput
+      action="//pageProc.checkCauseCode(new ContactICDExt() , pageProc.CauseInjury)"
+      editable="pageProc.DiagnosticCodes.last().ContactICD.ICDCode == null and pageProc.DiagnosticCodes.Count &gt; 0 ? false : true"
+      id="CauseOfInjuryTextInput"
+      label="&quot;Cause of Injury&quot;"
+      outputConversion="CurrentLocation.InEditMode? VALUE : (VALUE != null? contactISO.ContactICDExt.where(\ c -&gt; c.CauseOfInjury )*.ICDCode.last().Code + &quot; &quot; +  contactISO.ContactICDExt.where(\ c -&gt; c.CauseOfInjury )*.ICDCode.last().CodeDesc : null)"
+      required="contactISO.Contact.Person.MedicareEligibleExt and (contactISO.Contact.ContactISOMedicareExt.ORMIndExt or contactISO.Contact.ContactISOMedicareExt.TPOCExt.Count != 0) ? true : false"
+      value="pageProc.CauseInjury"/> -->
+    <!-- <Input
+      action="ICD9CodePopup.push(pageProc, &quot;CauseOfInjury&quot;)"
+      id="CauseOfInjuryInput"
+      onChange="//pageProc.checkUncommitted()"
+      outputConversion="CurrentLocation.InEditMode ? &quot;Cause of Injury Lookup&quot; : &quot;&quot;"
+      postOnChange="true"
+      required="false"
+      value="pageProc.CauseInjury"
+      visible="pageProc.DiagnosticCodes.last().ContactICD.ICDCode == null  and pageProc.DiagnosticCodes.Count &gt; 0 ? false : true"/> -->
+    <!-- <ContentInput>
+      <Link
+        action="ICDCodeWorksheet.goInWorkspace(pageProc, &quot;CauseOfInjury&quot;)"
+        id="CauseOfInjuryLink"
+        label="&quot;Cause of Injury Lookup&quot;"
+        recalculateArgOnRefresh="true"
+        visible="CurrentLocation.InEditMode"/>
+    </ContentInput> -->
+    <TypeKeyInput
+      editable="true"
+      id="ProductLiabilityTypeKeyInput"
+      label="displaykey.Web.Exposure.MedicareData.ProductLiability"
+      postOnChange="true"
+      required="pageProc.ProductLiabRequired"
+      value="contactISO.ProductLiabTypeExt"/>
+    <Input
+      editable="true"
+      id="ProductGeneralNameInput"
+      label="displaykey.Web.Exposure.MedicareData.ProductGeneralName"
+      value="contactISO.ProductGenericNameExt"/>
+    <Input
+      editable="true"
+      id="ProductBrandNameInput"
+      label="displaykey.Web.Exposure.MedicareData.ProductBrandName"
+      value="contactISO.ProductBrandNameExt"/>
+    <Input
+      editable="true"
+      id="ProductManufacturerInput"
+      label="displaykey.Web.Exposure.MedicareData.ProductManufacturer"
+      value="contactISO.ProductManufacturerExt"/>
+    <TextAreaInput
+      editable="true"
+      id="AllegedHarmTextAreaInput"
+      label="displaykey.Web.Exposure.MedicareData.AllegedHarm"
+      numRows="4"
+      value="contactISO.AllegedHarmExt"/>
+    <DateInput
+      editable="true"
+      id="DateOfIncidentDateInput"
+      label="displaykey.Web.Exposure.MedicareData.DateOfIncident"
+      validationExpression="contactISO.CMSIncidentDateExt == null || gw.api.util.DateUtil.compareIgnoreTime(contactISO.CMSIncidentDateExt, util.DateUtil.currentDate()) &lt;= 0 ? null : displaykey.Java.Validation.Date.ForbidFuture"
+      value="contactISO.CMSIncidentDateExt"/>
+    <!-- <BooleanRadioInput
+      editable="true"
+      id="TortClaim"
+      label="&quot;Is This a Federal Tort Claim?&quot;"
+      postOnChange="true"
+      value="contactISO.FederalTortClaimExt"/> -->
+    <RangeInput
+      editable="true"
+      id="StateOfVenueInput"
+      label="displaykey.Web.Exposure.MedicareData.StateOfVenue"
+      postOnChange="true"
+      required="pageProc.StateOfVenue == null ? false : true"
+      value="pageProc.StateOfVenue"
+      valueRange="pageProc.getStateOfVenueFields()"/>
+    <BooleanRadioInput
+      editable="pageProc.isORMEditable() &amp;&amp; !isWCLossType"
+      id="CMSORMInd"
+      label="displaykey.Web.Exposure.MedicareData.OnGoingResponsibilityForMedicals"
+      onChange="validateORMFields(); if(contactISO.ORMIndExt){(contactISO.Contact as Person).SendPartyToCMSExt = false};"
+      postOnChange="true"
+      stacked="false"
+      validationExpression="pageProc.isORMValid() ? null : &quot;ORM can only be set to yes if &quot; + contactISO.Contact.DisplayName + &quot; is the claimant on a Medical Payment or Personal Injury Protection feature.&quot;"
+      value="contactISO.ORMIndExt"/>
+    <!-- <Input
+      editable="true"
+      formatType="currency"
+      id="NFILMulticurrencyAmountInput"
+      label="displaykey.Web.Exposure.MedicareData.NFIL"
+      required="contactISO.ORMIndExt == false? false : true"
+      value="contactISO.NFILLimitExt"/> -->
+    <CurrencyInput
+      editable="contactISO.ORMIndExt"
+      formatType="exactNumber"
+      id="NFILMulticurrencyAmountInput1"
+      label="displaykey.Web.Exposure.MedicareData.NFIL"
+      maxChars="12"
+      outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+      validationExpression="contactISO.NFILLimitExt.Amount == null or contactISO.NFILLimitExt.Amount.toString().length &lt;= 12 ? (pageProc.validateAmount(contactISO.NFILLimitExt) ? null : &quot;No Fault Insurance Limit (NFIL) must be whole dollars only.&quot;) : &quot;You can only have 9 digits in front of the decimal&quot;"
+      value="contactISO.NFILLimitExt"/>
+    <DateInput
+      editable="contactISO.ORMIndExt"
+      id="ExhaustDateInput"
+      label="displaykey.Web.Exposure.MedicareData.ExhaustDate"
+      postOnChange="true"
+      validationExpression="util.gaic.CMS.validation.CMSValidationExpression.exhaustDate(contactISO)"
+      value="contactISO.ExhaustDateExt"
+      visible="!isWCLossType"/>
+    <DateInput
+      editable="contactISO.ORMIndExt? (contactISO.ExhaustDateExt == null ? true : false) : false"
+      id="ORMTermDateInput"
+      label="displaykey.Web.Exposure.MedicareData.ORMTermDate"
+      validationExpression="ORMEndDateValidationExpression()"
+      value="pageProc.ORMDate"/>
+    <BooleanRadioInput
+      editable="true"
+      id="MedicalBenefitsAvailable"
+      label="displaykey.Web.Exposure.MedicareData.StatutoryTerminationofMedBenefits"
+      onChange="if(contactISO.MedBenefitTermDate!=null and contactISO.TermMedBenefit == false) {contactISO.MedBenefitTermDate = null}"
+      postOnChange="true"
+      value="contactISO.TermMedBenefit"/>
+    <DateInput
+      editable="true"
+      id="MedicalBenefitsTerminationDate"
+      label="displaykey.Web.Exposure.MedicareData.MedicalBenefitTermDate"
+      required="contactISO.TermMedBenefit == true"
+      value="contactISO.MedBenefitTermDate"
+      visible="contactISO.TermMedBenefit"/>
+    <Code><![CDATA[function validateORMFields(){
+ if(contactISO.ORMIndExt == false){
+     contactISO.NFILLimitExt = null
+     contactISO.ExhaustDateExt = null
+     contactISO.ORMEndDateExt = null
+ }
+}
+
+function ORMEndDateValidationExpression() : String{
+  var message : String
+  
+  if(!(contactISO.ORMEndDateExt == null || gw.api.util.DateUtil.compareIgnoreTime(contactISO.ORMEndDateExt, util.DateUtil.currentDate()) <= 0)){
+    message = pageProc.verifyDate(pageProc.ORMDate)
+  }
+  
+  return message
+}
+
+function setNFILDefault(){
+  if(contactISO != null && contactISO.NFILLimitExt == null && isWCLossType){
+    contactISO.NFILLimitExt = 0
+  }
+}]]></Code>
+  </InputSet>
+</PCF>

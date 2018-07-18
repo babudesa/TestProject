@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_exposure.xml -->
+  <DetailViewPanel
+    id="NewExposureDV"
+    mode="Generaldamage">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Overall"/>
+      <Input
+        id="Exposure_LossParty"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.LossParty"
+        required="true"
+        value="Exposure.LossParty"/>
+      <Input
+        id="Exposure_PrimaryCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.PrimaryCoverage"
+        value="Exposure.PrimaryCoverage"/>
+      <Input
+        id="Exposure_CoverageSubType"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.CoverageSubType"
+        value="Exposure.CoverageSubType"/>
+      <RangeInput
+        editable="true"
+        helpText="displaykey.Exposure.Coverage.helpText"
+        id="Exposure_Coverage"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Coverage"
+        value="Exposure.Coverage"
+        valueRange="Exposure.Claim.Policy.getCoveragesByCoverageType(Exposure.PrimaryCoverage)"/>
+      <InputSet
+        visible="Exposure.Claim.Policy.StatCodingEnabled">
+        <PolicyStatCodePickerInput
+          action="ClaimPolicyStatCodePickerPopup.push(Exposure.Claim)"
+          editable="true"
+          id="Exposure_StatLine"
+          label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.StatLine"
+          value="Exposure.StatLine"
+          valueRange="Exposure.Claim.Policy.CappedStatCodes"/>
+        <InputSet
+          hideIfReadOnly="true"
+          visible="true">
+          <TextInput
+            id="StatLine_Warning"
+            value="displaykey.Java.StatCodes.StatCodeListCappedWarning(Exposure.Claim.Policy.StatCodeListCap, Exposure.Claim.Policy.StatCodes.length)"
+            visible="Exposure.Claim.Policy.StatCodeListCapped"/>
+        </InputSet>
+      </InputSet>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant"/>
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="Claimant_Picker"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant.Picker"
+        required="true"
+        value="Exposure.Claimant"
+        valueRange="Exposure.Claim.getRelatedContacts(Exposure.Claim.getContactType(&quot;claimant&quot;)) as Person[]">
+        <Reflect
+          triggerIds="Exposure_LossParty">
+          <ReflectCondition
+            condition="VALUE == &quot;insured&quot;"
+            value="Exposure.Claim.Insured"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </ClaimContactInput>
+      <Input
+        editable="true"
+        id="Claimant_Type"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant.Type"
+        required="true"
+        value="Exposure.ClaimantType">
+        <Reflect
+          triggerIds="Claimant_Picker">
+          <ReflectCondition
+            condition="Exposure.Claim.Insured==VALUE"
+            value="&quot;insured&quot;"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </Input>
+      <Input
+        editable="true"
+        id="Claimant_ContactProhibited"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant.ContactProhibited"
+        value="ContactProhibited"/>
+      <Input
+        id="Claimant_PrimaryPhone"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant.PrimaryPhone"
+        value="Exposure.Claimant.PrimaryPhoneValue">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="VALUE.PrimaryPhoneValue"/>
+      </Input>
+      <Input
+        id="Claimant_Address"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Claimant.Address"
+        value="Exposure.Claimant.PrimaryAddressDisplayValue">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="VALUE.PrimaryAddressDisplayValue"/>
+      </Input>
+      <InputDivider/>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Damage"/>
+      <TypeKeyInput
+        editable="true"
+        filter="VALUE.hasCategory( Exposure.Incident.Subtype )"
+        id="Severity"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Severity"
+        value="Exposure.Incident.Severity"/>
+      <TextAreaInput
+        editable="true"
+        id="Description"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Description"
+        numCols="30"
+        numRows="3"
+        value="Exposure.Incident.Description"/>
+      <Input
+        editable="true"
+        formatType="currency"
+        id="LossEstimate"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.LossEstimate"
+        value="Exposure.Incident.LossEstimate"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.Coding"
+        visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+      <!-- Unable to convert defaultValue 'Exposure.Claim.LossLocation.State'
+PCF does not support defaultValue, please read InitialValues.txt for details
+The converter recorded this value/defaultValue pair and has added an entry
+to the suggested Gosu in InitialValues.txt -->
+      <Input
+        editable="true"
+        id="Exposure_JurisdictionState"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.JurisdictionState"
+        value="Exposure.JurisdictionState"
+        visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+      <InputDivider
+        visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        label="displaykey.NVV.Exposure.SubView.NewGeneralDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[
+property get ContactProhibited() : boolean {
+    return Exposure.Claim.getClaimContact(Exposure.Claimant).ContactProhibited
+}
+
+property set ContactProhibited(prohibited : boolean) {
+  var claimContact = Exposure.Claim.getClaimContact(Exposure.Claimant)
+  if (claimContact != null) claimContact.ContactProhibited = prohibited
+}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

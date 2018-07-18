@@ -1,0 +1,18 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC2200 - Set flag for WCV Dummy Policies")
+internal class CPUWC2200SetflagforWCVDummyPolicies {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.Verified and 
+claim.Flagged!= "isflagged" and claim.Policy.PolicyType == "WCV"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.setFlag( "This Claim has a dummy policy associated to it." )
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, "Problem with setting Claim.setFlag" )
+}
+/*end00rule*/
+  }
+}

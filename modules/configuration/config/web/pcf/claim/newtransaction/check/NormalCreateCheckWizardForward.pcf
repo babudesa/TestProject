@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Forward
+    canVisit="(exposure == null and costType == null and costCategory == null)"
+    id="NormalCreateCheckWizardForward"
+    parent="Claim(claim)">
+    <LocationEntryPoint
+      signature="NormalCreateCheckWizardForward(claim : Claim)"/>
+    <LocationEntryPoint
+      signature="NormalCreateCheckWizardForward(claim : Claim, check : Check)"/>
+    <LocationEntryPoint
+      signature="NormalCreateCheckWizardForward(claim : Claim, exposure : Exposure, costType : CostType, costCategory : CostCategory, setReserveLine : Boolean)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="check"
+      type="Check"/>
+    <Variable
+      name="exposure"
+      type="Exposure"/>
+    <Variable
+      name="costType"
+      type="CostType"/>
+    <Variable
+      name="costCategory"
+      type="CostCategory"/>
+    <Variable
+      name="setReserveLine"
+      type="Boolean"/>
+    <Variable
+      initialValue="financials.CheckUtil.canPay(Claim, exposure, CurrentLocation)"
+      name="canPayResult"
+      type="financials.AbilityToPayResult"/>
+    <ForwardCondition
+      action="NewCheckNoAbilityToPay.go(claim, canPayResult)"
+      condition="null != canPayResult || !exists(exp in Claim.Exposures where exp.ValidationLevel==&quot;payment&quot;)"/>
+    <ForwardCondition
+      action="NormalCreateCheckWizard.go(claim)"
+      condition="null == check and null == setReserveLine"/>
+    <ForwardCondition
+      action="NormalCreateCheckWizard.go(claim, exposure, costType, costCategory, setReserveLine)"
+      condition="null != setReserveLine"/>
+  </Forward>
+</PCF>

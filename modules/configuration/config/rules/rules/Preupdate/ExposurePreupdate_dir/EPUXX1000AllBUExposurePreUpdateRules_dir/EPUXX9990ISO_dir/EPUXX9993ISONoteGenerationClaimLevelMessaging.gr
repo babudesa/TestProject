@@ -1,0 +1,32 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX9990ISO_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("EPUXX9993 - ISO Note Generation (Claim-Level Messaging)")
+internal class EPUXX9993ISONoteGenerationClaimLevelMessaging {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*///Sprzygocki 8/17/11 - New ISO Note rule to account for Claim-Level Messsaging
+//Updated: 12/30/11 - sprzygocki - added debugging comments and changed the note
+//  conditions around in order to stop duplicate notes - was creating a note for
+//  each feature even though we are using claim-level messaging now
+exposure.isValid( "iso" )
+and exposure.Claim.isValid( "iso", false )
+and exposure.Claim.ISOClaimLevelMessaging
+and !exposure.Closed 
+and exposure.Coverage!=null
+and (libraries.ISO.anyFieldChanged(exposure, false) || 
+    libraries.ISO.contactFieldChanged(exposure.Claimant) ||
+    ((exposure.OriginalVersion as Exposure).Claimant!=exposure.Claimant) || 
+    exposure.ISOStatus == "ResendPending")/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var sendNote = libraries.ISO.getISONoteBody(exposure)
+var subject = "Sent to ISO for Claim Search"
+if(!exists(note in exposure.Claim.Notes where 
+     note.New and note.Subject==subject)){
+  var note = exposure.Claim.addNote( NoteTopicType.TC_INVESTIGATION, sendNote )
+  note.Subject = subject
+  //print("Note created from EPU rules")
+}/*end00rule*/
+  }
+}

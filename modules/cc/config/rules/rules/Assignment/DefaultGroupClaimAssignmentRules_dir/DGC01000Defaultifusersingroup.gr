@@ -1,0 +1,31 @@
+package rules.Assignment.DefaultGroupClaimAssignmentRules_dir
+
+@gw.rules.RuleName("DGC01000 - Default - if users in group")
+internal class DGC01000Defaultifusersingroup {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//* As long as the group contains at least 1 user */
+exists( aUser in claim.CurrentAssignment.AssignedGroup.Users where true )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/
+if ( claim.CurrentAssignment.assignUserByRoundRobin(false, claim.CurrentAssignment.AssignedGroup ) )
+	{
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.DefaultGroup.Claim(gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8)))
+	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(Claim.AssignedUser))
+	actions.exit()
+	}
+
+// more realistic rule 
+
+//uses gw.api.assignment.examples.AttributeAssignmentBySeniority
+//
+//  var assignment = new AttributeAssignmentBySeniority()
+//  if (assignment.assignByComplexityAndSeniority( Claim, Claim.CurrentAssignment.AssignedGroup )) {
+//    // log message here, if desired
+//	gw.api.util.Logger.logDebug( "##### This is the Default Group Claim rule " +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8))
+//	gw.api.util.Logger.logDebug( displaykey.Rules.Assignment.AssignedUserIs(Claim.AssignedUser))
+//    actions.exit()
+//  }/*end00rule*/
+  }
+}

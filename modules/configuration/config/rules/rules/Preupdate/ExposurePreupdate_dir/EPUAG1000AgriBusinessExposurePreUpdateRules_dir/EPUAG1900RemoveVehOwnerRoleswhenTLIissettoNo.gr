@@ -1,0 +1,84 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUAG1000AgriBusinessExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUAG1900 -Remove Veh. Owner Roles when TLI is set to No")
+internal class EPUAG1900RemoveVehOwnerRoleswhenTLIissettoNo {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.ExposureType=="ab_AutoPropDam" || 
+Exposure.ExposureType=="ab_PhysicalDamage"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*///MMANALILI -- Based on Defect 3823.  
+//Vehicle Owner roles should be removed if total Loss is Changed to No
+//If the total loss is set to no then: 
+//the "At Time of Accident" and the "At Conclusion of Claim" field will be set to null
+  if(Exposure.TotalLossIndExt == false) {
+
+  //The below fields need to be nulled out when Total Loss is changed to No
+  Exposure.VehicleIncident.IsOwnerRetainingExt=null;
+  Exposure.VehicleIncident.salvagebuyer=null;
+  Exposure.VehicleIncident.OdomRead=null;
+  Exposure.VehicleIncident.Vehicle.VehicleTypeExt=null;
+  Exposure.VehicleIncident.Vehicle.VehicleStyleExt=null;
+  Exposure.VehicleIncident.ReasonForTotalLossExt=null;
+  Exposure.salvagebuyer=null;
+  
+  //The below fields need to be nulled out when Total Loss is changed to No
+  //When:
+  //   1. the Policy is unverified, the vehicle is not a policy vehicle, and the coverage is not a policy coverage OR
+  //   2. the coverage is not a policy coverage and the vehicle is not a policy vehicle OR
+  //   3. it is a third party loss
+  //tnewcomb 05/18/2011 : Commented out to accomodate defect 4055 changes
+  /*
+  if((!Exposure.Claim.Policy.Verified &amp;&amp; !Exposure.isVehicleAListedPolicyVehicle() &amp;&amp; !Exposure.isCoverageAPolicyCoverage()) || 
+      (!Exposure.isCoverageAPolicyCoverage() &amp;&amp; !Exposure.isVehicleAListedPolicyVehicle()) || Exposure.LossParty == LossPartyType.TC_THIRD_PARTY){
+    Exposure.VehicleIncident.Vehicle.Vin=null;
+    Exposure.VehicleIncident.Vehicle.Make=null;
+    Exposure.VehicleIncident.Vehicle.Model=null;
+    Exposure.VehicleIncident.Vehicle.Year=null;
+  }
+  */
+  
+//The role of "Vehicle Owner Claim Open" or "Vehicle Owner Claim Close" will only be removed if:
+//the "Vehicle Owner Claim Open" or "Vehicle Owner Claim Close" is already a role set for the 
+//specified contacts.
+  if((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt != null ) {
+    Exposure.updateRolesOnCheckPayee((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt, ContactRole.TC_VEHOWNCLAIMOPEN);
+    Exposure.removeRole( "VehOwnClaimOpen", (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt );
+  }
+    
+  if((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt != null) {
+    Exposure.updateRolesOnCheckPayee((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt, ContactRole.TC_VEHOWNCLAIMCLOSE);
+    Exposure.removeRole( "VehOwnClaimClose", (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt );
+  }
+  if((Exposure.OriginalVersion as Exposure).VehicleIncident.salvagebuyer != null) {
+    Exposure.updateRolesOnCheckPayee((Exposure.OriginalVersion as Exposure).salvagebuyer, ContactRole.TC_SALVAGEBUYER);
+    Exposure.removeRole( "salvagebuyer", (Exposure.OriginalVersion as Exposure).salvagebuyer );
+  }
+  
+  Exposure.VehicleIncident.OwnLienAtAccidentExt=null
+  Exposure.VehicleIncident.OwnLienAtClaimCloseExt=null
+  Exposure.salvagebuyer=null
+}
+
+  
+
+//This condition is set for the following scenario.
+//If the Total Loss Indicator is set to "yes" and the user decides to set the 
+//"At Time of Accident" or the  "At Conclusion of Claim" field to null then the
+//At Time of Accident" or the  "At Conclusion of Claim" roles should be removed from that particular contact
+//This rule will only fire if they set the fields to null and there is already a role set for the contacts specified
+
+if(Exposure.TotalLossIndExt == true) {
+  if(Exposure.VehicleIncident.OwnLienAtAccidentExt==null and (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt != null) {
+    Exposure.updateRolesOnCheckPayee((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt, ContactRole.TC_VEHOWNCLAIMOPEN);
+    Exposure.removeRole( "VehOwnClaimOpen", (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtAccidentExt );
+  }
+
+  if(Exposure.VehicleIncident.OwnLienAtClaimCloseExt==null and (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt != null) {
+    Exposure.updateRolesOnCheckPayee((Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt, ContactRole.TC_VEHOWNCLAIMCLOSE);
+    Exposure.removeRole( "VehOwnClaimClose", (Exposure.OriginalVersion as Exposure).VehicleIncident.OwnLienAtClaimCloseExt );
+  }
+}/*end00rule*/
+  }
+}

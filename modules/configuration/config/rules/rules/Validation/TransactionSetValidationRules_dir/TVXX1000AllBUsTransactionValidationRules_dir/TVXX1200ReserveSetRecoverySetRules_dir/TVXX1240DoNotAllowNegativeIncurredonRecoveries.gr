@@ -1,0 +1,30 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1200ReserveSetRecoverySetRules_dir
+
+@gw.rules.RuleName("TVXX1240 - Do Not Allow Negative Incurred on Recoveries")
+internal class TVXX1240DoNotAllowNegativeIncurredonRecoveries {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Subtype == "RecoverySet" || 
+transactionSet.Subtype =="RecoveryReserveSet") and
+transactionSet.Claim.LossType != typekey.LossType.TC_PERSONALAUTO/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var totalIncurred : java.math.BigDecimal = 0.0
+
+  totalIncurred = transactionSet.Claim.getTotalIncurred()
+
+  if(totalIncurred < 0.0){
+    transactionSet.reject( "newloss", displaykey.Error.TotalIncurred.NegativeIncurred, null, null); 
+    gw.api.util.Logger.logInfo(actions.getRule().DisplayName + ": Rejected Recovery/Recovery Reserve Causing a Negative Incurred on Claim: " + transactionSet.Claim.ClaimNumber + " by user: " + transactionSet.RequestingUser)
+    actions.exit();
+  }
+}catch(aex:gw.rules.AbortExecutionException) {
+    throw aex
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

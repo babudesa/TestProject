@@ -1,0 +1,3 @@
+fd31882dd6ef3ccc8f43fad6c7f6cb4f872fbbe611d73ee0bdf3caa69f0bd40119e69c65371d40a6233aed25b9c1aa476c5e7ee42aa4956456820fa4a4787f85
+lib/gw-gosu-test-api.jar,1c489bef8f26749a
+lib/junit-4.5.jar,e04215a62db3c342

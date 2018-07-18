@@ -1,0 +1,29 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B2 - Recurring Pay Period Start")
+internal class TVXX11B2RecurringPayPeriodStart {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var check = (transactionSet as CheckSet).Checks.first()
+  var start = check.ServicePdStart
+  
+  if (start == null){
+    transactionSet.reject("newloss", displaykey.Validation.NewCheckWizard.EnterRecurringStart, null, null)
+  } else if (check.DOSTypeExt != DateOfServiceExt.TC_RECURRING){
+    transactionSet.reject("newloss", displaykey.Validation.NewCheckWizard.SelectRecurring, null, null)
+  } else {
+    if ((gw.api.util.DateUtil.addDays(gw.api.util.DateUtil.currentDate(), 30) < start) or 
+       (gw.api.util.DateUtil.compareIgnoreTime(start, gw.api.util.DateUtil.currentDate()) < 0)){
+      transactionSet.reject("newloss", displaykey.Validation.NewCheckWizard.RecurringStart, null, null)
+    }
+  }
+
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

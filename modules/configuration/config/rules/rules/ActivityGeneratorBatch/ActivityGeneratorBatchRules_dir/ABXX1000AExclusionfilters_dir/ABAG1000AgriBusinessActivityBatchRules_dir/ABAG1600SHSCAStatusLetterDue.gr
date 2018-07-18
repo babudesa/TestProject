@@ -1,0 +1,31 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABAG1000AgriBusinessActivityBatchRules_dir
+
+@gw.rules.RuleName("ABAG1600 - SHS CA Status Letter Due")
+internal class ABAG1600SHSCAStatusLetterDue {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType==LossType.TC_SHSAUTO AND !claim.Closed AND claim.LossLocation.State == State.TC_CA /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exposure in claim.Exposures){
+    if(!exposure.HasLossPayment){
+
+      if(!exists(act in claim.Activities where(act.ActivityPattern.Code=="shs_CA_StatusLetter") AND (act.Exposure==exposure))){
+        if(gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_SHSCaliforniaStatus)){
+          var ap = util.custom_Ext.finders.findActivityPattern("shs_CA_StatusLetter")
+          claim.createActivityFromPattern(exposure, ap)
+        }
+      }
+      else if(exists(act in claim.Activities where((act.ActivityPattern.Code=="shs_CA_StatusLetter") AND (act.Exposure==exposure) AND
+      (gw.api.util.DateUtil.currentDate().trimToMidnight() == gw.api.util.DateUtil.addDays(act.CreateTime.trimToMidnight(),30))))){
+        var ap = util.custom_Ext.finders.findActivityPattern("shs_CA_StatusLetter")
+        claim.createActivityFromPattern(exposure, ap)
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

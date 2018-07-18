@@ -1,0 +1,22 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11C0 - Theft Type Required")
+internal class CVXX11C0TheftTypeRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Exposures.length > 0 and
+(claim.LossType!="EQUINE" and
+ claim.LossType!="FIDCRIME" AND
+ claim.LossType!=LossType.TC_ALTMARKETSAUTO AND
+ claim.LossType!=LossType.TC_SHSAUTO AND
+ claim.LossType!=LossType.TC_TRUCKINGAUTO AND
+ claim.LossType!=LossType.TC_AGRIAUTO) and
+(claim.LossCause=="burglary" ||
+ claim.LossCause=="theft" ||
+ claim.LossCause=="theftotheremp") and 
+exists(exp in claim.Exposures where exp.LostPropertyType==null)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.rejectField( "LossCause", "newloss", "Lost Property Type (Theft Only) field must be entered on the feature screens before saving the Loss Cause as " + claim.LossCause.DisplayName + ".", null, null )/*end00rule*/
+  }
+}

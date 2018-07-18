@@ -1,0 +1,27 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUSP1000SpecialtyESExposurePreUpdateRules_dir.EPUSP1100ARULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("EPUSP1120A- Manager Diary Potential Catastrophic")
+internal class EPUSP1120AManagerDiaryPotentialCatastrophic {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Incident.Severity == SeverityType.get("major-gen") &&
+
+(!exists(act in exposure.Claim.Activities where 
+    act.ActivityPattern.Code == "manager_diary_spec" && act.Exposure == exposure))   
+
+
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/
+try{ 
+    
+    var ap = util.custom_Ext.finders.findActivityPattern("manager_diary_spec")
+    exposure.Claim.createActivityFromPattern(exposure, ap)
+    
+ 
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

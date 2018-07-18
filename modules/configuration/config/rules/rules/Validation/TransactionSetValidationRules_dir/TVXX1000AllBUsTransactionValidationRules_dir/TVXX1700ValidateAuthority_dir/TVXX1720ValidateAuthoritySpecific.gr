@@ -1,0 +1,48 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1700ValidateAuthority_dir
+
+@gw.rules.RuleName("TVXX1720 - Validate Authority (Specific)")
+internal class TVXX1720ValidateAuthoritySpecific {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses com.guidewire.pl.web.controller.UserDisplayableException;
+
+if(transactionSet.New && transactionSet.Subtype == "CheckSet" && ((transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == typekey.CheckCategoryExt.TC_LIT_ADVISOR
+ || (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == typekey.CheckCategoryExt.TC_HCS
+ || (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == typekey.CheckCategoryExt.TC_MITCHELL
+ || (transactionSet as CheckSet).PrimaryCheck.CheckCategoryExt == typekey.CheckCategoryExt.TC_OCCM)) {
+ var expoAssignedUser = transactionSet.Exposures[0].AssignedUser
+ if(util.user.GroupsHelper.getUsersGroup(expoAssignedUser).Name == util.user.GroupsHelper.TERMINATED_EMPLOYEES_GROUPNAME) {
+   var user:User = transactionSet.Claim.AssignedGroup.Supervisor
+   var group:Group = transactionSet.Claim.AssignedGroup;
+   transactionSet.RequestingUser = user
+ } 
+}
+
+var approvalResult = transactionSet.testAuthorityLimits();
+var user = User.util.getCurrentUser()
+
+if(user.DisplayName != "System User"){
+  for(trans in transactionSet.AllTransactions){
+    if(trans.Subtype == "payment" and !(trans as Payment).Recoded and !(trans as Payment).Check.Transferred){
+      var p_e_r : Boolean = false;
+        if(trans.Subtype == "payment" and (trans as Payment).PaymentType != "supplement" and (trans as Payment).exceedsReserves()){
+          for ( auth in user.AuthorityLimits ) {
+             if (auth.CostType == trans.CostType or (trans as Payment).Check.isBulked()){
+              p_e_r = true;
+            }
+          }
+          
+          if(!((transactionSet as CheckSet).PrimaryCheck.Status == "pendingvoid" or (transactionSet as CheckSet).PrimaryCheck.Status == "pendingstop")){
+          if ( ! p_e_r ) {
+            throw new UserDisplayableException(displaykey.Rules.Validation.Transaction.Enterprise.ValidateAuthorityLimit);
+          }
+        }
+        }
+    }
+  }
+}/*end00rule*/
+  }
+}

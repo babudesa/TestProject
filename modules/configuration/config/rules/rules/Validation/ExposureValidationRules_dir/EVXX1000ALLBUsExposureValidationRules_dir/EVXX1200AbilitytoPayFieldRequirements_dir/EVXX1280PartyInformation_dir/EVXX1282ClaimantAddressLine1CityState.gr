@@ -1,0 +1,53 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1200AbilitytoPayFieldRequirements_dir.EVXX1280PartyInformation_dir
+
+@gw.rules.RuleName("EVXX1282 - Claimant Address Line1,City,State")
+internal class EVXX1282ClaimantAddressLine1CityState {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!util.WCHelper.isWCorELLossType(exposure.Claim)
+//Defect 7750 - cmullin - Claimant Address validation moved to ISO/Claim-level for Workers' Comp/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try
+{
+  var address = exposure.Claimant.PrimaryAddress;
+  //checking Address line 1
+  var validationLevel = ""
+  var msg = exposure.Claim.performAddressValidation(address.AddressLine1)
+    validationLevel=(exposure.Claim.ISOEnabled==true)?"iso":"payment"
+  if(msg == "1") {
+    exposure.rejectSubField(exposure, "Claimant.PrimaryAddress.AddressLine1", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Claimant", "Address Line 1"), null, null )
+  } else if(msg == "2") {
+    exposure.rejectSubField(exposure, "Claimant.PrimaryAddress.AddressLine1", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Claimant", "Address Line 1"), null, null )
+  } else if(msg == "3") {
+    exposure.rejectSubField(exposure.Claimant, "PrimaryAddress.AddressLine1", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Claimant", "Address Line 1"), null, null )
+  }
+
+  //checking City
+  msg = exposure.Claim.performAddressValidation(address.City)
+  if(msg == "1") {
+    exposure.rejectField( "Claimant.PrimaryAddress.City", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Claimant", "City"), null, null )
+  }else if(msg == "2") {
+    exposure.rejectField( "Claimant.PrimaryAddress.City",validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Claimant", "City"), null, null )
+  } else if(msg == "3") {    
+    exposure.rejectSubField(exposure.Claimant, "PrimaryAddress.City", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Claimant", "City"), null, null )
+  }
+    
+  //checking State
+  //sprzygocki 3-5-09 only requiring state if US or Canada
+  if(address.Country=="US"){
+    msg = exposure.Claim.performAddressValidation(address.State.toString())
+    if(msg == "1") {
+      exposure.rejectField( "Claimant.PrimaryAddress.State", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.InvalidChars("Claimant", "State"), null, null )
+    } else if(msg == "2") {
+      exposure.rejectField( "Claimant.PrimaryAddress.State", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Substitution("Claimant", "State"), null, null )
+    } else if(msg == "3") {    
+      exposure.rejectSubField(exposure.Claimant, "PrimaryAddress.State", validationLevel, displaykey.Rules.Validation.ExposurePolicy.Enterprise.ClaimantInsured.PrimaryAddress.Blank("Claimant", "State"), null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+  //Exposure.reject( null, null, "newloss", "Unknown Error Occurred in Exposure Validation Rule "+actions.getRule().displayName )
+}/*end00rule*/
+  }
+}

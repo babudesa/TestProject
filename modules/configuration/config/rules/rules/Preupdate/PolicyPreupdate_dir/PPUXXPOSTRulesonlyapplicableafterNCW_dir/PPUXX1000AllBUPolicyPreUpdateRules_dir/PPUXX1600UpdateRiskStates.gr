@@ -1,0 +1,78 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("PPUXX1600 - Update Risk States")
+internal class PPUXX1600UpdateRiskStates {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*///Update the risk states when an insured's primary address is changed
+//from foreign to United States or vise versa, the risk states are updated
+//Sprzygocki 8/31/09 defect 1724 (BA Danny Rogers)
+//Updated: 1/30/10 sprzygocki - added conditions to the cov.StateChangedExt areas so that if there are
+//  not existing exposures for that coverage the flag will not be set. This was causing features to go to ATP
+//  without type of loss on coverages where there had not previously been features when you change the insured's state
+//  before you add a feature.
+//Updated: 3/16/10 sprzygocki - changed the conditions of the Property/VehicleCoverage checks to check for null states so
+//  that states chosen by the user do not get overwritten in new claim wizard
+//Updated: 5/5/10 sprzygocki - added a condition at the end of the switch away from US to
+//  null out the saved type of loss on the features associated with the coverage that has been
+//  changed.
+
+((policy.insured.OriginalVersion as Contact).PrimaryAddress.Country!=
+policy.insured.PrimaryAddress.Country) and !policy.Verified
+/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var newCountry = policy.insured.PrimaryAddress.Country
+
+for(cov in policy.AllCoverages){
+  if(newCountry == "US"){
+    if(cov.Subtype=="PolicyCoverage" and cov.State==null){
+      cov.State=policy.insured.PrimaryAddress.State
+    } else if(cov.Subtype=="PropertyCoverage" and cov.State==null){
+      if(((cov as PropertyCoverage).RiskUnit as LocationBasedRU).Property.Address.State==null){
+        cov.State=policy.insured.PrimaryAddress.State
+      } else {
+        cov.State = ((cov as PropertyCoverage).RiskUnit as LocationBasedRU).Property.Address.State
+      }
+    } else if(cov.Subtype=="VehicleCoverage" and cov.State==null){
+      if(((cov as VehicleCoverage).RiskUnit as VehicleRU).Vehicle.State==null){
+        cov.State=policy.insured.PrimaryAddress.State
+      } else {
+        cov.State = ((cov as VehicleCoverage).RiskUnit as VehicleRU).Vehicle.State
+      }
+    }
+  } else {
+    if(cov.Subtype=="PolicyCoverage"){
+      cov.State=null
+    } else if(cov.Subtype=="PropertyCoverage"){
+      if(((cov as PropertyCoverage).RiskUnit as LocationBasedRU).Property.Address.Country=="US"){
+        if(cov.State==null){
+          cov.State=((cov as PropertyCoverage).RiskUnit as LocationBasedRU).Property.Address.State
+        }
+      } else {
+        cov.State=null
+      }
+    } else if(cov.Subtype=="VehicleCoverage"){
+      if(((cov as VehicleCoverage).RiskUnit as VehicleRU).Vehicle.State!=null){
+        if(cov.State==null){
+          cov.State=((cov as VehicleCoverage).RiskUnit as VehicleRU).Vehicle.State
+        }
+      } else {
+        cov.State=null
+      }
+    }
+    for(exp in policy.Claim.Exposures){
+      if(exp.Coverage==cov and cov.State==null){
+        exp.resetTypeofLoss()
+      }
+    }
+  }
+  //took out the condition that if the subline is null then we should only
+  //then fill in the subline - if the insured's address is updated to be foreign
+  //then we should also update the sublines so they are not reportable
+  //sprzygocki - 2/21/10
+  //bestor - 7/26/2011 upgrade
+  util.gaic.subline.Subline.getSublineForCoverage(cov)
+}/*end00rule*/
+  }
+}

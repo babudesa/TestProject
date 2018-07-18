@@ -1,0 +1,22 @@
+package rules.Assignment.GlobalActivityAssignmentRules_dir.GAAEQ100EquineGlobalActivityAssignmentRules_dir
+
+@gw.rules.RuleName("GAAEQ190 - Reopened Claim")
+internal class GAAEQ190ReopenedClaim {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*created so reopened claim activity, where claim assignment is to
+a supervisor, will escalate to the unit manager
+author: erawe
+date: 8/17/09
+*/
+activity.Escalated and
+activity.AssignedUser==activity.AssignedGroup.Supervisor and
+activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern("eq_reopen_review")/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var unitManager:User = util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType);
+var unitManagerGroup:Group = unitManager.AllGroups.first() as Group;
+activity.CurrentAssignment.assign( unitManagerGroup, unitManager );
+actions.exit()/*end00rule*/
+  }
+}

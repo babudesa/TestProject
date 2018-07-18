@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    editable="!Coverage.Policy.Verified"
+    id="CoverageDetailsPolicyDV"
+    mode="PIMINMARINEWC|PIMINMARINEEL|SPECIALTYESWC|SPECIALTYESEL|ALTMARKETSWC|ALTMARKETSEL|STRATEGICCOMPWC|STRATEGICCOMPEL|TRUCKINGWC|TRUCKINGEL|AGRIWC|AGRIEL|OMWC|OMEL|ECUWC|ECUEL">
+    <Require
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      initialValue="Coverage as PolicyCoverage"
+      name="PolicyCoverage"
+      type="PolicyCoverage"/>
+    <Variable
+      initialValue="Coverage.setClassDefaults()"
+      name="setDefaults"/>
+    <Variable
+      initialValue="false"
+      name="required"
+      type="Boolean"/>
+    <Variable
+      initialValue="Coverage.policyCoveragedates()"
+      name="setcoveragedates"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Coverage.Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <InputColumn>
+      <!-- 7/24/08 erawe Sprint 15 EC: Needed to add cause of loss for ab_Identity coverage only for policy level -->
+      <RangeInput
+        editable="PolicyCoverage.notUsedOnExposure()"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="resetSPPInformation(); if (Coverage.Policy.EffectiveDate != null AND       ((Coverage.CauseOfLossExt != null AND util.gaic.subline.Subline.checkAFPLossCauseRequired(Coverage)) || (!util.gaic.subline.Subline.checkAFPLossCauseRequired(Coverage)))) {Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)}; Coverage.setClassDefaults()"
+        optionLabel="(Coverage.Type!= null and Coverage.Policy.Verified) ? Coverage.covTypeDisplayName() : VALUE.toString()"
+        postOnChange="true"
+        required="true"
+        value="Coverage.Type"
+        valueRange="Coverage.getCoverages()"/>
+      <Input
+        editable="true"
+        id="LocationNum"
+        label="displaykey.GAIC.Policy.PolicyCoverages.LocationNumber"
+        required="true"
+        value="Coverage.LocationNumExt"/>
+      <!-- 7/24/08 erawe Sprint 15 EC: Needed to add cause of loss for ab_Identity coverage only for policy level -->
+      <RangeInput
+        editable="true"
+        id="RiskState"
+        label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+        onChange="if (Coverage.Type !=null AND Coverage.Policy.EffectiveDate != null AND       ((Coverage.CauseOfLossExt != null AND util.gaic.subline.Subline.checkAFPLossCauseRequired(PolicyCoverage)) || (!util.gaic.subline.Subline.checkAFPLossCauseRequired(PolicyCoverage)))) {PolicyCoverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(PolicyCoverage)}; Coverage.setClassDefaults()"
+        postOnChange="true"
+        required="true"
+        value="Coverage.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      <TypeKeyInput
+        id="Subline"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+        required="false"
+        value="Coverage.SublineExt"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+        value="Coverage.ClassCodeExt"/>
+      <Input
+        id="ClassCodeSuffix"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCodeSuffix"
+        value="Coverage.ClassCodeSuffixExt"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+        value="Coverage.ClassCodeDescExt"/>
+      <TypeKeyInput
+        editable="true"
+        id="GoverningLaw"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.GovLaw"
+        value="Coverage.GoverningLawExt"
+        valueWidth="300"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+        postOnChange="true"
+        requestValidationExpression="ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? Coverage.effDateWarn() : null"
+        required="true"
+        validationExpression="Coverage.effDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+        postOnChange="true"
+        requestValidationExpression="ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? Coverage.expDateWarn() : null"
+        required="true"
+        validationExpression="Coverage.expDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.ExpirationDate"/>
+      <!-- <InputDivider/> -->
+      <!-- <InputSet>
+        <Input
+          editable="true"
+          id="clmadeindicator"
+          label="displaykey.GAIC.Policy.PolicyCoverages.ClaimMadeInd"
+          postOnChange="true"
+          required="!Coverage.Policy.Verified"
+          value="Coverage.ClaimsMadeIndicatorExt"/>
+        <ListViewInput
+          id="Deductible"
+          label="displaykey.GAIC.Policy.PolicyCoverages.Deductibles">
+          <Toolbar>
+            <IteratorButtons
+              addVisible="Coverage.unusedDeductibles()"/>
+          </Toolbar>
+          <ListViewPanel
+            id="DeductibleLV">
+            <RowIterator
+              checkBoxVisible="Coverage.Policy.Verified == true or CurrentLocation.InEditMode == false ? false : true"
+              editable="true"
+              elementName="Deductible"
+              toAdd="Coverage.addToDeductiblesExt(Deductible)"
+              toRemove="Coverage.removeFromDeductiblesExt(Deductible)"
+              value="Coverage.DeductiblesExt">
+              <Row>
+                <TextCell
+                  align="left"
+                  editable="true"
+                  formatType="exactNumber"
+                  id="deductible"
+                  label="displaykey.GAIC.Policy.PolicyCoverages.DeductibleAmount"
+                  numCols="16"
+                  outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                  required="true"
+                  sortOrder="1"
+                  validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(Deductible.Deductible) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+                  value="Deductible.Deductible"/>
+                <TypeKeyCell
+                  editable="true"
+                  filter="Coverage.filterDeductibles(VALUE)"
+                  id="deductibletext"
+                  label="displaykey.LV.Policy.Coverages.DeductApplication"
+                  postOnChange="true"
+                  required="true"
+                  sortOrder="2"
+                  value="Deductible.DeductLimitAppExt"/>
+              </Row>
+            </RowIterator>
+          </ListViewPanel>
+        </ListViewInput>
+      </InputSet> -->
+      <!-- <DateInput
+        editable="true"
+        id="cvgretrodate"
+        label="displaykey.GAIC.Policy.PolicyCoverages.CvgRetroDate"
+        value="Coverage.CoverageRetroDateExt"/> -->
+      <!-- <Input
+        editable="true"
+        id="reAggrLimitIndic"
+        label="displaykey.GAIC.Policy.PolicyCoverages.ReinAggLmtInd"
+        value="Coverage.ReinAggLmtIndicatorExt"/> -->
+      <!-- <InputDivider
+        visible="Coverage.Policy.Verified "/> -->
+      <!-- <ClaimContactInput
+        claim="Coverage.Policy.Claim"
+        id="CoverageProducerName"
+        label="displaykey.GAIC.Policy.PolicyCoverages.CoverageProducer"
+        showSearchInMenu="false"
+        value="Coverage.CoverageProducerExt"
+        valueRange="Coverage.Policy.Claim.Relatedex_AgencyArray"
+        visible="Coverage.Policy.Verified"/> -->
+    </InputColumn>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="ExposureLimit"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExposureLimit"
+        value="Coverage.ExposureLimit"
+        visible="Coverage.Policy.Verified"/>
+      <!-- <InputDivider/> -->
+      <!-- <InputSet>
+        <TextInput
+          editable="true"
+          id="BasicExtdPeriodAmtExt"
+          label="displaykey.GAIC.Policy.PolicyCoverages.BscExtRptPeriodDurAmt"
+          numCols="4"
+          value="Coverage.BasicExtdPeriodAmtExt"/>
+        <TypeKeyInput
+          editable="true"
+          id="BasicExtdPeriodUnitExt"
+          label="displaykey.GAIC.Policy.PolicyCoverages.BscExtRptPeriodUnt"
+          value="Coverage.BasicExtdPeriodUnitExt"/>
+        <TextInput
+          editable="true"
+          id="SupplExtdPeriodAmtExt"
+          label="displaykey.GAIC.Policy.PolicyCoverages.SupplementaPeriodAmt"
+          numCols="4"
+          value="Coverage.SupplExtdPeriodAmtExt"/>
+        <TypeKeyInput
+          editable="true"
+          id="SupplExtdPeriodUntExt"
+          label="displaykey.GAIC.Policy.PolicyCoverages.SuppExtRptPeriodUnit"
+          value="Coverage.SupplExtdPeriodUntExt"/>
+        <DateInput
+          editable="true"
+          id="supExtRepPerEndDate"
+          label="displaykey.GAIC.Policy.PolicyCoverages.SuppExtRptPeriodEndDt"
+          value="Coverage.SupplExtdRprtgPeriodExt"/>
+      </InputSet> -->
+    </InputColumn>
+    <InputFooterSection>
+      <!-- Added Sprint 8 Agribusiness Eric Rawe 11/13/07 -->
+      <InputDivider/>
+      <ListViewInput
+        def="EditableCoverageReinsuranceLV(Coverage)"
+        id="Reinsurance"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurance"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+    </InputFooterSection>
+    <Code><![CDATA[function resetSPPInformation(){
+				Coverage.HighValueItemExt.SPPDescriptionExt=null
+				Coverage.HighValueItemExt.SPPDetailExt=null
+				//Coverage.HighValueItemExt.SchedPerPropTypeExt=null
+			}
+			function filterIdentityCauseOfLoss(causeOfLoss : String) : Boolean{
+ 			 var result : Boolean = true;
+  			 if(Coverage.Type.Code=="ab_Identity" and causeOfLoss == "broadspecial"){
+    			result = false;
+  			 }
+ 				return result;
+			}
+			function isSPP():boolean{
+				var result:boolean = false
+				if(Coverage.Type=="ab_SCPROP_camera" || Coverage.Type=="ab_SCPROP_coins" || Coverage.Type=="ab_SCPROP_finearte" ||
+				   Coverage.Type=="ab_SCPROP_finearti" || Coverage.Type=="ab_SCPROP_furs" || Coverage.Type=="ab_SCPROP_golfequip" ||
+				   Coverage.Type=="ab_SCPROP_guns" || Coverage.Type=="ab_SCPROP_jewelry" || Coverage.Type=="ab_SCPROP_miscperprp" ||
+				   Coverage.Type=="ab_SCPROP_musicinst" || Coverage.Type=="ab_SCPROP_silverware" || Coverage.Type=="ab_SCPROP_sportequip" ||
+				   Coverage.Type=="ab_SCPROP_stamps"){
+				  result=true 
+				}
+				return result
+			}
+			function isSFPP():boolean{
+				var result:boolean = false
+				if(Coverage.Type=="ab_FPE_hsf" || Coverage.Type=="ab_FPE_machsched" || Coverage.Type=="ab_FPE_machblkt" || 
+				   Coverage.Type=="ab_FPE_grain" || Coverage.Type=="ab_FPE_produce" || Coverage.Type=="ab_FPE_livestock" || 
+				   Coverage.Type=="ab_FPE_noc" || Coverage.Type=="ab_FPE_tobacco" ||  
+				   Coverage.Type=="ab_FPE_suffocation" || Coverage.Type=="ab_FPE_cab_gl" || Coverage.Type=="ab_FPE_ref_frm_prop" || 
+				   Coverage.Type=="ab_FPE_ext_exp" || Coverage.Type=="ab_FPE_trans_damg" || Coverage.Type=="ab_FPE_farm_record" || 
+				   Coverage.Type=="ab_FPE_comp_hdwr" || Coverage.Type=="ab_FPE_comp_sftwr" || Coverage.Type=="ab_FPE_coll_stock" || 
+				   Coverage.Type=="ab_FPE_quake" || Coverage.Type=="ab_FPE_sheep_dogs" || Coverage.Type=="ab_FPE_peak_hsf" || 
+				   Coverage.Type=="ab_FPE_peak_grain" || Coverage.Type=="ab_FPE_peak_produce" || Coverage.Type=="ab_FPE_peak_lvstock" || 
+				   Coverage.Type=="ab_FPE_peak_noc"){
+					result = true
+				}
+				return result
+			}]]></Code>
+  </DetailViewPanel>
+</PCF>

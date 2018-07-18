@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCancel="removeRelatedContact()"
+    canEdit="true"
+    canVisit="perm.Claim.managepartiesinvolved(claim) and perm.Contact.createlocal"
+    id="AddExistingRelatedContactPopup"
+    returnType="Contact"
+    startInEditMode="true"
+    title="displaykey.Web.Contact.Title.New(contactContact.RelatedContact.Subtype)">
+    <LocationEntryPoint
+      signature="AddExistingRelatedContactPopup(claim : Claim, contactContact : ContactContact)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="contactContact"
+      type="ContactContact"/>
+    <Variable
+      initialValue="claimparties.ClaimContactUtil.createClaimContact(claim, new contact.TemporaryContact(contactContact.RelatedContact))"
+      name="claimContact"/>
+    <Variable
+      initialValue="claimContact.Contact.generateLinkStatus()"
+      name="linkStatus"
+      recalculateOnRefresh="true"/>
+    <ScreenRef
+      def="ContactDetailScreen(claimContact, true, true, linkStatus, claim, true, false)"/>
+    <Code><![CDATA[function removeRelatedContact(){
+ var isClaimContact = false
+ for(cc in claim.Contacts){
+  if(cc.Contact == contactContact.RelatedContact){
+    isClaimContact = true
+  }
+ }
+ 
+ if(!isClaimContact){
+  contactContact.RelatedContact = null
+ }
+}]]></Code>
+  </Popup>
+</PCF>

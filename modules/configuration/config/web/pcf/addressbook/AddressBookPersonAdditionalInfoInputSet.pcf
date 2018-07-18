@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressBookPersonAdditionalInfoInputSet">
+    <Require
+      name="person"
+      type="Person"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Input
+      editable="!Person.VerifiedPolicyContactExt and Person.canEditTaxInfo() and !Person.FormerVerifiedContactExt"
+      id="TaxID"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxID"
+      postOnChange="true"
+      required="true"
+      validationExpression="validateTaxID()"
+      value="Person.TaxID"/>
+    <Input
+      editable="!Person.VerifiedPolicyContactExt and Person.canEditTaxInfo() and !Person.FormerVerifiedContactExt"
+      id="TaxStatusCode"
+      label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+      required="true"
+      validationExpression="Person.Ex_TaxStatusCode != null ? Person.checkContactTaxStatusUpdate(): Person.Ex_TaxStatusCode"
+      value="Person.Ex_TaxStatusCode"/>
+    <!-- 07/16/2008 MMANALILI added validation so that if the vendor is preferred then the tax reporting name should be filled in -->
+    <Input
+      editable="true"
+      id="TaxReportingName"
+      label="displaykey.Web.ContactDetail.TaxReportingName"
+      required="false"
+      validationExpression="(person.Preferred and person.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+      value="person.Ex_TaxReportingName"/>
+    <Input
+      editable="true"
+      id="TaxFilingStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxFilingStatus"
+      value="person.TaxFilingStatus"/>
+    <Input
+      editable="true"
+      id="DateOfBirth"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.DateOfBirth"
+      value="person.DateOfBirth"/>
+    <Input
+      editable="true"
+      id="Gender"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+      value="person.Gender"/>
+    <Input
+      editable="true"
+      id="MaritalStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MaritalStatus"
+      value="person.MaritalStatus"/>
+    <!-- Defect 2861 Temporarily make Guardian uneditable until Guardian becomes a claimcontact see defect 2726 -->
+    <AddressBookContactInput
+      forceContactSubtype="entity.Person"
+      id="Guardian"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Guardian"
+      newContactMenu="NewPersonOnlyPickerMenuItemSet"
+      parentContact="person"
+      value="person.Guardian"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Company"/>
+    <Input
+      editable="true"
+      id="Occupation"
+      label="displaykey.Web.ContactDetail.Company.Occupation"
+      value="person.Occupation"/>
+    <AddressBookContactInput
+      editable="true"
+      id="Organization"
+      label="displaykey.Web.ContactDetail.Company.Organization"
+      parentContact="person"
+      value="person.Employer"/>
+    <Code><![CDATA[function validateTaxID():String{
+  var str : String = null
+  if(person.TaxID == null )
+  return str
+  else {
+    if(!person.TaxID.matches("[0-9]{9}") or (Person.TaxID.matches("[0]{9}") or Person.TaxID.matches("[1]{9}") or Person.TaxID.matches("[2]{9}") or Person.TaxID.matches("[3]{9}")
+     or Person.TaxID.matches("[4]{9}") or Person.TaxID.matches("[5]{9}") or Person.TaxID.matches("[6]{9}") or Person.TaxID.matches("[7]{9}") or Person.TaxID.matches("[8]{9}")
+      or Person.TaxID.matches("[9]{9}")))    
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Invalid     
+  }
+  return str
+}]]></Code>
+  </InputSet>
+</PCF>

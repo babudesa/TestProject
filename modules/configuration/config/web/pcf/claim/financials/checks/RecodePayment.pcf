@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsTransactionsDetail.go(Claim, OriginalPayment)"
+    afterCommit="financials.FinancialsUtil.logRecode(OriginalPayment, Payment);  fixBIItypeOnRecode(); ClaimFinancialsTransactions.go(Claim, financials.ClaimFinancialsTransactionsOption.PAYMENT)"
+    alwaysInEditMode="true"
+    canEdit="true"
+    canVisit="perm.Payment.recode(OriginalPayment)"
+    id="RecodePayment"
+    parent="ClaimFinancialsTransactionsDetail(Claim, OriginalPayment)"
+    startInEditMode="true"
+    title="displaykey.JSP.RecodePayment.Recode.Title">
+    <LocationEntryPoint
+      signature="RecodePayment(Claim : Claim, OriginalPayment : Payment)"/>
+    <Variable
+      initialValue="new financials.EditTransactionHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="OriginalPayment"
+      type="Payment"/>
+    <Variable
+      initialValue="createPayment()"
+      name="Payment"/>
+    <Variable
+      initialValue="new pcf_gs.RecodePayment_PageProc(Payment, OriginalPayment) //pass in the Trans Qual for each line item on the original payment"
+      name="pageProcess"
+      type="pcf_gs.RecodePayment_PageProc"/>
+    <Screen
+      id="RecodePaymentScreen">
+      <Toolbar>
+        <!-- Changed unselectable payment type to be selectable only when the Exposure or Cost Type changes.
+             Also runs paymentType() before doing the actual transfer. - Defect 450/454 - kmboyd GW action="doRecode()" -->
+        <ToolbarButton
+          action="correctErode(); doRecode2();"
+          available="checkMOS()"
+          id="RecodePayment_RecodeButton"
+          label="displaykey.Button.Payment.Recode"/>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          cancelVisible="true"
+          editVisible="false"
+          updateVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="RecodePaymentDV(OriginalPayment, Payment, PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[function createPayment() : Payment {
+        var pmt = OriginalPayment.getOnset();
+        if (pmt == null) {
+    pmt = OriginalPayment.createOnsetPayment(true);
+        }
+        return pmt;
+      }
+
+function doRecode() {
+  if (OriginalPayment.hasDeductibleLineItem()) {
+    OriginalPayment.unlinkDeductible()
+  }
+  Payment.linkDeductible()
+  financials.FinancialsUtil.recodePayment(CurrentLocation, OriginalPayment, Payment, Claim)
+}      
+//Fix for payment type recodes - makes the new payments act the way they should be acting
+//Defect 1163 - kmboyd - 9/19/08
+function correctErode(){
+  Payment.setErode(Payment.PaymentType);
+}
+
+//checks if MOS is required on screen - if so, don't allow the recode until the information
+//has been filled out
+function checkMOS() : boolean{
+  var exp : Exposure = Payment.Exposure;
+  if((Payment.PaymentType=="final" || Payment.PaymentType=="supplement") and Payment.CostType=="claimcost" and 
+      (exp.ExposureType == ExposureType.TC_SP_BODILY_INJURY || exp.ExposureType=="ab_AGG_auto_BodInjury" || exp.ExposureType=="ab_AGG_gl_BodInjury" || exp.ExposureType=="ab_BodilyInjury"
+        || exp.ExposureType=="ex_auto_BodInjury" || exp.ExposureType=="ex_excess_BodInjury"|| (exp.ExposureType=="el_DutyDefOtsdLimits" and exp.Claim.BodilyInjuryExt)
+        || (exp.ExposureType=="el_DutyDefWthnLimits" and exp.Claim.BodilyInjuryExt) || (exp.ExposureType=="el_Indemnity" and exp.Claim.BodilyInjuryExt)
+        || (exp.ExposureType=="el_LossAdjustExp" and exp.Claim.BodilyInjuryExt)
+        || exp.ExposureType == ExposureType.TC_EN_BODILYINJURY
+        || exp.ExposureType== typekey.ExposureType.TC_PE_BODILYINJURY
+        || exp.ExposureType == typekey.ExposureType.TC_AV_BODILYINJURY
+        || util.WCHelper.isWCorELLossType(exp.Claim))){
+    if(exp.MethodOfSettlementExt==null) return false;
+    if(exp.MethodOfSettlementExt.equals(MethodOfSettlement.TC_STRUCTURED_SETTLE)){
+      if(exp.PolicyNumberExt==null) return false;
+      if(exp.InsuranceCoExt==null) return false;
+      if("".equals(exp.InsuranceCoExt.getPhoneNumber())) return false;
+      if(exp.InsuranceCoExt.PrimaryAddress==null) return false;
+      if(exp.AnticFinalPmtDateExt==null) return false;
+      if(exp.AnticFinalPmtDateExt<exp.Claim.LossDate) return false;
+    } 
+  }
+  return true;
+}
+
+  //Created to handle the case in which transaction qualifier is the only field updated on the recode
+  function doRecode2(){
+    pageProcess.validateRecode()
+    //it would be ideal to only invoke addZeroPayment() if Transaction Qualifier is the only thing that changed
+    pageProcess.addZeroPayment()
+    financials.FinancialsUtil.recodePayment(CurrentLocation, OriginalPayment, Payment, Claim)
+    pageProcess.removeZeroPayment()
+  }
+  
+  //GW solution 120806-000004
+  function fixBIItypeOnRecode() {
+    if (Payment.Check.Bulked == true) { 
+      gw.transaction.Transaction.runWithNewBundle(\ bundle -> { 
+        var temp = bundle.add(Payment.Check.BulkInvoiceItem);
+        temp.setFieldValue("LineCategoryExt", (Payment as Transaction).LineItems[0].LineCategory);
+        temp.setFieldValue("PaymentType", Payment.PaymentType);
+        temp.setFieldValue("NonEroding", Payment.DoesNotErodeReserves);
+        }, "su");
+    } 
+  }]]></Code>
+  </Page>
+</PCF>

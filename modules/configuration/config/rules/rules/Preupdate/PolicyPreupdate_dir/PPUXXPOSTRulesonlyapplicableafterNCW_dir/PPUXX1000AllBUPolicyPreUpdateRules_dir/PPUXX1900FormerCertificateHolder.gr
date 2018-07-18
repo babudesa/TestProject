@@ -1,0 +1,27 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPOSTRulesonlyapplicableafterNCW_dir.PPUXX1000AllBUPolicyPreUpdateRules_dir
+
+@gw.rules.RuleName("PPUXX1900 - Former Certificate Holder")
+internal class PPUXX1900FormerCertificateHolder {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.certificateholder != (policy.Claim.OriginalVersion as Claim).Policy.certificateholder and
+policy != null and policy.Claim != null and policy.Claim.DisplayName != null and
+!policy.Claim.DisplayName.startsWith("T")
+/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/for(prevCertHold in (policy.Claim.OriginalVersion as Claim).Policy.certificateholder){
+
+  if(!policy.certificateholder.contains(prevCertHold)){
+    policy.Claim.addRole( "fmrcertificateholder", prevCertHold )
+    policy.removeRole( "certificateholder", prevCertHold )
+  }
+
+}
+
+
+
+
+/*end00rule*/
+  }
+}

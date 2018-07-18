@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    canVisit="perm.Contact.viewsearchab"
+    id="DuplicateContactsWorksheet"
+    tabLabel="displaykey.Web.AddressBook.TabLabel.MatchingContacts"
+    title="displaykey.Web.AddressBook.Title.MatchingContacts">
+    <LocationEntryPoint
+      signature="DuplicateContactsWorksheet(contact : Contact, externalContactSource : contact.ExternalContactSource)"/>
+    <Scope
+      location="AddressBookContactDetail(externalContact)"/>
+    <Scope
+      location="AddressBookContactDetailPopup(externalContact)"/>
+    <Scope
+      location="NewAddressBookContact(typeof contact)"/>
+    <Variable
+      name="contact"
+      type="Contact"/>
+    <Variable
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="new contact.ProximitySearchPageHelper()"
+      name="proximitySearchPageHelper"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="externalContactSource.wrap(contact)"
+      name="externalContact"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="addressBookContactSource"/>
+    <Screen
+      id="DuplicateContactsScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="DuplicateContactsWorksheet_CloseButton"
+          label="displaykey.Button.Close"
+          shortcut="C"/>
+      </Toolbar>
+      <PanelRef
+        def="AddressBookSearchLV(null, proximitySearchPageHelper, addressBookContactSource, contact.findPotentialDuplicates(), null)">
+        <Toolbar>
+          <ToolbarButtonSetRef
+            toolbarButtonSet="AddressBookDeleteToolbarButtonSet(addressBookContactSource)"/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+  </Worksheet>
+</PCF>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.User.viewteam and GroupInfo.Group != null"
+    id="TeamGroupMatters"
+    title="displaykey.Web.Team.GroupMattersTitle(GroupInfo.DisplayName)">
+    <LocationEntryPoint
+      signature="TeamGroupMatters(GroupInfo : admin.TreeGroupInfo)"/>
+    <Variable
+      name="GroupInfo"
+      type="admin.TreeGroupInfo"/>
+    <Variable
+      initialValue="MatterTeamView.finder.findPendingByGroup(GroupInfo.Group, false)"
+      name="MatterTeamViewList"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="&quot;TeamMattersLV&quot;"
+      name="PrintTargetLV"/>
+    <Screen
+      id="TeamGroupMattersScreen">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.Team.GroupMattersTitle(GroupInfo.DisplayName)"/>
+      <Toolbar
+        reflectOnBottom="true">
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="AssignMattersPopup.push(new matter.MatterAssignmentPopup(CheckedValues))"
+          flags="all CanAssignMatter"
+          id="TeamGroupMatters_Assign"
+          iterator="TeamMattersLV"
+          label="displaykey.Web.Team.Toolbar.Assign"
+          shortcut="G"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="print.ListViewPrintOptionPopupAction.printListViewWithOptions(PrintTargetLV)"
+          available="perm.User.printlistviews"
+          id="TeamGroupMatters_Print"
+          label="displaykey.Java.ListView.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="TeamMattersLV(MatterTeamViewList)"/>
+    </Screen>
+  </Page>
+</PCF>

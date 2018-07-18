@@ -1,0 +1,30 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEAG1130 - No Activity in 30 days")
+internal class CEAG1130NoActivityin30days {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*12/14/09 erawe: check for claims that have not been changed for 30 days
+By default claim exception will check for claims that have not changed or been
+updated, in this rule we just check the time period
+Updated 12/1/2010 zjthomas: Modified comparison to use UpdateTime of Claim and Transactions compared to a script parameter.
+Updated 12/10/2010 zjthomas: Modified comparison to compare UpdateTime to Reported Date of both claim and transaction.
+Updated 12/30/2010 zjthomas: Modified comparison to look at all entity arrays that would be considered a claim updateex.
+*/ 
+//(!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_inactivity_adj"))
+true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if(claim.isClaimIdle(ScriptParameters.AgriAdjustInactiveThresholdDays)){
+    var ap = util.custom_Ext.finders.findActivityPattern( "ab_inactivity_adj" )
+    var clmUpdated :util.custom_Ext.ClaimUpdateTime = new util.custom_Ext.ClaimUpdateTime()
+    var updateTime = clmUpdated.getClaimUpdateTime(claim.ClaimNumber).LastUpdateTime
+   
+    claim.createActivityFromPattern( null, ap)
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

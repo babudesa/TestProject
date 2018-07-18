@@ -1,0 +1,22 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX12C0LitAdvisorChecks_dir
+
+@gw.rules.RuleName("TPUXX12C2 - Set Attn To for RTO checks")
+internal class TPUXX12C2SetAttnToforRTOchecks {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet as CheckSet).PrimaryCheck.DeliveryMethod == DeliveryMethod.TC_HOLD && transactionSet.New
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  var primaryCheck = (transactionSet as CheckSet).PrimaryCheck
+  var adjuster = primaryCheck.Claim.AssignedUser.Contact
+  primaryCheck.ex_MailTo = adjuster
+  primaryCheck.ex_MailToAddress = adjuster.AllAddresses.where(\ a -> a.AddressType == AddressType.TC_BUSINESS).first()
+  primaryCheck.MailTo = primaryCheck.ex_MailTo.DisplayName
+ } catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, "" )  
+}/*end00rule*/
+  }
+}

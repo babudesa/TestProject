@@ -1,0 +1,419 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  Vehicle Damage subviews
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="VehicleDamageDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.Coverage"
+      name="coverage"
+      type="Coverage"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Overall"/>
+      <Input
+        id="LossParty"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.LossParty"
+        required="true"
+        value="Exposure.LossParty"/>
+      <Input
+        id="ClosedDate"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ClosedDate"
+        value="Exposure.CloseDate"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <Input
+        id="PrimaryCoverage"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.PrimaryCoverage"
+        value="Exposure.PrimaryCoverage"/>
+      <Input
+        id="ClosedOutcome"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ClosedOutcome"
+        value="Exposure.ClosedOutcome"
+        visible=" Exposure.State == &quot;closed&quot; "/>
+      <Input
+        id="CoverageSubType"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.CoverageSubType"
+        value="Exposure.CoverageSubType"/>
+      <DateInput
+        dateFormat="short"
+        id="ReOpenDate"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ReOpenDate"
+        value="Exposure.ReOpenDate"
+        visible=" exposure.ReOpenDate != null "/>
+      <RangeInput
+        editable="isCoverageEditable"
+        helpText="displaykey.Exposure.Coverage.helpText"
+        id="Coverage"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Coverage"
+        onChange="setCoverage()"
+        postOnChange="true"
+        value="coverage"
+        valueRange="Exposure.Claim.Policy.getCoveragesByCoverageType(Exposure.PrimaryCoverage)"/>
+      <Input
+        id="ReopenedReason"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ReopenedReason"
+        value="Exposure.ReopenedReason"
+        visible=" exposure.ReOpenDate != null "/>
+      <Input
+        action="UserContactDetailPopup.push(Exposure.AssignedUser)"
+        available="Exposure.AssignedUser.Contact != null"
+        id="AssignedUser_Name"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.AssignedUser.Name"
+        value="Exposure.AssigneeDisplayString"/>
+      <Input
+        id="AssignedGroup_Name"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.AssignedGroup.Name"
+        value="Exposure.AssigneeGroupOnlyDisplayString"/>
+      <Input
+        id="State"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.State"
+        value="Exposure.State"/>
+      <Input
+        id="CreateTime"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.CreateTime"
+        value="Exposure.CreateTime"/>
+      <InputSet
+        visible="Exposure.Claim.Policy.StatCodingEnabled">
+        <PolicyStatCodePickerInput
+          action="ClaimPolicyStatCodePickerPopup.push(Exposure.Claim)"
+          editable="true"
+          id="StatLine"
+          label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.StatLine"
+          value="Exposure.StatLine"
+          valueRange="Exposure.Claim.Policy.CappedStatCodes"/>
+        <InputSet
+          hideIfReadOnly="true"
+          visible="true">
+          <TextInput
+            id="StatLine_Warning"
+            value="displaykey.Java.StatCodes.StatCodeListCappedWarning(Exposure.Claim.Policy.StatCodeListCap, Exposure.Claim.Policy.StatCodes.length)"
+            visible="Exposure.Claim.Policy.StatCodeListCapped"/>
+        </InputSet>
+      </InputSet>
+      <Input
+        id="ValidationLevel"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ValidationLevel"
+        value="Exposure.ValidationLevel"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant"/>
+      <ClaimContactInput
+        claim="Exposure.Claim"
+        editable="true"
+        id="Claimant_Picker"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.Picker"
+        required="true"
+        value="Exposure.Claimant"
+        valueRange="Exposure.Claim.getRelatedContacts(Exposure.Claim.getContactType(&quot;claimant&quot;))">
+        <Reflect
+          triggerIds="LossParty">
+          <ReflectCondition
+            condition="VALUE == &quot;insured&quot;"
+            value="Exposure.Claim.Insured"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </ClaimContactInput>
+      <Input
+        editable="true"
+        id="Claimant_Type"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.Type"
+        required="true"
+        value="Exposure.ClaimantType">
+        <Reflect
+          triggerIds="Claimant_Picker">
+          <ReflectCondition
+            condition="Exposure.Claim.Insured==VALUE"
+            value="&quot;insured&quot;"/>
+          <ReflectCondition
+            condition="true"
+            value="&quot;&quot;"/>
+        </Reflect>
+      </Input>
+      <Input
+        editable="true"
+        id="Claimant_ContactProhibited"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.ContactProhibited"
+        value="ContactProhibited"/>
+      <Input
+        id="Claimant_PrimaryPhone"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.PrimaryPhone"
+        value="Exposure.Claimant.PrimaryPhoneValue">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="VALUE.PrimaryPhoneValue"/>
+      </Input>
+      <TextAreaInput
+        id="Claimant_Address"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.Address"
+        numCols="35"
+        numRows="2"
+        value="Exposure.Claimant.PrimaryAddressDisplayValue">
+        <Reflect
+          triggerIds="Claimant_Picker"
+          value="VALUE.PrimaryAddressDisplayValue"/>
+      </TextAreaInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.IncidentOverview"/>
+      <RangeInput
+        editable="true"
+        hideChildrenIfReadOnly="false"
+        id="Vehicle_Incident"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.VehicleIncident"
+        required="true"
+        value="Exposure.VehicleIncident"
+        valueRange="Exposure.getVehicleIncidentsWithMatchingLossParty(Exposure.LossParty)">
+        <Reflect
+          triggerIds="LossParty"
+          valueRange="Exposure.getVehicleIncidentsWithMatchingLossParty(VALUE)"/>
+        <MenuItem
+          action="NewVehicleIncidentPopup.push(Exposure.Claim)"
+          hideIfReadOnly="true"
+          id="VehicleDamageDV_NewIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.NewIncident"/>
+        <MenuItem
+          action="EditVehicleIncidentPopup.push(Exposure.VehicleIncident, true)"
+          hideIfReadOnly="true"
+          id="VehicleDamageDV_EditIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.EditIncident"/>
+        <MenuItem
+          action="EditVehicleIncidentPopup.push(Exposure.VehicleIncident, false)"
+          hideIfEditable="true"
+          id="VehicleDamageDV_ViewIncidentMenuItem"
+          label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.ViewIncident"/>
+      </RangeInput>
+      <Input
+        id="Incident_Driver"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Incident.Driver"
+        value="Exposure.VehicleIncident.Driver">
+        <Reflect
+          triggerIds="Vehicle_Incident"
+          value="VALUE.Driver"/>
+      </Input>
+      <Input
+        id="Incident_Description"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Incident.Description"
+        value="Exposure.VehicleIncident.Description">
+        <Reflect
+          triggerIds="Vehicle_Incident"
+          value="VALUE.Description"/>
+      </Input>
+      <Input
+        id="Incident_VehicleOperable"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Incident.VehicleOperable"
+        value="Exposure.VehicleIncident.VehicleOperable">
+        <Reflect
+          triggerIds="Vehicle_Incident"
+          value="VALUE.VehicleOperable"/>
+      </Input>
+      <Input
+        id="Incident_LossEstimate"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Incident.LossEstimate"
+        value="Exposure.VehicleIncident.LossEstimate">
+        <Reflect
+          triggerIds="Vehicle_Incident"
+          value="VALUE.LossEstimate"/>
+      </Input>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Coding"/>
+      <Input
+        id="Segment"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Segment"
+        value="Exposure.Segment"/>
+      <Input
+        id="Strategy"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Strategy"
+        value="Exposure.Strategy"/>
+      <Input
+        editable="true"
+        id="JurisdictionState"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.JurisdictionState"
+        value="Exposure.JurisdictionState"
+        visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.Financials"
+        visible="perm.Claim.viewtransactiondetails(Exposure.Claim)"/>
+      <Input
+        formatType="currency"
+        id="RemainingReserves"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.RemainingReserves"
+        value="Exposure.ExposureRpt.RemainingReserves"
+        visible="perm.Claim.viewreserves(Exposure.Claim)"/>
+      <Input
+        id="FuturePayments"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.FuturePayments"
+        value="Exposure.ExposureRpt.FuturePayments"
+        visible="perm.Claim.viewpayments(Exposure.Claim)"/>
+      <Input
+        id="TotalPayments"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.TotalPayments"
+        value="Exposure.ExposureRpt.TotalPayments"
+        visible="perm.Claim.viewpayments(Exposure.Claim)"/>
+      <Input
+        id="TotalRecoveries"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.TotalRecoveries"
+        value="Exposure.ExposureRpt.TotalRecoveries"
+        visible="perm.Claim.viewrecoveries(Exposure.Claim)"/>
+      <Input
+        formatType="currency"
+        id="TotalIncurredNet"
+        label="displaykey.NVV.Exposure.SubView.VehicleDamage.Exposure.TotalIncurredNet"
+        value="Exposure.ExposureRpt.TotalIncurredNet"
+        visible="perm.Claim.viewnettotalincurred(Exposure.Claim)"/>
+      <Label
+        label="displaykey.Deductible"
+        visible="Exposure.Coverage.ClaimDeductible != null"/>
+      <Input
+        editable="!Exposure.Coverage.ClaimDeductible.Paid and canEditDeductible"
+        formatType="currency"
+        id="DeductibleWaived"
+        label="displaykey.Deductible.WaiveDeductible"
+        onChange="clearEditReason()"
+        postOnChange="true"
+        validationExpression="Exposure.Coverage.ClaimDeductible.Waived ? (Exposure.Coverage.ClaimDeductible.Amount &lt;= Exposure.Coverage.Deductible ? null : displaykey.Deductible.AmountCannotExceedOriginal(gw.api.util.CurrencyUtil.renderAsCurrency(Exposure.Coverage.Deductible))) : null"
+        value="Exposure.Coverage.ClaimDeductible.Waived"
+        visible="Exposure.Coverage.ClaimDeductible != null"/>
+      <Input
+        editable="Exposure.Coverage.ClaimDeductible.Overridden and !Exposure.Coverage.ClaimDeductible.Paid and !Exposure.Coverage.ClaimDeductible.Waived and canEditDeductible"
+        formatType="currency"
+        id="DeductibleAmount"
+        label="displaykey.Deductible.DeductibleAmount"
+        required="true"
+        validationExpression="Exposure.Coverage.ClaimDeductible.Amount &lt;= Exposure.Coverage.Deductible ? null : displaykey.Deductible.AmountCannotExceedOriginal(gw.api.util.CurrencyUtil.renderAsCurrency(Exposure.Coverage.Deductible))"
+        value="Exposure.Coverage.ClaimDeductible.Amount"
+        visible="Exposure.Coverage.ClaimDeductible != null"/>
+      <Input
+        formatType="currency"
+        id="DeductiblePaid"
+        label="displaykey.Deductible.DeductiblePaid"
+        value="Exposure.Coverage.ClaimDeductible.Paid"
+        visible="Exposure.Coverage.ClaimDeductible != null"/>
+      <Input
+        editable="!Exposure.Coverage.ClaimDeductible.Paid and !Exposure.Coverage.ClaimDeductible.Waived and canEditDeductible"
+        formatType="currency"
+        id="DeductibleOverridden"
+        label="displaykey.Deductible.OverrideDeductible"
+        onChange="Exposure.Coverage.ClaimDeductible.recalculateAmount(); clearEditReason()"
+        postOnChange="true"
+        value="Exposure.Coverage.ClaimDeductible.Overridden"
+        visible="Exposure.Coverage.ClaimDeductible != null"/>
+      <TextInput
+        editable="!Exposure.Coverage.ClaimDeductible.Paid and canEditDeductible"
+        id="DeductibleEditReason"
+        label="displaykey.Deductible.EditReason"
+        required="true"
+        value="Exposure.Coverage.ClaimDeductible.EditReason"
+        visible="isEditReasonRequired"/>
+    </InputColumn>
+    <Code><![CDATA[property get ContactProhibited() : boolean {
+    return Exposure.Claim.getClaimContact(Exposure.Claimant).ContactProhibited
+}
+  
+property set ContactProhibited(prohibited : boolean) {
+  var claimContact = Exposure.Claim.getClaimContact(Exposure.Claimant) 
+  if (claimContact != null) claimContact.ContactProhibited = prohibited 
+}
+
+property get canEditDeductible() : boolean {
+  return perm.Claim.edit(Exposure.Claim) and perm.System.editdeductible and gw.api.financials.FinancialsUtil.isUseDeductibleHandling()
+}
+
+property get isCoverageEditable() : boolean {
+  return Exposure.Coverage.ClaimDeductible.TransactionLineItem == null
+}
+
+property get isEditReasonRequired() : boolean {
+  return Exposure.Coverage.ClaimDeductible.Overridden or Exposure.Coverage.ClaimDeductible.Waived
+}
+
+function setCoverage() {
+  var originalDeductibleWaived = false
+  var originalDeductibleOverridden = false
+  
+  if (Exposure.Coverage.ClaimDeductible != null) {
+    //coverage is being changed, see if the old coverage is used by other exposures or not
+    var originalExposuresArray = find(e in Exposure where e.Coverage == Exposure.Coverage).toTypedArray()
+    //loop over the matching exposures to see if the current exposure on the page is one of them
+    //if the current exposure is in the list of returned exposures, then remove the deductible object
+    //when the results have one or less expsures
+    //if current exposure is not one of them, then remove the deductible object if there're no results
+    var numberOfResultsToCheck = 0
+    for (var currentExposure in originalExposuresArray) {
+      if ((currentExposure) == Exposure) {
+        numberOfResultsToCheck = 1
+      }
+    }
+    
+    // Keep track of whether the original deductible was waived
+    if (Exposure.Coverage.ClaimDeductible.Waived) {
+      originalDeductibleWaived = true
+    }
+    
+    // Keep track of whether the original deductible was overridden
+    if (Exposure.Coverage.ClaimDeductible.Overridden) {
+      originalDeductibleOverridden = true
+    }
+    
+    if (originalExposuresArray.length <= numberOfResultsToCheck) {
+      //no other exposures exist, time to remove the deductible object
+      Exposure.Coverage.ClaimDeductible.remove()
+    }
+  }
+  Exposure.Coverage = coverage
+  //create a new deductible if deductible amount is not null and system configuartion uses deductible handling
+  if (Exposure.Coverage.ClaimDeductible == null 
+      and Exposure.Coverage.Deductible != null 
+      and gw.api.financials.FinancialsUtil.isUseDeductibleHandling()) {
+    var deductible = new Deductible()
+    deductible.Claim = Exposure.Claim
+    deductible.Coverage = Exposure.Coverage
+    deductible.Amount = gw.util.DeductibleCalculator.calculateDeductibleAmountForCoverage(Exposure.Coverage)
+  }
+
+  // Display a warning if changing from a coverage with a waived deductible and the new deductible is unwaived
+  if (Exposure.Coverage.ClaimDeductible != null
+      and !Exposure.Coverage.ClaimDeductible.Waived
+      and originalDeductibleWaived) {
+    gw.api.util.LocationUtil.addRequestScopedInfoMessage(displaykey.Deductible.ChangingFromCoverageWithWaivedDeductible)      
+  }
+  // Display a warning if changing from a coverage with a modified deductible and the new deductible is unmodified
+  if (Exposure.Coverage.ClaimDeductible != null
+      and !Exposure.Coverage.ClaimDeductible.Overridden
+      and originalDeductibleOverridden) {
+    gw.api.util.LocationUtil.addRequestScopedInfoMessage(displaykey.Deductible.ChangingFromCoverageWithModifiedDeductible)      
+  }
+}
+
+function clearEditReason() {
+    Exposure.Coverage.ClaimDeductible.EditReason = null
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

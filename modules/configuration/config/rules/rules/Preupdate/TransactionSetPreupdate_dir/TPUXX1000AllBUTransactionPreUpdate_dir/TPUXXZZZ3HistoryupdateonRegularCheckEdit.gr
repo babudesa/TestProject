@@ -1,0 +1,46 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir
+
+@gw.rules.RuleName("TPUXXZZZ3 - History update on Regular Check Edit")
+internal class TPUXXZZZ3HistoryupdateonRegularCheckEdit {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis CheckSet && transactionSet.PrimaryCheck.isRecurringCheck==false
+
+// rule to create a history entry for regular (non-recurring) check update/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses java.text.DecimalFormat
+var transaction  : History
+var amount=(new DecimalFormat("$#########0.00;($-#########0.00)")).format(transactionSet.ClaimAmount.Amount)
+var primaryCheck: Check =  (transactionSet as CheckSet).PrimaryCheck
+
+if(transactionSet.New){
+ transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", User.util.CurrentUser+" issued Check # "+primaryCheck.CheckNumber+" for "+amount)
+         transaction.TransactionSet =transactionSet  
+}
+else{
+if(primaryCheck.getOriginalValue("Status").toString() == "Rejected"
+    and primaryCheck.Status == "awaitingsubmission"){
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Previously Rejected Payment Approved "+amount )
+        transaction.TransactionSet =transactionSet 
+}
+else if((primaryCheck.getOriginalValue("Status").toString() == "Rejected" or primaryCheck.getOriginalValue("Status").toString() == "Pending approval" or
+primaryCheck.getOriginalValue("Status").toString() == "Awaiting submission")
+    and primaryCheck.Status == "pendingapproval"){
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", User.util.CurrentUser+" issued Check # "+primaryCheck.CheckNumber+" for "+amount )
+        transaction.TransactionSet =transactionSet 
+}
+
+else if(primaryCheck.getOriginalValue("Status").toString() == "Awaiting submission"
+    and primaryCheck.Status == "awaitingsubmission"){
+       transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Check # "+primaryCheck.CheckNumber +" in Awaiting Submission Status was Edited and Approved")
+        transaction.TransactionSet =transactionSet 
+}
+else if(primaryCheck.getOriginalValue("Status").toString() == "Pending approval"
+     and primaryCheck.Status == "awaitingsubmission" and  !exists(act in transactionSet.claim.Activities where act.ActivityPattern.Code == "approve_payment" 
+     && act.Status == "Complete" and act.TransactionSet.ClaimAmount == transactionSet.ClaimAmount.Amount) ){   
+        transaction = transactionSet.Claim.createCustomHistoryEvent( "checkedit", "Check # "+primaryCheck.CheckNumber+" in Pending Approval Status was Edited and Approved")
+         transaction.TransactionSet =transactionSet 
+} }/*end00rule*/
+  }
+}

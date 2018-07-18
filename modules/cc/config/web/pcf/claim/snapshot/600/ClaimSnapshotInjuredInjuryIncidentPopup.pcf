@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Popup
+    canEdit="false"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewsnapshot"
+    id="ClaimSnapshotInjuredInjuryIncidentPopup"
+    title="displaykey.Web.EditInjuryIncident.Title">
+    <LocationEntryPoint
+      signature="ClaimSnapshotInjuredInjuryIncidentPopup(Claim : Claim, Incident : Object)"/>
+    <Variable
+      name="Incident"
+      type="Object"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.api.snapshot.ClaimSnapshotUtil.getSnapshot(Claim)"
+      name="Snapshot"/>
+    <Screen>
+      <DetailViewPanel>
+        <InputColumn>
+          <Input
+            id="FirstName"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.FirstName.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.FirstName"/>
+          <Input
+            id="LastName"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.LastName.Label"
+            required="true"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.LastName"/>
+          <Input
+            id="reporter_Address"
+            label="displaykey.NVV.Claim.NewClaimPeople.Policy.Insured.Address"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.PrimaryAddress.DisplayName"
+            visible="((Incident as snapshot.v600.InjuryIncident).injured.PrimaryAddress) != null"/>
+          <Input
+            id="reporter_businessphone"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.BusinessPhone.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.WorkPhone"/>
+          <Input
+            id="reporter_homephone"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.HomePhone.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.HomePhone"/>
+          <Input
+            id="reporter_mobile"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Mobile.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.CellPhone"/>
+          <Input
+            id="reporter_primarytype"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.PrimaryPhone.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.PrimaryPhone"/>
+          <Input
+            id="reporter_email"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Email.Label"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.EmailAddress1"/>
+          <TextInput
+            formatType="email"
+            id="Email2"
+            label="displaykey.Web.ContactDetail.PrimaryContact.Email2"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Person.EmailAddress2"/>
+          <TextAreaInput
+            id="Notes"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Notes.Label"
+            numRows="5"
+            value="(Incident as snapshot.v600.InjuryIncident).injured.Notes"/>
+        </InputColumn>
+        <InputColumn>
+          <Label
+            id="Injury"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.InjuryLabel"/>
+          <InputSet
+            id="InjuryIncidentInputSet">
+            <Variable
+              initialValue="(Incident as snapshot.v600.InjuryIncident).MedicalTreatmentType != null || (Incident as snapshot.v600.InjuryIncident).PrimaryDoctor != null"
+              name="treatment"
+              type="boolean"/>
+            <Input
+              id="Severity"
+              label="displaykey.Web.InjuryIncidentInputSet.Severity.Label"
+              value="(Incident as snapshot.v600.InjuryIncident).Severity"/>
+            <TextAreaInput
+              id="InjuryDescription"
+              label="displaykey.Web.InjuryIncidentInputSet.Description.Label"
+              numRows="3"
+              value="(Incident as snapshot.v600.InjuryIncident).Description"/>
+            <Input
+              id="PrimaryInjuryType"
+              label="displaykey.Web.InjuryIncidentInputSet.GeneralInjuryType.Label"
+              value="(Incident as snapshot.v600.InjuryIncident).GeneralInjuryType"/>
+            <Input
+              id="DetailedInjuryType"
+              label="displaykey.Web.InjuryIncidentInputSet.DetailedInjuryType.Label"
+              value="(Incident as snapshot.v600.InjuryIncident).DetailedInjuryType"/>
+            <ListViewInput
+              boldLabel="true"
+              editable="false"
+              label="displaykey.LV.Incident.Injury.BodyPartDetails.Title"
+              labelAbove="true">
+              <Toolbar/>
+              <ListViewPanel>
+                <RowIterator
+                  editable="false"
+                  elementName="BodyPartDetails"
+                  hideCheckBoxesIfReadOnly="true"
+                  pageSize="0"
+                  toCreateAndAdd=""
+                  toRemove=""
+                  value="(Incident as snapshot.v600.InjuryIncident).BodyParts">
+                  <ToolbarFlag
+                    condition="BodyPartDetails.Ordering == null || (BodyPartDetails.Ordering as Number)  &gt; ((Incident as snapshot.v600.InjuryIncident).FirstBodyPart.Ordering as Number)"
+                    name="NotFirstBP"/>
+                  <Row>
+                    <Cell
+                      id="Ordering"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.Ordering"
+                      sortOrder="1"
+                      value="BodyPartDetails.Ordering"
+                      visible="false"/>
+                    <Cell
+                      id="PrimaryBodyPart"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.PrimaryBodyPart"
+                      required="true"
+                      value="BodyPartDetails.PrimaryBodyPart"/>
+                    <Cell
+                      id="DetailedBodyPart"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.DetailedBodyPart"
+                      required="false"
+                      value="BodyPartDetails.DetailedBodyPart"/>
+                    <Cell
+                      enableSort="false"
+                      id="CompensabilityDecision"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityDecision"
+                      required="false"
+                      value="BodyPartDetails.CompensabilityDecision"
+                      visible="true"
+                      wrapLabel="true"/>
+                    <Cell
+                      enableSort="false"
+                      id="CompensabilityDecisionDate"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityDecisionDate"
+                      required="false"
+                      value="BodyPartDetails.CompensabilityDecisionDate"
+                      visible="true"
+                      wrapLabel="true"/>
+                    <Cell
+                      enableSort="false"
+                      id="CompensabilityComments"
+                      label="displaykey.LV.Incident.Injury.BodyPartDetails.CompensabilityComments"
+                      required="false"
+                      value="BodyPartDetails.CompensabilityComments"
+                      visible="true"
+                      wrapLabel="true"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </ListViewInput>
+            <InputDivider/>
+            <Input
+              id="ReceivedTreatment"
+              label="displaykey.Web.InjuryIncidentInputSet.ReceivedTreatment.Label"
+              postOnChange="true"
+              value="treatment"/>
+            <Input
+              id="TreatmentType"
+              label="displaykey.Web.InjuryIncidentInputSet.TreatmentType.Label"
+              value="(Incident as snapshot.v600.InjuryIncident).MedicalTreatmentType"
+              visible="treatment"/>
+            <Input
+              id="PrimaryDoctor"
+              label="displaykey.Web.InjuryIncidentInputSet.PrimaryDoctor.Label"
+              value="(Incident as snapshot.v600.InjuryIncident).PrimaryDoctor"/>
+            <Input
+              id="LostWages"
+              label="displaykey.Web.InjuryIncidentInputSet.LostWages.Label"
+              postOnChange="true"
+              value="(Incident as snapshot.v600.InjuryIncident).LostWages"/>
+          </InputSet>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+  </Popup>
+</PCF>

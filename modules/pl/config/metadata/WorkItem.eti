@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<delegate
+  xmlns="http://guidewire.com/datamodel"
+  javaClass="com.guidewire.pl.domain.workqueue.WorkItem"
+  name="WorkItem">
+  <foreignkey
+    columnName="ProcessHistoryID"
+    desc="The writer batch job that created this workitem."
+    fkentity="ProcessHistory"
+    name="ProcessHistory"
+    nullok="true"/>
+  <typekey
+    default="available"
+    desc="Status of this workitem."
+    name="status"
+    nullok="false"
+    setterScriptability="hidden"
+    typelist="WorkItemStatusType"/>
+  <column
+    name="LastUpdateTime"
+    nullok="true"
+    type="datetime"/>
+  <column
+    default="0"
+    name="Priority"
+    nullok="false"
+    type="integer"/>
+  <!-- machine ID of which this items is checked out by -->
+  <column
+    name="CheckedOutBy"
+    nullok="true"
+    type="varchar">
+    <columnParam
+      name="size"
+      value="50"/>
+  </column>
+  <column
+    name="CreationTime"
+    nullok="false"
+    type="datetime"/>
+  <column
+    default="0"
+    name="NumRetries"
+    nullok="false"
+    type="integer"/>
+  <column
+    desc="Stack trace of the exception"
+    name="Exception"
+    nullok="true"
+    setterScriptability="hidden"
+    type="longtext"/>
+  <index
+    desc="Covering index to speed up searches done by the distributed worker controller for open and orphaned work items"
+    name="WorkItemIndex1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="status"/>
+    <indexcol
+      keyposition="2"
+      name="CreationTime"/>
+    <indexcol
+      keyposition="3"
+      name="ID"/>
+    <indexcol
+      keyposition="4"
+      name="LastUpdateTime"/>
+  </index>
+  <index
+    desc="Covering index to speed up checking-out of work items and they involve search on status"
+    name="WorkItemIndex2"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="status"/>
+    <indexcol
+      keyposition="2"
+      name="Priority"
+      sortascending="false"/>
+    <indexcol
+      keyposition="3"
+      name="CreationTime"/>
+    <indexcol
+      keyposition="4"
+      name="ID"/>
+  </index>
+</delegate>

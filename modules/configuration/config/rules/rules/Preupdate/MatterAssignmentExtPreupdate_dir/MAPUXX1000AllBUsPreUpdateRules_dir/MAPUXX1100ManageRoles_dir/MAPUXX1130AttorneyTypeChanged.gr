@@ -1,0 +1,55 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MAPUXX1130 - Attorney Type Changed")
+internal class MAPUXX1130AttorneyTypeChanged {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("AttorneyTypeExt")
+/* When the attorney type is changed on a matterAssignment this rule adds roles
+* to the law firm and lead counsel 
+*  
+*//*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/var mapper = new libraries.Matter_Entity.AttorneyTypeMapper()
+var originalMatterAssignment = matterAssignmentExt.OriginalVersion as MatterAssignmentExt
+var roleHelper = new libraries.Matter_Entity.MatterRoleHelper(matterAssignmentExt.Matter)
+
+try{  
+  
+   // If the law firm is not null 
+   // then set the firms previous role to former and
+   // add new roles
+   if(originalMatterAssignment.CounselLawFirmExt != null){
+     
+      roleHelper.setLawFirmFormer(originalMatterAssignment)     
+        
+      var roleToAdd = mapper.AttorneyTypeRoleMap.get(matterAssignmentExt.AttorneyTypeExt)
+      matterAssignmentExt.Matter.addRole(roleToAdd, matterAssignmentExt.CounselLawFirmExt)
+      roleHelper.removeFormerRole(roleToAdd, matterAssignmentExt.CounselLawFirmExt)   
+   
+   }
+   
+     
+   // If the lead counsel firm is not null 
+   // then set the firms previous role to former and
+   // add new roles
+   if(originalMatterAssignment.LeadCounselExt != null){
+     
+      roleHelper.setLeadCounselFormer(originalMatterAssignment)     
+      
+      var roleToAdd = mapper.AttorneyTypeRoleMap.get(matterAssignmentExt.AttorneyTypeExt)
+      matterAssignmentExt.Matter.addRole(roleToAdd, matterAssignmentExt.LeadCounselExt)
+      roleHelper.removeFormerRole(roleToAdd, matterAssignmentExt.LeadCounselExt)   
+   
+   }  
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}
+
+
+
+/*end00rule*/
+  }
+}

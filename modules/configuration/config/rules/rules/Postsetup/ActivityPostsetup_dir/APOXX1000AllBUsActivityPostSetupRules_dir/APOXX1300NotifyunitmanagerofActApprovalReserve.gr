@@ -1,0 +1,27 @@
+package rules.Postsetup.ActivityPostsetup_dir.APOXX1000AllBUsActivityPostSetupRules_dir
+
+@gw.rules.RuleName("APOXX1300 - Notify unitmanager of Act Approval - Reserve")
+internal class APOXX1300NotifyunitmanagerofActApprovalReserve {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*Rule to send email to unit manager for payment and reserve approvals in 
+addition to the activity that gets created.
+Author:erawe
+Date: 10/12/10
+Comments: Defect 3668 - At this time all BU's except Equine
+Updated: 11/9/10 erawe - had to create and run the logic in an Event Fired rule
+to be able to get the check number every time.
+*/
+activity.Claim.LossType!="EQUINE" and 
+activity.AssignedUser==util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType )and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment"))and activity.Status!="complete"
+
+
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/activity.addEvent( "UnitApprovalEmail" )
+/*end00rule*/
+  }
+}

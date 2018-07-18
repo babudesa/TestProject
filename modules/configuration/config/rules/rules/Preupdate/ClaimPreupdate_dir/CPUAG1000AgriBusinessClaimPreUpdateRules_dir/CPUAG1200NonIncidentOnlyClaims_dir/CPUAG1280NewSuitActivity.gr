@@ -1,0 +1,35 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleName("CPUAG1280 - New Suit Activity")
+internal class CPUAG1280NewSuitActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///This rule creates an activity for New Suit when the document for the suit is
+//created in ECF and brought in by the sweep.
+//Defect 2845 2/18/10 sprzygocki
+//Updated: Eric Rawe - 4/21/10 defect 3334, added logic to run this
+//only for Agribusiness
+//Updated: Stephanie Przygocki - 4/27/10 
+//  Moved this rule to Agri CPU and removed redundant conditions
+claim.State != "closed" &&
+claim.State != "draft" &&
+//the ECF sweep in this case will return documents created there with a null exposure
+exists(document in claim.Documents where
+  document.ex_Type=="Litigation" and 
+  document.ex_SubType=="Defense Attorney" and
+  document.Exposure==null)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(document in claim.Documents){
+  if(document.ex_Type=="Litigation" and document.ex_SubType=="Defense Attorney" and document.Exposure==null){
+    for(exposure in claim.Exposures){
+      if(exposure.ex_InSuit==false and !exists(activity in claim.Activities where activity.ActivityPattern==util.custom_Ext.finders.findActivityPattern( "ab_ecf_summons" ) and activity.Exposure==exposure)){
+        var ap = util.custom_Ext.finders.findActivityPattern( "ab_ecf_summons" )
+        var act=claim.createActivityFromPattern( exposure, ap )        
+         act.assign(exposure.Claim.AssignedGroup, exposure.Claim.AssignedUser)        
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

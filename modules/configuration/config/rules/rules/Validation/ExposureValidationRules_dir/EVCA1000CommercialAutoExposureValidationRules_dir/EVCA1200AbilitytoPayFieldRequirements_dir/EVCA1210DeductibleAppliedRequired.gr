@@ -1,0 +1,16 @@
+package rules.Validation.ExposureValidationRules_dir.EVCA1000CommercialAutoExposureValidationRules_dir.EVCA1200AbilitytoPayFieldRequirements_dir
+
+@gw.rules.RuleName("EVCA1210 - Deductible Applied Required")
+internal class EVCA1210DeductibleAppliedRequired {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Coverage.SublineExt!=null and 
+exposure.Coverage.SublineExt==typekey.Subline.TC_618 and
+exposure.Claim.LossDate >=ScriptParameters.LossTypeSelectionDate and
+exposure.Coverage.State != typekey.State.TC_MA and
+exposure.DeductibleAppliedExt == null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.rejectField("DeductibleAppliedExt", "payment", exposure + ": " + displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.DeductibleApp, null, null)/*end00rule*/
+  }
+}

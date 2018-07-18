@@ -1,0 +1,24 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX1220 - Status Change")
+internal class TPUXX1220StatusChange {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//* Determines if the Primary Check's status changed */
+(transactionSet as CheckSet).PrimaryCheck.isFieldChanged("Status")
+
+/*Moved this to Transaction Post Setup to fix duplicate Note problem*/
+/*
+Turn this rule back on for defect 2257 on date 11/19/2009
+Wanted rule TUXX1223 - "Set Escheat when Status Changes" to run here
+*//*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*//* Run child rules */
+var chk = (transactionSet as CheckSet).PrimaryCheck;
+if (chk.Bulked) {
+  gw.api.util.Logger.logDebug("Check is a BulkCheck, skip to next parent: " + chk.CheckNumber); 
+  actions.exitToNext();  
+}/*end00rule*/
+  }
+}

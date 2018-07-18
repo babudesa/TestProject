@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Wizard
+    afterCancel="ImportDataInfo.cancel(); ImportResults.go(ImportDataInfo)"
+    afterFinish="ImportDataInfo.commitChanges(); ImportResults.go(ImportDataInfo)"
+    canVisit="perm.User.importadmindata"
+    id="ImportWizard"
+    inheritMenuLinks="true">
+    <LocationEntryPoint
+      signature="ImportWizard()"/>
+    <Variable
+      initialValue="new admin.ImportDataInfo()"
+      name="ImportDataInfo"
+      type="admin.ImportDataInfo"/>
+    <WizardStep
+      allowFinish="(ImportDataInfo.File != null and ImportDataInfo.NumConflicts == 0) or ImportDataInfo.ResolutionStrategy != MANUAL"
+      allowNext="ImportDataInfo.File != null and ImportDataInfo.NumConflicts &gt; 0 and ImportDataInfo.ResolutionStrategy == MANUAL"
+      id="Upload"
+      refreshStepsOnExit="true"
+      screen="ImportWizard_UploadScreen(ImportDataInfo)"
+      showNextIfLastStep="true"
+      title="displaykey.Web.Admin.ImportWizard.UploadStep"/>
+    <WizardStepIterator
+      elementName="ImportDataConflict"
+      value="ImportDataInfo.Conflicts">
+      <WizardStep
+        id="ResolveConflicts"
+        screen="ImportWizard_ConflictScreen(ImportDataInfo, ImportDataConflict)"
+        title="displaykey.Web.Admin.ImportWizard.ConflictStep"/>
+    </WizardStepIterator>
+  </Wizard>
+</PCF>

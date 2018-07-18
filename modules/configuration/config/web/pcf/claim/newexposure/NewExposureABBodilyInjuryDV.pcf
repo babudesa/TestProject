@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  New exposure/existing claim NVVs
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="NewExposureABBodilyInjuryDV">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="&quot;BodilyInjury&quot;"
+      name="ExpType"
+      type="String"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, ExpType)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, ExpType)"/>
+      <InputSet
+        id="MAAccidentTownFeature"
+        visible="util.CommAutoHelper.isCommAutoLossType(Exposure.Claim) and Exposure.Coverage.State == typekey.State.TC_MA and Exposure.Claim.ValidationLevel == typekey.ValidationLevel.TC_PAYMENT and Exposure.Claim.MAAccidentLocationExt == null">
+        <Label
+          label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.MAAccidentTown"/>
+        <RangeInput
+          editable="true"
+          id="MAAccidentTown"
+          label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.MAAccidentTown.MA"
+          optionLabel="VALUE.Description"
+          required="Exposure.Claim.LossLocation.State == typekey.State.TC_MA"
+          sortValueRange="false"
+          value="Exposure.Claim.MAAccidentLocationExt"
+          valueRange="MATownCodeExt.TF_MASSTOWNCODES.TypeKeys.orderBy(\ t -&gt; t.Description )"
+          visible="Exposure.Claim.LossLocation.State == typekey.State.TC_MA"/>
+        <RangeInput
+          editable="true"
+          id="MAAccidentTownOutOfState"
+          label="displaykey.NVV.Claim.SubView.LossDetailsAuto.Claim.MAAccidentTown.OutofState"
+          optionLabel="VALUE.Description"
+          required="Exposure.Claim.LossLocation.State != typekey.State.TC_MA"
+          sortValueRange="false"
+          value="Exposure.Claim.MAAccidentLocationExt"
+          valueRange="MATownCodeExt.TF_OUTOFTOWNCODES.TypeKeys"
+          visible="Exposure.Claim.LossLocation.State != typekey.State.TC_MA"/>
+      </InputSet>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- Loss Description Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- Injury Section -->
+      <InputSetRef
+        def="InjuryDetailsInputSet(Exposure, ExpType)"/>
+      <InputDivider/>
+      <!-- Recovery Section -->
+      <Label
+        label="displaykey.NVV.Exposure.Subview.NewBodilyInjuryDamage.Exposure.Recovery"/>
+      <Input
+        editable="true"
+        id="ContributionPotential"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.ContributionPotential"
+        required="Exposure.Claim.LossType == LossType.TC_AGRIAUTO"
+        value="Exposure.ContribPotentialExt"/>
+      <InputDivider/>
+      <!-- Recovery Section -->
+      <Label
+        label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Details"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <Input
+        editable="true"
+        id="Lien"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Lien"
+        onChange="if((Exposure.IsLienExt==false)AND(Exposure.Liens!=null))for(lien in Exposure.Liens){lien.remove();Exposure.UIHelper.addFormerRole(lien)}"
+        postOnChange="true"
+        required="true"
+        value="Exposure.IsLienExt"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <ListViewInput
+        def="EditableLienDetailsLV(Exposure)"
+        editable="Exposure.IsLienExt==true"
+        id="LienDetails"
+        labelAbove="true"
+        visible="Exposure.UIHelper.IsCommAuto ? true : false ">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider
+        visible="Exposure.UIHelper.IsCommAuto ? true : false "/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

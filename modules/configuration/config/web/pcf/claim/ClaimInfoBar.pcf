@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InfoBar
+    id="ClaimInfoBar">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <InfoBarElement
+      icon="&quot;claim_flag.gif&quot;"
+      id="FlagClaimIndicator"
+      tooltip="Claim.FlagClaimIndicator.HoverText"
+      visible="getcheckflag(Claim)//Claim.FlagClaimIndicator.IsOn"/>
+    <InfoBarElement
+      icon="Claim.LitigationClaimIndicator.Icon"
+      id="LitigationClaimIndicator"
+      tooltip="Claim.LitigationClaimIndicator.HoverText"
+      visible="false"/>
+    <InfoBarElement
+      icon="Claim.FatalityClaimIndicator.Icon"
+      id="FatalityClaimIndicator"
+      tooltip="Claim.FatalityClaimIndicator.HoverText"
+      visible="false"/>
+    <InfoBarElement
+      icon="Claim.LargeLossClaimIndicator.Icon"
+      id="LargeLossClaimIndicator"
+      tooltip="Claim.LargeLossClaimIndicator.HoverText"
+      visible="false"/>
+    <InfoBarElement
+      icon="Claim.CoverageInQuestionClaimIndicator.Icon"
+      id="CoverageInQuestionClaimIndicator"
+      tooltip="Claim.CoverageInQuestionClaimIndicator.HoverText"
+      visible="Claim.CoverageInQuestionClaimIndicator.IsOn"/>
+    <InfoBarElement
+      icon="Claim.SIUClaimIndicator.Icon"
+      id="SIUClaimIndicator"
+      tooltip="Claim.SIUClaimIndicator.HoverText"
+      visible="false"/>
+    <InfoBarElement
+      id="PolicyNumber"
+      label="displaykey.Web.ClaimInfoBar.PolicyNumber"
+      value="Claim.Policy.PolicyNumber"/>
+    <InfoBarElement
+      id="PolicyMod"
+      label="displaykey.Web.ClaimInfoBar.PolicyMod"
+      value="Claim.Policy.PolicySuffix"/>
+    <InfoBarElement
+      icon="&quot;gaic_cancelled.gif&quot;"
+      id="ClaimInfoBar_Cancelled"
+      tooltip="displaykey.Web.ClaimInfoBar.Cancelled"
+      visible="Claim.Policy.Status == &quot;cancelled&quot;"/>
+    <InfoBarElement
+      icon="&quot;gaic_expiredcancelled.gif&quot;"
+      id="ClaimInfoBar_ExpiredCancelled"
+      tooltip="displaykey.Web.ClaimInfoBar.ExpiredCancelled"
+      visible="Claim.Policy.Status == &quot;expiredcancelled&quot;"/>
+    <InfoBarElement
+      icon="&quot;gaic_expired.gif&quot;"
+      id="ClaimInfoBar_Expired"
+      tooltip="displaykey.Web.ClaimInfoBar.Expired"
+      visible="Claim.Policy.Status == &quot;expired&quot;"/>
+    <InfoBarElement
+      icon="&quot;gaic_expiredcancelledrewritten.gif&quot;"
+      id="ClaimInfoBar_Rewritten"
+      tooltip="displaykey.Web.ClaimInfoBar.Rewritten"
+      visible="Claim.Policy.Status == &quot;rewritten&quot;"/>
+    <InfoBarElement
+      id="PolicyStatus"
+      label="displaykey.Web.ClaimInfoBar.PolicyStatus"
+      value="Claim.Policy.Status"
+      visible="Claim.Policy.Status != &quot;cancelled&quot; and Claim.Policy.Status != &quot;expired&quot; and Claim.Policy.Status != &quot;rewritten&quot;"/>
+    <!-- GW ADDED -->
+    <InfoBarElement
+      icon="Claim.Closed ? &quot;icon_claimClosed_infobar.png&quot; : &quot;icon_claimOpen_infobar.png&quot;"
+      id="ClaimOpenCloseIcon"
+      tooltip="Claim.State.DisplayName"/>
+    <InfoBarElement
+      id="Insured"
+      label="displaykey.Web.ClaimInfoBar.Insured"
+      value="Claim.InsuredDenorm.DisplayName"/>
+    <InfoBarElement
+      id="Claimant"
+      label="displaykey.Web.ClaimInfoBar.Claimant"
+      value="Claim.claimant.DisplayName"
+      visible="Claim.claimant != null"/>
+    <InfoBarElement
+      id="LossDate"
+      label="displaykey.Web.ClaimInfoBar.LossDate"
+      value="gw.api.util.StringUtil.formatDate( Claim.LossDate, &quot;short&quot; ) "/>
+    <InfoBarElement
+      id="Status"
+      label="displaykey.Web.ClaimInfoBar.Status"
+      value="displaykey.Web.ClaimInfoBar.Claim.Suspended"
+      visible="Claim.checkDisconnectedFeatures()"/>
+    <!-- 05/20/2008 - zthomas - Defect 1131, Display Suspended in place of claim state if claim has disconnected features. -->
+    <InfoBarElement
+      id="State"
+      label="displaykey.Web.ClaimInfoBar.Status"
+      value="Claim.State"
+      visible="!Claim.checkDisconnectedFeatures()"/>
+    <InfoBarElement
+      id="Adjuster"
+      label="displaykey.Web.ClaimInfoBar.Adjuster"
+      value="Claim.AssigneeAndGroupDisplayString"
+      visible="Claim.State != &quot;draft&quot;"/>
+    <Code><![CDATA[function getClaimPolicyTypeIcon(c : Claim) : String {
+        var result : String = null
+
+        if (c.Policy.PolicyType == PolicyType.TC_AUTO_PER) {
+          result = "infobar_personalAuto.gif"
+        } else if (c.Policy.PolicyType == PolicyType.TC_AUTO_COMM) {
+          result = "infobar_commercialAuto.gif"
+        } else if (c.Policy.PolicyType == PolicyType.TC_COMP) {
+          result = "infobar_wc.gif"
+        } else if (c.Policy.PolicyType == PolicyType.TC_GEN_LIABILITY) {
+          result = "infobar_gl.gif"
+        } else if (c.Policy.PolicyType == PolicyType.TC_PROP_COMM) {
+          result = "infobar_cp.gif"
+        } else if (c.Policy.PolicyType == PolicyType.TC_HOMEOWNERS) {
+          result = "infobar_homeowners.gif"
+        }
+        
+        return result;
+      }
+      function getcheckflag(c:Claim):boolean{
+         if(c.FlagClaimIndicator!=null){
+              c.FlagClaimIndicator.update();
+         }
+        return Claim.FlagClaimIndicator.IsOn
+      }]]></Code>
+  </InfoBar>
+</PCF>

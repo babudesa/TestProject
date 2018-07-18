@@ -1,0 +1,27 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVXX1190 - Open Recovery Estimates Warning")
+internal class TVXX1190OpenRecoveryEstimatesWarning {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/((transactionSet as CheckSet).PrimaryCheck.New or 
+(transactionSet as CheckSet).PrimaryCheck.Changed)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+ var check = (transactionSet as CheckSet).PrimaryCheck.Payments;
+   for(pay in check)
+ {
+   if(pay.PaymentType=="final"and pay.Exposure.getFeatureFinancialReserveRecoveryStatus()=="Open")
+   {
+          transactionSet.reject(null, null, "newloss", "This Feature will not be closed with open Recovery Estimates.")
+     
+   }
+ }
+}//end try
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <InputSet
+    id="AddressAutofillableDVInputSet">
+    <Require
+      name="address"
+      type="AddressAutofillable"/>
+    <Require
+      name="fullDisplay"
+      type="boolean"/>
+    <!-- display all fields if true, only a subset if false -->
+    <Require
+      name="requireBasicFields"
+      type="boolean"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;city&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="cityhandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;county&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="countyhandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <Variable
+      initialValue="new contact.AddressAutocompleteHandler(&quot;postalcode&quot;,&quot;Country,City,County,State,PostalCode&quot;,true)"
+      name="pchandler"
+      type="contact.AddressAutocompleteHandler"/>
+    <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(address, &quot;City&quot;)"
+      autoComplete="cityhandler"
+      autoCompleteArgIds="DVCountry,DVCity,DVCounty,DVState,DVPostalCode"
+      editable="true"
+      id="DVCity"
+      label="displaykey.Web.AddressDetail.City"
+      required="requireBasicFields"
+      tooltip="address.AddressDisplay.getCityTooltip( address )"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;City&quot;)"
+      value="address.City">
+      <Reflect
+        triggerIds="DVCity,DVPostalCode"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country,&quot;City&quot;,new String[]{&quot;City&quot;,&quot;PostalCode&quot;},new Object[] {VALUE1,VALUE2}, true)"/>
+    </AddressAutoFillInput>
+    <TextInput
+      autoComplete="countyhandler"
+      autoCompleteArgIds="DVCountry,DVCity,DVCounty,DVState,DVPostalCode"
+      editable="true"
+      id="DVCounty"
+      label="displaykey.Web.AddressDetail.County"
+      value="address.County"
+      visible="fullDisplay &amp;&amp; address.AddressDisplay.isCountyVisible( address )">
+      <Reflect
+        triggerIds="DVCounty,DVPostalCode,DVCity,DVState"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country,&quot;county&quot;,new String[]{&quot;County&quot;,&quot;PostalCode&quot;,&quot;City&quot;,&quot;State&quot;},new Object[] {VALUE1,VALUE2,VALUE3,VALUE4})"/>
+    </TextInput>
+    <TypeKeyInput
+      editable="true"
+      id="DVState"
+      label="address.AddressDisplay.getStateLabel( address)"
+      required="requireBasicFields"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;State&quot;)"
+      value="address.State"
+      valueWidth="228">
+      <Reflect
+        triggerIds="DVState,DVPostalCode"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country,&quot;state&quot;,new String[]{&quot;State&quot;,&quot;PostalCode&quot;},new Object[] {VALUE1,VALUE2})"/>
+    </TypeKeyInput>
+    <AddressAutoFillInput
+      action="gw.api.contact.AddressAutocompleteUtil.autofillAddress(address, &quot;PostalCode&quot;)"
+      autoComplete="pchandler"
+      autoCompleteArgIds="DVCountry,DVCity,DVCounty,DVState,DVPostalCode"
+      editable="true"
+      id="DVPostalCode"
+      inputMask="gw.api.contact.AddressAutocompleteUtil.getInputMask(address, &quot;PostalCode&quot;)"
+      label="address.AddressDisplay.getPostalCodeLabel(address)"
+      required="requireBasicFields"
+      tooltip="address.AddressDisplay.getPostalCodeTooltip( address )"
+      validationExpression="gw.api.contact.AddressAutocompleteUtil.validate(address, &quot;PostalCode&quot;)"
+      value="address.PostalCode">
+      <Reflect
+        triggerIds="DVPostalCode,DVCity,DVState"
+        value="gw.api.contact.AddressAutocompleteUtil.getAutofillValue(address.Country,&quot;PostalCode&quot;,new String[]{&quot;PostalCode&quot;,&quot;City&quot;,&quot;State&quot;},new Object[] {VALUE1,VALUE2,VALUE3})"/>
+    </AddressAutoFillInput>
+    <TypeKeyInput
+      editable="true"
+      id="DVCountry"
+      label="displaykey.Web.AddressDetail.Country"
+      postOnChange="true"
+      value="address.Country"
+      valueWidth="228"
+      visible="fullDisplay"/>
+  </InputSet>
+</PCF>

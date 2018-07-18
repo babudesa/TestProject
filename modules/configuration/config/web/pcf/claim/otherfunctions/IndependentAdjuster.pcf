@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="if(isNew()){ ClaimSummary.go(claim) }"
+    canEdit="true"
+    id="IndependentAdjuster"
+    parent="Claim(claim)"
+    startEditing="loadFields()"
+    startInEditMode="isNew()"
+    title="displaykey.NVV.NewIndepAdjuster.General.Property.Title(claim)">
+    <LocationEntryPoint
+      signature="IndependentAdjuster(claim : Claim, adjusterType : String)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="adjusterType"
+      type="String"/>
+    <Variable
+      initialValue="claim.loadIndepAdjuster(adjusterType)"
+      name="ia"
+      type="IndepAdjusterExt"/>
+    <Variable
+      initialValue="updateDocument()"
+      name="IADocument"
+      recalculateOnRefresh="true"
+      type="String"/>
+    <Screen
+      id="IndependentAdjusterScreen">
+      <Toolbar
+        reflectOnBottom="true"
+        visible="!ia.SentToECF">
+        <EditButtons/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="sendToECF()"
+          confirmMessage="displaykey.NVV.NewIndepAdjuster.General.Property.Confirmation"
+          id="sendToECF"
+          label="displaykey.NVV.NewIndepAdjuster.General.Property.Submit"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="deleteDocument()"
+          confirmMessage="displaykey.NVV.NewIndepAdjuster.General.Property.DeleteConfirm"
+          id="deleteIA"
+          label="displaykey.NVV.NewIndepAdjuster.General.Property.Delete"
+          visible="!isNew()"/>
+      </Toolbar>
+      <PanelRef
+        def="IndependentAdjusterDV(claim,ia)"
+        hideIfReadOnly="true"
+        mode="claim.LossType"/>
+      <CardViewPanel
+        hideIfEditable="true">
+        <Card
+          id="IAReport"
+          title="&quot;Report&quot;">
+          <TemplatePanel><![CDATA[<% printContent( IADocument, false ) %>
+          ]]></TemplatePanel>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+    <Code><![CDATA[function isNew() : Boolean {
+    return (ia.HandlingInstructions == null)
+}
+
+function loadFields()
+{
+    if(isNew())
+    {
+      ia.AdjusterName = adjusterType
+      ia.AdditionalDescription = claim.Description
+    }
+}
+
+function updateDocument() : String
+{
+  if(!CurrentLocation.InEditMode){
+    return claim.getAsAdjusterString(adjusterType, true)
+  }
+  return null
+}
+
+function deleteDocument()
+{
+    if(!isNew()) {
+        // Cancel changes to prevent validation errors
+     if(CurrentLocation.InEditMode){
+        CurrentLocation.cancel();
+     }
+     CurrentLocation.startEditing();
+     claim.deleteIndepAdjuster(ia);
+     
+     CurrentLocation.commit()
+ }
+ else {
+    // This area of code should be inaccessible because the delete
+    //  button is not displayed for new IA documents, but 
+    //  I have included it as a precaution.
+    CurrentLocation.cancel();
+ }
+ 
+    ClaimSummary.go(Claim)
+}
+
+function sendToECF()
+{
+    if(!CurrentLocation.InEditMode){
+        CurrentLocation.startEditing()
+    }
+
+    ia.ReadyToSend = true
+    CurrentLocation.commit()
+}]]></Code>
+  </Page>
+</PCF>

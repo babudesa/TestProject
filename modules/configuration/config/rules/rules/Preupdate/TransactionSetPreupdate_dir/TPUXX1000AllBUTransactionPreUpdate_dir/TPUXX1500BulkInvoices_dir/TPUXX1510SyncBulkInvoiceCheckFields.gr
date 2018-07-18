@@ -1,0 +1,76 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1500BulkInvoices_dir
+
+@gw.rules.RuleName("TPUXX1510 - Sync Bulk Invoice Check Fields")
+internal class TPUXX1510SyncBulkInvoiceCheckFields {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*Bulk Invoices do not fully sync with some of our check fields once the bulk invoice goes to
+    issued. Because of this, some bulk invoice checks cannot be searched from the Search > Checks
+    screen. This rule updates fields on the associated check after it is created on each claim,
+    and will add specified roles to the Payee.
+  Sprint/Maintenance Release: AgriBusiness Sprint 14
+  Author: Stephanie Przygocki
+  Date: June 23, 2008
+  Updated: sprzygocki 1/25/10 - added escheat fields to the bulk invoice rules.
+*/
+transactionSet.Subtype=="CheckSet" and (transactionSet as CheckSet).PrimaryCheck.Bulked/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  var bulkInvoice = check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice
+  check.IssueDate = bulkInvoice.IssueDate
+  check.PaymentMethod = bulkInvoice.PaymentMethod
+  check.ex_ManualPaymentMethod = bulkInvoice.ManualPaymentMethodExt
+  check.ex_DraftRegion = bulkInvoice.DraftRegionExt
+  check.PrefixExt = bulkInvoice.PrefixExt
+  check.ServicePdStart = bulkInvoice.DateOfServiceFromExt
+  check.ServicePdEnd = bulkInvoice.DateOfServiceToExt
+  check.CheckBatching = bulkInvoice.CheckBatchingExt
+  check.DeliveryMethod = bulkInvoice.DeliveryMethod
+  check.BankAccount = bulkInvoice.BankAccountExt
+  check.InvoiceNumber = bulkInvoice.InvoiceNumber
+  check.MailTo = bulkInvoice.MailTo
+  check.PayTo = bulkInvoice.PayTo
+  check.PayToLine1Ext=bulkInvoice.PayToLine1Ext
+  check.PayToLine2Ext=bulkInvoice.PayToLine2Ext
+  check.PayToLine3Ext=bulkInvoice.PayToLine3Ext
+  check.PayToLine4Ext=bulkInvoice.PayToLine4Ext
+  check.PayToLine5Ext=bulkInvoice.PayToLine5Ext
+  check.PayToLine6Ext=bulkInvoice.PayToLine6Ext
+  check.ex_MailToAddress = bulkInvoice.MailToAddressExt
+  check.ex_PayToAddress = bulkInvoice.PayToAddressExt
+  check.AttentionMailToExt = bulkInvoice.AttentionMailToExt
+  check.IssuedPayToAddressExt = bulkInvoice.PayToAddressExt.DisplayName
+  check.Payments[0].LineItems[0].LineCategory = check.BulkInvoiceItemInfo.BulkInvoiceItem.LineCategoryExt
+  check.Payments[0].LineItems[0].GrossAmountExt = check.BulkInvoiceItemInfo.BulkInvoiceItem.Amount
+  check.ex_CheckVoidStopReasonType=bulkInvoice.CheckVoidStopReasonTypeExt
+  var eQuery = gw.api.database.Query.make(Exposure)
+    eQuery.compare("ID", Equals, check.BulkInvoiceItemInfo.BulkInvoiceItem.Exposure.ID)
+   // eQuery.compare(column, op, value)
+    eQuery.join("Claim").compare("ClaimNumber", Equals, check.BulkInvoiceItemInfo.Claim.ClaimNumber)
+  var result = eQuery.select()
+  if(!result.Empty){
+    check.Claimant = result.FirstResult.Claimant
+  }
+
+  check.Memo = bulkInvoice.Memo
+  //set escheatment for bulk invoice checks - sprzygocki 1/25/10
+  check.EscheatStatusExt = bulkInvoice.EscheatStatusExt
+  check.DateEscheatedExt = bulkInvoice.DateEscheatedExt
+  //check for manual bulk invoice
+  if(check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.BulkInvoiceTypeExt=="lit_advisor" || 
+     check.BulkInvoiceItemInfo.BulkInvoiceItem.BulkInvoice.BulkInvoiceTypeExt=="other"){
+     //add the Payee to the claim and the new role
+      if(bulkInvoice.PayeeAdditionalRoleExt!=null){
+        check.Claim.addRole( bulkInvoice.PayeeAdditionalRoleExt, check.Payees[0].ClaimContact.Contact )
+        }
+    }//end if
+  check.setCheckHistoryInfo()
+
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

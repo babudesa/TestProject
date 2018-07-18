@@ -1,0 +1,237 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="perm.System.viewEDWPushTool"
+    id="EDWPushHolderTableToolConvClm"
+    title="&quot;EDW Push Tool For Conversion Claims&quot;">
+    <Screen>
+      <CardViewPanel>
+        <Card
+          id="History"
+          title="&quot;History&quot;">
+          <ListDetailPanel
+            selectionName="selectedHistory"
+            selectionType="EDWPushCovClaimHolHistory">
+            <Variable
+              initialValue="gw.api.database.Query.make(EDWPushCovClaimHolHistory).select().orderByDescending(\ r -&gt; r.CreateTime) as gw.api.database.IQueryBeanResult&lt;EDWPushCovClaimHolHistory&gt;"
+              name="histories"
+              type="gw.api.database.IQueryBeanResult&lt;EDWPushCovClaimHolHistory&gt;"/>
+            <PanelRef>
+              <Toolbar/>
+              <ListViewPanel>
+                <RowIterator
+                  editable="false"
+                  elementName="history"
+                  value="histories">
+                  <Row>
+                    <DateCell
+                      align="center"
+                      id="ExecutedDate"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.DateExecuted"
+                      value="history.CreateTime"/>
+                    <Cell
+                      align="center"
+                      id="ExecutedBy"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.ExecutedBy"
+                      value="history.CreateUser"/>
+                    <TextAreaCell
+                      align="center"
+                      id="ClaimNumber"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.ClaimNumbers"
+                      maxChars="200"
+                      numCols="80"
+                      value="history.ClaimNumbers"
+                      width="80"/>
+                    <Cell
+                      align="left"
+                      id="Type"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.Type"
+                      value="history.Subtype"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </PanelRef>
+            <CardViewPanel>
+              <Card
+                id="HistoryDetail"
+                title="&quot;Details&quot;">
+                <DetailViewPanel>
+                  <InputColumn>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="comments"
+                      label="&quot;Comments&quot;"
+                      labelAbove="true"
+                      numCols="100"
+                      numRows="10"
+                      value="selectedHistory.Comments"/>
+                    <TextAreaInput
+                      boldLabel="true"
+                      id="claimnumbers"
+                      label="&quot;Claim Numbers&quot;"
+                      labelAbove="true"
+                      numCols="200"
+                      numRows="10"
+                      value="selectedHistory.ClaimNumbers"/>
+                  </InputColumn>
+                </DetailViewPanel>
+              </Card>
+            </CardViewPanel>
+          </ListDetailPanel>
+        </Card>
+        <Card
+          id="ClaimsHeld"
+          title="&quot;Claims Held&quot;">
+          <ListDetailPanel
+            selectionName="selectedItem"
+            selectionType="gaic.ui.tools.edwpush.HolderConvClmItem">
+            <Variable
+              initialValue="20"
+              name="limit"
+              type="int"/>
+            <Variable
+              initialValue="gaic.ui.tools.edwpush.EDWPushTableToolForConvClaims.getHolderItemsSimple(limit)"
+              name="items"
+              type="List&lt;gaic.ui.tools.edwpush.HolderConvClmItem&gt;"/>
+            <PanelRef>
+              <Toolbar>
+                <ToolbarInput
+                  editable="true"
+                  formatType="exactNumber"
+                  id="LimitInput"
+                  label="&quot;Max number of rows&quot;"
+                  requestValidationExpression="(VALUE != null &amp;&amp; VALUE typeis int &amp;&amp; VALUE &gt; 0)?null:&quot;Rows must be a non-negative, non-zero integer&quot;"
+                  value="limit"/>
+                <ToolbarButton
+                  action="items = gaic.ui.tools.edwpush.EDWPushTableToolForConvClaims.getHolderItemsSimple(limit)"
+                  id="RefreshButton"
+                  label="&quot;Refresh&quot;"/>
+                <ToolbarDivider/>
+                <CheckedValuesToolbarButton
+                  allCheckedRowsAction="gaic.ui.tools.edwpush.EDWPushTableToolForConvClaims.removeHolderItemSimple(CheckedValues, web.WebUtil.getActionEventParameter());items = gaic.ui.tools.edwpush.EDWPushTableToolForConvClaims.getHolderItemsSimple(limit)"
+                  available="selectedItem != null &amp;&amp; perm.System.runEDWPushTool"
+                  confirmMessage="&quot;Are you sure you wish to remove the selected item?&quot;"
+                  id="RemoveButton"
+                  iterator="ClaimHolderItemsLV"
+                  label="&quot;Remove Selected Holder&quot;"
+                  promptQuestion="&quot;Why are you attempting to delete this item?&quot;"/>
+              </Toolbar>
+              <ListViewPanel
+                id="ClaimHolderItemsLV">
+                <RowIterator
+                  editable="false"
+                  elementName="item"
+                  hasCheckBoxes="true"
+                  id="HolderItemsIterator"
+                  pageSize="100"
+                  value="items">
+                  <Row>
+                    <Cell
+                      align="center"
+                      id="ClaimNumber"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.ClaimNumber"
+                      value="item.ClaimNumber"/>
+                    <Cell
+                      align="center"
+                      id="TransactionName"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.TransactionName"
+                      value="item.TransactionName"/>
+                    <Cell
+                      align="center"
+                      id="LoadCommandID"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.LoadCommandID"
+                      value="item.LoadCommandID"/>
+                    <Cell
+                      align="center"
+                      id="processed"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.Processed"
+                      value="item.Processed"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </PanelRef>
+            <CardViewPanel>
+              <Card
+                id="HolderItemDetails"
+                title="&quot;Details&quot;">
+                <DetailViewPanel/>
+              </Card>
+            </CardViewPanel>
+          </ListDetailPanel>
+        </Card>
+        <Card
+          id="ClamsHeldWithLoadCommandID"
+          title="&quot;Claims Held with Load Command ID&quot;">
+          <ListDetailPanel
+            selectionName="selectedItem"
+            selectionType="gaic.ui.tools.edwpush.HolderConvClmItemLID">
+            <Variable
+              initialValue="20"
+              name="limit"
+              type="int"/>
+            <Variable
+              initialValue="gaic.ui.tools.edwpush.EDWPushTableToolForConvClmLID.getHolderItemsSimple(limit)"
+              name="items_LID"
+              type="List&lt;gaic.ui.tools.edwpush.HolderConvClmItemLID&gt;"/>
+            <PanelRef>
+              <Toolbar>
+                <ToolbarInput
+                  editable="true"
+                  formatType="exactNumber"
+                  id="LimitInput"
+                  label="&quot;Max number of rows&quot;"
+                  requestValidationExpression="(VALUE != null &amp;&amp; VALUE typeis int &amp;&amp; VALUE &gt; 0)?null:&quot;Rows must be a non-negative, non-zero integer&quot;"
+                  value="limit"/>
+                <ToolbarButton
+                  action="items_LID = gaic.ui.tools.edwpush.EDWPushTableToolForConvClmLID.getHolderItemsSimple(limit)"
+                  id="RefreshButton"
+                  label="&quot;Refresh&quot;"/>
+                <ToolbarDivider/>
+                <CheckedValuesToolbarButton
+                  allCheckedRowsAction="gaic.ui.tools.edwpush.EDWPushTableToolForConvClmLID.removeHolderItemSimple(CheckedValues, web.WebUtil.getActionEventParameter());items_LID= gaic.ui.tools.edwpush.EDWPushTableToolForConvClmLID.getHolderItemsSimple(limit)"
+                  available="selectedItem != null &amp;&amp; perm.System.runEDWPushTool"
+                  confirmMessage="&quot;Are you sure you wish to remove the selected item?&quot;"
+                  id="RemoveButton"
+                  iterator="LoadCommandHolderItemsLV"
+                  label="&quot;Remove Selected Holder&quot;"
+                  promptQuestion="&quot;Why are you attempting to delete this item?&quot;"/>
+              </Toolbar>
+              <ListViewPanel
+                id="LoadCommandHolderItemsLV">
+                <RowIterator
+                  editable="false"
+                  elementName="item"
+                  hasCheckBoxes="true"
+                  id="HolderItemsIteratorLID"
+                  pageSize="100"
+                  value="items_LID">
+                  <Row>
+                    <Cell
+                      align="center"
+                      id="LoadCommandID"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.LoadCommandID"
+                      value="item.LoadCommandID"/>
+                    <Cell
+                      align="center"
+                      id="processed"
+                      label="displaykey.EDW.EDWPushTool.CoversionClaims.NoOfClaims"
+                      value="item.NoOfClaims"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </PanelRef>
+            <CardViewPanel>
+              <Card
+                id="LoadCommandHolderItemDetails"
+                title="&quot;Details&quot;">
+                <DetailViewPanel/>
+              </Card>
+            </CardViewPanel>
+          </ListDetailPanel>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+  </Page>
+</PCF>

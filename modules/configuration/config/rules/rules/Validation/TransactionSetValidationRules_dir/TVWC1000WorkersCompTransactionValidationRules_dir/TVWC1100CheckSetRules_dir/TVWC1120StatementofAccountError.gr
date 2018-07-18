@@ -1,0 +1,23 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVWC1000WorkersCompTransactionValidationRules_dir.TVWC1100CheckSetRules_dir
+
+@gw.rules.RuleName("TVWC1120 - Statement of Account Error")
+internal class TVWC1120StatementofAccountError {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.New/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+if ((transactionSet as CheckSet).Checks.first().Memo != null){  
+  if ((transactionSet as CheckSet).Checks.first().Memo.contains("MM/DD/YY") && (transactionSet as CheckSet).Checks.first().isRecurringCheck){
+    (transactionSet as CheckSet).Checks.first().ServicePdEnd = (transactionSet as CheckSet).Checks.first().recurringEndDate;
+    (transactionSet as CheckSet).Checks.first().Memo = (transactionSet as CheckSet).Checks.first().getInitialRecurringMemo()
+  } if ((transactionSet as CheckSet).Checks.first().Memo.contains("MM/DD/YY")){
+    transactionSet.reject("loadsave", displaykey.Validation.Financials.StatementofAccount, null, null)
+  }
+}
+}catch(e){
+ util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

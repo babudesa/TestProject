@@ -1,0 +1,417 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    id="NewClaimPolicyGeneralDV"
+    mode="WORKCOMP|PIMINMARINEWC|PIMINMARINEEL|SPECIALTYESWC|SPECIALTYESEL|ALTMARKETSWC|ALTMARKETSEL|STRATEGICCOMPWC|STRATEGICCOMPEL|TRUCKINGWC|TRUCKINGEL|AGRIWC|AGRIEL|OMWC|OMEL|ECUWC|ECUEL">
+    <Require
+      name="Policy"
+      type="Policy"/>
+    <Variable
+      initialValue="Policy.ex_Agency"
+      name="Agency"
+      type="ex_Agency"/>
+    <InputColumn>
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Basics"/>
+      <Input
+        editable="!Policy.Verified"
+        id="PolicyNumber"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyNumber"
+        required="true"
+        validationExpression="Policy.validatePolicyNumber()"
+        value="Policy.PolicyNumber"/>
+      <Input
+        editable="!Policy.Verified"
+        id="PolicyMod"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyMod"
+        required="true"
+        value="Policy.PolicySuffix"/>
+      <!-- sdalal Equine Sprint 2 10/25/06 - Policy Version -->
+      <Input
+        editable="!Policy.Verified"
+        id="PolicyVersion"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyVersion"
+        required="true"
+        value="Policy.ex_PolicyVersion"/>
+      <Input
+        id="Type"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Type"
+        required="true"
+        value="Policy.PolicyType"/>
+      <Input
+        editable="!Policy.Verified"
+        id="EffectiveDate"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.EffectiveDate"
+        onChange="Policy.covDatesWarning()"
+        postOnChange="true"
+        required="true"
+        validationExpression="Policy.validatePolDates()"
+        value="Policy.EffectiveDate"/>
+      <Input
+        editable="!Policy.Verified"
+        id="ExpirationDate"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ExpirationDate"
+        onChange="Policy.covDatesWarning()"
+        postOnChange="true"
+        required="true"
+        validationExpression="Policy.validatePolDates()"
+        value="Policy.ExpirationDate"/>
+      <Input
+        editable="!Policy.Verified"
+        id="CancellationDate"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.CancellationDate"
+        value="Policy.CancellationDate"/>
+      <!-- sdalal Equine Sprint 3 11/29/06 - added Policy Reinstatement and commented Org Effective -->
+      <Input
+        editable="!Policy.Verified"
+        id="ReinstatementDate"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ReinstatementDate"
+        value="Policy.ex_ReinstatementDate"/>
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="OrigEffectiveDate"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.OrigEffectiveDate"
+        value="Policy.OrigEffectiveDate"/> -->
+      <Input
+        editable="!Policy.Verified"
+        id="Status"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Status"
+        value="Policy.Status"/>
+      <TypeKeyInput
+        editable="!Policy.Verified"
+        id="policystate_typekeyinput"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.State"
+        value="Policy.PolicyStateExt"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Insured"/>
+      <!-- <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="Insured_Name"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Insured.Name"
+        required="true"
+        validationExpression="(Policy.Insured.PrimaryAddress == null) ? null : (Policy.Insured.PrimaryAddress.AddressLine1 == null || Policy.Insured.PrimaryAddress.City == null || Policy.Insured.PrimaryAddress.State == null || Policy.Insured.PrimaryAddress.PostalCode == null) ? &quot; Insured Address, when entered, must contain Line1, City , State and Zip.&quot; : null"
+        value="Policy.Insured"
+        valueRange="Policy.Claim.relatedContacts"/> -->
+      <!-- New insured menu items below added sprint 7 Eric Rawe  Defect 1370 8/31/09 erawe:changed valueRange on Insured to limit display to only Insured -->
+      <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="Insured_Name"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Insured.Name"
+        newContactMenu="ClaimNewInsuredPickerMenuItemSet"
+        required="true"
+        showSearchInMenu="false"
+        validationExpression="(Policy.Insured.PrimaryAddress == null) ? null : (Policy.Insured.PrimaryAddress.AddressLine1 == null || Policy.Insured.PrimaryAddress.City == null || (Policy.Insured.PrimaryAddress.State == null and (Policy.Insured.PrimaryAddress.Country==&quot;US&quot; || Policy.Insured.PrimaryAddress.Country==&quot;CA&quot;)) || Policy.Insured.PrimaryAddress.PostalCode == null) ? &quot; Insured Address, when entered, must contain Line1, City , State and Zip.&quot; : null"
+        value="Policy.Insured"
+        valueRange="Policy.policyInsuredList()"/>
+      <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="DBA"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.DBA"
+        newContactMenu="ClaimNewCompanyOnlyPickerMenuItemSet"
+        showSearchInMenu="false"
+        value="Policy.DoingBusinessAs"
+        valueRange="Policy.policyDoingBusinessAsList()"
+        visible="Policy.CommercialPolicy"/>
+      <ListViewInput
+        def="EditableMoreNamedInsuredLV(Policy.getMNICoveredParties(), Policy.Claim, Policy, &quot;coveredparty&quot;)"
+        editable="!Policy.Verified"
+        id="MoreNamedInsured"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.MoreNamedInsureds"
+        validationExpression="Policy.checkCoveredPartyConstraints().formatUserMessage()"
+        visible="Policy.Verified">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <Input
+        id="Insured_Address"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Insured.Address"
+        value="Policy.Insured.getPrimaryAddressDisplayValue()">
+        <Reflect
+          triggerIds="Insured_Name"
+          value="VALUE.getPrimaryAddressDisplayValue()"/>
+      </Input>
+      <Input
+        editable="!Policy.Verified &amp;&amp; Policy.insured != null"
+        id="Insured_LegalCategory"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Insured.LegalCategory"
+        value="Policy.insured.LegalCategoryExt"/>
+      <Input
+        editable="!Policy.Verified"
+        id="Account"
+        label="displaykey.GAIC.NVV.Policy.SubView.PolicyGeneral.Policy.CustomerCode"
+        required="false"
+        value="Policy.Account"/>
+      <!-- <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="PolicyHolder"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.PolicyHolder"
+        value="Policy.PolicyHolder"
+        valueRange="Policy.Claim.relatedContacts"
+        visible="Policy.CommercialPolicy"/> -->
+      <!-- Will only display for Commercial policies -->
+      <InputDivider/>
+    </InputColumn>
+    <!-- <ListViewInput
+      boldLabel="true"
+      def="EditableAggregateLimitsLV(Policy)"
+      editable="!Policy.Verified"
+      id="AggregateLimits"
+      label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.AggregateLimits">
+      <Toolbar>
+        <IteratorButtons/>
+      </Toolbar>
+    </ListViewInput> -->
+    <InputColumn>
+      <ListViewInput
+        boldLabel="true"
+        def="EditableAdditionalInsuredLV(Policy.getNonMNICoveredParties(), Policy.Claim, Policy, &quot;coveredparty&quot;)"
+        id="AdditionalInsured"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.AdditionalInsured"
+        validationExpression="Policy.checkCoveredPartyConstraints().formatUserMessage()"
+        visible="Policy.Verified">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- <InputDivider/> -->
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="EditableExcludedPartiesLV(Policy.getClaimContactRolesByRole(&quot;excludedparty&quot;), Policy, &quot;excludedparty&quot;)"
+        editable="!Policy.Verified"
+        id="ExcludedParties"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ExcludedParties"
+        validationExpression="Policy.checkExcludedPartyConstraints().formatUserMessage()">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput> -->
+      <InputDivider
+        visible="Policy.Verified"/>
+      <!-- <ListViewInput
+        boldLabel="true"
+        def="EditableBoatOperatorsLV(Policy.getClaimContactRolesByRole(&quot;BoatOperator&quot;), Policy.Claim, Policy, &quot;BoatOperator&quot;)"
+        editable="!Policy.Verified"
+        id="BoatOperator"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.BoatOperators">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput> -->
+      <!-- <InputDivider/> -->
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent"/>
+      <!-- Sprint 12 Agri 3/6/08 ER Added onChange to ProducerCode to retrieve data from integration with PRM -->
+      <Input
+        editable="!Policy.Verified"
+        id="ProducerCode"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ProducerCode"
+        onChange="Policy.ex_Agency=util.gaic.prm.PRMPluginFunctions.getProducerFromPRM(Policy.ProducerCode); Policy.updateAgencyRoles(Agency); Agency = Policy.ex_Agency"
+        postOnChange="true"
+        required="true"
+        validationExpression="Policy.ProducerCode == null ? null : !Policy.ProducerCode.matches(&quot;\\d{6}&quot;) ? &quot;Must be 6 digits&quot; : null"
+        value="Policy.ProducerCode"/>
+      <!-- Sprint 12 Agri ER:  With PRM integration now in use for Agency Name we will not show the picker -->
+      <ClaimContactInput
+        claim="Policy.Claim"
+        id="Agent_Name"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.Name"
+        required="true"
+        showSearchInMenu="false"
+        value="Policy.ex_Agency"
+        valueRange="Policy.Claim.getAgencies()"/>
+      <!-- <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="Agent_Name"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.Name"
+        newContactMenu="ClaimNewAgencyOnlyPickerMenuItemSet"
+        value="Policy.ex_Agency"
+        valueRange="Policy.Claim.Relatedex_AgencyArray"/> -->
+      <Input
+        id="Agent_AAP"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.AAPAuthority"
+        value="Policy.ex_Agency.ex_AAPAuthority"/>
+      <Input
+        formatType="exactNumber"
+        id="Agent_AAPLimit"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.AAPLimit"
+        outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+        validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(Policy.ex_Agency.ex_AAPAuthorityLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+        value="Policy.ex_Agency.ex_AAPAuthorityLimit"/>
+      <Input
+        id="Agent_LossCheck"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.LossCheckCopy"
+        value="Policy.ex_Agency.ex_LossCheckCopy"/>
+      <Input
+        id="Agent_ExpenseCheck"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Agent.ExpenseCheckCopy"
+        value="Policy.ex_Agency.ex_ExpenseCheckCopy"/>
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="ProducerCode"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.ProducerCode"
+        validationExpression="Policy.ProducerCode == null ? null : !Policy.ProducerCode.matches(&quot;\\d{10}&quot;) ? &quot;Must be 10 digits&quot; : null"
+        value="Policy.ProducerCode"/> -->
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting"/>
+      <ClaimContactInput
+        claim="Policy.Claim"
+        editable="!Policy.Verified"
+        id="Underwriter_Name"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriter.Name"
+        newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+        required="false"
+        showSearchInMenu="false"
+        value="Policy.Underwriter"
+        valueRange="Policy.Claim.RelatedPersonArray"
+        visible="true"/>
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="Underwriting_Company"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.Company"
+        value="Policy.UnderwritingCo"/> -->
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="Underwriting_Group"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.Group"
+        value="Policy.UnderwritingGroup"/> -->
+      <!-- sdalal Equine Sprint 3
+      
+       Sprint 12 Agri ER 3/27/08: added profit center name (AgencyProfitCenterNameExt) -->
+      <Input
+        id="ProfitCenterName"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.ProfitCenterName"
+        value="Policy.ex_Agency.AgencyProfitCenterNameExt"/>
+      <Input
+        id="ProfitCenter"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.ProfitCenter"
+        value="Policy.ex_Agency.ex_AgencyProfitCenter"/>
+      <!-- <Input
+        id="SBU"
+        label="displaykey.GAIC.NVV.Policy.SubView.PolicyGeneral.Policy.General.SummaryBU"
+        value="Policy.SummaryBusinessUnitExt"/> -->
+      <!-- Added SBU agri sprint 9 jlmiller, for now it is not editable. will be pre-filled later.  Removed 4/7/08 sprzygocki Sprint 12 -->
+      <Input
+        editable="!Policy.Verified"
+        id="IssuingCompany"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Underwriting.IssuingCompany"
+        value="Policy.IssuingCompanyExt"/>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Other"/>
+      <Input
+        id="Other_VerifiedPolicy"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Other.VerifiedPolicy"
+        value="Policy.Verified"/>
+      <!-- Unverified reason added by Otteson on July 27, 2007 -->
+      <TypeKeyInput
+        editable="!Policy.Verified and Policy.canEditUnverifiedPolRsn()"
+        filter="Policy.filterUnverifiedPolRsn(VALUE)"
+        id="Unverified_Reason"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.UnverifiedReason"
+        required="true"
+        value="Policy.UnverifiedRsnExt"
+        visible="!Policy.Verified"/>
+      <!-- NAICS code, currency added by Otteson on July 25, 2007 -->
+      <TypeKeyInput
+        editable="!Policy.Verified"
+        id="NAICSCode"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.NAICSCode"
+        required="false"
+        value="Policy.NAICSCodeExt"
+        valueWidth="300"/>
+      <TypeKeyInput
+        editable="!Policy.Verified"
+        id="CurrencyType"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.CurrencyType"
+        required="true"
+        showNoneSelected="false"
+        value="Policy.CurrencyTypeExt"/>
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="Other_ForeignCoverage"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Other.ForeignCoverage"
+        value="Policy.ForeignCoverage"/> -->
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="Other_OtherFinancialInterests"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Other.OtherFinancialInterests"
+        value="Policy.FinancialInterests"/> -->
+      <!-- <Input
+        editable="!Policy.Verified"
+        id="Other_Notes"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Other.Notes"
+        value="Policy.Notes"/> -->
+      <InputDivider/>
+      <InputSet
+        visible="Policy.Verified">
+        <Label
+          label="displaykey.NVV.Policy.SubView.PolicyGeneralWorkersComp.Policy.WorkersComp"/>
+        <Input
+          editable="!Policy.Verified"
+          id="WorkersComp_States"
+          label="displaykey.NVV.Policy.SubView.PolicyGeneralWorkersComp.Policy.WorkersComp.States"
+          value="Policy.WCStates"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+        <Input
+          editable="!Policy.Verified"
+          id="WorkersComp_OtherStates"
+          label="displaykey.NVV.Policy.SubView.PolicyGeneralWorkersComp.Policy.WorkersComp.OtherStates"
+          value="Policy.WCOtherStates"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"/>
+        <Input
+          editable="!Policy.Verified"
+          id="Policy_WCExcludedStates"
+          label="displaykey.NVV.Policy.SubView.PolicyGeneralWorkersComp.Policy.WorkersComp.ExStates"
+          value="Policy.WCExcludedStatesExt"/>
+      </InputSet>
+    </InputColumn>
+    <!-- <ListViewInput
+      boldLabel="true"
+      def="EditablePolicyReinsuranceLV(Policy)"
+      editable="true"
+      id="Reinsurances"
+      label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurances"
+      labelAbove="true">
+      <Toolbar>
+        <IteratorButtons/>
+      </Toolbar>
+    </ListViewInput> -->
+    <!-- sdalal 11/13 Agri Sprint 8 -->
+    <InputFooterSection>
+      <ListViewInput
+        boldLabel="true"
+        def="PolicyCoveragesLV(Policy)"
+        editable="!Policy.Verified"
+        id="Coverages"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Coverages"
+        labelAbove="true"
+        mode="Policy.Claim.LossType">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <ListViewInput
+        boldLabel="true"
+        def="WorkersCompPolicyLimitsLV(Policy)"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Limits"
+        labelAbove="true"
+        visible="Policy.Verified">
+        <Toolbar
+          visible="!Policy.Verified">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+  </DetailViewPanel>
+</PCF>

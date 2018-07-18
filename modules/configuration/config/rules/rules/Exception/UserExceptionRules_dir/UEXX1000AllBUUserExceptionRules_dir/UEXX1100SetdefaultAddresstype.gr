@@ -1,0 +1,36 @@
+package rules.Exception.UserExceptionRules_dir.UEXX1000AllBUUserExceptionRules_dir
+
+@gw.rules.RuleName("UEXX1100 - Set default Address type")
+internal class UEXX1100SetdefaultAddresstype {
+  static function doCondition(user : entity.User) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(user : entity.User, actions : gw.rules.Action) {
+/*start00rule*/for (ad in user.Contact.AllAddresses)
+     if(ad.AddressType  == null and
+       (ad.AddressLine1 != null or 
+        ad.AddressLine2 != null or 
+        ad.AddressLine3 != null or
+        ad.City != null or
+        ad.State != null or
+        ad.PostalCode !=null))
+       {
+        ad.AddressType ="business"
+       }
+//added this to remove empty addresses from users to meet EDW requirement - Santosh Dalal 05/12/08
+//peer reviewed by Dimitar
+for (ad in user.Contact.AllAddresses)
+     if(ad.AddressType  == null and
+       (ad.AddressLine1 == null or 
+        ad.AddressLine2 == null or 
+        ad.AddressLine3 == null or
+        ad.City == null or
+        ad.State == null or
+        ad.PostalCode ==null))
+       {
+        user.Contact.removeAddress( ad )
+       }
+/*end00rule*/
+  }
+}

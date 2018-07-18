@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_policy.xml -->
+  <ListViewPanel
+    editable="!Policy.Verified"
+    id="EditablePropertyPolicyCoveragesLV">
+    <Require
+      name="Policy"
+      type="Policy"/>
+    <Variable
+      initialValue="Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <RowIterator
+      editable="true"
+      elementName="PolicyCoverage"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="Policy.addCoverage(PolicyCoverage)"
+      toRemove="Policy.removeCoverage(PolicyCoverage)"
+      value="Policy.Coverages">
+      <Row
+        editable="!Policy.Verified">
+        <RangeCell
+          editable="true"
+          id="CoverageType"
+          label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+          onChange="PolicyCoverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(PolicyCoverage)"
+          optionLabel="PolicyCoverage.covTypeDisplayName()"
+          postOnChange="true"
+          required="true"
+          sortOrder="1"
+          value="PolicyCoverage.Type"
+          valueRange="PolicyCoverage.getCoverages()"/>
+        <Cell
+          editable="true"
+          id="RiskState"
+          label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+          onChange="PolicyCoverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(PolicyCoverage)"
+          postOnChange="true"
+          required="false"
+          sortOrder="2"
+          value="PolicyCoverage.State"/>
+        <Cell
+          editable="true"
+          id="CauseofLoss"
+          label="displaykey.GAIC.Policy.PolicyCoverages.Causeofloss"
+          onChange="PolicyCoverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(PolicyCoverage)"
+          postOnChange="true"
+          required="true"
+          value="PolicyCoverage.CauseOfLossExt"
+          visible="Policy.Claim.LossType==LossType.TC_AGRIPROPERTY"/>
+        <Cell
+          id="Subline"
+          label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+          numCols="4"
+          required="false"
+          value="PolicyCoverage.SublineExt"/>
+        <Cell
+          editable="!Policy.Verified"
+          id="ClassCode"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+          numCols="8"
+          sortOrder="3"
+          value="PolicyCoverage.ClassCodeExt"
+          visible="Policy.LossType != LossType.TC_EQUINE"/>
+        <Cell
+          editable="!Policy.Verified"
+          id="ClassDesc"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+          value="PolicyCoverage.ClassCodeDescExt"
+          visible="Policy.LossType != LossType.TC_EQUINE"/>
+        <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="IncidentLimit"
+          label="displaykey.LV.Policy.PolicyCoverages.IncidentLimit"
+          numCols="8"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.IncidentLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.IncidentLimit"/>
+        <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="AggLimit"
+          label="displaykey.GAIC.LV.Policy.EditablePropertyCoverages.AggLimit"
+          numCols="7"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.AggregateLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.AggregateLimitExt"/>
+        <Cell
+          editable="true"
+          id="CovBasis"
+          label="displaykey.GAIC.LV.Policy.PolicyCoverages.CoverageBasis"
+          value="PolicyCoverage.CoverageBasisExt"/>
+        <Cell
+          editable="true"
+          helpText="displaykey.Policy.Helptext.Policy.EffectiveDate"
+          id="EffDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+          onChange="PolicyCoverage.EffectiveDate = ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? PolicyCoverage.effDateWarn() : null"
+          postOnChange="true"
+          sortDirection="descending"
+          sortOrder="4"
+          validationExpression="PolicyCoverage.effDateError() ? displayKey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(PolicyCoverage.Policy.EffectiveDate, PolicyCoverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displayKey.Web.Dates.EffDateAfterExpDate : null)"
+          value="PolicyCoverage.EffectiveDate"/>
+        <Cell
+          editable="true"
+          helpText="displaykey.Policy.Helptext.Policy.ExpDate"
+          id="ExpDate"
+          label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+          onChange="PolicyCoverage.ExpirationDate = ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? PolicyCoverage.expDateWarn() : null"
+          postOnChange="true"
+          validationExpression="PolicyCoverage.expDateError() ? displayKey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(PolicyCoverage.Policy.EffectiveDate, PolicyCoverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(PolicyCoverage.EffectiveDate, PolicyCoverage.ExpirationDate) ? displayKey.Web.Dates.EffDateAfterExpDate : null)"
+          value="PolicyCoverage.ExpirationDate"/>
+        <Cell
+          editable="true"
+          helpText="displaykey.Policy.Helptext.Policy.ExpDate"
+          id="TransEffDate"
+          label="displaykey.GAIC.LV.Policy.EditablePropertyCoverages.TransEffDate"
+          value="PolicyCoverage.TransEffDateExt"
+          visible="Policy.LossType != LossType.TC_EQUINE"/>
+        <Cell
+          editable="true"
+          id="AggDesc"
+          label="displaykey.GAIC.LV.Policy.EditablePropertyCoverages.AggDesc"
+          value="PolicyCoverage.AggregateDescExt"
+          visible="Policy.LossType != LossType.TC_EQUINE"/>
+        <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="Deductible"
+          label="displaykey.LV.Policy.PolicyCoverages.Deductible"
+          numCols="8"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.Deductible) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.Deductible"/>
+        <Cell
+          editable="true"
+          id="DeductBasis"
+          label="displaykey.LV.Policy.Coverages.DeductLimitBasis"
+          value="PolicyCoverage.DeductLimitBasisExt"/>
+        <Cell
+          editable="true"
+          id="DeductApp"
+          label="displaykey.LV.Policy.Coverages.DeductApplication"
+          value="PolicyCoverage.DeductLimitAppExt"/>
+        <!-- <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="Deductible"
+          label="displaykey.LV.Policy.PolicyCoverages.Deductible"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.Deductible) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.Deductible"/> -->
+        <!-- <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="ExposureLimit"
+          label="displaykey.LV.Policy.PolicyCoverages.ExposureLimit"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.ExposureLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.ExposureLimit"/> -->
+        <!-- <Cell
+          editable="true"
+          formatType="exactNumber"
+          id="IncidentLimit"
+          label="displaykey.LV.Policy.PolicyCoverages.IncidentLimit"
+          outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+          validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(PolicyCoverage.IncidentLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+          value="PolicyCoverage.IncidentLimit"/> -->
+        <!-- <Cell
+          editable="true"
+          id="Notes"
+          label="displaykey.LV.Policy.PolicyCoverages.Notes"
+          value="PolicyCoverage.Notes"/> -->
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

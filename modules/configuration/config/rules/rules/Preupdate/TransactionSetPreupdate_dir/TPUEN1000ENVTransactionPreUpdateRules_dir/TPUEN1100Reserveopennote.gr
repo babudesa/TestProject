@@ -1,0 +1,43 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUEN1000ENVTransactionPreUpdateRules_dir
+
+@gw.rules.RuleName("TPUEN1100 - Reserve open note")
+internal class TPUEN1100Reserveopennote {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/ 
+transactionSet.Subtype == "ReserveSet" 
+
+and transactionSet.ApprovalStatus != "unapproved"
+and transactionSet.ApprovalStatus != "rejected"
+
+      /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///if the open reserve is less than the authority limit run rule make note     
+for (res in transactionSet.AllTransactions){
+  
+var openres = gw.api.financials.FinancialsCalculationUtil.getOpenReserves().getAmount(res.ReserveLine)
+var rtype = res.CostType
+var u = transactionSet.RequestingUser
+if (u.AuthorityProfile != null and u.AuthorityProfile.Limits != null){
+var m = u.AuthorityProfile.Limits.where(\ limit ->limit.CostType==rtype and limit.LimitType == typekey.AuthorityLimitType.TC_CTR).first().LimitAmount.Amount
+if (openres < m){
+  
+uses java.text.DecimalFormat
+
+var bodyA : String;
+var note : Note
+var amount =  (new DecimalFormat("$###,####,##0.00;($-###,####,##0.00)")).format (res.TransactionAmount.Amount)
+var exp = res.Exposure
+
+bodyA = rtype.DisplayName +" Reserve of " + amount + " for Feature " + exp +
+" has been Approved by " + u + "."
+
+note=transactionSet.Claim.addNote("reserves",bodyA)
+
+}
+ }
+}
+/*end00rule*/
+  }
+}

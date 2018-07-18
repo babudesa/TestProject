@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="ClaimantRepLV"
+    validationExpression="validateClaimantRep(sourceContact, claim) == &quot;&quot; ? null : validateClaimantRep(sourceContact, claim)">
+    <Require
+      name="sourceContact"
+      type="Contact"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="pageProc"
+      type="pcf_gs.Medicare_PageProc"/>
+    <RowIterator
+      editable="true"
+      elementName="contactContact"
+      hasCheckBoxes="true"
+      id="addReps"
+      pageSize="10"
+      toAdd="pageProc.addClaimantRepCodes(contactContact, sourceContact)"
+      toRemove="pageProc.removeClaimantRepCodes(contactContact, sourceContact)"
+      value="sourceContact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantAddRepFlagExt )">
+      <Row
+        editable="isRelatedContactEditable(contactContact) //and ( sourceContact.TargetRelatedContacts.where(\ c -&gt; c.ClaimantAddRepFlagExt ).first().getBidiRel(sourceContact) == null)">
+        <ClaimContactCell
+          claim="claim"
+          id="Beneficiary"
+          label="&quot;Survivor or Wrongful Death Beneficiary&quot;"
+          newContactMenu="ClaimNewRelatedContactPickerMenuItemSet"
+          parentContact="Contact"
+          postOnChange="true"
+          required="true"
+          sortOrder="2"
+          value="sourceContact"
+          valueRange="claim.getClaimantsFromRelatedContacts(sourceContact)"
+          wrapLabel="true"/>
+        <ClaimRelatedContactCell
+          claim="claim"
+          editable="true"
+          forceContactSubtype="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, sourceContact, claim).OtherContactType"
+          id="Contact"
+          label="&quot;Beneficiary Representative&quot;"
+          newContactMenu="ClaimNewRelatedContactPickerMenuItemSet"
+          onPick="addRoleOnPick(contactContact)"
+          parentContact="Contact"
+          postOnChange="true"
+          required="true"
+          sortBy="contactContact.getOtherContact(Contact).PrimarySortValue,contactContact.getOtherContact(Contact).SecondarySortValue,contactContact.getOtherContact(Contact).TertiarySortValue,contactContact.getOtherContact(Contact).QuaternarySortValue"
+          sortOrder="2"
+          validationExpression="contactContact.RelatedContact == null ? &quot;Missing required field \&quot;Beneficiary Representative\&quot;&quot; : null"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, sourceContact, claim).OtherContact"
+          valueRange="claim.getClaimantRepsFromRelatedContacts(sourceContact)"/>
+        <!-- <RangeCell
+          editable="true"
+          id="RepName"
+          label="&quot;Representative Name&quot;"
+          required="true"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, sourceContact, claim).OtherContact"
+          valueRange="claim.getClaimantRepsFromRelatedContacts(sourceContact)"/> -->
+        <RangeCell
+          editable="true"
+          id="Rel"
+          label="&quot;Beneficiary Relationship&quot;"
+          required="true"
+          sortOrder="1"
+          value="new util.lvwrapper.ClaimContactContactLVWrapper(contactContact, sourceContact, claim).BidiRel"
+          valueRange="Contact.getFilteredMedicareContactRepRelationships(contactContact.getOtherContact(sourceContact))"/>
+        <Cell
+          id="Role"
+          label="displaykey.LV.Claim.PeopleInvolvedDetailed.PeopleInvolved.Roles"
+          value="displayContactRoles(getCorrectContact(contactContact, Contact))"
+          valueVisible="contactContact.RelatedContact != null"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[property get Contact() : Contact { return sourceContact; }
+      
+function isRelatedContactEditable(contContact:ContactContact):Boolean{
+         if(contContact.getBidiRel(Contact) == "morenamedinsured" || contContact.getBidiRel(Contact) == "morenamedinsureddba"){
+	      return false;
+	 }else{
+	      return true;
+	}
+}
+
+function isRepDisplayable(cont : Contact): boolean{
+  
+  return !(claim.getContactsFromRelatedContacts(sourceContact).contains(cont))
+}
+
+property get AdditionalRep() : ContactContact {
+  
+  if(sourceContact.TargetRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ) == null){
+   return new ContactContact() 
+  }
+  else 
+    return sourceContact.TargetRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).first()
+}
+
+function getCorrectContact(contCont:ContactContact, con:Contact):Contact{
+  if(con == contCont.RelatedContact){
+   return contCont.SourceContact 
+  }
+  return contCont.RelatedContact
+  
+}
+
+function displayContactRoles(cont:Contact):String{
+  
+  for(con in claim.Contacts){
+   if(cont == con.Contact){
+     return con.formatRolesDisplay()
+   }
+  }
+  return null
+  
+  
+}
+
+function validateClaimantRep(cont:Contact, cl : Claim) : String{
+  var missingInfo = ""
+  if(cont.TargetRelatedContacts.Count != 0 and cont.TargetRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).Count != 0){
+      var rep = cont.TargetRelatedContacts.where(\ c -> c.ClaimantAddRepFlagExt ).last().RelatedContact
+      if(rep != null){
+        if(rep typeis Person and rep.FirstName == null){
+          missingInfo = missingInfo + "First Name, "
+        }
+        if(rep.PrimaryAddress == null){
+         missingInfo = missingInfo + "Address, "
+        }
+        if(rep.HomePhone == null and rep.CellPhoneExt == null and rep.WorkPhone == null){
+           for(claimCont in cl.Contacts){
+            if(claimCont.Contact == rep){
+             if(claimCont.cscCellPhoneExt == null and claimCont.cscHomePhoneExt == null and claimCont.cscWorkPhoneExt == null){
+               missingInfo = missingInfo + "Phone Number, "
+             }
+            }
+       }
+        }
+        if(displayContactRoles(rep) == null)
+          missingInfo = missingInfo + "Role, "
+        if(missingInfo != ""){
+         missingInfo = missingInfo.trim()
+         if(missingInfo.endsWith( "," )){
+          missingInfo = missingInfo.substring( 0, missingInfo.lastIndexOf( "," ) )
+         }
+         missingInfo = "Enter " + missingInfo + " for the Beneficiary Representative " + rep 
+         }
+      }
+
+  }
+ return missingInfo
+}
+
+/**
+ * A hideous way of ensuring a related contact is added as a claim contact if they are picked from AB.
+ */
+function addRoleOnPick(conContact : ContactContact){
+  if(conContact.RelatedContact != null && !claim.Contacts*.Contact.contains(conContact.RelatedContact)){
+    AddExistingRelatedContactPopup.push(claim, conContact) 
+    
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

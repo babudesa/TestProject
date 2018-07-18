@@ -1,0 +1,30 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1400RULESTHATCREATEACTIVITIES_dir.CPUXX1420NonIncidentClaim_dir
+
+@gw.rules.RuleName("CPUXX1421 - New Claim Assignment Activity")
+internal class CPUXX1421NewClaimAssignmentActivity {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///5/20/09 erawe - turning off rule and removing activity pattern as requested.
+//5/26/2009 zjthomas - Defect 1682, Reactivated and modified rule to use different activity pattern.
+//1/19/10 erawe - Defect 2856 created as I moved from Eq rules as it is no longer EQ specific
+//2/17/10 erawe - defect 1903 - per Ronda email of 2/3/10 remove logic where previous user
+// does not equal assigned user. 
+//Updated: 8/7/12 erawe - changed the create below along with changing the pattern
+// so we just use what is in the pattern only.  Came about when PIM requested priority
+// change to Urgent.  karen agreed this was fine for all LOB.
+//This activity shouldn't generate for Personal Auto - anicely - 5.18.15
+/* Defect ID : 7669- TECHNICAL: multiple hardcoded activity patterns are causing errors in higher environments, i.e. WC INT. See attached emails.
+Replaced with activity code instead of activity public id by gyemula */
+(claim.ID.ObjValue > 0) and
+claim.isNativeORUpdatedExt() and 
+(exists(change in claim.ChangedFields where change == "AssignmentDate")
+//and claim.PreviousUser != claim.AssignedUser 
+and claim.State != "closed"
+and !exists(act in claim.Activities where act.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_claim_assigned") and act.Exposure == null and act.Status == "open") )
+and (claim.LossType != typekey.LossType.TC_PERSONALAUTO || !claim.ConvertedClaimIndExt)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern("eq_claim_assigned")
+claim.createActivityFromPattern(null, ap)/*end00rule*/
+  }
+}

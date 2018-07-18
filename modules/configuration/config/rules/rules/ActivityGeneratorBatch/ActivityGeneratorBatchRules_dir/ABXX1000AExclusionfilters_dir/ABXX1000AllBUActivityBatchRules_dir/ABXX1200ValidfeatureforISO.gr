@@ -1,0 +1,30 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir
+
+@gw.rules.RuleName("ABXX1200 - Valid feature for ISO")
+internal class ABXX1200ValidfeatureforISO {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/  /* Create the 'Validate Feature for ISO' IF the features present in the claims has not reached the Validate ISO level.
+  *  Defect # 6676
+  *  09/25/2014
+  *  Ashwini Padiyar
+  */
+claim.ISOEnabled
+&& !claim.Exposures.IsEmpty/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for (exp in claim.Exposures) {  
+    if(!exp.Closed && !exp.isValid(ValidationLevel.TC_ISO) &&
+     (!exists(act in claim.Activities where act.ActivityPattern.Code=="validate_feature_iso" and act.Exposure==exp )) &&
+     (gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays( exp.CreateTime, 30),gw.api.util.DateUtil.currentDate())) <0){
+      var ap = util.custom_Ext.finders.findActivityPattern( "validate_feature_iso" )
+      claim.createActivityFromPattern( exp, ap)
+    }  
+  }
+}
+catch (e) {
+  util.ErrorHandling.GAICErrorHandling.logError( Exposure, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

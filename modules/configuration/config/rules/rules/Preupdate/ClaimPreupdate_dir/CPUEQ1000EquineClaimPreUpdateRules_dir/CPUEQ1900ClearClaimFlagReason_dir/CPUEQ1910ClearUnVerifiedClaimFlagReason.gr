@@ -1,0 +1,35 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1900ClearClaimFlagReason_dir
+
+@gw.rules.RuleName("CPUEQ1910 - Clear UnVerified ClaimFlagReason ")
+internal class CPUEQ1910ClearUnVerifiedClaimFlagReason {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Policy.Verified and
+(exists(change in claim.Policy.ChangedFields where change=="Verified"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/  var flaggedReason = "This Claim has an unverified policy associated to it."
+  var noteFlag :Boolean =false
+  var note :String =displaykey.Rules.Preupdate.Claim.ClearFlag10Day
+  var noteSubject:Note
+try{
+  /*var lossDateFlag=exists( Activity in claim.Activities
+    where (Activity.ActivityPattern ==util.custom_Ext.finders.findActivityPattern("eq_clm_plcy_eff_exp"))) 
+     if(lossDateFlag){
+       claim.clearFlag(displaykey.Rules.Preupdate.Claim.ClearFlag10Day)
+       }else */if(claim.removeFlagReason(flaggedReason)){
+       noteFlag =true
+       }
+ /*   var noteExistFlag = not exists(Note in claim.Notes where (Note.Body.equals(displaykey.Rules.Preupdate.Claim.ClearFlag10Day)))
+     if(noteFlag && !noteExistFlag){
+       print("note going to create")
+       noteSubject = claim.addNote("general", note);
+       noteSubject.Subject = "Claim Flag Change" 
+       
+     } */
+     
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

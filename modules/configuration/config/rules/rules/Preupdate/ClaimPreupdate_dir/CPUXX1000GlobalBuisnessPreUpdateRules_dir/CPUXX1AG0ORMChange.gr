@@ -1,0 +1,24 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1AG0 - ORMChange")
+internal class CPUXX1AG0ORMChange {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.Contacts.where(\ c -> c.Contact.Person.MedicareEligibleExt ).Count != 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(con in claim.Contacts.where(\ c -> c.Contact.Person.MedicareEligibleExt )){
+ if(con.Contact.Person.Changed || con.Contact.ContactISOMedicareExt.Changed){
+   if(con.Contact.ContactISOMedicareExt.ORMIndExt == true and con.Contact.Person.SendPartyToCMSExt == true){
+     
+     var note:String = "ORM information is not being sent immediately to CMS for contact " + con.Contact.DisplayName + ".";
+     var noteSubject:Note;
+     noteSubject = Claim.addNote("medicare", note);
+     noteSubject.Subject = "ORM not sent to CMS";
+     
+   }
+ }
+  
+}/*end00rule*/
+  }
+}

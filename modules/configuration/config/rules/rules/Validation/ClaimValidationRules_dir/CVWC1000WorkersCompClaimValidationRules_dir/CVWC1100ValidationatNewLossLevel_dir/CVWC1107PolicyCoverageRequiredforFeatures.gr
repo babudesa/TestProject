@@ -1,0 +1,22 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CVWC1107 - Policy Coverage Required for Features")
+internal class CVWC1107PolicyCoverageRequiredforFeatures {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.Policy.Verified && 
+!claim.IncidentReport && 
+claim.Policy.Coverages.IsEmpty
+//10.5.15 - cmullin - this rule must run prior to Select Coverage Validation 
+//rule when reopening an unverified, incident only claim with no Policy Coverage.
+//10.13.15 - cmullin - rule disabled for 7849 refactoring/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.rejectSubField(claim.Policy, "Coverages", "loadsave", "At least one Policy-level Coverage is required.", null, null)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}/*end00rule*/
+  }
+}

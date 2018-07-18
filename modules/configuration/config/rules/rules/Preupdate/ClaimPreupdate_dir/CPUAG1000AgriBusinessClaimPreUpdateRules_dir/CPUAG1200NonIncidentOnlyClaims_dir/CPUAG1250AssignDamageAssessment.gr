@@ -1,0 +1,44 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUAG1000AgriBusinessClaimPreUpdateRules_dir.CPUAG1200NonIncidentOnlyClaims_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUAG1250 - Assign Damage Assessment")
+internal class CPUAG1250AssignDamageAssessment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossType=="AGRIAUTO" || claim.LossType=="AGRIPROPERTY" || claim.LossType=="AGRILIABILITY") &&  
+claim.State != "closed" and
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_assign_damage")
+
+
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "ab_assign_damage" )
+
+  claim.createActivityFromPattern( null, ap)
+}
+catch(e){
+  if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+    gw.api.util.Logger.logInfo( "Rule has been reached: " + actions.getRule().DisplayName)
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenterSupport", 
+        "ClaimCenter@gaig.com", "ClaimCenter", 
+        "ClaimCenter Notification", actions.getRule().DisplayName)
+  }
+  else{
+    gw.api.util.Logger.logInfo( "Rule has been reached: " + actions.getRule().DisplayName)
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenterDevemail", 
+        "ClaimCenter@gaig.com", "ClaimCenterDev", 
+        "ClaimCenterDev Notification", actions.getRule().DisplayName)
+  }
+}
+
+
+
+  
+/*end00rule*/
+  }
+}

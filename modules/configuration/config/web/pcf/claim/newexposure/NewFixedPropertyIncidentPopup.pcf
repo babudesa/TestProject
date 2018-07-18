@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- 3/14/08 kso def 855 - ensure contact for veterinarian has the correct specialty before adding the role (beforecommt) -->
+  <Popup
+    beforeCommit="fixedPropertyIncident.setIncdVeterinarian()"
+    canEdit="true"
+    canVisit="perm.Claim.edit(claim)"
+    id="NewFixedPropertyIncidentPopup"
+    returnType="FixedPropertyIncident"
+    startInEditMode="true"
+    title="displaykey.Web.NewFixedPropertyIncident.Title">
+    <LocationEntryPoint
+      signature="NewFixedPropertyIncidentPopup(Claim : Claim)"/>
+    <!-- GW ADDED/CHANGED
+      signature="NewFixedPropertyIncidentPopup(Claim : Claim)"/> -->
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim.newIncident(entity.FixedPropertyIncident) as FixedPropertyIncident"
+      name="fixedPropertyIncident"/>
+    <Screen
+      id="NewFixedPropertyIncidentScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons
+          pickValue="fixedPropertyIncident"/>
+        <ToolbarDivider/>
+        <PrintToolbarButton
+          hideIfEditable="true"
+          id="FixedPropertyIncident_PrintButton"
+          label="displaykey.Button.Print"
+          shortcut="N"/>
+      </Toolbar>
+      <PanelRef
+        def="FixedPropertyIncidentDV(fixedPropertyIncident, getAddressOwner())"/>
+    </Screen>
+    <Code><![CDATA[function newPolicyLocation() : PolicyLocation {
+  if(fixedPropertyIncident.Property != null){
+    return fixedPropertyIncident.Property
+  }else{
+    var prop = entity.FixedPropertyIncident.Type.TypeInfo.getProperty("Property") as gw.entity.IEntityPropertyInfo
+    return gw.api.address.CCAddressOwnerUtil.getOrCreateNewBeanFor(fixedPropertyIncident, prop, \ -> new PolicyLocation())
+  }
+}
+
+/*
+  Get a PolicyLocationAddressOwner using the newly created fixedPropertyIncident and either 1) the fixedPropertyIncident's Property object if it already exists 
+  or 2) a brand new PolicyLocation object
+*/
+function getAddressOwner() : gw.api.address.PolicyLocationAddressOwner {
+  return new gw.api.address.PolicyLocationAddressOwner(fixedPropertyIncident, newPolicyLocation()) 
+}]]></Code>
+  </Popup>
+</PCF>

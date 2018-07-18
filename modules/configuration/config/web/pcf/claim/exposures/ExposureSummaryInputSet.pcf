@@ -1,0 +1,434 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="ExposureSummaryInputSet">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="ExposureType"
+      type="String"/>
+    <Variable
+      initialValue="Exposure.Claim.LossType"
+      name="LossType"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="matterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Exposure.Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <Variable
+      initialValue="Exposure.Coverage"
+      name="SelectedCoverage"
+      type="Coverage"/>
+    <Variable
+      initialValue="setReserveFile()"
+      name="initReserveFile"/>
+    <Label
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Overall"/>
+    <Input
+      id="ClosedDate"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClosedDate"
+      value="Exposure.CloseDate"
+      visible=" Exposure.State == &quot;closed&quot; "/>
+    <InputSetRef
+      def="ExposureRiskChangeInputSet(Exposure, ExposureType)"
+      visible="!isWCClaim"/>
+    <Input
+      id="Excess"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.Excess"
+      value="Exposure.Coverage.ExcessIndExt"
+      visible="(LossType == &quot;fidcrime&quot;)  || ((LossType == &quot;excessliability&quot; || LossType == &quot;excessliabilityauto&quot;) &amp;&amp; util.custom_Ext.Environmentinfo.showField())"/>
+    <Input
+      id="QuotaShare"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.QuotaShare"
+      value="Exposure.Coverage.QuotaShareIndExt"
+      visible="(LossType == &quot;fidcrime&quot;)  || ((LossType == &quot;excessliability&quot; || LossType == &quot;excessliabilityauto&quot;) &amp;&amp; util.custom_Ext.Environmentinfo.showField())"/>
+    <RangeInput
+      id="WCCoverage"
+      label="displaykey.NVV.Exposure.SubView.EmployerLiability.Exposure.Coverage"
+      onChange="Exposure.Claim.setSelectedCoverage(SelectedCoverage)"
+      optionLabel="Exposure.Claim.formatWCCoverageString(VALUE)"
+      postOnChange="true"
+      showNoneSelected="false"
+      value="SelectedCoverage"
+      valueRange="Exposure.Claim.Policy.Coverages"
+      valueWidth="250"
+      visible="isWCClaim &amp;&amp; !Exposure.Claim.checkDisconnectedFeatures()"/>
+    <RangeInput
+      id="WCCoverageDisconnected"
+      label="displaykey.NVV.Exposure.SubView.EmployerLiability.Exposure.Coverage"
+      optionLabel="Exposure.Claim.formatWCCoverageString(VALUE)"
+      validationExpression="SelectedCoverage != null ?   Exposure.Claim.setSelectedCoverage(SelectedCoverage) : null"
+      value="SelectedCoverage"
+      valueRange="Exposure.Claim.Policy.Coverages"
+      valueWidth="250"
+      visible="isWCClaim &amp;&amp; Exposure.Claim.checkDisconnectedFeatures()"/>
+    <TypeKeyInput
+      editable="true"
+      id="AVFeatureDetails"
+      label="&quot;Feature Details&quot;"
+      labelStyleClass="label_wrap"
+      onChange="Exposure.ExposureDetails2Ext = null"
+      postOnChange="true"
+      required="Exposure.ExposureType == typekey.ExposureType.TC_AV_BODILYINJURY || Exposure.ExposureType == typekey.ExposureType.TC_AV_MEDPAY"
+      value="Exposure.ExposureDetailsExt"
+      valueWidth="250"
+      visible="LossType==&quot;AVIATION&quot; &amp;&amp; Exposure.ExposureType != typekey.ExposureType.TC_AV_BUSINESSINC"/>
+    <RangeInput
+      editable="true"
+      filter="filterExposureDetails2Ext(VALUE)"
+      id="AVFeatureDetails2"
+      label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureAttributes2"
+      value="Exposure.ExposureDetails2Ext"
+      valueRange="ExposureDetails2Ext.getTypeKeys(false)"
+      visible="Exposure.ExposureType == typekey.ExposureType.TC_AV_PHYSICALDAMAGE"/>
+    <!-- 10/2/2008 - zthomas - Defect 1066, Change value of Assigned Group Name to use exposures assigned group. -->
+    <Input
+      id="AssignedGroup_Name"
+      label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.AssignedGroup.Name"
+      value="Exposure.getAssignmentGroup()"/>
+    <Input
+      id="ClaimOfficeBranch"
+      label="displaykey.GAIC.Equine.ClaimOfficeBranch"
+      value="util.custom_Ext.OfficeBranchFunctions.getClaimOfficeBranch(Exposure)"
+      visible="!Exposure.New and Exposure.Claim.State !=&quot;draft&quot;"/>
+    <!-- 11/02/2009 -blawless - added financial status, feature status, open date, and validation level for all agri exposures. -->
+    <Input
+      id="FinancialState"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FinancialStatus"
+      value="Exposure.getFeatureFinancialStatus()"
+      visible="!Exposure.New"/>
+    <Input
+      id="FeatureStatus"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.FeatureStatus"
+      value="Exposure.getFeatureStatus()"
+      visible="!Exposure.New"/>
+    <Input
+      id="CreateTime"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.OpenDate"
+      value="Exposure.RptCreateDateExt"
+      visible="!Exposure.New"/>
+    <Input
+      id="ValidationLevel"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ValidationLevel"
+      value="Exposure.ValidationLevel"
+      visible="!Exposure.New "/>
+    <RangeInput
+      editable="true"
+      id="JurisdictionState"
+      label="displaykey.NVV.Exposure.SubView.NewPersonalInjury.Exposure.JurisdictionState"
+      value="Exposure.JurisdictionState"
+      valueRange="Exposure.UIHelper.ValidStates"
+      visible="getJurisdictionState()"/>
+    <RangeInput
+      editable="true"
+      id="JurisdictionCountry"
+      label="displaykey.NVV.Exposure.SubView.NewPersonalInjury.Exposure.JurisdictionCountry"
+      onChange="Exposure.UIHelper.JurisdictionCountry_OnChange()"
+      postOnChange="true"
+      required="true"
+      showNoneSelected="false"
+      value="Exposure.JurisdictionCountryExt"
+      valueRange="Country.getTypeKeys(false)"
+      valueWidth="250"
+      visible="Exposure.UIHelper.IsJusridictionCountryVisible"/>
+    <Input
+      id="ClassCode"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClassCode"
+      value="Exposure.Coverage.ClassCodeExt"
+      visible="!isWCClaim"/>
+    <Input
+      id="ClassDesc"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.ClassDesc"
+      value="Exposure.Coverage.ClassCodeDescExt"
+      visible="!isWCClaim"/>
+    <DateInput
+      editable="true"
+      id="StatuteOfLimitationsExt"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.StatuteOfLimitationsExt"
+      required="Exposure.UIHelper.IsStatuteOfLimitationsRequired"
+      validationExpression="(Exposure.StatuteOfLimitationsExt != null and gw.api.util.DateUtil.compareIgnoreTime( Exposure.StatuteOfLimitationsExt,Exposure.Claim.LossDate  ) &lt; 0)  ? displayKey.Rules.Validation.Exposure.Enterprise.NewLoss.StatuteOfLimitationsExt : null"
+      value="Exposure.StatuteOfLimitationsExt"
+      visible="ExposureType==&quot;BodilyInjury&quot; || Exposure.UIHelper.IsStatuteOfLimitationsVisible ? true : false"/>
+    <Input
+      id="FeatureType"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.FeatureType"
+      value="Exposure.ExposureType"/>
+    <TypeKeyInput
+      editable="true"
+      filter="Exposure.UIHelper.filterFeatureDetails(VALUE)"
+      id="FeatureAtt"
+      label="getLabel()"
+      labelStyleClass="label_wrap"
+      onChange="Exposure.resetTypeofLoss();Exposure.setFeatureLossParty()"
+      postOnChange="true"
+      value="Exposure.ExposureDetailsExt"
+      valueWidth="250"
+      visible="Exposure.UIHelper.IsExposureDetailVisible AND !isAggGenLiabFeature() and LossType!=&quot;EXECLIABDIV&quot; and LossType != &quot;ENVLIAB&quot; and LossType != typekey.LossType.TC_MERGACQU and LossType != &quot;AVIATION&quot; and LossType!=&quot;SPECIALHUMSERV&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      id="FeatureAttEnv"
+      label="&quot;Feature Details&quot;"
+      labelStyleClass="label_wrap"
+      onChange="Exposure.resetTypeofLoss();Exposure.setFeatureLossParty()"
+      postOnChange="true"
+      value="Exposure.ExposureDetailsExt"
+      valueWidth="250"
+      visible="LossType==&quot;ENVLIAB&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      id="SublimitsPIM"
+      label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.Sublimits"
+      postOnChange="true"
+      value="Exposure.SublimitsExt"
+      valueWidth="250"
+      visible="LossType==&quot;PIMINMARINE&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      filter="filterExposureDetails2Ext(VALUE)"
+      id="FeatureAtt2"
+      label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureAttributes2"
+      labelStyleClass="label_wrap"
+      onChange="if (Exposure.ExposureType != &quot;im_MotorTruckCargo&quot;){Exposure.resetTypeofLoss();Exposure.setFeatureLossParty()}"
+      postOnChange="true"
+      required="Exposure.ExposureDetailsExt==&quot;remediation&quot;"
+      value="Exposure.ExposureDetails2Ext"
+      valueWidth="250"
+      visible="Exposure.ExposureDetailsExt==&quot;remediation&quot; or Exposure.ExposureType == &quot;im_MotorTruckCargo&quot;"/>
+    <TypeKeyInput
+      editable="true"
+      filter="VALUE.Categories.contains(typekey.ExposureType.TC_AV_PERSONALINJURY)"
+      id="AVPersonalInjuryDetail"
+      label="displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureAttributes(Exposure.ExposureType)"
+      labelStyleClass="label_wrap"
+      value="Exposure.ExposureDetails2Ext"
+      valueWidth="250"
+      visible="Exposure.ExposureType == typekey.ExposureType.TC_AV_PERSONALINJURY"/>
+    <TypeKeyInput
+      editable="true"
+      id="Sublimits"
+      label="ExposureType==&quot;PIP&quot; ? displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.SubCoverage : displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.Sublimits"
+      postOnChange="true"
+      value="Exposure.SublimitsExt"
+      valueWidth="250"
+      visible="LossType==&quot;PIMINMARINE&quot; or (Exposure.getSublimitVisibility(Exposure.PrimaryCoverage) and (Exposure.ExposureType != typekey.ExposureType.TC_IM_CONTRACTEQUIP and LossType != typekey.LossType.TC_MERGACQU))"/>
+    <!-- SPP Description for Scheduled Items only -->
+    <Input
+      id="SPPDesc"
+      label="Exposure.ExposureType==&quot;ab_SchedPerProp&quot; ? displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SPPDescription : displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SFPPDescription"
+      value="Exposure.Coverage.HighValueItemExt.SPPDescriptionExt"
+      visible="(Exposure.ExposureType==&quot;ab_SchedPerProp&quot; || Exposure.ExposureType==&quot;ab_SchedFarmPerProp&quot;) and Exposure.LossParty==&quot;insured&quot;"/>
+    <!-- Equine CCC only -->
+    <Input
+      formatType="exactNumber"
+      id="PerHorseLimit"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.PerHorseLimit"
+      outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+      validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(Exposure.Coverage.IncidentLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+      value="Exposure.Coverage.IncidentLimit"
+      visible="Exposure.PrimaryCoverage==&quot;ab_EQCCC&quot;"/>
+    <Input
+      formatType="exactNumber"
+      id="AggLimit"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.AggLimit"
+      outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+      validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(Exposure.Coverage.AggregateLimitExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+      value="Exposure.Coverage.AggregateLimitExt"
+      visible="Exposure.PrimaryCoverage==&quot;ab_EQCCC&quot;"/>
+    <RangeInput
+      editable="true"
+      id="deductible"
+      label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exposure.Deductible"
+      optionLabel="getDeductibleText(VALUE)"
+      value="Exposure.ExposureDeductibleExt"
+      valueRange="Exposure.Coverage.DeductiblesExt"
+      visible="LossType==&quot;EXECLIABDIV&quot; or LossType==&quot;PROFLIABDIV&quot; or LossType == typekey.LossType.TC_MERGACQU or LossType == typekey.LossType.TC_SPECIALHUMSERV"/>
+    <Input
+      editable="ExposureType!=&quot;IMProperty&quot;"
+      id="ReservedFile_Ext"
+      label="displaykey.NVV.Exposure.SubView.NewClaimPropertyDamage.Exposure.ReservedFileExt"
+      required="true"
+      value="Exposure.ReservedFileExt"/>
+    <Input
+      editable="true"
+      id="InLititgation"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.InLitigation"
+      onChange="Exposure.NoLegalExpenseTypeExt = null; if (Exposure.ex_InSuit == true &amp;&amp; Exposure.LegalExpenseExt != true) Exposure.LegalExpenseExt = null"
+      postOnChange="true"
+      required="true"
+      value="Exposure.ex_InSuit"/>
+    <Input
+      editable="!Exposure.doesMatterExistForFeature()"
+      id="LegalExpense"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LegalExpense"
+      onChange="Exposure.NoLegalExpenseTypeExt = null"
+      postOnChange="true"
+      required="true"
+      value="Exposure.LegalExpenseExt"
+      visible="matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+    <RangeInput
+      editable="true"
+      id="NoLegalExpenseType"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.NoLegalExpenseType"
+      required="true"
+      value="Exposure.NoLegalExpenseTypeExt"
+      valueRange="filterNoLegalExpenseType()"
+      visible="Exposure.ex_InSuit == true and Exposure.LegalExpenseExt == false &amp;&amp; matterActivator.DisableForMatters(Exposure.Claim.LossType) == false"/>
+    <!-- Total Loss - PHYSICAL DAMAGE, PROPERTY ONLY  Email from 9/1/09 was misunderstood. Total Loss Indicator should show on:
+				-Auto Property Damage 
+				-Auto Physical Damage
+				-AgriGuard Auto Property Damage
+				-All Property LOB Property Feature Types
+			 From email 9/1/09 Total Loss Indicator is required on screen for Auto Property Damage, Auto Physical Damage and AgriGuard Auto Property Damage
+			 Stephanie Przygocki 9/22/09
+			 Updated: tnewcomb 03/18/2011 - Total Loss Indicator is not required until the feature is closed. Moving the totalLossIsRequired() logic to the 
+			 Feature Closed Validation rule. -->
+    <Input
+      editable="true"
+      id="TotalLoss"
+      label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.TotalLoss"
+      onChange="Exposure.removeTotalLossOnChange()"
+      postOnChange="true"
+      required="false"
+      value="Exposure.TotalLossIndExt"
+      visible="Exposure.totalLossIsVisible()"/>
+    <!-- Course of Employment - PHYSICAL DAMAGE ONLY -->
+    <Input
+      editable="true"
+      id="CourseOfEmployment"
+      label="displaykey.NVV.Exposure.SubView.PhysicalDamage.Exposure.CourseOfEmployment"
+      required="Exposure.ExposureType != typekey.ExposureType.TC_AV_PHYSICALDAMAGE"
+      value="Exposure.CourseOfEmployExt"
+      visible="((LossType==&quot;AGRIAUTO&quot; OR LossType==TC_ALTMARKETSAUTO OR LossType==TC_SHSAUTO OR LossType==TC_TRUCKINGAUTO) AND ExposureType==&quot;PhysicalDamage&quot;) || Exposure.ExposureType == typekey.ExposureType.TC_AV_PHYSICALDAMAGE"/>
+    <Input
+      available="!(Exposure.ExposureType==&quot;im_DataComp&quot;) "
+      id="LossParty"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossParty"
+      required="true"
+      value="Exposure.LossParty"
+      visible="!(Exposure.ExposureType==&quot;im_DataComp&quot;) &amp;&amp; !isWCClaim"/>
+    <TypeKeyInput
+      editable="(Exposure.Coverage.Type.Code==&quot;im_DCBasic&quot;)and (Exposure.ExposureType==&quot;im_DataComp&quot;)? false :true"
+      formatType="general"
+      id="LossPartyType"
+      label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.LossParty"
+      required="true"
+      value="Exposure.LossParty"
+      visible="(Exposure.ExposureType==&quot;im_DataComp&quot;) &amp;&amp; !isWCClaim"/>
+    <Input
+      editable="true"
+      id="CloseReason"
+      label="displaykey.NVV.Claim.CloseClaim.Reason"
+      value="Exposure.ClosedOutcome"
+      visible="Exposure.Closed==true"/>
+    <RangeInput
+      editable="true"
+      id="LostPropertyType"
+      label="displaykey.NVV.Exposure.ISO.TheftPayload.LostPropertyType"
+      required="Exposure.isLostPropertyTypeRequired() or Exposure.ExposureDetailsExt==&quot;068&quot;"
+      value="Exposure.LostPropertyType"
+      valueRange="Exposure.getLostPropertyType()"
+      visible="Exposure.isLostPropertyTypeVisible() "/>
+    <!-- Removed Incident County as required by Defect #769 - SLP - 1/21/08
+		 Stat Coding from Initial Release -->
+    <InputDivider/>
+    <Code><![CDATA[function setStateVisibility():boolean{
+  var result:boolean = false
+
+  if(ExposureType!="PhysicalDamage" AND ExposureType!="PIP") {
+    result = true 
+  }   
+  return result
+}
+
+function getApplicableCvgs():Coverage[]{
+  var cvgs:List = new java.util.ArrayList()
+  for(cvg in Exposure.Claim.Policy.AllCoverages){
+    for(subtype in CoverageSubtype.getTypeKeys(false)) {
+      //print("et: " + Exposure.ExposureType + " Coverage type: " + cvg.type + " coverage subtype: " + cvg.subtype)
+      if(Exposure.ExposureType.hasCategory( subtype ) and subtype.hasCategory(cvg.Type) ){
+        cvgs.add(cvg);
+      }
+    }
+  }
+  return cvgs as entity.Coverage[];
+}
+
+function isAggGenLiabFeature():boolean{
+  var result:boolean = false
+
+  if(Exposure.CoverageSubType=="ab_AGG_gen_liab_bi" || Exposure.CoverageSubType=="ab_AGG_gen_liab_pd" || Exposure.CoverageSubType=="ab_AGG_aut_liab_pd" || 
+    Exposure.CoverageSubType=="ex_umbrella_apd" || Exposure.CoverageSubType=="ex_umbrella_exbi" || Exposure.CoverageSubType=="ex_umbrella_expd" ||
+    Exposure.CoverageSubType=="ex_LayeredExcess_apd" || Exposure.CoverageSubType=="ex_LayeredExcess_exbi" || Exposure.CoverageSubType=="ex_LayeredExcess_expd" ||
+      Exposure.CoverageSubType=="ex_LeadExcess_apd" || Exposure.CoverageSubType=="ex_LeadExcess_exbi" || Exposure.CoverageSubType=="ex_LeadExcess_expd" ||
+      Exposure.CoverageSubType=="ab_AGG_umb_liab_apd" || Exposure.CoverageSubType=="ab_AGG_umb_liab_exbi" || Exposure.CoverageSubType=="ab_AGG_umb_liab_expd" ||
+      Exposure.CoverageSubType=="ab_layrdexc_apd" || Exposure.CoverageSubType=="ab_layrdexc_exbi" || Exposure.CoverageSubType=="ab_layrdexc_expd" ||
+      Exposure.CoverageSubType=="ab_leadexc_apd" || Exposure.CoverageSubType=="ab_leadexc_exbi" || Exposure.CoverageSubType=="ab_leadexc_expd" ||
+      Exposure.CoverageSubType=="ab_umbrella_apd" || Exposure.CoverageSubType=="ab_umbrella_exbi" || Exposure.CoverageSubType=="ab_umbrella_expd"){
+    result = true
+  }
+  return result
+}
+
+function getJurisdictionState() :boolean{
+  var result:boolean = true
+  if(Exposure.Claim.LossType == "FIDCRIME" or Exposure.Claim.LossType == "KIDNAPRANSOM" or util.WCHelper.isWCorELLossType(Exposure.Claim)){
+    result = false
+  }
+  return result
+}
+// This function checks all the Exposures associated with all the Matters for the claim to see if the current exposure has a matter
+// associated with it. If a matter exists for this exposure, return true, otherwise return false.
+function doesMatterExistForFeature() : boolean {
+  return (Exposure.Claim.Matters*.MatterAssignmentsExt*.AssignmentExposuresExt*.Exposure.contains(Exposure))?true : false;
+}
+
+function getDeductibleText(deduct : DeductibleExt): String {
+    return (gw.api.util.StringUtil.formatNumber(deduct.Deductible as java.lang.Double, "$###,###") + " - " + (deduct.DeductLimitAppExt.DisplayName))
+}
+
+function filterExposureDetails2Ext(ExpoDetail : exposuredetails2ext):boolean {
+ //ExposureDetails2Ext.getTypeKeys(false).where(\ e ->e.Categories.contains(typekey.ExposureType.TC_IM_MOTORTRUCKCARGO) )
+ if (Exposure.Claim.LOBCode== "piminmarine")return ExpoDetail.Categories.contains(typekey.ExposureType.TC_IM_MOTORTRUCKCARGO)
+ if (Exposure.Claim.LOBCode== "envliab")return ExpoDetail.Categories.contains(typekey.ExposureType.TC_EN_CLEANUP)
+ if (Exposure.Claim.LOBCode=="aviation" && Exposure.ExposureDetailsExt==typekey.ExposureDetails.TC_MECHANICALELEC){
+   return ExpoDetail.Categories.contains(typekey.ExposureDetails.TC_MECHANICALELEC)
+ }
+ if (Exposure.Claim.LOBCode=="aviation" && Exposure.ExposureDetailsExt==typekey.ExposureDetails.TC_STRUCTURAL){
+   return ExpoDetail.Categories.contains(typekey.ExposureDetails.TC_STRUCTURAL)
+ }
+ return false
+}
+
+function filterNoLegalExpenseType() : NoLegalExpenseTypeExt[]{
+  if(!util.WCHelper.isELLossType(Exposure.Claim)){
+    return typekey.NoLegalExpenseTypeExt.getTypeKeys(false).toTypedArray()
+  }else{
+    return typekey.NoLegalExpenseTypeExt.getTypeKeys(false).where(\ t -> t!="handledbyadjuster").toTypedArray()
+  }
+}
+
+function setReserveFile() {
+ if(Exposure.Claim.LOBCode == LOBCode.TC_SPECIALTYES){
+  Exposure.ReservedFileExt = true 
+ }
+}
+
+/**
+ *  Defect 8658 - kniese - 2/16/2017
+ *  The field with the value Exposure.ExposureDetailsExt needs a different label for Spec E&S Inland Marine
+ */
+function getLabel() : String {
+ if(Exposure.Claim.LossType == typekey.LossType.TC_SPECIALTYES and Exposure.Claim.Policy.PolicyType == PolicyType.TC_IMP ){
+   return displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.Sublimits
+ } else{
+     return displaykey.NVV.Exposure.SubView.ExposureInformation.Exposure.FeatureAttributes(Exposure.ExposureType) 
+   }
+}]]></Code>
+  </InputSet>
+</PCF>

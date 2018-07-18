@@ -1,0 +1,27 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1700 - Lock Down Claim if Disconnected Features")
+internal class CCVXX1700LockDownClaimifDisconnectedFeatures {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Prevents the claim from being closed when there are features with 
+  ReconnectFailExt set to true.
+  Author: Zach Thomas
+  Date: 09/02/2011
+*/
+claim.checkDisconnectedFeatures() and claim.Policy.isPolicyInRefresh( 0 )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      claim.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+      //gw.api.util.Logger.logInfo( actions.getRule().DisplayName + " - " + displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName) )
+    }// end if
+  }// end for
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null );
+}
+/*end00rule*/
+  }
+}

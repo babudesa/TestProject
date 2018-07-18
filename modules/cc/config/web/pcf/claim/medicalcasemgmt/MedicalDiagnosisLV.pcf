@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="MedicalDiagnosisLV"
+    validationExpression="(injury.InjuryDiagnoses.length &gt; 1 and injury.InjuryDiagnoses.countWhere( \ i -&gt; i.IsPrimary == true ) &lt; 1 ) and isEditable == true ? displaykey.Validation.ClaimFile.MedCaseMgmt.SelectPrimaryDiagnosisCode : null">
+    <Variable
+      initialValue="gw.api.util.DateUtil.currentDate()"
+      name="currDate"/>
+    <Require
+      name="injury"
+      type="InjuryIncident"/>
+    <Require
+      name="isEditable"
+      type="Boolean"/>
+    <!-- Toolbar flag defined here is used by toolbar buttons in the parent location -->
+    <RowIterator
+      editable="true"
+      elementName="aMedicalDiagnosis"
+      hideCheckBoxesIfReadOnly="true"
+      toAdd="injury.addToInjuryDiagnoses( aMedicalDiagnosis )"
+      toRemove="aMedicalDiagnosis.addNoteIfPrimaryDiagnosisIsRemoved(); injury.removeFromInjuryDiagnoses( aMedicalDiagnosis ) "
+      value="injury.InjuryDiagnoses">
+      <ToolbarFlag
+        condition="aMedicalDiagnosis.Contact != null and aMedicalDiagnosis.New != true and aMedicalDiagnosis.ICDCode != null"
+        name="reconfirmable"/>
+      <ToolbarFlag
+        condition="aMedicalDiagnosis.ICDCode != null and aMedicalDiagnosis.IsPrimary != true and aMedicalDiagnosis.Contact != null"
+        name="allowPrimary"/>
+      <Row
+        highlighted="aMedicalDiagnosis.IsPrimary == true"
+        id="MedicalDiagnosisRow">
+        <PickerCell
+          action="ICD9Data.push( aMedicalDiagnosis.ICDCode.Code)"
+          editable="true"
+          id="ICDCode"
+          inputConversion="find(aRefICD in ICDCode where aRefICD.Code == VALUE and (aRefICD.AvailabilityDate == null or aRefICD.AvailabilityDate &lt; gw.api.util.DateUtil.currentDate()) and (aRefICD.ExpiryDate == null or aRefICD.ExpiryDate &gt; gw.api.util.DateUtil.currentDate())).getAtMostOneRow()"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ICDCode"
+          numCols="6"
+          pickLocation="ICDCodePopup.push(aMedicalDiagnosis.ICDCode.Code)"
+          postOnChange="true"
+          requestValidationExpression="VALUE == null ? displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.EnterAValidCodeValidationError : null"
+          validationExpression="injury.InjuryDiagnoses.where( \ i -&gt; i.ICDCode.Code == aMedicalDiagnosis.ICDCode.Code ).Count &gt; 1 ? displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ICDCode.DuplicateCodeValidation(aMedicalDiagnosis.ICDCode.Code) : null"
+          value="aMedicalDiagnosis.ICDCode"/>
+        <Cell
+          id="ICDDesc"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.ICDCodeDescription"
+          value="aMedicalDiagnosis.ICDCode.CodeDesc"/>
+        <!-- forceContactSubtype="Doctor" ensures that the picker menu only displays adding a new doctor besides searching and viewing details options. -->
+        <ClaimContactCell
+          claim="aMedicalDiagnosis.InjuryIncident.Claim"
+          editable="true"
+          forceContactSubtype="Doctor.Type"
+          id="Provider_name"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.Provider"
+          onPick="aMedicalDiagnosis.InjuryIncident.Claim.createClaimContact( aMedicalDiagnosis.Contact ); aMedicalDiagnosis.InjuryIncident.Claim.addRole(   ContactRole.TC_DOCTOR, aMedicalDiagnosis.Contact  )"
+          required="true"
+          showNoneSelected="false"
+          value="aMedicalDiagnosis.Contact"
+          valueRange="injury.Claim.RelatedDoctorArray as Contact[]"/>
+        <CheckBoxCell
+          editable="true"
+          id="Compensable"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.Compensable"
+          value="aMedicalDiagnosis.Compensable"/>
+        <DateCell
+          dateFormat="short"
+          editable="true"
+          id="DateStarted"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.StartedOn"
+          sortOrder="2"
+          validationExpression="aMedicalDiagnosis.DateStarted &gt; aMedicalDiagnosis.DateEnded ? displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.StartedOn.Validation : null"
+          value="aMedicalDiagnosis.DateStarted"/>
+        <DateCell
+          dateFormat="short"
+          editable="true"
+          id="DateEnded"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.EndedOn"
+          validationExpression="aMedicalDiagnosis.DateEnded &gt; currDate ? displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.EndedOn.Validation : null"
+          value="aMedicalDiagnosis.DateEnded"/>
+        <TextAreaCell
+          editable="true"
+          id="Comments"
+          label="displaykey.NVV.Claim.MedCaseMgrDetails.MedicalDiagnosis.Comments"
+          numRows="3"
+          value="aMedicalDiagnosis.Comments"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

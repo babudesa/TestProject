@@ -1,0 +1,26 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUSP1000SpecialtyESClaimPreUpdateRules_dir.CPUSP1100RULESTHATCREATEACTIVTIES_dir
+
+@gw.rules.RuleName("CPUSP1150 - Bill Deductible")
+internal class CPUSP1150BillDeductible {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.DeductibleStatus == DeductibleStatus.TC_TOBEBILLED &&
+(!exists(act in claim.Activities where act.ActivityPattern.Code == "bill_deductible_spec")) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+   var today = gw.api.util.DateUtil.currentDate()
+   var pattern = util.custom_Ext.finders.findActivityPattern("bill_deductible_spec")
+ 
+   var newAct = claim
+        .createActivity(null, pattern, pattern.Subject, pattern.Description,
+         pattern.Priority, pattern.Mandatory, today.addBusinessDays(pattern.TargetDays), null)
+      
+    //assign the activity to Michelle Daugherty
+    newAct.AssignedUser = User.finder.findUserByUserName("madaugherty")
+
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

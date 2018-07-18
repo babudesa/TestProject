@@ -1,0 +1,17 @@
+package rules.Validation.ClaimValidationRules_dir
+
+@gw.rules.RuleName("CLV06000 - Policy original effective date")
+internal class CLV06000Policyoriginaleffectivedate {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.Policy.OrigEffectiveDate != null &&
+    Claim.Policy.OrigEffectiveDate > Claim.Policy.EffectiveDate/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/Claim.rejectSubField( Claim.Policy, "EffectiveDate",
+                                    "newloss",
+                                    displaykey.Rules.Validation.Claim.PolicyEffectiveDateLaterThanOriginalEffectiveDate,
+                                    null,
+                                    null )/*end00rule*/
+  }
+}

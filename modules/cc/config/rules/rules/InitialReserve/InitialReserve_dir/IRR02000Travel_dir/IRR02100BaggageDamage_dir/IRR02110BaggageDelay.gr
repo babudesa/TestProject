@@ -1,0 +1,27 @@
+package rules.InitialReserve.InitialReserve_dir.IRR02000Travel_dir.IRR02100BaggageDamage_dir
+
+@gw.rules.RuleName("IRR02110 - Baggage Delay")
+internal class IRR02110BaggageDelay {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.BaggageIncident.DelayOnly == true/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var hoursDelayed = gw.api.util.DateUtil.hoursSince( Exposure.BaggageIncident.BaggageMissingFrom )- gw.api.util.DateUtil.hoursSince( Exposure.BaggageIncident.BaggageRecoveredOn ) 
+if( hoursDelayed > 4 and hoursDelayed < 24) 
+{
+  if(exposure.Coverage.ExposureLimit > ScriptParameters.InitialReserve_TravelBaggageLoss) 
+    Exposure.createInitialReserve( "claimcost", "baggage"  , ScriptParameters.InitialReserve_TravelBaggageLoss )
+  else
+    Exposure.createInitialReserve( "claimcost", "baggage"  , exposure.Coverage.ExposureLimit )
+
+} else if (hoursDelayed > 24) 
+{
+  var daysDelayed = gw.api.util.DateUtil.daysBetween( Exposure.BaggageIncident.BaggageRecoveredOn, Exposure.BaggageIncident.BaggageMissingFrom )
+  if(exposure.Coverage.ExposureLimit > daysDelayed*ScriptParameters.InitialReserve_TravelBaggageLoss) 
+    Exposure.createInitialReserve( "claimcost", "baggage"  , ScriptParameters.InitialReserve_TravelBaggageLoss )
+  else
+    Exposure.createInitialReserve( "claimcost", "baggage"  , exposure.Coverage.ExposureLimit )
+}/*end00rule*/
+  }
+}

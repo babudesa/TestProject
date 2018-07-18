@@ -1,0 +1,56 @@
+package rules.ActivityGeneratorBatch.ConversionActivityGeneratorBatchRules_dir.CAWC1000WorkCompConversionActivityBatchRules_dir.CAWC1200LegalActions_dir
+
+@gw.rules.RuleName("CAWC1240 - Extension to Answer Follow Up")
+internal class CAWC1240ExtensiontoAnswerFollowUp {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for non-converted claims. 
+ */
+
+exists (exp in claim.Exposures where 
+        exp.ex_InSuit
+    and exp.LegalExpenseExt == false
+    and exp.Closed == false 
+    and exp.ExtensionToAnswerDateExt != null
+    and gw.api.util.DateUtil.daysBetween(exp.ExtensionToAnswerDateExt.trimToMidnight(),
+        gw.api.util.DateUtil.currentDate().trimToMidnight()) >= ScriptParameters.Activity_LegalActionExtensionAnswerFollowUp)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+    var pattern = util.custom_Ext.finders.findActivityPattern( "extension_to_answer" )
+    var today = gw.api.util.DateUtil.currentDate().trimToMidnight()
+
+    //get all valid exposures for activity 
+    var exposures = claim.Exposures.where(\ e -> e.ex_InSuit
+        and e.LegalExpenseExt == false
+        and e.Closed == false 
+        and e.ExtensionToAnswerDateExt != null
+        and gw.api.util.DateUtil.daysBetween(e.ExtensionToAnswerDateExt.trimToMidnight(), today) >=ScriptParameters.Activity_LegalActionExtensionAnswerFollowUp  
+        and !exists(act in claim.Activities where act.Exposure == e and act.ActivityPattern.Code == "extension_to_answer"
+    ))
+
+    // create the activity for each exposure    
+    for (exp in exposures) {
+ 
+      //Create new activity from existing pattern and add the matter name to the pattern
+      //subject and description  
+      var newAct = claim.createActivity(exp,
+                   pattern, pattern.Subject, pattern.Description, pattern.Priority, pattern.Mandatory,
+                   null, null)  
+   
+      //assign user
+      newAct.AssignedUser = claim.AssignedUser 
+      //set custom target date 
+      newAct.TargetDate = exp.ExtensionToAnswerDateExt.trimToMidnight().addDays(ScriptParameters.Activity_LegalActionExtensionAnswerFollowUp)
+    }
+
+ 
+ }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

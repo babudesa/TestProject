@@ -1,0 +1,21 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVXX1500 - Total Loss Indicator")
+internal class ECVXX1500TotalLossIndicator {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Check if Total Loss Indicator has been entered after a payment before the exposure is closed.
+  Sprint: Agri 0-1
+  Author: Stephanie Przygocki
+  Date: 9/22/09
+  Updated: tnewcomb 10/12/2011 - Prevent IncompatibleTypeException that was caused by casting Transactions
+           in a strongly typed iterator to TransactionDefaultViews.
+*/
+exposure.TotalLossIndExt==null and exposure.totalLossNeededForPymt() and 
+exists(transaction in exposure.getTransactionsIterator(false) as java.util.Iterator<Transaction> where
+      transaction.Subtype == typekey.Transaction.TC_PAYMENT and transaction.CostType == CostType.TC_CLAIMCOST and transaction.Exposure==exposure)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/exposure.reject( "payment", displaykey.Rules.Validation.ExposureClosed.AgriBusiness.AbilityToPay.TotalLossInd(exposure), null, null )/*end00rule*/
+  }
+}

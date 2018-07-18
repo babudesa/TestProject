@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="MethodOfSettlementInputSet">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="Exposure.needMOSInformation()"
+      name="MOSRequired"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="isCompanyInfoPresent()"
+      name="CompInfoPresent"
+      recalculateOnRefresh="true"
+      type="boolean"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Exposure.Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <Variable
+      initialValue="Exposure.needSettlementTypeInformation()"
+      name="STRequired"
+      recalculateOnRefresh="true"
+      type="Boolean"/>
+    <Label
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Title"/>
+    <TypeKeyInput
+      editable="true"
+      id="MethodOfSettlement"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Method"
+      postOnChange="true"
+      required="MOSRequired"
+      value="Exposure.MethodOfSettlementExt"
+      valueWidth="200"/>
+    <RangeInput
+      editable="true"
+      id="SettlementType"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.SettlementType"
+      postOnChange="true"
+      required="STRequired"
+      value="Exposure.SettleMethod"
+      valueRange="typekey.SettleMethod.getTypeKeys(false).where(\ e -&gt; e.hasCategory(Exposure.Claim.LossType) &amp;&amp; e.hasCategory(Exposure.Claim.JurisdictionState))"
+      valueWidth="250"
+      visible="isWCClaim"/>
+    <Input
+      editable="true"
+      id="PolicyNumber"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.PolicyNum"
+      required="MOSRequired"
+      value="Exposure.PolicyNumberExt"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+    <ClaimContactInput
+      claim="Exposure.Claim"
+      editable="true"
+      id="InsuranceCo"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsuranceCo"
+      newContactMenu="ClaimNewCompanyOnlyPickerMenuItemSet"
+      postOnChange="true"
+      required="MOSRequired"
+      showSearchInMenu="false"
+      validationExpression="(!CompInfoPresent and MOSRequired) ? displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.MethodOfSettlement : null"
+      value="Exposure.InsuranceCoExt"
+      valueRange="Exposure.getCompanies()"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+    <Input
+      id="Location"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoAddress"
+      required="MOSRequired"
+      value="Exposure.InsuranceCoExt.getPrimaryAddressDisplayValue()"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+    <Input
+      id="InsurCoPhone"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoPhone"
+      required="MOSRequired"
+      value="getPhoneValue()"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+    <Input
+      editable="true"
+      id="AntFinalPayDate"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.AntFinalPayDate"
+      required="MOSRequired"
+      validationExpression="Exposure.AnticFinalPmtDateExt&lt;Exposure.Claim.LossDate ? &quot;Anticipated Final Payment Date cannot occur before the Date of Loss&quot; : null"
+      value="Exposure.AnticFinalPmtDateExt"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+    <Input
+      editable="true"
+      formatType="exactNumber"
+      id="AnnuityPurchaseAmt"
+      label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.AnnuityPurchase"
+      value="Exposure.AnnuityPurchaseAmtExt"
+      visible="Exposure.MethodOfSettlementExt==&quot;structured_settle&quot; &amp;&amp; isWCClaim"/>
+    <Code><![CDATA[function getPhoneValue() : String {
+     		var phoneNo = "";
+     		if(Exposure.InsuranceCoExt.TollFreeNumberExt!=null){
+     			phoneNo = Exposure.InsuranceCoExt.TollFreeNumberExt;
+     		} else if(Exposure.InsuranceCoExt.WorkPhone!=null){
+     			phoneNo = Exposure.InsuranceCoExt.WorkPhone;
+     		} else if(Exposure.InsuranceCoExt.FaxPhone!=null){
+     			phoneNo = Exposure.InsuranceCoExt.FaxPhone;
+     		}
+     		return phoneNo;
+     	}
+     	function isCompanyInfoPresent() : boolean {
+     	  var result = true;
+     	  if(Exposure.InsuranceCoExt==null || getPhoneValue()=="" || getPhoneValue()==null || 
+     	     Exposure.InsuranceCoExt.PrimaryAddress==null || Exposure.InsuranceCoExt.Name==null){
+     	    result = false;
+     	  }
+     	  return result;
+     	}]]></Code>
+  </InputSet>
+</PCF>

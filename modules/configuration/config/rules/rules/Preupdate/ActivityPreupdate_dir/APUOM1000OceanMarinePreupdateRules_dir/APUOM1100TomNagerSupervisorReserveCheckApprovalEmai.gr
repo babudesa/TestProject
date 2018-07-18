@@ -1,0 +1,57 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUOM1000OceanMarinePreupdateRules_dir
+
+@gw.rules.RuleName("APUOM1100 - Tom Nager Supervisor Reserve/Check Approval Emai")
+internal class APUOM1100TomNagerSupervisorReserveCheckApprovalEmai {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/User.util.CurrentUser!= activity.AssignedUser and 
+activity.AssignedUser.DisplayName == "Thomas R Nager" and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment")and activity.Status!="complete")/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+//print(activity.AssignedUser.DisplayName)
+for(role in activity.AssignedUser.Roles){
+  if(role.Role.DisplayName == "Claims Supervisor"){ 
+
+    var supervisorEmail ="tnager@gaig.com"
+    var supervisorName = "Thomas R Nager"
+    var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+    var emailBody = templates.email.ApprovalActivity.renderToString(activity)
+    var clmNum = activity.Claim.ClaimNumber
+    var emailHelper = new EmailHelper()
+
+    try{
+  
+        gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+ 
+      //If current environment is "Prod" then send email to unit manager
+        if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+           emailHelper.sendEmailWithBodyEcf(activity.Claim,
+              supervisorEmail, supervisorName, "ClaimCenterSupport@gaig.com",
+              "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+           gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Supervisor User")        
+  
+        //otherwise send to ClaimCenter testing email address
+        } else {
+           emailHelper.sendEmailWithBodyEcf(activity.Claim,
+              ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+              "ClaimCenterSupport@gaig.com", environmentInformation,
+              "Approval Activity Notification", emailBody)   
+           gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Supervisor User")
+        }
+
+        actions.exit()
+
+    }
+    catch(aex:gw.rules.AbortExecutionException){
+      throw aex 
+    }
+    catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule().toString(), e, null );
+    }
+  }
+}/*end00rule*/
+  }
+}

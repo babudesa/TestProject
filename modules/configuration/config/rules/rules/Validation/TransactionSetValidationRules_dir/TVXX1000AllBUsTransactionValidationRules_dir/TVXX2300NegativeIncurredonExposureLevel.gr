@@ -1,0 +1,22 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVXX2300 - Negative Incurred on Exposure Level")
+internal class TVXX2300NegativeIncurredonExposureLevel {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.LossType != typekey.LossType.TC_PERSONALAUTO
+     and (transactionSet.New or transactionSet.Changed)
+/*
+  9/28/15 - kniese 
+  Defect 7671: Negative incurred should be checked at the feature level for
+  each cost type
+ *//*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/for (trans in transactionSet.Transactions){ 
+  if(trans.Exposure.isNegativeTotalIncurred(trans)){
+    transactionSet.reject("newloss", displaykey.Error.TotalIncurred.NegativeIncurred, null, null)
+  }
+}/*end00rule*/
+  }
+}

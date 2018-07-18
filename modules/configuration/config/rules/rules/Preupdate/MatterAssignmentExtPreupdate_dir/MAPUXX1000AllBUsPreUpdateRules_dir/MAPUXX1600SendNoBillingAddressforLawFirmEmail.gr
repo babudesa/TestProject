@@ -1,0 +1,71 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir
+
+@gw.rules.RuleName("MAPUXX1600 - Send No Billing Address for Law Firm Email")
+internal class MAPUXX1600SendNoBillingAddressforLawFirmEmail {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/(matterAssignmentExt.New) &&
+matterAssignmentExt.CounselLawFirmExt.TaxID!= null &&
+matterAssignmentExt.CounselLawFirmExt.Ex_TaxStatusCode != null &&
+(!exists(address in matterAssignmentExt.CounselLawFirmExt.AllAddresses where address.AddressType == AddressType.TC_BILLING))
+
+
+/*
+* Rule sends a new email to the LitAdvisor distribution list when a new Vendor (foreign of domestic) 
+* from address book is added to an assignment without a billing address
+*//*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/uses soap.CustomABContactSearch.api.CustomContactSearchAPI
+uses libraries.Contact_Entity.ABContactFactory
+uses gw.api.soap.GWAuthenticationHandler
+uses util.custom_Ext.EmailHelper
+
+
+
+
+try{
+  
+var contactFactory = new ABContactFactory(matterAssignmentExt.CounselLawFirmExt)
+var api = new CustomContactSearchAPI()
+//add authentication to access the api
+api.addHandler(new GWAuthenticationHandler("su", "gw"))
+
+//get the matching ABContact
+var result = api.getABContact(matterAssignmentExt.CounselLawFirmExt.TaxID,
+                  contactFactory.getABContactSubtype(),
+                  matterAssignmentExt.CounselLawFirmExt.Ex_TaxStatusCode.toString())
+//get the create date of the contact                  
+var contactCreateDate = api.getContactCreateDate(matterAssignmentExt.CounselLawFirmExt.TaxID,
+                  contactFactory.getABContactSubtype(),
+                  matterAssignmentExt.CounselLawFirmExt.Ex_TaxStatusCode.toString())
+
+var subject:String="ClaimCenter Vendor Billing Address Notification"
+var emailHelper=new EmailHelper()
+//if a match is found in address book then create the email   
+if(result != null){
+  
+   var environmentInformation : String = util.custom_Ext.finders.getEnvironment()
+   var body : String = templates.email.NewLawFirmAssignmentNoBillingAddress
+                .renderToString(matterAssignmentExt.CounselLawFirmExt.DisplayName,
+                                contactCreateDate as java.util.Date, result, matterAssignmentExt.Matter.Claim)
+   
+   
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+        emailHelper.sendEmailWithBodyEcf(matterAssignmentExt.Matter.Claim, ScriptParameters.CLSAddressBook,
+        null, "ClaimCenterSupport@gaig.com", null, "ClaimCenter Vendor Billing Address Notification", body)
+        gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    } else {  
+          emailHelper.sendEmailWithBodyEcf(matterAssignmentExt.Matter.Claim, 
+          ScriptParameters.ClaimCenterDevEmail, null, 
+          "ClaimCenterSupport@gaig.com", environmentInformation, 
+          "ClaimCenter Vendor Billing Address Notification", body)
+          gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+    } 
+
+}
+}catch(e){
+  gw.api.util.Logger.logDebug( gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 + " has been reached " as int ))
+}/*end00rule*/
+  }
+}

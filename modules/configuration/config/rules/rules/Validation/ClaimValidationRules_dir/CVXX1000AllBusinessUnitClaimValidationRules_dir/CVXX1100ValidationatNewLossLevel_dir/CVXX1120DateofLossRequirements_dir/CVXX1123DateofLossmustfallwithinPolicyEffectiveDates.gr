@@ -1,0 +1,44 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1120DateofLossRequirements_dir
+
+@gw.rules.RuleName("CVXX1123 - Date of Loss must fall within Policy Effective Dates")
+internal class CVXX1123DateofLossmustfallwithinPolicyEffectiveDates {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///Adding !ClaimsMadePolicyExt for Claims Made ELD -anicely 10.03.12
+
+claim.ClaimsMadePolicyExt == false and 
+(claim.LossDate!=null and 
+( (claim.Policy.ExpirationDate!=null 
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.ExpirationDate) > 0) 
+ or
+  (claim.Policy.EffectiveDate!=null 
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.EffectiveDate) < 0) )
+  or
+   (claim.Policy.CancellationDate != null and claim.Policy.ex_ReinstatementDate == null
+   and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Policy.CancellationDate) > 0))
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+
+*/
+
+var msg:String
+
+if(claim.Policy.CancellationDate != null and claim.Policy.ex_ReinstatementDate == null){
+  msg =  displaykey.Libraries.ClassExt.Policy.PolicyUI.LossDateError(util.custom_Ext.DateTime.formatDate( claim.LossDate ), util.custom_Ext.DateTime.formatDateString(claim.Policy.EffectiveDate, claim.Policy.CancellationDate))
+}
+else{
+  msg=displaykey.Libraries.ClassExt.Policy.PolicyUI.LossDateError(util.custom_Ext.DateTime.formatDate( claim.LossDate ), util.custom_Ext.DateTime.formatDateString(claim.Policy.EffectiveDate, claim.Policy.ExpirationDate))
+}
+
+if(claim.State == ClaimState.TC_DRAFT and !claim.ClaimsMadePolicyExt){
+  claim.rejectField( "LossDate", "newloss", msg, Null, Null )
+} else{
+  if(claim.isFieldChanged("LossDate")){
+   claim.rejectField( "LossDate", Null, Null, "newloss", msg )
+  }
+}
+/*end00rule*/
+  }
+}

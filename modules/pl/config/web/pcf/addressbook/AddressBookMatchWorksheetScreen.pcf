@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Screen
+    id="AddressBookMatchWorksheetScreen">
+    <Require
+      name="addressBookMatch"
+      type="contact.AddressBookMatch"/>
+    <Require
+      name="proximitySearchPageHelper"
+      type="gw.api.contact.ProximitySearchPageHelper"/>
+    <Require
+      name="onlyPrimaryRelationships"
+      type="boolean"/>
+    <Variable
+      initialValue="gw.api.contact.AddressBookUtil.newAddressBookContactSource()"
+      name="externalSource"/>
+    <Toolbar>
+      <ToolbarButton
+        action="CurrentLocation.cancel()"
+        id="AddressBookMatchWorksheet_CancelButton"
+        label="displaykey.Button.Cancel"/>
+      <ToolbarButton
+        action="gw.api.contact.AddressBookUtil.createMatchInAddressBook(addressBookMatch, onlyPrimaryRelationships)"
+        id="AddressBookMatchWorksheet_CreateNewContactButton"
+        label="displaykey.Web.AddressBook.Button.CreateNewContact"
+        visible="perm.Contact.createab(addressBookMatch.getRootContactType()) and addressBookMatch.canCreateInAddressBook()"/>
+    </Toolbar>
+    <Verbatim
+      label="addressBookMatch.Message"/>
+    <PanelRef
+      def="AddressBookSearchLV(addressBookMatch, proximitySearchPageHelper, externalSource, addressBookMatch.Matches, null)">
+      <Toolbar>
+        <ToolbarButtonSetRef
+          toolbarButtonSet="AddressBookDeleteToolbarButtonSet(externalSource)"
+          visible="addressBookMatch.canDelete()"/>
+      </Toolbar>
+    </PanelRef>
+  </Screen>
+</PCF>

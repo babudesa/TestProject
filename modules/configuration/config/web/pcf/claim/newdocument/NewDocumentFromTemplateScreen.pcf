@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="NewDocumentFromTemplateScreen">
+    <Require
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Toolbar>
+      <ToolbarButton
+        action="initiateSaveDoc()"
+        available="!gaic.plugin.cc.document.EmpowerDocumentUtil.isEmpowerTemplate(DocumentCreationInfo) || (DocumentCreationInfo.Document != null &amp;&amp; DocumentCreationInfo.Document.DocUID != null)"
+        id="NewDocumentFromTemplate_CustomUpdate"
+        label="displaykey.Button.SendToECF"
+        visible="gw.document.DocumentsUtil.isDocumentAssistantEnabled() and sendToECF()"/>
+      <EditButtons
+        pickValue="DocumentCreationInfo.Document"
+        updateLabel="displaykey.Button.SendToECF"
+        updateVisible="!gw.document.DocumentsUtil.isDocumentAssistantEnabled() and sendToECF()"/>
+    </Toolbar>
+    <PanelRef
+      def="NewTemplateDocumentDV(DocumentCreationInfo, DocumentCreationInfo.Document, Claim, null)"/>
+    <Code><![CDATA[//This method goes out and grabs the latest claim stored in the database
+  //it then compares the bean versions of the DB claim and the claim this worksheet sees
+  //if the bean versions are different it means that someone has updated the claim in the 
+  //background
+  function getLatestClaimVersion():Claim{
+  	var result = find(c in Claim where c.ClaimNumber == Claim.ClaimNumber)
+  	var c = result.getAtMostOneRow()
+  	return c
+  }
+
+  
+  //if the bean versions of the claims are different it does not allow the save to ECF to proceed
+  function initiateSaveDoc(){
+	  var updateMessage = util.entityUtils.beanUtils.getUpdatedBeanMessage(DocumentCreationInfo.Document.RelatedTo)
+	  var claimUpdate = util.entityUtils.beanUtils.getUpdatedBeanMessage(Claim)
+	  if(updateMessage != ""){
+	  	GeneralErrorWorksheet.goInWorkspace(updateMessage)
+	  }
+	  else if(claimUpdate != ""){
+	    GeneralErrorWorksheet.goInWorkspace(claimUpdate)
+	  }  
+	  else{
+	    if (gaic.plugin.cc.document.EmpowerDocumentUtil.isEmpowerTemplate(DocumentCreationInfo)) {
+	      gw.plugin.Plugins.get(gw.plugin.document.IDocumentContentSource).addDocument(null, DocumentCreationInfo.Document);
+	      CurrentLocation.commit();
+	    } else {
+	  	DocumentCreationInfo.setCommitRequested(true);
+	    }
+	  }
+
+  }
+  
+  //List of documents not to be sent to ECF - kmboyd - 6/22/2009
+  function sendToECF() : boolean{
+  	if(DocumentCreationInfo != null and DocumentCreationInfo.Document != null and DocumentCreationInfo.Document.Name != null){
+  		if(DocumentCreationInfo.Document.Name.equals("1099 TaxPayer Change Log")){
+	  		return false;
+	  	}
+  	} 
+  	return true;
+  }]]></Code>
+  </Screen>
+</PCF>

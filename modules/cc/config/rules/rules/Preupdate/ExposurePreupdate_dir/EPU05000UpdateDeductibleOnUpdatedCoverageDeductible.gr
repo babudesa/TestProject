@@ -1,0 +1,50 @@
+package rules.Preupdate.ExposurePreupdate_dir
+
+@gw.rules.RuleName("EPU05000 - Update Deductible On Updated Coverage Deductible")
+internal class EPU05000UpdateDeductibleOnUpdatedCoverageDeductible {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/gw.api.financials.FinancialsUtil.isUseDeductibleHandling()
+&& exposure.Coverage != null
+&& exposure.Claim.Policy.PolicyType == PolicyType.TC_AUTO_PER
+&& exposure.Coverage.isFieldChanged("Deductible")
+&& (exposure.Coverage.ClaimDeductible == null || !exposure.Coverage.ClaimDeductible.Paid)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/uses gw.util.DeductibleCalculator
+
+/**
+ * This rule is triggered when a coverage's amount is changed
+ * and its calculated deductible is either null or unpaid.
+ *
+ * If the coverage's new deductible amount is null,
+ * then its calculated deductible (if one exists) is removed.
+ *
+ * If the coverage's new deductible amount is not null, then its
+ * calculated deductible's amount is recalculated based on the
+ * coverage's new deductible, and set to unoverridden.
+ * A new deductible entity is created if it does not yet exist.
+ *
+ * This rule will execute once for every exposure on a coverage
+ * whose deductible amount is updated. This is redundant, but
+ * safe because the actions in this rule are idempotent, unless
+ * the coverage's deductible amount is subsequently updated before
+ * being committed, in which case this rule should be re-examined.
+ */
+var deductible = exposure.Coverage.ClaimDeductible
+if (exposure.Coverage.Deductible == null) {
+  if (deductible != null) {
+    deductible.remove()
+  }
+} else {
+  if (deductible == null) {
+    deductible = new Deductible()
+    deductible.Claim = exposure.Claim
+    deductible.Coverage = exposure.Coverage
+  }
+  deductible.Amount = DeductibleCalculator.calculateDeductibleAmountForCoverage(exposure.Coverage)
+  deductible.Overridden = false
+  deductible.EditReason = null
+}/*end00rule*/
+  }
+}

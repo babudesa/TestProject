@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="SIDetails.go(Claim)"
+    afterCommit="SIDetails.go(Claim)"
+    afterEnter="setDefaults(Investigation)"
+    beforeCommit="sendNewUpdateActivity(); removeDRP()"
+    canEdit="(perm.System.editSIUDataResearch || perm.System.editSIUInvestigation) and perm.Claim.edit(Claim) and !Claim.checkDisconnectedFeatures()"
+    canVisit="(perm.System.viewSIUReferral || perm.System.viewSIUInvestigation) and perm.Claim.view(Claim) and perm.System.viewclaimbasics and Claim.SIUInvestigationsExt.length&gt;0"
+    id="EditSIDetails"
+    parent="SIDetails(Claim)"
+    startInEditMode="true"
+    title="displaykey.Web.Claim.SIDetails">
+    <LocationEntryPoint
+      signature="EditSIDetails(Claim : Claim, Investigation : SIUInvestigationExt)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Investigation"
+      type="SIUInvestigationExt"/>
+    <Screen
+      id="EditSIDetailsScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="NewNoteWorksheet.goInWorkspace(Claim, Investigation)"
+          available="!Claim.checkDisconnectedFeatures()"
+          id="AddNote"
+          label="displaykey.NVV.SIU.AddNote"/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim, Investigation)"
+          available="!Claim.checkDisconnectedFeatures()"
+          id="LinkDocument"
+          label="displaykey.NVV.SIU.LinkDocument"
+          onPick="Claim.linkDocumentToInvestigation(PickedValue, Investigation)"
+          visible="perm.System.viewdocs and CurrentLocation.InEditMode"/>
+      </Toolbar>
+      <PanelSet
+        id="EditSIPanelSet">
+        <CardViewPanel>
+          <Card
+            id="InvestPropertiesCard"
+            title="displaykey.Web.Claim.SpecialInvestDetails">
+            <PanelRef
+              def="SIDetailsDV(Claim, Investigation)"
+              editable="true"/>
+          </Card>
+          <Card
+            id="InvestNotesCard"
+            title="displaykey.Web.Claim.SIUNotes"
+            visible="Investigation.Notes.length&gt;0">
+            <PanelRef
+              def="SIUNotesDV(Claim, Investigation)"
+              editable="false"/>
+          </Card>
+        </CardViewPanel>
+      </PanelSet>
+    </Screen>
+    <Code><![CDATA[function sendNewUpdateActivity() {
+  if(exists(act in Claim.Activities where act.ActivityPattern == util.custom_Ext.finders.findActivityPattern("new_siu_referral") and act.SIUInvestigationExt == Investigation)){
+    if(Investigation.isFieldChanged("siuinvestigator")){
+      Claim.createReassignmentActivity(Investigation); 
+    } else{
+    //  Claim.createUpdateSIUActivity(Investigation); 
+    }
+  } else{
+    Claim.createNewSIUActivity(Investigation)
+  }
+}
+
+function setDefaults(invest : SIUInvestigationExt){
+  if (!Investigation.DataResearchParties.HasElements){
+    var drp : DataResearchPartyExt = new DataResearchPartyExt()
+    drp.Contact = Investigation.SIUClaimant
+    invest.addToDataResearchParties(drp)
+  }
+}
+
+ /*If no Research Types added then remove the DataResearch Party 3/15/17 erawe */
+function removeDRP(){
+  if (Investigation.DataResearchParties.HasElements){
+    var party = Investigation.DataResearchParties[0]
+    if (party.ResearchTypes.length == 0){
+      var partyContact = Investigation.Claim.Contacts.where(\ cc -> cc.Contact == party.Contact).first()
+      Investigation.removeFromDataResearchParties(party)
+    }
+  }
+}]]></Code>
+  </Page>
+</PCF>

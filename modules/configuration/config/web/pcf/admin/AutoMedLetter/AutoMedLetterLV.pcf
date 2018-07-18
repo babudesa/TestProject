@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="AutoMedLetterLV">
+    <Require
+      name="AutoMedLetterAdminList"
+      type="AutoMedLetterExtQuery"/>
+    <RowIterator
+      checkBoxVisible="CurrentLocation.InEditMode"
+      editable="true"
+      elementName="AutoMedLetterAdminExt"
+      toCreateAndAdd="new AutoMedLetterExt()"
+      toRemove="AutoMedLetterAdminExt.remove()"
+      value="AutoMedLetterAdminList">
+      <Row>
+        <RangeCell
+          editable="true"
+          id="LOBCode"
+          label="&quot;Loss Type&quot;"
+          optionLabel="VALUE.Description"
+          required="true"
+          unique="true"
+          value="AutoMedLetterAdminExt.LossTypeExt"
+          valueRange="LossType.getTypeKeys(false)"/>
+        <Cell
+          align="center"
+          editable="true"
+          id="AutoMedEnabled"
+          label="&quot;Enabled&quot;"
+          onChange="Enabled_Init(AutoMedLetterAdminExt)"
+          postOnChange="true"
+          validationExpression="vEnabled(AutoMedLetterAdminExt)"
+          value="AutoMedLetterAdminExt.EnabledExt"/>
+        <DateCell
+          align="center"
+          editable="AutoMedLetterAdminExt.EnabledExt"
+          id="DateEffective"
+          label="&quot;Effective Date&quot;"
+          onChange="checkPastDate(AutoMedLetterAdminExt)"
+          postOnChange="true"
+          validationExpression="vDate(AutoMedLetterAdminExt)"
+          value="AutoMedLetterAdminExt.EffectiveDateExt"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function vDate(AutoMedItem : AutoMedLetterExt) : String {
+  if(AutoMedItem.EnabledExt == true && AutoMedItem.EffectiveDateExt == null)
+     return("An Effective Date must be entered for " + AutoMedItem.LossTypeExt.DisplayName)
+  if(AutoMedItem.EnabledExt == true && AutoMedItem.EffectiveDateExt > gw.api.util.DateUtil.currentDate()){
+      var message = "If you set a future date for " + AutoMedItem.LossTypeExt.DisplayName + " no AutoAck Letters will be generated until " + AutoMedItem.EffectiveDateExt
+      pcf.GeneralErrorWorksheet.goInWorkspace(message)}
+  return(null)}
+
+function checkPastDate(AutoMedItem : AutoMedLetterExt) {
+  if(AutoMedItem.EnabledExt == true && AutoMedItem.EffectiveDateExt != null && !AutoMedItem.EffectiveDateExt.verifyDateOnOrAfterToday()){
+     setDate(AutoMedItem)
+     var message = "The Effective Date must be either today or in the future for " + AutoMedItem.LossTypeExt.DisplayName + ".  Setting the Effective Date to today."
+     pcf.GeneralErrorWorksheet.goInWorkspace(message)}}
+
+function vEnabled(AutoMedItem : AutoMedLetterExt) : String {
+  if(AutoMedItem.EnabledExt == null)
+     return("You must select whether or not to enable " + AutoMedItem.LossTypeExt.DisplayName)
+  return(null)}
+
+function setDate(AutoMedItem : AutoMedLetterExt) {
+  if(AutoMedItem.EnabledExt == true && AutoMedItem.EffectiveDateExt != gw.api.util.DateUtil.currentDate())
+    AutoMedItem.EffectiveDateExt = gw.api.util.DateUtil.currentDate()}
+
+function Enabled_Init(AutoMedItem : AutoMedLetterExt) {
+  if(AutoMedItem.EnabledExt == false){
+    AutoMedItem.EffectiveDateExt=null}
+  if(AutoMedItem.EnabledExt == true){
+    setDate(AutoMedItem)}}]]></Code>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,44 @@
+package rules.Preupdate.MatterPreupdate_dir.MPUXX1000AllBUsPreUpdateRules_dir.MPUXX1100ManageRoles_dir
+
+@gw.rules.RuleName("MPUXX1130 - Opposing Counsel Law Firm Changed")
+internal class MPUXX1130OpposingCounselLawFirmChanged {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (me in matter.MatterAssignmentsExt*.AssignmentExposuresExt where
+        me.ChangedFields.contains("OpposingCounselFirmExt")) == true   
+
+/* When the opposing law firm is changed on a matter exposure this rule replaces the current roles of
+* the current law firm on the matter and replaces the roles with "former" roles
+*/ 
+ /*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var roleHelper = new libraries.Matter_Entity.MatterRoleHelper(matter)
+
+try{   
+  
+  for(assignmentExposure in matter.MatterAssignmentsExt*.AssignmentExposuresExt.where(\ a ->
+         a.ChangedFields.contains("OpposingCounselFirmExt"))){       
+     
+     var originalAssignmentExposure = assignmentExposure.OriginalVersion as AssignmentExposureExt    
+
+       // If the opposing law firm is not null 
+       // then set the firms role to former
+       if(originalAssignmentExposure.OpposingCounselFirmExt != null){
+         
+          roleHelper.setOpposingLawFirmFormer(originalAssignmentExposure)
+       }       
+  
+     if(assignmentExposure.OpposingCounselFirmExt != null){
+     
+        matter.addRole(ContactRole.TC_OPPOSINGCOUNSEL, assignmentExposure.OpposingCounselFirmExt)
+        roleHelper.removeFormerRole(ContactRole.TC_OPPOSINGCOUNSEL, assignmentExposure.OpposingCounselFirmExt)   
+     }
+  }
+    
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

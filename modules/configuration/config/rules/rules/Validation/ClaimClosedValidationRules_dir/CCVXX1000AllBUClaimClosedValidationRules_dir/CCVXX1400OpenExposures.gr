@@ -1,0 +1,18 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1400 - Open Exposures")
+internal class CCVXX1400OpenExposures {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*
+You cannot close this claim if there are any open activities.
+*/
+exists(exp in claim.Exposures
+       where exp.State=="open")==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var strErrorReason="You cannot close this claim ("+ claim.ClaimNumber + ") because there are open features.  Please close any open features and then close the claim."
+
+claim.reject( "newloss", strErrorReason, Null, Null )/*end00rule*/
+  }
+}

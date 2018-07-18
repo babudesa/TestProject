@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCommit="Wizard.saveDraft()"
+    beforeCancel="Wizard.removeExposureFromAssignments(Exposure)"
+    beforeCommit="validateExposures()"
+    canEdit="true"
+    id="NewClaimWizard_NewExposurePopup"
+    parent="FNOLWizard()"
+    startEditing="Exposure.setInitialValues()"
+    startInEditMode="true"
+    title="displaykey.Wizard.NewClaimWizard.NewClaimExposure.New">
+    <LocationEntryPoint
+      signature="NewClaimWizard_NewExposurePopup(Claim : Claim, Wizard : claim.NewClaimWizardInfo, Coverage : Coverage, CoverageType : CoverageType, CoverageSubtype : CoverageSubtype)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      name="CoverageType"
+      type="CoverageType"/>
+    <Variable
+      name="CoverageSubtype"
+      type="CoverageSubtype"/>
+    <Variable
+      initialValue="Wizard.addExposureWithNoIncident(Claim, Coverage, CoverageType, CoverageSubtype)"
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="exposure.initializeIncident()"
+      name="Incident"
+      type="Incident"/>
+    <Variable
+      initialValue="util.CoverageValidation.invalidCoverageForCause(Claim, CoverageType)"
+      name="invalidCoverageForCause"
+      type="boolean"/>
+    <Variable
+      initialValue="util.CoverageValidation.incompatibleNewExposure(Claim, CoverageType)"
+      name="incompatibleNewExposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="util.CoverageValidation.invalidCoverageForFaultRatingMessage(Claim, CoverageType)"
+      name="CoverageAndFaultConflict"
+      type="String"/>
+    <Screen
+      id="NewClaimWizard_ExposurePageScreen">
+      <Toolbar
+        reflectOnBottom="true">
+        <EditButtons/>
+      </Toolbar>
+      <AlertBar
+        id="invalidCoverageForCauseAlert"
+        label="displaykey.JSP.NewExposure.ClaimMenu.NewExposure.invalidCoverageForCause(claim.LossCause.Description)"
+        visible="invalidCoverageForCause == true"/>
+      <AlertBar
+        id="incompatibleNewExposureAlert"
+        label="displaykey.JSP.NewExposure.ClaimMenu.NewExposure.incompatibleNewExposure(incompatibleNewExposure.CoverageSubType.Description)"
+        visible="incompatibleNewExposure != null"/>
+      <AlertBar
+        id="CoverageAndFaultConflictAlert"
+        label="CoverageAndFaultConflict"
+        visible="CoverageAndFaultConflict != null"/>
+      <PanelRef
+        def="NewClaimExposureDV(Exposure)"
+        mode="Exposure.ExposureType"/>
+    </Screen>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+
+//Validates exposures
+function validateExposures() {
+  if(gw.api.system.CCConfigParameters.EnableClaimantCoverageUniquenessConstraint.Value and Claim.Exposures.hasMatch(\ e -> !e.isClaimantCoverageUnique()))
+      throw new UserDisplayableException(displaykey.Java.Error.Exposure.ClaimantCoverageNotUnique);
+}]]></Code>
+  </Popup>
+</PCF>

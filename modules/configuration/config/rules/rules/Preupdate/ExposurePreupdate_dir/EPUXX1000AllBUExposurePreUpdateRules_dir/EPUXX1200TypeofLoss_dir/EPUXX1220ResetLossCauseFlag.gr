@@ -1,0 +1,20 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX1200TypeofLoss_dir
+
+@gw.rules.RuleName("EPUXX1220 - Reset Loss Cause Flag")
+internal class EPUXX1220ResetLossCauseFlag {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Coverage.SublineExt=="116" || 
+exposure.Coverage.SublineExt=="136" || 
+exposure.Coverage.SublineExt=="156"/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/for(exp in exposure.Claim.Exposures){
+  if((exp.Coverage.SublineExt=="116" || exp.Coverage.SublineExt=="136" || exp.Coverage.SublineExt=="156")
+     and exp.TypeOfLossMostExt==null){
+    actions.exitToNext()   
+  }
+}
+exposure.LossCauseChangedExt = false/*end00rule*/
+  }
+}

@@ -1,0 +1,32 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX2000LegalActionRelatedRules_dir
+
+@gw.rules.RuleName("EVXX2010 - One feature must have legal expense set to yes")
+internal class EVXX2010Onefeaturemusthavelegalexpensesettoyes {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/(exposure.OriginalVersion as Exposure).LegalExpenseExt == true &&
+exposure.LegalExpenseExt == false &&
+
+!exists(exp in exposure.Claim.Exposures where
+        exp.LegalExpenseExt == true && exp != exposure && !exp.Closed)  &&
+        
+exists(mat in exposure.Claim.Matters where
+        mat.StatusExt == MatterStatus.TC_OPEN)
+      
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+  
+    var msg= "This is the only open Feature with Legal Expense set to Yes." +  
+              " Close all Legal Actions before setting Legal Expense to No."
+              
+     exposure.reject( "newloss",msg ,null, null)
+  
+  
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError(exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

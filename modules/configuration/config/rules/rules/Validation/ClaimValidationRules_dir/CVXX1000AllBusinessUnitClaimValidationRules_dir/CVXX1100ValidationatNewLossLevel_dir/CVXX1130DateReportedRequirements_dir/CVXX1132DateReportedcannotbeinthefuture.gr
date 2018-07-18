@@ -1,0 +1,25 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1130DateReportedRequirements_dir
+
+@gw.rules.RuleName("CVXX1132 - Date Reported cannot be in the future")
+internal class CVXX1132DateReportedcannotbeinthefuture {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ReportedDate!=Null
+and gw.api.util.DateUtil.compareIgnoreTime(claim.ReportedDate,gw.api.util.DateUtil.currentDate()) > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*//*
+
+*/
+
+var msg:String
+msg="Please provide a Claim Reported Date that is not a future date."
+
+
+if(claim.Policy.isPolicyInRefresh( 1 )){
+  claim.setPolicyRefreshFailed()
+}
+
+claim.rejectField( "ReportedDate", "newloss", msg, Null, Null )/*end00rule*/
+  }
+}

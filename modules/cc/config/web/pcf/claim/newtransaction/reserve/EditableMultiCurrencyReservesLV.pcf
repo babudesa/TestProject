@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableMultiCurrencyReservesLV">
+    <Require
+      name="WizardHelper"
+      type="financials.ReserveWizardHelper"/>
+    <Require
+      name="EditWrapper"
+      type="entity.TransactionEditWrapper"/>
+    <RowIterator
+      editable="true"
+      elementName="ReserveWrapper"
+      value="new TransactionEditWrapper[] { EditWrapper }">
+      <Row>
+        <TextCell
+          enableSort="false"
+          id="Exposure"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.Exposure"
+          outputConversion="VALUE == null ? displaykey.Web.Financials.Exposure.ClaimLevel : VALUE"
+          value="EditWrapper.Transaction.Exposure.DisplayName"
+          width="100"
+          wrapLabel="true"/>
+        <TextCell
+          enableSort="false"
+          id="Coverage"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.Coverage"
+          value="EditWrapper.Transaction.Exposure.PrimaryCoverage"/>
+        <TextCell
+          enableSort="false"
+          id="CostType"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.CostType"
+          numCols="5"
+          value="EditWrapper.Transaction.CostType"
+          width="5"
+          wrapLabel="true"/>
+        <TextCell
+          enableSort="false"
+          id="CostCategory"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.CostCategory"
+          numCols="5"
+          value="EditWrapper.Transaction.CostCategory"
+          width="5"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="AvailableReserves"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.AvailableReserves"
+          postOnChange="true"
+          value="WizardHelper.getAvailableReservesAmountPair( ReserveWrapper.Transaction )"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="PendingReserves"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.PendingReserves"
+          value="WizardHelper.getPendingApprovalReservesAmountPair( ReserveWrapper.Transaction )"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          id="Currency"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.Currency"
+          onChange="setNewTransactionAmountToInitialValue()"
+          postOnChange="true"
+          required="true"
+          value="EditWrapper.Currency"/>
+        <Cell
+          editable="true"
+          enableSort="false"
+          formatType="currency"
+          id="NewAvailableReserves"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.NewAvailableReserves"
+          numCols="12"
+          postOnChange="true"
+          required="true"
+          value="ReserveWrapper.NewAmountInTransactionCurrency"
+          wrapLabel="true"/>
+        <Cell
+          enableSort="false"
+          formatType="currency"
+          id="ChangeAmount"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.ChangeAmount"
+          value="WizardHelper.getChangeAmountPair(ReserveWrapper)"
+          wrapLabel="true"/>
+        <Cell
+          editable="true"
+          enableSort="false"
+          id="Comments"
+          label="displaykey.LV.Financials.ReserveSet.MulticurrencyReserves.Comments"
+          numCols="10"
+          value="ReserveWrapper.Transaction.Comments"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function setNewTransactionAmountToInitialValue() {
+  var initialValue = WizardHelper.getAvailableReservesAmountPair( EditWrapper.Transaction ).Amount + WizardHelper.getPendingApprovalReservesAmountPair( EditWrapper.Transaction ).Amount
+  // this sets the transaction and claim amounts
+  EditWrapper.NewAmountInTransactionCurrency.setAmount( initialValue )
+}
+      
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

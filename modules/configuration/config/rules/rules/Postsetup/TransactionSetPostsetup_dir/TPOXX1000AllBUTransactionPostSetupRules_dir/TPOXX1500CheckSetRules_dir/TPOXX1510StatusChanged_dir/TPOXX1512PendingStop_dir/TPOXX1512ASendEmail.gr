@@ -1,0 +1,46 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1512PendingStop_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPOXX1512A - Send Email")
+internal class TPOXX1512ASendEmail {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(transactionSet.New and transactionSet.LoadCommandID != null)
+
+//Email will be sent for Manual Checks of type Manual
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+try{
+  var emailHelper=new EmailHelper()
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  //set pending stop date
+  check.ex_DateStopped = gw.api.util.DateUtil.currentDate();
+  var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+  var EFT_Canadian : String = ""
+   
+   if( check.PrefixExt == "991" and check.ex_ManualPaymentMethod.Code == "eft" )
+    EFT_Canadian = "EFT or Canadian "
+    
+ if((check.ManualCheck && check.ex_ManualPaymentMethod == "manual") || check.PrefixExt == "991"){
+    var body = templates.email.VoidStopCheck.renderToString(transactionSet, "Stop")
+  
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod"){
+      emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+        ScriptParameters.Divisional_Accounting_Email, ScriptParameters.Divisional_Accounting_Name, 
+        "ClaimCenterSupport@gaig.com", "Claim Center Notification", 
+        EFT_Canadian + "Stop Payment Request", body)
+    }
+    else{
+      emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Divisional_Accounting_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        EFT_Canadian + "Stop Payment Request", body)
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

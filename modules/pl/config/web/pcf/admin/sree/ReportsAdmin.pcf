@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canVisit="gw.api.sree.SREEUtil.isRunning()"
+    id="ReportsAdmin"
+    title="displaykey.Web.Admin.ReportAdmin">
+    <Variable
+      initialValue="var reps : gw.api.tree.TreeNode = new gw.api.tree.SimpleTreeNode(null)  try { reps = gw.api.sree.ReportRepository.getAllReportsTree()} catch (e : java.lang.RuntimeException){ gw.api.util.LocationUtil.addRequestScopedErrorMessage(displaykey.Web.Admin.ReportAdmin.UnableToBuildReportTree) gw.api.util.LocationUtil.addRequestScopedErrorMessage(e.Message)} return reps"
+      name="reportNodes"
+      recalculateOnRefresh="true"
+      type="gw.api.tree.TreeNode"/>
+    <Variable
+      initialValue="find (var rp in ReportGroup)"
+      name="ReportGroups"
+      type="ReportGroupQuery"/>
+    <Screen
+      id="ReportsAdminScreen">
+      <TitleBar
+        appendListViewPaging="true"
+        title="displaykey.Web.Admin.ReportAdmin"/>
+      <CardViewPanel>
+        <Card
+          id="ReportGroupAdmin"
+          title="displaykey.Web.Admin.ReportGroups.Name">
+          <PanelRef
+            def="ReportGroupAdminLV(ReportGroups)">
+            <Toolbar>
+              <ToolbarButton
+                action="NewReportGroup.go(); refreshReports()"
+                id="ReportGroupAdmin_AddGroupButton"
+                label="displaykey.Web.Admin.AddReportGroup"/>
+              <CheckedValuesToolbarButton
+                allCheckedRowsAction="gw.api.admin.BaseAdminUtil.deleteReportGroups(CheckedValues); refreshReports()"
+                confirmMessage="displaykey.Web.Admin.ReportGroups.DeleteConfirm"
+                flags="any ReportGroup"
+                id="ReportGroupAdmin_DeleteGroupButton"
+                iterator="ReportGroupAdminLV"
+                label="displaykey.Button.Delete"/>
+            </Toolbar>
+          </PanelRef>
+        </Card>
+        <Card
+          id="SREEReportAdmin"
+          title="displaykey.Web.Admin.SREEReports">
+          <PanelRef
+            id="SREEReportAdminToolbar">
+            <Toolbar>
+              <ToolbarButton
+                action="gw.api.sree.ReportRepository.sync(gw.api.sree.StyleReportAPI.getReplets(User.util.CurrentUser)); refreshReports()"
+                id="SREEReportAdmin_SyncButton"
+                label="displaykey.Web.Admin.SyncReports"/>
+              <CheckedValuesToolbarButton
+                allCheckedRowsAction="gw.api.admin.BaseAdminUtil.deleteReports(CheckedValues); refreshReports()"
+                flags="any SREEReport"
+                id="SREEReportAdmin_DeleteButton"
+                iterator="SREEReportAdminLV"
+                label="displaykey.Button.Delete"
+                visible="perm.System.reporting_admin"/>
+              <ToolbarDivider/>
+              <CheckedValuesToolbarButton
+                checkedRowAction="reportNode.DocumentReport = not reportNode.DocumentReport; if(reportNode.DocumentReport) reportNode.removeFromAllReportGroups();refreshReports()"
+                flags="any SREEReport"
+                id="SREEReportAdmin_ToggleDocReport"
+                iterator="SREEReportAdminLV"
+                label="displaykey.Web.Admin.ToggleDocReport"
+                visible="perm.System.reporting_admin"/>
+            </Toolbar>
+            <ListViewPanel
+              id="SREEReportAdminLV">
+              <!-- <Requirename="reportNodes"type="gw.api.tree.TreeNode"/> -->
+              <RowTree
+                checkBoxVisible="true"
+                contentType="SREEReport"
+                elementName="reportNode"
+                hasCheckBoxes="true"
+                pageSize="0"
+                value="reportNodes">
+                <ToolbarFlag
+                  name="SREEReport"/>
+                <Row>
+                  <Cell
+                    enableSort="false"
+                    id="ReportName"
+                    label="displaykey.LV.Admin.ReportGroupReports.Report"
+                    value="reportNode.Name"/>
+                  <Cell
+                    id="IsMissing"
+                    label="displaykey.LV.Admin.ReportGroupReports.IsMissing"
+                    value="reportNode.isMissing()"/>
+                  <Cell
+                    enableSort="false"
+                    id="DocReport"
+                    label="displaykey.LV.Admin.ReportGroupReports.DocReport"
+                    value="reportNode.DocumentReport"/>
+                  <Cell
+                    enableSort="false"
+                    id="ReportDesc"
+                    label="displaykey.LV.Admin.ReportGroupReports.Description"
+                    value="reportNode.Description"/>
+                </Row>
+              </RowTree>
+            </ListViewPanel>
+          </PanelRef>
+        </Card>
+      </CardViewPanel>
+    </Screen>
+    <Code><![CDATA[
+function refreshReports() {
+        reportNodes = gw.api.sree.ReportRepository.getAllReportsTree()
+        ReportGroups = find (var rp in ReportGroup)
+      }
+      
+    ]]></Code>
+  </Page>
+</PCF>

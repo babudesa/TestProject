@@ -1,0 +1,28 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVXX11ZZ - Lock Down Claim on Failed Reconnect")
+internal class CVXX11ZZLockDownClaimonFailedReconnect {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType != LossType.TC_EQUINE &&
+claim.checkDisconnectedFeatures() and claim.Policy.isPolicyInRefresh( 0 ) and
+!exists(exp in claim.Exposures where !exp.New and (exp.isFieldChanged( "Coverage" )))
+
+/*Prevents the claim from being edited when there are features with 
+  ReconnectFailExt set to true.
+*//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      claim.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+
+    }// end if
+  }// end for
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule(), e, null );
+}
+/*end00rule*/
+  }
+}

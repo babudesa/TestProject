@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="AdditionalInfoInputSet"
+    mode="PersonVendor|Doctor|Attorney">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact.
+
+    Note also that claimContact may be null, so fields which depend on reference it should only be available for setting if it is not. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <InputSetRef
+      def="DoctorAdditionalInfoInputSet(contactHandle)"
+      mode="PersonVendor typeis Doctor ? &quot;Doctor&quot; : null"/>
+    <InputSetRef
+      def="AttorneyAdditionalInfoInputSet(contactHandle)"
+      mode="PersonVendor typeis Attorney ? &quot;Attorney&quot; : null"/>
+    <Input
+      id="OverallReviewScore"
+      label="displaykey.Web.Reviews.OverallScore"
+      value="contactHandle.Contact.Score"
+      visible="(contactHandle.Contact.Score != null) OR util.ReviewPageHelper.shouldDisplayReviewTab(contactHandle.Contact)"/>
+    <Input
+      editable="perm.Contact.createpreferredab"
+      id="IsPreferredVendor"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.IsPreferredVendor"
+      value="PersonVendor.Preferred"/>
+    <Input
+      editable="true"
+      id="Currency"
+      label="displaykey.Financials.Multicurrency.PreferredCurrency"
+      value="PersonVendor.PreferredCurrency"/>
+    <InputSetRef
+      def="BusinessContactInfoInputSet(contactHandle, claimContact, claim)"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.TaxInfo"/>
+    <PrivacyInput
+      editable="true"
+      encryptionExpression="PersonVendor.maskTaxId(VALUE)"
+      id="SSN"
+      label="displaykey.Web.ContactDetail.Name.TaxID.SSN"
+      required="false"
+      value="PersonVendor.TaxID"/>
+    <InputSetRef
+      def="VendorW9InfoInputSet(contactHandle)"
+      visible="gw.api.admin.BaseAdminUtil.getDefaultCountry() == Country.TC_US"/>
+    <Input
+      available="claimContact != null"
+      editable="true"
+      id="PersonVendorValidFrom"
+      label="displaykey.Web.ContactBasicsDV.Person.PersonVendor.ValidFrom"
+      value="ClaimContact.ContactValidFrom"/>
+    <Input
+      available="claimContact != null"
+      editable="true"
+      id="PersonVendorValidTo"
+      label="displaykey.Web.ContactBasicsDV.Person.PersonVendor.ValidTo"
+      value="ClaimContact.ContactValidTo"/>
+    <Code><![CDATA[
+property get PersonVendor() : PersonVendor { return contactHandle.Contact as PersonVendor; }
+    ]]></Code>
+  </InputSet>
+</PCF>

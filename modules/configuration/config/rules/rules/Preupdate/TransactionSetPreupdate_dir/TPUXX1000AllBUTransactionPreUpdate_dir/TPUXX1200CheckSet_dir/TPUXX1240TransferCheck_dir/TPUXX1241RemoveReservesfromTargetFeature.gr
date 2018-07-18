@@ -1,0 +1,26 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir.TPUXX1240TransferCheck_dir
+
+@gw.rules.RuleName("TPUXX1241 - Remove Reserves from Target Feature")
+internal class TPUXX1241RemoveReservesfromTargetFeature {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///commenting out so we send ALL reserve transactions to EDW - rpampush 2/2/10
+//var reserveLines session : List = new List()
+for(check in (transactionSet as CheckSet).Checks){
+  if(check.Transferred and check.TransferredToCheck.New){
+    for(pay in check.Payments){    
+       // Defect 5013 - Added conditon only for transferd payments.
+      if(pay.Exposure.openReserves() == 0.0 and pay.Exposure.hasFinancials()
+         and pay.Exposure.State!="closed" and pay.Transferred){      
+        //reserveLines.add(pay.ReserveLine)
+        pay.ReserveLine.setAvailableReserves( 0, util.custom_Ext.finders.getUserOb( "batchsu" ));
+      }
+    }
+  }
+}
+/*end00rule*/
+  }
+}

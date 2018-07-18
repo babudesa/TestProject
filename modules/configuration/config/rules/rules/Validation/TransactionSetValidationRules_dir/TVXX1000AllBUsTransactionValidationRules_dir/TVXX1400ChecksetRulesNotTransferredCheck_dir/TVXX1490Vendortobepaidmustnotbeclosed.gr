@@ -1,0 +1,30 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX1490 - Vendor to be paid must not be closed. ")
+internal class TVXX1490Vendortobepaidmustnotbeclosed {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.LoadCommandID==null/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*///Rhathaway rule:  payees cannot have a closed date in the past (i.e. they have been closed).
+
+for (check in (transactionSet as CheckSet).Checks)
+{
+  if(check.Status!="voided" and check.Status!="pendingvoid" and
+     check.Status!="transferred" and check.Status!="pendingtransfer" and
+     check.Status!="stopped" and check.Status!="pendingstop" and
+     check.Status!="issued" and check.Status!="cleared"){
+    for (checkpayee in check.Payees)
+    {
+      if (checkpayee.Payee.LinkedContact.CloseDateExt < gw.api.util.DateUtil.currentDate())
+      {
+       transactionSet.reject( "payment", "A payment cannot be made to a closed contact, please correct and try again.  You may need to contact compliance accounting to make this contact active, or create another preferred vendor.", null, null ); 
+       gw.api.util.Logger.logInfo("Rejected expense payment closed vendor on claim: " + transactionSet.Claim.ClaimNumber + ".  Requesting user: " + transactionSet.RequestingUser);
+       }//if
+    }//checkpayee
+  }//if
+}//check
+/*end00rule*/
+  }
+}

@@ -1,0 +1,52 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABXX1000AllBUActivityBatchRules_dir.ABXX1180LegalActions_dir
+
+@gw.rules.RuleName("ABXX1181 - Create a Legal Action")
+internal class ABXX1181CreateaLegalAction {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Conversion Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for converted claims. 
+ */
+
+exists (exp in claim.Exposures where 
+    exp.LegalExpenseExt == true 
+    and exp.LegalExpenseTrueDateExt != null 
+    and exp.Closed == false 
+    and  gw.api.util.DateUtil.daysBetween( exp.LegalExpenseTrueDateExt.trimToMidnight(),
+         gw.api.util.DateUtil.currentDate().trimToMidnight()) >=  ScriptParameters.Activity_CreateALegalAction 
+    and !exists (matter in claim.Matters 
+        where matter.MatterAssignmentsExt*.AssignmentExposuresExt*.Exposure.contains(exp)))
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var pattern = util.custom_Ext.finders.findActivityPattern( "no_matter_exists" )
+
+    //get all valid exposures for activity 
+    var exposures = claim.Exposures.where(\ e -> e.LegalExpenseExt == true
+                    and e.Closed == false
+                    and gw.api.util.DateUtil.daysBetween(e.LegalExpenseTrueDateExt.trimToMidnight(), gw.api.util.DateUtil.currentDate().trimToMidnight()) >= ScriptParameters.Activity_CreateALegalAction
+                    and !claim.Matters*.MatterAssignmentsExt*.AssignmentExposuresExt*.Exposure.contains(e)
+                    and !exists(act in claim.Activities where act.Exposure == e and act.ActivityPattern.Code == "no_matter_exists"))
+
+    // create the activity for each exposure
+    for (exp in exposures){
+      //Create new activity from existing pattern and add the matter name to the pattern
+      //subject and description  
+      var newAct = claim.createActivity(exp,
+                   pattern, pattern.Subject, pattern.Description, pattern.Priority, pattern.Mandatory,
+                   null, null)
+  
+      //assign user  
+      newAct.AssignedUser = claim.AssignedUser
+      //set custom target date 
+      newAct.TargetDate = exp.LegalExpenseTrueDateExt.trimToMidnight().addDays(ScriptParameters.Activity_CreateALegalAction)
+    }
+
+ }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

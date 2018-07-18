@@ -1,0 +1,30 @@
+package rules.Exception.ClaimExceptionRules_dir
+
+@gw.rules.RuleName("CER03000 - At least one activity for exposure owner")
+internal class CER03000Atleastoneactivityforexposureowner {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true
+/* Look for exposures where the owner of the exposure has no open activities on the claim.
+   If found, add a reminder activity for that person so the exposure is not forgotten *//*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for (Exposure in (Claim.Exposures))
+{
+ if (
+    not exists(act in (Claim.Activities) where
+      (Exposure.AssignedUser==act.AssignedUser and
+        act.Status=="open"))
+    ) {
+  Claim.createActivity( 	null,
+        ActivityPattern.finder.getActivityPatternByCode("general_reminder"),
+        displaykey.Rules.Exception.Claim.ReviewClaim,
+        displaykey.Rules.Exception.Exposure.NoOpenDiaryAutoReminder,
+        "low",
+        false,
+        gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), 5 ),
+        null);
+      }
+}/*end00rule*/
+  }
+}

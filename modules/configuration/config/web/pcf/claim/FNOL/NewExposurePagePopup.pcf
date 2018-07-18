@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterCommit="setIncidentReportToFalse(); TopLocation.commit(); Wizard.saveDraft();"
+    afterEnter="Exposure.JurisdictionState=Claim.LossLocation.State; if(Exposure.Claim.LossType == typekey.LossType.TC_PERSONALAUTO and Exposure.New and Exposure.Claim.ConvertedClaimIndExt){Exposure.ClaimOrder = null}"
+    beforeCancel="Wizard.removeExposureFromAssignments(Exposure)"
+    beforeCommit="validateExposures(); setFeatureNumber()"
+    canEdit="true"
+    id="NewExposurePagePopup"
+    parent="FNOLWizard()"
+    startEditing="Exposure.setInitialValues(); Exposure.UIHelper.setInitialValues()"
+    startInEditMode="true"
+    title="displaykey.Wizard.NewClaimWizard.NewClaimExposure.Edit">
+    <LocationEntryPoint
+      signature="NewExposurePagePopup(Claim : Claim, CoverageType : CoverageType, CoverageSubtype : CoverageSubtype, Coverage : Coverage, Wizard : gw.api.claim.NewClaimWizardInfo)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="CoverageType"
+      type="CoverageType"/>
+    <Variable
+      name="CoverageSubtype"
+      type="CoverageSubtype"/>
+    <Variable
+      name="Coverage"
+      type="Coverage"/>
+    <Variable
+      name="Wizard"
+      type="gw.api.claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="Wizard.addExposureWithNoIncident(Claim, Coverage, CoverageType, CoverageSubtype) "
+      name="Exposure"
+      type="Exposure"/>
+    <Variable
+      initialValue="exposure.initializeIncident()"
+      name="Incident"
+      type="Incident"/>
+    <Screen
+      id="NewClaimWizard_ExposurePageScreen">
+      <TitleBar
+        subtitle="getSubTitle()"/>
+      <Toolbar>
+        <!-- <EditButtons
+          updateLabel="&quot;OK&quot;"/> -->
+        <ToolbarButton
+          action="CurrentLocation.commit()"
+          id="UpdateToolbarButton"
+          label="displaykey.Button.OK"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="CancelToolbarButton"
+          label="displaykey.Button.Cancel"/>
+      </Toolbar>
+      <PanelRef
+        def="NewClaimExposureDV(Exposure)"
+        mode="Exposure.ExposureType"/>
+    </Screen>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+/**
+Claim Pre-update CPUXX-1500 New Feature on Incident Claim runs when user 
+creates a Equine Feature.  But when a user creates a Agri feature the IncidentReport is not
+turned off.  If this f(x) did not exist a user that creates multiple agri features, 
+will get the following message
+("A feature is being created on an Incident Only Claim, the Incident Only indicator will be changed to No.")
+for every Agri feature they create. A workaround to not getting the message is to go back to Step 5
+then go to Step 6 that will run the Pre-update CPUXX-1500 rule
+but doing that is a workaround not a fix to the issue.
+*/
+function setIncidentReportToFalse() : void {
+  Claim.IncidentReport = false;
+}
+function getSubTitle() : String{
+  return util.exposures.ExposureMenuUtils.getTitleForNewExposure(Coverage, "Full Menu")
+}
+function validateExposures() {
+  if(gw.api.system.CCConfigParameters.EnableClaimantCoverageUniquenessConstraint.Value and Claim.Exposures.hasMatch(\ e -> !e.isClaimantCoverageUnique()))
+      throw new UserDisplayableException(displaykey.Java.Error.Exposure.ClaimantCoverageNotUnique);
+}
+
+function setFeatureNumber(){
+  /*anicely 7.2.14
+   Removes the dash and sets the Claim Order number to the number entered on the Feature Screen
+   Checks for existing exposures with the same Claim Order number and throws error if one exists
+ */
+  if(Exposure.Claim.LossType == typekey.LossType.TC_PERSONALAUTO and Exposure.New and Exposure.Claim.ConvertedClaimIndExt and Exposure.FeatureNumberExt != null){
+    Exposure.FeatureNumberExt = Exposure.FeatureNumberExt.replace("-","")
+    Exposure.ClaimOrder = Exposure.FeatureNumberExt
+    
+  if(Exposure.ClaimOrder == 000){
+    var error = "Feature Number must be greater than 000."
+    throw new UserDisplayableException(error)
+  }
+    
+  if(!Exposure.Claim.Exposures.IsEmpty){
+     if(exists(exp in Exposure.Claim.Exposures where !exp.New and exp.FeatureNumberExt == Exposure.FeatureNumberExt)){
+       var error = displaykey.Java.DBDuplicateKeyException.DuplicateKeys(Exposure, "Feature")
+        throw new UserDisplayableException(error)
+     }
+  }
+  }
+}]]></Code>
+  </Popup>
+</PCF>

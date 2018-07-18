@@ -1,0 +1,43 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVXX1900 - Lock down claim if Disconnected Feature")
+internal class TVXX1900LockdownclaimifDisconnectedFeature {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!transactionSet.Claim.Changed and 
+transactionSet.Claim.checkDisconnectedFeatures() and 
+transactionSet.Claim.Policy.isPolicyInRefresh( 0 ) and
+transactionSet.Claim.Exposures.where(\ e -> !e.New and (e.isFieldChanged( "Coverage" ))).Count == 0
+
+/*Prevents transactions from being created or edited when there are features with 
+  ReconnectFailExt set to true.
+  Sprint/Maintenance Release: EM 10 - Defect 1131
+  Author: Zach Thomas
+  Date: 05/20/08
+  Update: tnewcomb 10/07/2011 - Fix for defect 4621; Added condition so the actions
+          are not executed if the transaction is an Automatic Reserve.
+*//*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var isAutoReserve : Boolean = false
+try{
+  isAutoReserve = gw.api.web.Scopes.Request != null and (gw.api.web.Scopes.Request["AutoRes"] as boolean)
+}catch(ex){
+  gw.api.util.Logger.logError("Error determining if transaction is auto reserve in rule : "+
+  actions.getRule()+"\n"+ex.printStackTrace())
+}
+try{
+  if(!isAutoReserve){
+  for(exp in transactionSet.Claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      transactionSet.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+      gw.api.util.Logger.logDebug( actions.getRule().DisplayName + " - " + displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName) )
+    }// end if
+  }// end for
+ }//end if
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null );
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,17 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVXX1000AllBUClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVXX1800 - Open SIU Warning During Claim Closure")
+internal class CCVXX1800OpenSIUWarningDuringClaimClosure {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(siuInv in  claim.SIUInvestigationsExt where siuInv.SIUReferralType!="data"
+ and (siuInv.InvestigationStatus!="closed"or siuInv.InvestigationStatus==null))==true
+
+      /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var strErrorReason="This claim cannot be closed; an open SIU Referral exists"
+claim.reject( "newloss", strErrorReason, Null, Null)
+    /*end00rule*/
+  }
+}

@@ -1,0 +1,21 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVWC1000WorkersCompExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVWC1300 - EL Prevent Close with Conversion ICD")
+internal class ECVWC1300ELPreventClosewithConversionICD {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/util.WCHelper.isELLossType(exposure.Claim)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(exposure.Claimant.ContactISOMedicareExt != null){
+  var conISO = exposure.Claimant.ContactISOMedicareExt
+  
+  if(conISO.ContactICDExt.HasElements && 
+    conISO.ContactICDExt.Count == 1 && 
+    conISO.ContactICDExt.first().ICDCode.Code == gw.api.iso.ISOInjuryLossSection._WCICD){
+    exposure.reject(ValidationLevel.TC_NEWLOSS, displaykey.InjuryIncident.ConversionICDClose(gw.api.iso.ISOInjuryLossSection._WCICD), null, null)
+    actions.exit()
+  }
+}/*end00rule*/
+  }
+}

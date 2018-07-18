@@ -1,0 +1,56 @@
+package rules.Validation.ClaimClosedValidationRules_dir.CCVAG1000AgribusinessClaimClosedValidationRules_dir
+
+@gw.rules.RuleName("CCVAG1100 - Validate Reinspection Fields")
+internal class CCVAG1100ValidateReinspectionFields {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossLocation.State== "CA" &&
+(claim.LossType=="AGRIAUTO" OR claim.LossType==LossType.TC_ALTMARKETSAUTO 
+OR claim.LossType==LossType.TC_SHSAUTO OR claim.LossType==LossType.TC_TRUCKINGAUTO) &&
+exists(exp in claim.Exposures where (exp.LossParty=="insured") 
+         && (!(exp.TotalLossIndExt)==true)  
+         && ( exp.ExposureType=="ab_AutoPropDam" ||exp.ExposureType=="ab_PhysicalDamage"))
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(exp in claim.Exposures)
+{
+  if(exp.LossParty=="insured" && (!(exp.TotalLossIndExt)==true)  && ( exp.ExposureType== "ab_AutoPropDam" || exp.ExposureType=="ab_PhysicalDamage" )) 
+  {
+    try
+    { 
+      if(exp.GlassOnlyClaimIndExt==null)
+      {
+        claim.rejectSubField(exp,"GlassOnlyClaimIndExt","newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.AgriBusiness.GlassOnlyClaim, null,null)
+
+      }
+         else if(exp.GlassOnlyClaimIndExt==false and exp.BodyShopPaymentIndExt==null)
+         {
+           claim.rejectSubField(exp,"BodyShopPaymentIndExt", "newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.AgriBusiness.BodyshopPayment, null, null )
+         }
+             else if(exp.GlassOnlyClaimIndExt==false and exp.BodyShopPaymentIndExt==true and exp.TotalDamageIndExt==null)
+             {
+               claim.rejectSubField(exp,"TotalDamageIndExt", "newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.AgriBusiness.TotalDamage, null, null )
+             }
+                 else if( exp.GlassOnlyClaimIndExt==false and exp.BodyShopPaymentIndExt==true and exp.TotalDamageIndExt==true and exp.ReinspectedIndExt==null)
+                 {
+                    claim.rejectSubField( exp,"ReinspectedIndExt","newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.AgriBusiness.Reinspection, null, null ) 
+                 }
+                     else
+                     {
+                        if( exp.GlassOnlyClaimIndExt==false and exp.BodyShopPaymentIndExt==true and exp.TotalDamageIndExt==true and exp.ReinspectedIndExt==true and exp.ReinspectionresultExt==null)
+                          {
+                             claim.rejectSubField( exp,"ReinspectionresultExt","newloss", "On " + "(" + exp.ClaimOrder + ")" + " " + exp.ExposureType.DisplayName + ": " +  displaykey.Rules.Validation.Claim.AgriBusiness.Reinspectionresults, null, null )  
+                          }
+                     }
+    }
+    catch(e)
+    {
+      util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+    }
+    }
+  }
+/*end00rule*/
+  }
+}

@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_claim.xml -->
+  <ListViewPanel
+    id="DocumentTemplateSearchResultLV">
+    <Require
+      name="DocTemplateSearchResultsList"
+      type="DocumentTemplateSearchResults[]"/>
+    <RowIterator
+      editable="false"
+      elementName="DocTemplateSearchResults"
+      pickValue="DocTemplateSearchResults.loadDescriptor()"
+      value="DocTemplateSearchResultsList">
+      <Row>
+        <Cell
+          id="Template"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Template"
+          sortOrder="1"
+          value="DocTemplateSearchResults.Name"
+          wrap="false"/>
+        <Cell
+          id="Type"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Type"
+          value="DocTemplateSearchResults.Type"
+          wrap="false"/>
+        <Cell
+          id="LossType"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.LossType"
+          sortBy="DocTemplateSearchResults.Lob"
+          value="formatLOB(DocTemplateSearchResults)"
+          wrap="false"/>
+        <Cell
+          id="State"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.State"
+          sortBy="DocTemplateSearchResults.State"
+          value="formatState(DocTemplateSearchResults)"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"
+          wrap="false"/>
+        <Cell
+          id="DateModified"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.DateModified"
+          value="DocTemplateSearchResults.DateModified"
+          wrap="false"/>
+        <Cell
+          id="Effective"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Effective"
+          value="DocTemplateSearchResults.DateEffective"
+          wrap="false"/>
+        <Cell
+          id="Expires"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Expires"
+          value="DocTemplateSearchResults.DateExpires"
+          wrap="false"/>
+        <Cell
+          id="Section"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Section"
+          sortBy="DocTemplateSearchResults.Section"
+          value="formatDocSection(DocTemplateSearchResults)"
+          visible="DocumentSection.getTypeKeys( false ).Count &gt; 1"
+          wrap="false"/>
+        <Cell
+          id="Identifier"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Identifier"
+          value="DocTemplateSearchResults.Identifier"
+          wrap="false"/>
+        <Cell
+          id="Language"
+          label="displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Language"
+          value="DocTemplateSearchResults.Language"
+          visible="LanguageType.getTypeKeys( false ).Count &gt; 1"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function formatLOB(result : DocumentTemplateSearchResults) : String {
+  if (result.Lob == null) {
+    return null
+  }
+  try {
+    return result.Lob.split( ",\\s*" ).map( \ s -> (s as LossType ).DisplayName).join(", ")
+  } catch (e) {
+    gw.api.util.Logger.DOCUMENT.error(displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.LOB.error( result.TemplateID, e.Message))
+    return result.Lob
+  }
+}
+
+function formatState(result : DocumentTemplateSearchResults) : String {
+  if (result.State == null) {
+    return null
+  }
+  try {
+   return result.State.split( ",\\s*" ).map( \ s -> (s as State ).DisplayName).join(", ")
+  } catch (e) {
+    gw.api.util.Logger.DOCUMENT.error(displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.State.error( result.TemplateID, e.Message))
+    return result.State
+  }
+}
+
+function formatDocSection(result : DocumentTemplateSearchResults) : String {
+  if (result.Section == null) {
+    return null
+  }
+  try {
+   return (result.Section as DocumentSection).DisplayName
+  } catch (e) {
+    gw.api.util.Logger.DOCUMENT.error(displaykey.LV.Claim.DocumentTemplateSearch.DocumentTemplateDescriptor.Section.error(result.TemplateID,e.Message))
+    return result.State
+  }
+}]]></Code>
+  </ListViewPanel>
+</PCF>

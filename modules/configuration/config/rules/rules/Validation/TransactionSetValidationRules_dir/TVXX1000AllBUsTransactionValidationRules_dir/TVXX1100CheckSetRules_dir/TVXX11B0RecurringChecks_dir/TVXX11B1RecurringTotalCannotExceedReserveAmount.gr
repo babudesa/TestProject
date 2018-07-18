@@ -1,0 +1,31 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B1 - Recurring Total Cannot Exceed Reserve Amount")
+internal class TVXX11B1RecurringTotalCannotExceedReserveAmount {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.New 
+|| (((transactionSet.OriginalVersion) as CheckSet).Recurrence.NumChecks < (transactionSet as CheckSet).Recurrence.NumChecks))
+&& transactionSet.LoadCommandID==null
+// 3-18-16 dnmiller: skipping converted claims
+// 5-19-16 dnmiller: added condition to account for when a saved recurring check set is edited and the number of checks is increased
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var checks = transactionSet as CheckSet
+  var trans = transactionSet.Transactions.first()
+  var availableReserves = gw.api.financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(checks.PrimaryCheck.Payments.first().ReserveLine)
+  //availableReserves = (null == availableReserves ? java.math.BigDecimal.ZERO : availableReserves.Amount);
+ 
+  if ((trans as Payment).Status != typekey.TransactionStatus.TC_PENDINGRECODE){
+    if (availableReserves < 0) {
+      transactionSet.reject("loadsave", displaykey.Validation.NewCheckWizard.RecurringTotal, null, null)
+    }
+  }
+ 
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

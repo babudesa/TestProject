@@ -1,0 +1,42 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1500CheckSetRules_dir.TPOXX1510StatusChanged_dir.TPOXX1512PendingStop_dir
+
+@gw.rules.RuleName("TPOXX1512B - Create Note")
+internal class TPOXX1512BCreateNote {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/!(TransactionSet.New and TransactionSet.LoadCommandID != null)
+//Notes will be created for all Stopped checks/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var check = (transactionSet as CheckSet).PrimaryCheck
+  var noteBody = ""
+  var noteSubject = ""
+  var checkNum : String
+  
+  if(check.ex_DraftRegion != null){
+    checkNum = check.ex_DraftRegion + "-" + check.CheckNumber
+  } else if ( check.PrefixExt != null) {
+    checkNum = check.PrefixExt + "-" + check.CheckNumber 
+  } else {
+    checkNum = check.CheckNumber
+  }
+  
+  // Generate note body
+  noteBody = displaykey.Rules.PostSetup.Transaction.Enterprise.CheckSet.ADISNoteBody("Stop Payment", checkNum, gw.api.util.StringUtil.formatNumber(check.GrossAmountExt, "#,##0.00" ), check.PayTo)
+  noteSubject = displaykey.Rules.PostSetup.Transaction.Enterprise.CheckSet.ADISNoteSubject("Stop Payment")
+
+  var exposure = (check.Payments != null && check.Payments.length > 0) ? check.Payments[0].Exposure : null
+  var note : Note
+  if (exposure == null) {
+    note = transactionSet.Claim.addNote( "check", noteBody)
+  }
+  else {
+    note = transactionSet.Claim.addNote( exposure, "check", noteBody)
+  }
+  note.Subject = noteSubject
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

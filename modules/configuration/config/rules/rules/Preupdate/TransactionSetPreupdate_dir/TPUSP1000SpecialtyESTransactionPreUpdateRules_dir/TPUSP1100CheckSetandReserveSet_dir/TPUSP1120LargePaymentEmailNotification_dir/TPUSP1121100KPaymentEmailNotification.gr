@@ -1,0 +1,51 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUSP1000SpecialtyESTransactionPreUpdateRules_dir.TPUSP1100CheckSetandReserveSet_dir.TPUSP1120LargePaymentEmailNotification_dir
+
+@gw.rules.RuleName("TPUSP1121 - 100K Payment Email Notification")
+internal class TPUSP1121100KPaymentEmailNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet typeis CheckSet
+and transactionSet.PrimaryCheck.GrossAmountExt >= 100000 
+and transactionSet.PrimaryCheck.GrossAmountExt < 500000
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+var transSet = transactionSet as CheckSet
+try {
+
+    var noteBody:String
+    var note:Note
+    var checkNum = transSet.PrimaryCheck.CheckNumber
+    var checkAmt = transSet.PrimaryCheck.GrossAmountExt
+    var checkFormat = gw.api.util.StringUtil.formatNumber( checkAmt, "$#,##0.00")
+    var body : String = templates.email.specialtyes.NoticeLargePayment100k_SPES.renderToString(transSet)
+    var envInfo : String = util.custom_Ext.finders.getEnvironment()
+    var recipient = transSet.Claim.AssignedUser.DisplayName;
+    var clmNum = transSet.Claim.ClaimNumber
+    var emailHelper = new EmailHelper()
+        // Defect#8360: Removed E&SSupport email and created Script Parameter for DL emails
+        if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+          emailHelper.sendEmailWithBodyEcf(transactionSet.Claim, 
+                ScriptParameters.SpecES100KPaymentNotificationEmail, ScriptParameters.GARSPaymentNotificationTo, 
+                "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+                displaykey.Email.Subject.LargePayment, body)
+          gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+        } else {
+          emailHelper.sendEmailWithBodyEcf(transSet.Claim,
+                ScriptParameters.ClaimCenterDevEmail, recipient, 
+                "ClaimCenterSupport@gaig.com", envInfo, 
+                displaykey.Email.Subject.LargePayment, body)
+          gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+        }
+    
+    noteBody = displaykey.Notes.NoteBody.LargePayment(checkNum, checkFormat)
+    note = transSet.Claim.addNote(NoteTopicType.TC_CHECK, noteBody)
+    note.Subject = displaykey.Notes.NoteSubject.LargePayment
+  
+  }catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( transSet, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

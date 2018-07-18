@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="perm.Claim.managepartiesinvolved(claim)"
+    canVisit="perm.Claim.view(claim) and perm.System.viewclaimparties"
+    handlesValidationIssue="VALUE typeis entity.Contact"
+    id="ClaimContacts"
+    title="displaykey.Web.ClaimContacts.Title"
+    validationParameter="Claim">
+    <LocationEntryPoint
+      signature="ClaimContacts(claim : Claim)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="perm.Claim.managepartiesinvolved(Claim)"
+      name="canAccessLinkButtons"
+      type="boolean"/>
+    <Variable
+      initialValue="null"
+      name="reviewType"
+      type="ReviewType"/>
+    <Screen
+      id="ClaimContactsScreen">
+      <ListDetailPanel
+        id="PeopleInvolvedDetailedListDetail"
+        lockWhileEditing="true"
+        selectionName="selectedClaimContact"
+        selectionType="ClaimContact">
+        <PanelRef
+          def="PeopleInvolvedDetailedLV(claim)">
+          <Toolbar>
+            <ToolbarButton
+              hideIfEditable="true"
+              id="ClaimContacts_CreateNewContactButton"
+              label="displaykey.Web.ClaimContacts.Button.CreateNewContact"
+              shortcut="N"
+              visible="perm.Claim.managepartiesinvolved(claim) and perm.Contact.createlocal">
+              <MenuItem
+                action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_PERSON)"
+                id="ClaimContacts_NewPerson"
+                label="displaykey.Web.NewContactMenu.Person"/>
+              <MenuItem
+                id="ClaimContacts_NewVendor"
+                label="displaykey.Web.NewContactMenu.Vendor">
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_AUTOREPAIRSHOP)"
+                  id="ClaimContacts_AutoRepairShop"
+                  label="displaykey.Web.NewContactMenu.AutoRepairShop"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_AUTOTOWINGAGCY)"
+                  id="ClaimContacts_AutoTowingAgcy"
+                  label="displaykey.Web.NewContactMenu.AutoTowingAgcy"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_DOCTOR)"
+                  id="ClaimContacts_Doctor"
+                  label="displaykey.Web.NewContactMenu.Doctor"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_MEDICALCAREORG)"
+                  id="ClaimContacts_MedicalCareOrg"
+                  label="displaykey.Web.NewContactMenu.MedicalCareOrg"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_COMPANYVENDOR)"
+                  id="ClaimContacts_CompanyVendor"
+                  label="displaykey.Web.NewContactMenu.CompanyVendor"/>
+              </MenuItem>
+              <MenuItem
+                action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_COMPANY)"
+                id="ClaimContacts_Company"
+                label="displaykey.Web.NewContactMenu.Company"/>
+              <MenuItem
+                id="ClaimContacts_NewLegal"
+                label="displaykey.Web.NewContactMenu.Legal">
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_ADJUDICATOR)"
+                  id="ClaimContacts_Adjudicator"
+                  label="displaykey.Web.NewContactMenu.Adjudicator"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_ATTORNEY)"
+                  id="ClaimContacts_Attorney"
+                  label="displaykey.Web.NewContactMenu.Attorney"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_LAWFIRM)"
+                  id="ClaimContacts_LawFirm"
+                  label="displaykey.Web.NewContactMenu.LawFirm"/>
+                <MenuItem
+                  action="NewPartyInvolvedPopup.push(claim, typekey.Contact.TC_LEGALVENUE)"
+                  id="ClaimContacts_LegalVenue"
+                  label="displaykey.Web.NewContactMenu.LegalVenue"/>
+              </MenuItem>
+            </ToolbarButton>
+            <PickerToolbarButton
+              action="AddressBookPickerPopup.push(entity.Contact, true, claim)"
+              hideIfEditable="true"
+              id="ClaimContacts_AddExistingButton"
+              label="displaykey.Web.ClaimContacts.Button.AddExisting"
+              onPick="AddExistingPartyInvolvedPopup.push(claim, new contact.TemporaryContact(PickedValue))"
+              shortcut="G"
+              visible="perm.Claim.managepartiesinvolved(claim) and perm.Contact.viewlocal"/>
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="claimparties.ClaimContactUtil.deleteClaimContacts(CurrentLocation, Claim, CheckedValues, CheckedValuesErrors)"
+              flags="any ClaimContact"
+              hideIfEditable="true"
+              id="ClaimContacts_DeleteButton"
+              iterator="PeopleInvolvedDetailedLV"
+              label="displaykey.Button.Delete"
+              shortcut="L"
+              visible="perm.Claim.managepartiesinvolved(claim)"/>
+            <CheckedValuesToolbarButton
+              allCheckedRowsAction="claimparties.ClaimContactUtil.mergeClaimContacts(CurrentLocation, CheckedValues, selectedClaimContact, CheckedValuesErrors)"
+              flags="any ClaimContact"
+              hideIfEditable="true"
+              id="ClaimContacts_MergeRolesButton"
+              iterator="PeopleInvolvedDetailedLV"
+              label="displaykey.Web.ClaimContacts.Button.MergeRoles"
+              visible="perm.Claim.managepartiesinvolved(claim)"/>
+          </Toolbar>
+        </PanelRef>
+        <CardViewPanel>
+          <Variable
+            initialValue="selectedClaimContact.Contact==null ? null : selectedClaimContact.Contact.generateLinkStatus()"
+            name="linkStatus"
+            recalculateOnRefresh="true"/>
+          <Card
+            id="BasicsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Basics">
+            <PanelRef
+              def="ContactBasicsDV(selectedClaimContact, true, linkStatus, claim)"
+              mode="selectedClaimContact.contact.Subtype">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+          <Card
+            id="AddressesCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Addresses"
+            visible="!(selectedClaimContact.Contact typeis Place)">
+            <PanelRef
+              def="AddressesPanelSet(selectedClaimContact)">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+          <Card
+            id="RelatedContactsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.RelatedContacts">
+            <PanelRef>
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+              <DetailViewPanel>
+                <InputColumn>
+                  <ListViewInput
+                    def="ClaimContactRelatedContactsLV(selectedClaimContact, claim)"
+                    validationExpression="selectedClaimContact.Contact.validateRelationships().formatUserMessage()"
+                    width="400">
+                    <Toolbar>
+                      <IteratorButtons/>
+                    </Toolbar>
+                  </ListViewInput>
+                </InputColumn>
+              </DetailViewPanel>
+            </PanelRef>
+          </Card>
+          <Card
+            id="ReviewsCard"
+            title="displaykey.Web.ClaimContacts.ContactDetails.Reviews"
+            visible="util.ReviewPageHelper.shouldDisplayReviewTab(selectedClaimContact.Contact) and perm.Review.list">
+            <PanelRef
+              def="ReviewsPanelSet(claim,selectedClaimContact.Contact,true,false)">
+              <Toolbar>
+                <ToolbarButtonSetRef
+                  toolbarButtonSet="ContactDetailToolbarButtonSet(selectedClaimContact, canAccessLinkButtons, linkStatus, false)"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+  </Page>
+</PCF>

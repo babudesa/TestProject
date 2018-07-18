@@ -1,0 +1,37 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1300 - Reconnect Loss Details")
+internal class CPUXX1300ReconnectLossDetails {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.LossLocation== null and claim.Policy.isPolicyInRefresh( 1 ))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var oldAddy:Address;
+
+//Claim loss location was lost in policy refresh mode
+if(claim.LossLocation == null and claim.Policy.isPolicyInRefresh( 1 )){
+  oldAddy = (claim.OriginalVersion as Claim).LossLocation;
+  for(newAddy in claim.Addresses){
+    if(newAddy.AddressLine1 == oldAddy.AddressLine1
+        and newAddy.AddressLine2 == oldAddy.AddressLine2 
+        and newAddy.AddressLine3 == oldAddy.AddressLine3 
+        and newAddy.State == oldAddy.State
+        and newAddy.PostalCode == oldAddy.PostalCode
+        and oldAddy != newAddy){
+      claim.LossLocation = newAddy
+      
+      claim.LossLocation.Latitude = oldAddy.Latitude
+      claim.LossLocation.Longitude = oldAddy.Longitude
+      
+      actions.exitToNext()
+    }
+    
+}
+if(claim.LossLocation == null){
+  claim.LossLocation =  (claim.OriginalVersion as Claim).LossLocation
+}
+   
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,46 @@
+package rules.BulkInvoiceApproval.BulkInvoiceApprovalRules_dir.BIAXX1000AllBUBulkInvoiceApprovalRules_dir
+
+@gw.rules.RuleName("BIAXX1200 - LitAdvisor Approval")
+internal class BIAXX1200LitAdvisorApproval {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*///Determines if lit advisor invoices need approval
+//This rule will force all invoices to be approved
+//Author - Dimitar Stavrakov
+//Updated - 3/3/10 - sprzygocki - updated rule so that it won't default back to
+//Veronika each time it's approved
+
+bulkInvoice.BulkInvoiceTypeExt == BulkInvoiceType.TC_LIT_ADVISOR &&
+bulkInvoice.ApprovalStatus == ApprovalStatus.TC_UNAPPROVED/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+  
+    var approvingUser = util.GlobalParameters.ParameterFinder.getUserParameter( "litadvapproval", "AGRIAUTO")
+
+    //checks if the total of the invoice is higher than the user's authority limit for 
+    //claim payments to date (expense)
+    if(bulkInvoice.LastApprovingUser != approvingUser){
+    
+        if (!util.custom_Ext.ApprovalRules.hasApprovalHistory(bulkInvoice)){
+            bulkInvoice.requireApproval( "Bulk invoice for " + bulkInvoice.Payee.DisplayName + " requires approval." );
+    
+        } else {
+         
+            if(bulkInvoice.BulkInvoiceTotal > bulkInvoice.LastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount){
+                bulkInvoice.requireApproval( "Bulk invoice for " + bulkInvoice.Payee.DisplayName + " requires approval." );
+            } else {
+                bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+            }
+        }
+    } else {
+      gw.api.util.Logger.logInfo("defaulting requester to batchsu")
+      bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+    } 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().DisplayName, e, null )
+}
+actions.exit()/*end00rule*/
+  }
+}

@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <ListViewPanel
+    id="AddressBookSearchLV">
+    <Require
+      name="addressBookMatch"
+      type="contact.AddressBookMatch"/>
+    <Require
+      name="pageHelper"
+      type="contact.ProximitySearchPageHelper"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Require
+      name="searchResults"
+      type="ContactQuery"/>
+    <Require
+      name="searchCriteria"
+      type="ContactSearchCriteria"/>
+    <Variable
+      initialValue="pageHelper.getDrivingDirectionsCache()"
+      name="directions"/>
+    <RowIterator
+      checkBoxVisible="searchCriteria.ProximitySearch or externalContactSource.supportsDelete() and (addressBookMatch == null or addressBookMatch.canDelete())"
+      editable="false"
+      elementName="contact"
+      hasCheckBoxes="true"
+      pickValue="externalContactSource.createLocal(contact)"
+      value="SearchResults">
+      <ToolbarFlag
+        name="ExternalContact"/>
+      <ToolbarFlag
+        condition="perm.Contact.deleteab(contact)"
+        name="CanDeleteContact"/>
+      <Row>
+        <Cell
+          action="gw.api.contact.AddressBookUtil.linkToMatch(AddressBookMatch, contact)"
+          enableSort="false"
+          id="LinkTo"
+          label="displaykey.Web.Addressbook.Search.Result.LinkTo"
+          value="displaykey.Web.Addressbook.Search.Result.LinkTo"
+          valueVisible="addressBookMatch.canLinkTo(contact)"
+          visible="addressBookMatch != null and addressBookMatch.isLinking()"/>
+        <Cell
+          action="AddressBookContactDetailPopup.push(externalContactSource.wrap(contact))"
+          id="DisplayName"
+          label="displaykey.Web.Addressbook.Search.Result.Name"
+          sortOrder="2"
+          value="contact"/>
+        <Cell
+          id="AddressLine1"
+          label="displaykey.Web.Address.Default.Address"
+          value="contact.PrimaryAddress.AddressLine1"/>
+        <Cell
+          id="City"
+          label="displaykey.Web.Address.Default.City"
+          value="contact.PrimaryAddress.City"
+          wrap="false"/>
+        <Cell
+          id="State"
+          label="displaykey.Web.Address.Default.State"
+          value="contact.PrimaryAddress.State"
+          visible="gw.api.address.CountryAddressFields.DefaultCountryHasStates"
+          wrap="false"/>
+        <Cell
+          id="PostalCode"
+          label="gw.api.admin.BaseAdminUtil.getDefaultCountry() == Country.TC_US ? displaykey.Web.Address.US.ZIP : displaykey.Web.Address.Default.PostalCode"
+          value="contact.PrimaryAddress.PostalCode"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="PrimaryPhone"
+          label="displaykey.Web.Addressbook.Search.Result.Phone"
+          value="contact.PrimaryPhoneValue"
+          wrap="false"/>
+        <Cell
+          id="ContactSubtype"
+          label="displaykey.Web.Addressbook.Search.Result.Type"
+          value="contact.Subtype"
+          width="100"
+          wrap="false"/>
+        <Cell
+          id="Score"
+          label="displaykey.Web.Addressbook.Search.Result.ReviewScore"
+          value="contact.Score"
+          width="50"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="GCDistance"
+          label="displaykey.Web.Addressbook.Search.Result.ProximateDistance"
+          sortBy="contact.PrimaryAddress.getDistanceFrom(searchCriteria.ProximitySearchCenter)"
+          sortOrder="1"
+          value="contact.PrimaryAddress.getDistanceFromAsString(searchCriteria.ProximitySearchCenter)"
+          valueVisible="(contact.PrimaryAddress != null) AND (contact.PrimaryAddress.hasLocationInformation())"
+          visible="searchCriteria.ProximitySearch"
+          width="50"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="DrivingDistance"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingDistance"
+          value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalDistanceString()"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="DrivingTime"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingTime"
+          value="directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress).getTotalTimeInMinutes()"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"
+          wrap="false"/>
+        <Cell
+          action="AddressBookDirectionsPopup.push(directions.getCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress))"
+          enableSort="false"
+          id="Directions"
+          label="displaykey.Web.Addressbook.Search.Result.Directions"
+          value="displaykey.Web.Addressbook.Search.Result.Directions"
+          valueVisible="directions.haveCached(searchCriteria.ProximitySearchCenter, contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria)"
+          width="50"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

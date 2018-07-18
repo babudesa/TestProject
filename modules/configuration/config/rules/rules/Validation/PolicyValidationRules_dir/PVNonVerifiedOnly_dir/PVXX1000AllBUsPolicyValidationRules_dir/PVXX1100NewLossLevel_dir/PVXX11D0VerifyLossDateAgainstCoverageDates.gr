@@ -1,0 +1,44 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11D0 - Verify Loss Date Against Coverage Dates")
+internal class PVXX11D0VerifyLossDateAgainstCoverageDates {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Claim.ClaimsMadePolicyExt == false and 
+(exists(covChange in policy.AllCoverages 
+  where(exists(change in covChange.ChangedFields 
+    where(change =="EffectiveDate" or change == "ExpirationDate"))))==true)
+
+// defect 2281 - blawless - show a warning if new coverage dates do not contain the date of loss when there is a feature on the coverage./*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var calledByValidate session : List
+  
+  for(cov in policy.AllCoverages) {
+    //only check if there were changed to coverage eff/exp dates
+    if(exists(change in cov.ChangedFields where(change =="EffectiveDate" or change == "ExpirationDate"))){
+      //Only check if the Coverage is being used on a feature
+      for(exp in policy.Claim.Exposures){
+        if(cov ==  exp.Coverage){
+          if(policy.Claim.LossDate!=null){
+            if ((cov.EffectiveDate!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.Claim.LossDate,cov.EffectiveDate) < 0) 
+                || (cov.ExpirationDate!=null and gw.api.util.DateUtil.compareIgnoreTime(policy.Claim.LossDate,cov.ExpirationDate) > 0)){
+              if (!(exists(hist in policy.Claim.History where hist.Description == "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+exp.DisplayName))){
+                if(calledByValidate == null or !calledByValidate.contains(policy.Claim.ClaimNumber)){
+                  policy.Claim.createCustomHistoryEvent("DataChange", "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+exp.DisplayName)
+                }
+                policy.reject(null, null, "newloss", displaykey.Libraries.ClassExt.PolCovDateError(util.custom_Ext.DateTime.formatDate(policy.Claim.LossDate),"Coverage: " + cov.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(cov.EffectiveDate, cov.ExpirationDate)))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

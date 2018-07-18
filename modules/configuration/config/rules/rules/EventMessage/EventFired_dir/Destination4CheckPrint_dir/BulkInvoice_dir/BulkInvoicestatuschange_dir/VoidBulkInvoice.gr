@@ -1,0 +1,27 @@
+package rules.EventMessage.EventFired_dir.Destination4CheckPrint_dir.BulkInvoice_dir.BulkInvoicestatuschange_dir
+
+@gw.rules.RuleName("Void BulkInvoice")
+internal class VoidBulkInvoice {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/(messageContext.Root as BulkInvoice).Status == "pendingvoid" || 
+(messageContext.Root as BulkInvoice).Status == "pendingstop"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var blkinvoice : BulkInvoice = messageContext.Root as BulkInvoice;
+var action: String = "voided"
+var subject: String = "BulkInvoice Notification - Void"
+var chk2 : Check
+
+//set pending stop date
+if (blkinvoice.Status == "pendingvoid") {
+  blkinvoice.DateVoidedExt = gw.api.util.DateUtil.currentDate()
+} else {
+  blkinvoice.DateStoppedExt = gw.api.util.DateUtil.currentDate()
+}
+
+var newPayload = templates.messaging.checkwriter.BulkCheckData.renderToString(blkinvoice)
+var newMessage = messageContext.createMessage( newPayload );
+newMessage.putEntityByName("theBulkInvoice", blkinvoice)/*end00rule*/
+  }
+}

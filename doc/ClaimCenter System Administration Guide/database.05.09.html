@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Configuring Database Statistics</title>
+    <link rel="StyleSheet" href="css/database.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter System Administration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="database.05.01.html#1199461">Configuring and Maintaining the ClaimCenter Database</a> : <a class="WebWorks_Breadcrumb_Link" href="database.05.07.html#1199461">Maintaining the Database</a> : Configuring Database Statistics</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H2B_-_Heading_2_Break"><a name="1199461">Configuring Database Statistics</a></div>
+      <div class="B_-_Body"><a name="1217309">Database statistics are metadata that describe the underlying database. For example, database statistics store row </a>counts in a table, how the data is distributed in a table, and much more. A database management system uses statistics to determine query plans to optimize performance.</div>
+      <div class="B_-_Body"><a name="1217316">ClaimCenter provides database statistics generation designed specifically for how the ClaimCenter application </a>and data model interact with the physical database. With Oracle, generating database statistics from the database management system can potentially create statistics that cause ClaimCenter to select a bad plan for execution of SQL queries. Therefore, always use ClaimCenter to generate database statistics, rather than using the statistics generation provided with Oracle. For SQL Server, Guidewire requires that you set <span class="cv_-_computer_voice">Auto Create Statistics</span> and <span class="cv_-_computer_voice">Auto Update Statistics</span> to <span class="cv_-_computer_voice">true</span>.</div>
+      <div class="B_-_Body"><a name="1217569">Updating database statistics can take a long time on a large database. Only collect database statistics if there are </a>significant changes to data, such as after a major upgrade, after using the <span class="cv_-_computer_voice">table_import </span><span class="cv_-_computer_voice">-integritycheckandload</span> command, or if there are database performance problems. Under normal operating conditions, you do not need to update database statistics on the ClaimCenter server often. If you encounter performance problems or degradation related to the database, check the <span class="ui_-_UI_element">Database Catalog Statistics</span> page on the <span class="ui_-_UI_element">Info </span><span class="ui_-_UI_element">Pages</span> section of the <span class="ui_-_UI_element">Server Tools</span>. If the page shows suspicious or inaccurate statistics, update database statistics. If the data change is high, consider using a weekly or biweekly schedule for updating statistics.</div>
+      <div class="B_-_Body"><a name="1239053">You can also run a process to only update statistics for tables that have had a configurable percentage of data </a>changed since the last statistics process was run.</div>
+      <div class="B_-_Body"><a name="1217576">ClaimCenter automatically updates specific database statistics during an upgrade, in conjunction with selected </a>batch processes, or during the <span class="cv_-_computer_voice">integritycheckandload</span> process. </div>
+      <div class="B_-_Body"><a name="1217302">For database upgrades, ClaimCenter updates database statistics for objects that the upgrade process changes </a>significantly. For optimum performance, generate full database statistics after performing an upgrade between major versions.</div>
+      <div class="B_-_Body"><a name="1217413">Some ClaimCenter batch processes use work or scratch tables to store intermediate calculations. Other batch </a>processes populate denormalized tables that ClaimCenter uses internally for performance reasons. These processes can update database statistics on the scratch tables and denormalized tables during their execution.</div>
+      <div class="B_-_Body"><a name="1217414">As you import data into tables from an external source using the </a><span class="cv_-_computer_voice">table_import -integritycheckandload</span> command, ClaimCenter validates the staging tables against the data model and the production tables. To avoid the formation of bad queries prior to loading new data, ClaimCenter updates statistics for the involved tables before and after the load. For optimum performance, generate full database statistics after running the <span class="cv_-_computer_voice">integritycheckandload</span> process. For more information on the <span class="cv_-_computer_voice">table_import</span> tool, see <a href="javascript:WWHClickedPopup('admin', 'commandsref.15.6.html#1767604', '');" title="table_import Command">"table_import Command"</a>.</div>
+      <div class="B_-_Body"><a name="1217408">Using the statistics page, you can see if any statistics are out of date. Guidewire recommends that you archive </a>database statistics as standard practice. This ensures that you have a record of the database history that can be reviewed if necessary.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1199510">Have your database administrator (DBA) review these statistics with you.</a></div>
+      <div class="H3_-_Heading_3"><a name="1199512">Commands for Updating Database Statistics</a></div>
+      <div class="B_-_Body"><a name="1199513">You can use command line commands to explicitly update database statistics or to generate the SQL statements </a>to update statistics.The commands are:</div>
+      <div class="T_-_Table"><a name="1238461">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left;" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="1238472">Type</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="1238474">Description</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom;">
+            <div class="TH_-_Table_Heading"><a name="1238476">Command</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238478">Full</a></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238480">Generates database sta</a>tistics for every table in the ClaimCenter database.</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238739">To update statistics for all tables:</a></div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238482">maintenance_tools -password </a></span><span class="pst_-_parameter_in_code_snippets_table">password</span><span class="cvt_-_computer_voice_table"> -startprocess dbstatistics</span></div>
+            <div class="TT_-_Table_Text"><a name="1238688">To generate database statistic SQL statements for all tables:</a></div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238707">maintenance_tools -password </a></span><span class="pst_-_parameter_in_code_snippets_table">password</span><span class="cvt_-_computer_voice_table"> -getdbstatisticsstatements</span></div>
+            <div class="TT_-_Table_Text"><a name="1238760">You can use the results purely as a reference, or you can edit the statements </a>and execute them outside of ClaimCenter. Statements are grouped by table.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238539">Incremental</a></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238541">Generates database sta</a>tistics for tables where the change in the table data caused by inserts and deletes exceeds a certain percentage threshold. The threshold is specified by the <span class="cvt_-_computer_voice_table">incrementalupdatethres</span><span class="cvt_-_computer_voice_table">holdpercent</span> attribute on the <span class="cvt_-_computer_voice_table">databasestatistics</span> element. The default is 10 percent.</div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238562">To update statistics for tables exceeding the change threshold</a></div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238671">maintenance_tools -password </a></span><span class="pst_-_parameter_in_code_snippets_table">password</span><span class="cvt_-_computer_voice_table"> -startprocess </span><span class="cvt_-_computer_voice_table">incrementaldbstats</span></div>
+            <div class="TT_-_Table_Text"><a name="1239088">This process does not update statistics on any table that has locked statistics.</a></div>
+            <div class="TT_-_Table_Text"><a name="1239080">To generate database statistic SQL statements for tables exceeding the change </a>threshold:</div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238779">maintenance_tools -password </a></span><span class="pst_-_parameter_in_code_snippets_table">password</span><span class="cvt_-_computer_voice_table"> </span><span class="cvt_-_computer_voice_table">-getincrementaldbstatisticsstatements </span></div>
+            <div class="TT_-_Table_Text"><a name="1238794">You can use the results purely as a reference, or you can edit the statements </a>and execute them outside of ClaimCenter. Statements are grouped by table.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238484">Staging</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238515">Generates database sta</a>tistics for staging tables.</div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238488">table_import -password </a></span><span class="pst_-_parameter_in_code_snippets_table">password</span><span class="cvt_-_computer_voice_table"> -updatedatabasestatistics</span></div>
+          </td>
+        </tr>
+      </table>
+      <div class="H3_-_Heading_3"><a name="1199521">Configuring Database Statistic Generation</a></div>
+      <div class="B_-_Body"><a name="1199526">You can control which database statistics statements ClaimCenter generates by configuring the database connec</a>tion in the <span class="cv_-_computer_voice">config.xml</span> file. In the following example, an Oracle database connection shows the use of these parameters:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1232307">&lt;database name="ClaimCenterDatabase" driver="dbcp" dbtype="oracle" autoupgrade="false"</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232308">&nbsp;</a>&nbsp;automaticallycreatetablespaces="false"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232309">&nbsp;</a>&nbsp;&lt;param name="jdbcURL" value="jdbc:oracle:thin:USER/PASSWORD@HOSTNAME:PORT:ORACLE_SID"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1247821">&nbsp;</a>&nbsp;&lt;param name="stmtPool.enabled" value="false"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1247822">&nbsp;</a>&nbsp;&lt;param name="maxWait" value="30000"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232312">&nbsp;</a>&nbsp;<span class="s_-_strong">&lt;databasestatistics samplingpercentage="5" databasedegree="2" &gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><span class="cvt_-_computer_voice_table"><a name="1239015">&nbsp;</a></span><span class="cvt_-_computer_voice_table">&nbsp;</span><span class="cvt_-_computer_voice_table">&nbsp;</span><span class="s_-_strong">incrementalupdatethresholdpercent</span><span class="cvt_-_computer_voice_table">=</span>"10"<span class="s_-_strong">&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="1232316">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;tablestatistics name="cc_taccountlineitem"&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="1232317">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;histogramstatistics name="TACCOUNTID" samplingpercentage="100"/&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="1232318">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;/tablestatistics&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line" style="font-style: normal; font-variant: normal; font-weight: normal; text-transform: none; vertical-align: baseline;"><span class="s_-_strong"><a name="1232319">&nbsp;</a></span><span class="s_-_strong">&nbsp;</span><span class="s_-_strong">&lt;/databasestatistics&gt;</span></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232320">&nbsp;</a>&nbsp;&lt;param name="checker.threads" value="1"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232321">&nbsp;</a>&nbsp;&lt;tablespacemapping logicalname="ADMIN" physicalname="CC_ADMIN"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232322">&nbsp;</a>&nbsp;&lt;tablespacemapping logicalname="OP" physicalname="CC_OP"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232323">&nbsp;</a>&nbsp;&lt;tablespacemapping logicalname="TYPELIST" physicalname="CC_TYPELIST"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232324">&nbsp;</a>&nbsp;&lt;tablespacemapping logicalname="INDEX" physicalname="CC_INDEX"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1232325">&nbsp;</a>&nbsp;&lt;tablespacemapping logicalname="STAGING" physicalname="CC_STAGING"/&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1232326">&lt;/database&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1199596">You can only specify one </a><span class="cv_-_computer_voice">databasestatistics</span> subelement within a database element. The <span class="cv_-_computer_voice">databasestatistics</span> element has the following format:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1199597">&lt;databasestatistics samplingpercentage="</a><span class="pc_-_parameter_in_code">integer</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>"</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1238946">&nbsp;</a><span class="cvt_-_computer_voice_table">incrementalupdatethresholdpercent=</span>"<span class="pc_-_parameter_in_code">integer</span>"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199598">&nbsp;</a>&nbsp;&lt;tablestatistics name="<span class="pc_-_parameter_in_code">string</span>" samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199599">&nbsp;</a>&nbsp;&lt;tablestatistics name="<span class="pc_-_parameter_in_code">string</span>" samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199600">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;indexstatistics name="<span class="pc_-_parameter_in_code">string</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>” samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199601">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;keycolumn name="string" keyposition="integer"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199602">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;keycolumn name="string" keyposition="integer"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199603">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199604">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;indexstatistics/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199605">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;histogramstatistics </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199606">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;name="<span class="pc_-_parameter_in_code">string</span>" </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199607">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;numbuckets="<span class="pc_-_parameter_in_code">integer</span>" </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199608">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;databasedegree="<span class="pc_-_parameter_in_code">integer</span>” </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199609">&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>"/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199610">&nbsp;</a>&nbsp;&nbsp;&nbsp;...</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199611">&nbsp;</a>&nbsp;&lt;tablestatistics/&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199612">&nbsp;</a>&nbsp;...</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1199613">&lt;/databasestatistics&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1199614">The following sections discuss this element and how to use it.</a></div>
+      <div class="HS_-_Head_Sub"><a name="1199615">databasestatistics</a></div>
+      <div class="B_-_Body"><a name="1199616">This element specifies database statistic parameters that override the database defaults specified on the database. </a>This element has the following attributes.</div>
+      <div class="T_-_Table"><a name="1199633">&nbsp;</a></div>
+      <table class="withoutHeading" style="text-align: left;" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1199619">databasedegree</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><span class="s_-_strong"><a name="1199621">On Oracle</a></span>, this attribute controls the degree of parallelism for each individual statement. The default is 1. ClaimCenter uses the value of this attribute for all statements.</div>
+            <div class="TT_-_Table_Text"><span class="s_-_strong"><a name="1199622">SQL Server</a></span> ignores the <span class="cvt_-_computer_voice_table">databasedegree</span> attribute.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1199624">samplingpercentage</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><span class="s_-_strong"><a name="1199626">On Oracle</a></span>, this attribute controls the value of the <span class="cvt_-_computer_voice_table">estimate_percent</span> parameter in the <span class="cvt_-_computer_voice_table">dbms_stats.gather_table_stats() </span>SQL statements. The default value is <span class="cvt_-_computer_voice_table">100</span>. You can set <span class="cvt_-_computer_voice_table">samplingpercentage</span> to either an integer from <span class="cvt_-_computer_voice_table">1</span> to <span class="cvt_-_computer_voice_table">100</span> to directly set the <span class="cvt_-_computer_voice_table">estimate_percent</span> value, or set <span class="cvt_-_computer_voice_table">samplingpercentage</span> to <span class="cvt_-_computer_voice_table">0</span> to set <span class="cvt_-_computer_voice_table">estimate_percent</span> to <span class="cvt_-_computer_voice_table">AUTO_SAMPLE_SIZE</span>.</div>
+            <div class="TT_-_Table_Text"><a name="1247874">ClaimCenter uses the database default for </a><span class="cvt_-_computer_voice_table">dbms_stats.gather_index_stats()</span> statements.</div>
+            <div class="TT_-_Table_Text"><span class="s_-_strong"><a name="1199627">On SQL Server</a></span>, the <span class="cvt_-_computer_voice_table">samplingpercentage</span> attributes controls the value of the <span class="cvt_-_computer_voice_table">WITH FULLSCAN/SAMPLE PERCENT</span> clause in the <span class="cvt_-_computer_voice_table">UPDATE STATISTICS</span> statements. A value of <span class="cvt_-_computer_voice_table">100</span>, the default, translates into <span class="cvt_-_computer_voice_table">WITH FULLSCAN</span>, as does a value of <span class="cvt_-_computer_voice_table">0</span>.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1238572">incrementalupdatethresholdpercent</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1238574">Specifies the percentage of table data that must have changed since the last sta</a>tistics process for the incremental statistics generation batch process to update statistics for the table.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="1199634">The values you set for these attributes apply to all the tables in the database. You can fine tune these values and </a>set specific values on individual tables using the <span class="cv_-_computer_voice">tablestatistics</span> subelement. Setting these values on a specific table overrides the values set on the database<span class="e_-_emphasis"> for just that table</span>. </div>
+      <div class="HS_-_Head_Sub"><a name="1199635">tablestatistics</a></div>
+      <div class="B_-_Body"><a name="1199636">You can use this element to override database-wide statistics settings defined on the </a><span class="cv_-_computer_voice">databasestatistics</span> element for a specific table. You can override the <span class="cv_-_computer_voice">databasedegree</span> (Oracle only), <span class="cv_-_computer_voice">samplingpercentage</span>, and statistic gathering behavior of ClaimCenter. Provide a <span class="cv_-_computer_voice">name</span> parameter to identify the table for which you want to set values:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1247456">&lt;tablestatistics name="</a><span class="pc_-_parameter_in_code">string</span>" samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>"</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1247686">&nbsp;</a>action="update|delete|keep"/&gt;</PRE>
+      <div class="B_-_Body"><a name="1247460">By default, ClaimCenter on Oracle does not generate statistics on any table used for processing work items. </a>ClaimCenter deletes any existing statistics on these tables whenever ClaimCenter updates statistics. You can override this behavior using the <span class="cv_-_computer_voice">action</span> attribute of the <span class="cv_-_computer_voice">tablestatistics</span> element. You can set the <span class="cv_-_computer_voice">action</span> attribute to one of the following values:</div>
+      <div class="T_-_Table"><a name="1247509">&nbsp;</a></div>
+      <table class="Shading" style="text-align: left;" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1247523">update</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1247525">Update the statistics on the table.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1247527">delete</a></span></div>
+          </td>
+          <td style="background-color: #F7F7F7; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1247529">Delete the statistics on the table. This value does nothing in SQL Server.</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline;"><span class="cvt_-_computer_voice_table"><a name="1247531">keep</a></span></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top;">
+            <div class="TT_-_Table_Text"><a name="1247533">Keep the existing statistics. ClaimCenter does not update statistics for any table where the user explicitly specifies </a><span class="cvt_-_computer_voice_table">keep</span> as the value for the <span class="cv_-_computer_voice">action</span> attribute. This value affects any type of database.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="B_-_Body"><a name="1247409">The default value is </a><span class="cv_-_computer_voice">update</span>.</div>
+      <div class="B_-_Body"><a name="1247395">The </a><span class="cv_-_computer_voice">tablestatistics</span> element is optional. If you do not specify a <span class="cv_-_computer_voice">tablestatistics</span> element for a table, ClaimCenter uses the database-wide statistics defined on the <span class="cv_-_computer_voice">databasestatistics</span> element.</div>
+      <div class="B_-_Body"><a name="1199639">On Oracle, you can use the </a><span class="cv_-_computer_voice">indexstatistics</span> element or <span class="cv_-_computer_voice">histogramstatistics</span> subelements to override these values on specific indexes or histograms. SQL Server recognizes only the <span class="cv_-_computer_voice">histogramstatistics</span> elements.</div>
+      <div class="T_-_Table"><a name="1199640">&nbsp;</a></div>
+      <div class="HS_-_Head_Sub"><a name="1199641">indexstatistics</a></div>
+      <div class="B_-_Body"><a name="1199642">This is an optional element that overrides, for Oracle, the </a><span class="cv_-_computer_voice">databasedegreee</span> and <span class="cv_-_computer_voice">samplingstatistics</span> for an individual index. This element has no meaning in SQL Server. </div>
+      <div class="B_-_Body"><a name="1247679">The values you set override the database defaults for all </a><span class="cv_-_computer_voice">dbms_stats.gather_index_stats</span> statements on the named index. This element has the following format:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1199643">&lt;indexstatistics name="</a><span class="pc_-_parameter_in_code">string</span>" databasedegree="<span class="pc_-_parameter_in_code">integer</span>” samplingpercentage="<span class="pc_-_parameter_in_code">integer</span>"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199644">&nbsp;</a>&nbsp;&lt;keycolumn name="string" keyposition="integer"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199645">&nbsp;</a>&nbsp;&lt;keycolumn name="string" keyposition="integer"&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199646">...</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1199647">&lt;indexstatistics/&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1199648">You must specify a </a><span class="cv_-_computer_voice">name</span> attribute to identify the index. Then, you can specify a <span class="cv_-_computer_voice">databasedegree</span> attribute and/or a <span class="cv_-_computer_voice">samplingpercentage</span> attribute.</div>
+      <div class="HS_-_Head_Sub"><a name="1199649">histogramstatistics</a></div>
+      <div class="B_-_Body"><a name="1199650">Use this element to specify a column-specific value for the </a><span class="cv_-_computer_voice">databasedegree</span> (ignored on SQL Server) and the <span class="cv_-_computer_voice">samplingpercentage</span> attributes. By default, ClaimCenter issues a single <span class="cv_-_computer_voice">dbms_stats.gather_table_stats(... </span><span class="cv_-_computer_voice">'FOR COLUMNS ...')</span> statement for all columns of interest in the table, including:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1199654">All columns that are the first key column of an index. (Oracle only)</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1199655">The </a><span class="cv_-_computer_voice">retired</span> column, if present.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1199656">The </a><span class="cv_-_computer_voice">subtype</span> column, if present.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1199657">All columns that have the </a><span class="cv_-_computer_voice">createhistogram</span> attribute set to <span class="cv_-_computer_voice">true</span>. This is set internally by Guidewire.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="1199658">If you specify non-default values for either the </a><span class="cv_-_computer_voice">databasedegree</span> or the <span class="cv_-_computer_voice">samplingpercentage</span> on a particular column, ClaimCenter issues a separate statement for those values alone.</div>
+      <div class="B_-_Body"><a name="1199659">The </a><span class="cv_-_computer_voice">histogramstatistics</span> element has the following format:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1199660">&lt;histogramstatistics </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199661">&nbsp;</a>&nbsp;name="<span class="pc_-_parameter_in_code">string</span>" </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199662">&nbsp;</a>&nbsp;numbuckets="<span class="pc_-_parameter_in_code">integer</span>" </PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1199663">&nbsp;</a>&nbsp;databasedegree="<span class="pc_-_parameter_in_code">integer</span>” </PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1199664">samplingpercentage="</a><span class="pc_-_parameter_in_code">integer</span>"/&gt;</PRE>
+      <div class="B_-_Body"><span class="cv_-_computer_voice"><a name="1199665">name</a></span> specifies a column name. <span class="cv_-_computer_voice">numbuckets</span> controls the number of buckets for the specified histogram. The default value for the number of buckets is 254 for the retired and subtype columns. For all other columns, ClaimCenter uses 75, the database default.</div>
+      <div class="HS_-_Head_Sub"><a name="1199666">Notes:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1199670">For performance reasons, ClaimCenter does not currently create a histogram on </a><span class="cv_-_computer_voice">publicid</span> columns. These columns are rarely, if ever, referenced in a <span class="cv_-_computer_voice">WHERE</span> clause.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="1217078">Also for performance reasons, ClaimCenter tries to combine as many columns as possible into a single state</a>ment. Certain tabs in the <span class="ui_-_UI_element">Database Catalog Statistics</span> page display a <span class="cv_-_computer_voice">dbms_stats.gather_table_stats(...'FOR </span><span class="cv_-_computer_voice">COLUMNS ...')</span> statement with only the associated column for each histogram, regardless of the parameter values. This enables you to specify the most granular statement if a given histogram is out of date.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="HS_-_Head_Sub"><a name="1231821">Collecting Statistics on All Indexed Columns</a></div>
+      <div class="B_-_Body"><a name="1231831">On Oracle databases, you can configure ClaimCenter to generate statistics for all indexed columns. To enable </a>statistics generation on all indexed columns, set <span class="cv_-_computer_voice">CollectHistogramsOnAllIndexedColumns</span> to <span class="cv_-_computer_voice">true</span> in <span class="cv_-_computer_voice">config.xml</span>.</div>
+      <div class="B_-_Body"><a name="1231901">The bucket size for histograms created on all indexed columns is configurable with the </a><span class="cv_-_computer_voice">BucketSizeForHistogramsOnAllIndexedColumns</span> parameter. The default is <span class="cv_-_computer_voice">254</span>.</div>
+      <div class="B_-_Body"><a name="1231841">By default, </a><span class="cv_-_computer_voice">CollectHistogramsOnAllIndexedColumns</span> is set to <span class="cv_-_computer_voice">false</span>. The preferred method is to gather histograms on select columns. </div>
+      <div class="B_-_Body"><a name="1231938">The </a><span class="cv_-_computer_voice">&lt;histogramstatistics&gt;</span> element is ignored if <span class="cv_-_computer_voice">CollectHistogramsOnAllIndexedColumns</span> is <span class="cv_-_computer_voice">true</span>. Other configuration settings in the <span class="cv_-_computer_voice">&lt;databasestatistics&gt;</span> element still apply. </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

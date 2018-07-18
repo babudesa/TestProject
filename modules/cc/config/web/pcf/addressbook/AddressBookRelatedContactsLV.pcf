@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    desc="List of Related Contacts"
+    id="AddressBookRelatedContactsLV">
+    <Require
+      name="primaryContact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <RowIterator
+      editable="true"
+      elementName="contactContact"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="10"
+      toAdd="primaryContact.addContactContact(contactContact)"
+      toRemove="primaryContact.removeContactContact(contactContact)"
+      value="primaryContact.allContactContacts">
+      <ToolbarFlag
+        name="relationship"/>
+      <Row>
+        <AddressBookContactCell
+          editable="true"
+          forceContactSubtype="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).OtherContactType"
+          id="Contact"
+          label="displaykey.Web.RelatedContactsLV.Contact"
+          parentContact="primaryContact"
+          postOnChange="true"
+          printWidth="0.6"
+          required="true"
+          setNoneSelected="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).setNoneSelected()"
+          sortBy="contactContact.getOtherContact(primaryContact).PrimarySortValue,contactContact.getOtherContact(primaryContact).SecondarySortValue,contactContact.getOtherContact(primaryContact).TertiarySortValue,contactContact.getOtherContact(primaryContact).QuaternarySortValue"
+          sortOrder="2"
+          value="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).OtherContact"/>
+        <RangeCell
+          editable="true"
+          id="Rel"
+          label="displaykey.Web.RelatedContactsLV.Rel"
+          postOnChange="true"
+          printWidth="0.4"
+          required="true"
+          sortOrder="1"
+          value="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).BidiRel"
+          valueRange="primaryContact.getPossibleBidiRelsToContact(contactContact.getOtherContact(primaryContact))"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

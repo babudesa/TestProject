@@ -1,0 +1,1249 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    id="LossDetailsPanelSet"
+    mode="default">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Claim)"
+      name="isWCClaim"
+      type="Boolean"/>
+    <Variable
+      initialValue="setDaysArray()"
+      name="DaysArray"
+      type="java.util.ArrayList&lt;Boolean&gt;"/>
+    <Variable
+      initialValue="setDaysOffArray()"
+      name="DaysOffArray"
+      type="java.util.ArrayList&lt;Boolean&gt;"/>
+    <CardViewPanel
+      id="LossDetailsCardCV">
+      <Card
+        id="Claim_DetailsCard"
+        title="displaykey.NVV.Claim.Auto.Details">
+        <PanelRef
+          def="LossDetailsDV(Claim)"
+          mode="Claim.LossType"/>
+      </Card>
+      <Card
+        id="Claim_InjuredWorkerCard"
+        title="displaykey.NVV.Claim.InjuredWorkerDetail"
+        visible="isWCClaim">
+        <PanelRef>
+          <DetailViewPanel>
+            <InputColumn>
+              <InputSet
+                id="InjWorkerInputSet">
+                <Label
+                  label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsWorkersComp.Claim.InjuredWorker"/>
+                <ClaimContactInput
+                  claim="Claim"
+                  editable="true"
+                  id="Claimant_Picker"
+                  label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.Claimant.Picker"
+                  required="true"
+                  showSearchInMenu="false"
+                  validationExpression="Claim.claimant.FirstName== null and Claim.claimant.TaxID !=null  and Claim.claimant.validateTaxID() == null and !Claim.claimant.isValidZeroSSN() and Claim.claimant.isValidPartialSSN() and checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+                  value="Claim.InjuredWorker"
+                  valueRange="Claim.injuredWorkers"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="Claimant_ContactProhibited"
+                  label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.Claimant.ContactProhibited"
+                  value="Claim.getClaimContact(Claim.claimant).ContactProhibited"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="MinorChild"
+                  label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.MinorChild"
+                  required="!Claim.IncidentReport"
+                  validationExpression="{Claim.setMinorChildIndicator(); return null}"
+                  value="Claim.InjuredWorker.MinorWorkerExt"/>
+                <Input
+                  editable="true"
+                  id="DateOfBirth"
+                  label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.DateOfBirth"
+                  required="Claim.InjuredWorker.MinorWorkerExt == true"
+                  validationExpression="Claim.claimant.DateOfBirth != null &amp;&amp; Claim.claimant.DateOfBirth &gt; util.DateUtil.currentDate() ? displaykey.Java.Validation.Date.ForbidFuture : (Claim.claimant.DateOfBirth == null and Claim.claimant.TaxID !=null and Claim.claimant.validateTaxID() == null and !Claim.claimant.isValidZeroSSN() and Claim.claimant.isValidPartialSSN() &amp;&amp; checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required : null) "
+                  value="Claim.claimant.DateOfBirth">
+                  <Reflect
+                    custom="javascript:window.REFLECTOR.parentNode.parentNode.className= VALUE==&quot;true&quot; ? 'required' : '';"
+                    triggerIds="MinorChild"/>
+                </Input>
+                <Input
+                  editable="true"
+                  id="DeathIndicator"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ClaimantDeceased"
+                  required="true"
+                  value="Claim.claimant.ClaimantFatalityExt"/>
+                <Input
+                  editable="true"
+                  id="InjuryDeathIndicator"
+                  label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.InjurySeverity.DeathReport"
+                  value="Claim.DeathReport"/>
+                <Input
+                  editable="true"
+                  id="DateOfDeath"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateOfDeath"
+                  required="Claim.claimant.ClaimantFatalityExt == true"
+                  value="Claim.claimant.DateOfDeathExt">
+                  <Reflect
+                    custom="javascript:updateDateOfDeathVisibilityAndRequired();"
+                    triggerIds="DeathIndicator,InjuryDeathIndicator,DateOfDeath"
+                    value="VALUE1 != true and VALUE2 != true ? null : VALUE3"/>
+                </Input>
+                <TextInput
+                  formatType="exactNumber"
+                  id="CurrentAge"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.CurrentAge"
+                  value="util.WCHelper.currentAge(Claim)"/>
+                <TextInput
+                  formatType="exactNumber"
+                  id="InjuryAge"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.AgeAtInjury"
+                  value="util.WCHelper.ageAtInjury(Claim)"/>
+                <Input
+                  editable="true"
+                  id="Gender"
+                  label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+                  required="Claim.IncidentReport==false"
+                  validationExpression="Claim.claimant.Gender== null and Claim.claimant.TaxID !=null  and Claim.claimant.validateTaxID() == null and !Claim.claimant.isValidZeroSSN() and Claim.claimant.isValidPartialSSN() and checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required : null"
+                  value="Claim.claimant.Gender"/>
+                <Input
+                  editable="true"
+                  id="MaritalStatus"
+                  label="displaykey.Web.ContactDetail.AdditionalInfo.MaritalStatus"
+                  value="Claim.claimant.MaritalStatus"/>
+                <TextInput
+                  editable="true"
+                  id="Height"
+                  inputMask="&quot;#-##&quot;"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Height"
+                  value="Claim.claimant.HeightExt"/>
+                <TextInput
+                  editable="true"
+                  id="Weight"
+                  inputMask="&quot;...&quot;"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Weight"
+                  value="Claim.claimant.WeightExt"/>
+                <TextInput
+                  editable="true"
+                  id="HairColor"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.HairColor"
+                  numCols="15"
+                  value="Claim.claimant.HairColorExt"/>
+                <TextInput
+                  editable="true"
+                  id="EyeColor"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.EyeColor"
+                  numCols="10"
+                  value="Claim.claimant.EyeColorExt"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="EyeGlasses"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Glasses"
+                  value="Claim.claimant.GlassesExt"/>
+                <TypeKeyRadioInput
+                  editable="true"
+                  id="DominantHand"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DominantHand"
+                  value="Claim.claimant.DominantHandExt"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="UndocumentedWorker"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.UndocumentedWorker"
+                  onChange="updateMedEligible()"
+                  postOnChange="true"
+                  value="Claim.InjuredWorker.UndocumentedWorkerExt"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="Dependents"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Dependents"
+                  value="Claim.claimant.DependentsExt"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="USCitizen"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.USCitizen"
+                  value="Claim.claimant.USCitizenExt"/>
+                <TypeKeyInput
+                  editable="true"
+                  id="Claim_PrimaryLanguageSpoken"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.PrimaryLanguage"
+                  numCols="30"
+                  value="Claim.claimant.PrimaryLanguageExt"
+                  valueWidth="180"/>
+                <BooleanRadioInput
+                  editable="true"
+                  id="InterpreterRequired"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.InterpreterRequired"
+                  value="Claim.claimant.InterpreterReqExt"/>
+                <TypeKeyInput
+                  editable="true"
+                  id="Claim_EducationLevel"
+                  label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.EducationLevel"
+                  numCols="30"
+                  value="Claim.claimant.EducationLevelExt"
+                  valueWidth="180"/>
+              </InputSet>
+              <!-- <InputDivider/> -->
+              <!-- <DateInput
+                dateFormat="short"
+                editable="true"
+                id="EmploymentData_InjuryStartDate"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.InjuryStartDate"
+                validationExpression="Claim.EmploymentData.InjuryStartTime == null || Claim.EmploymentData.InjuryStartTime &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+                value="Claim.EmploymentData.InjuryStartTime"/> -->
+              <!-- <DateInput
+                editable="true"
+                id="EmploymentData_InjuryStartTime"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.InjuryStartTime"
+                timeFormat="short"
+                validationExpression="Claim.EmploymentData.InjuryStartTime == null || Claim.EmploymentData.InjuryStartTime &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+                value="Claim.EmploymentData.InjuryStartTime"/> -->
+              <InputDivider/>
+              <Label
+                label="&quot;Comorbidities&quot;"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_BehavioralHealth"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.BehavioralHealth"
+                value="Claim.InjuredWorker.ComorbBehavioralExt"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_Diabetes"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Diabetes"
+                value="Claim.InjuredWorker.ComorbDiabetesExt"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_HeartCondition"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.HeartCondition"
+                value="Claim.InjuredWorker.ComorbHeartExt"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_Hypertension"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Hypertension"
+                value="Claim.InjuredWorker.ComorbHypertensionExt"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_Obesity"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Obesity"
+                value="Claim.InjuredWorker.ComorbObesityExt"/>
+              <TypeKeyRadioInput
+                editable="true"
+                id="Comorbidity_Smoking"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.Smoking"
+                value="Claim.InjuredWorker.ComorbSmokingExt"/>
+              <InputDivider/>
+            </InputColumn>
+            <InputColumn>
+              <Label
+                label="&quot;Injury Details&quot;"/>
+              <BooleanRadioInput
+                editable="true"
+                id="UnableToWorkFullDay"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.UnableToWorkFullDay"
+                labelStyleClass="label_wrap"
+                value="Claim.EmploymentData.NoWorkFullDayAfterExt"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="Claim_DateReportedtoEmployer"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateReportedtoEmployer"
+                requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+                value="Claim.DateRptdToEmployer"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="ClaimFormGiven"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.ClaimFormGiven"
+                labelStyleClass="label_wrap"
+                requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+                value="Claim.DateFormGivenToEmp"/>
+              <BooleanRadioInput
+                editable="true"
+                id="ExposureInjury"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ExposureInjury"
+                postOnChange="true"
+                value="Claim.ExposureInjuryExt"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="Claim_ExposureBegan"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ExposureBegan"
+                required="false"
+                validationExpression="Claim.ExposureBegan == null || Claim.ExposureBegan &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+                value="Claim.ExposureBegan"
+                visible="Claim.ExposureInjuryExt == true"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="Claim_ExposureEnded"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ExposureEnded"
+                required="false"
+                value="Claim.ExposureEnded"
+                visible="Claim.ExposureInjuryExt == true"/>
+              <BooleanRadioInput
+                editable="true"
+                id="SecondInjury"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.SecondInjuryFund"
+                value="Claim.EmploymentData.ScndInjryFnd"/>
+              <TypeKeyInput
+                editable="true"
+                id="Claim_InjuryIllnessCause"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.InjuryIllnessCause"
+                numCols="30"
+                required="!Claim.IncidentReport"
+                value="Claim.LossCause"
+                valueWidth="200"/>
+              <TypeKeyInput
+                editable="true"
+                filter="Claim.UIHelper.LossDetailsHelper.filterWCDetailCauseOfInjuryList(VALUE as java.lang.String)"
+                id="Claim_AccidentType"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.AccidentType"
+                required="!Claim.IncidentReport"
+                value="Claim.ex_DetailLossCause"
+                valueWidth="200"/>
+              <TypeKeyInput
+                editable="true"
+                id="Claim_PrimaryInjury"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.NatureOfInjury"
+                required="!Claim.IncidentReport"
+                value="Claim.ensureClaimInjuryIncident().GeneralInjuryType"
+                valueWidth="200"/>
+              <TypeKeyInput
+                editable="true"
+                id="Claim_DetailedInjury"
+                label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.DetailedInjury"
+                required="!Claim.IncidentReport"
+                value="Claim.ensureClaimInjuryIncident().DetailedInjuryType"
+                valueWidth="200"/>
+              <RangeInput
+                editable="true"
+                id="TypeOfLoss"
+                label="displaykey.NVV.Exposure.SubView.TypeOfLoss.Exposure.TypeOfLoss"
+                onChange="setExposureTypeOfLoss()"
+                postOnChange="true"
+                required="false"
+                sortValueRange="false"
+                value="Claim.TypeOfLossMostExt"
+                valueRange="util.WCHelper.getTOLValues(Claim)"
+                valueWidth="250"/>
+              <RangeInput
+                editable="true"
+                id="LossCauseDetail2"
+                label="displaykey.NVV.Claim.SubView.LossDetailsProperty.Claim.LossCauseDetail2"
+                required="false"
+                value="Claim.DetailLossCause2Ext"
+                valueRange="LossCauseDetails.TF_WORKCOMPFILTER.TypeKeys"/>
+              <TypeKeyInput
+                editable="true"
+                id="ClaimType"
+                label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsProperty.Claim.Details.claimType"
+                required="false"
+                value="Claim.ClaimTypeExt"/>
+              <InputDivider/>
+              <Label
+                label="displaykey.Web.ContactDetail.TaxInfo"/>
+              <Input
+                editable="Claim.claimant != null and Claim.claimant.canEditTaxInfo() and Claim.claimant.ssnISEditable(Claim, CurrentLocation.InEditMode)"
+                id="V_EIN"
+                label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+                onChange="Claim.claimant.setMedicare(); Claim.setISOEnabled(Claim.claimant)"
+                postOnChange="true"
+                required="Claim.claimant.checkContactTaxStatus() || (Claim.claimant.Subtype==&quot;Person&quot; and (Claim.claimant.MedicareEligibleExt==true and Claim.claimant.HICNExt==null)) and Claim.claimant.RefuseProvideExt != true and Claim.claimant.BelowThresholdExt != true"
+                validationExpression="Claim.claimant.isValidInjuredWorkerSSN(Claim)"
+                value="TAXINFO"
+                visible="!Claim.claimant.isForeign()"/>
+              <TypeKeyInput
+                editable="Claim.claimant != null and Claim.claimant.canEditTaxInfo()"
+                id="TaxStatusCode"
+                label="displaykey.GAIC.ContactDetail.AdditionalInfo.TaxStatusCode"
+                postOnChange="true"
+                required="Claim.claimant.checkContactTaxID()"
+                validationExpression="Claim.claimant.Ex_TaxStatusCode != null ? Claim.claimant.checkContactTaxStatusUpdate(): Claim.claimant.Ex_TaxStatusCode"
+                value="Claim.claimant.Ex_TaxStatusCode"
+                valueWidth="200"/>
+              <Input
+                editable="Claim.claimant != null and Claim.claimant.canEditTaxInfo()"
+                id="TaxReportingName"
+                label="displaykey.Web.ContactDetail.TaxReportingName"
+                validationExpression="(Claim.claimant.Preferred and Claim.claimant.Ex_TaxReportingName == null) ? &quot;Enter a Tax Reporting Name for a Preferred Vendor&quot; : null"
+                value="Claim.claimant.Ex_TaxReportingName"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelRef>
+        <DetailViewPanel>
+          <InputColumn>
+            <ListViewInput
+              boldLabel="true"
+              def="EditableBodyPartDetailsLV(Claim.ensureClaimInjuryIncident(), true)"
+              editable="true"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.BodyPartDetails"
+              labelAbove="true">
+              <Toolbar>
+                <IteratorButtons/>
+                <!-- <CheckedValuesToolbarButton
+                  checkedRowAction="Claim.ensureClaimInjuryIncident().FirstBodyPart = BodyPartDetails"
+                  flags="one NotFirstBP"
+                  hideIfReadOnly="true"
+                  id="MakeFirstButton"
+                  iterator="EditableBodyPartDetailsLV"
+                  label="displaykey.LV.Incident.Injury.BodyPartDetails.MakeFirstButton"
+                  showConfirmMessage="false"
+                  tooltip="displaykey.LV.Incident.Injury.BodyPartDetails.MakeFirstButton.Tooltip"/> -->
+              </Toolbar>
+            </ListViewInput>
+          </InputColumn>
+        </DetailViewPanel>
+      </Card>
+      <Card
+        id="Claim_EmploymentHistoryCard"
+        title="displaykey.NVV.Claim.EmploymentData"
+        visible="isWCClaim">
+        <PanelRef>
+          <DetailViewPanel>
+            <InputColumn>
+              <Label
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData"/>
+              <Input
+                editable="true"
+                id="EmploymentData_Occupation"
+                label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.EmploymentData.Occupation"
+                value="Claim.claimant.Occupation"/>
+              <Input
+                id="EmploymentData_ClassCode"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.ClassCode"
+                value="Claim.getClassCodeWithSuffix(Claim.CoverageSelectedExt)"/>
+              <TextAreaInput
+                editable="true"
+                id="EmploymentData_DepartmentCode"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DepartmentCode"
+                maxChars="40"
+                numCols="20"
+                numRows="2"
+                validationExpression="validateDepartmentLength(Claim.EmploymentData.DepartmentCode)"
+                value="Claim.EmploymentData.DepartmentCode"/>
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="EmploymentData_SupervisorPicker"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+                newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+                showSearchInMenu="false"
+                value="Claim.supervisor"
+                valueRange="Claim.RelatedPersonArray"
+                visible="!Claim.Policy.Verified and !util.WCHelper.isWCorELLossType(Claim)"/>
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="EmploymentData_SupervisorPicker"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+                newContactMenu="ClaimPersonPickerMenuItemSet"
+                showSearchInMenu="false"
+                value="Claim.supervisor"
+                valueRange="Claim.RelatedPersonArray"
+                visible="Claim.Policy.Verified and !util.WCHelper.isWCorELLossType(Claim)"/>
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="EmploymentData_InjWorkerSupervisorPicker"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+                newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+                showSearchInMenu="false"
+                value="Claim.injworkersuper"
+                valueRange="Claim.RelatedPersonArray"
+                visible="!Claim.Policy.Verified and util.WCHelper.isWCorELLossType(Claim)"/>
+              <ClaimContactInput
+                claim="Claim"
+                editable="true"
+                id="EmploymentData_InjWorkerSupervisorPicker"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.SupervisorPicker"
+                newContactMenu="ClaimPersonPickerMenuItemSet"
+                showSearchInMenu="false"
+                value="Claim.injworkersuper"
+                valueRange="Claim.RelatedPersonArray"
+                visible="Claim.Policy.Verified and util.WCHelper.isWCorELLossType(Claim)"/>
+              <RangeInput
+                editable="true"
+                id="EmploymentData_EmploymentStatus"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.EmploymentStatus"
+                value="Claim.EmploymentData.EmploymentStatus"
+                valueRange="typekey.EmploymentStatusType.getTypeKeys(false).where(\ e -&gt; e.hasCategory(Claim.LossType))"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="EmploymentStatusEffective"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.StatusEffectiveDate"
+                validationExpression="Claim.EmploymentData.EmployStatusDateExt == null || Claim.EmploymentData.EmployStatusDateExt &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+                value="Claim.EmploymentData.EmployStatusDateExt"/>
+              <TextInput
+                id="MilesToWork"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.MilesToWork"
+                value="Claim.EmploymentData.MilesToWorkExt"/>
+              <Input
+                editable="true"
+                formatType="currency"
+                id="EmploymentData_WorkCompAWW"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.WorkCompAWW"
+                required="Claim.ModifiedDutyAvail == true"
+                value="Claim.EmploymentData.WageAmount"/>
+              <Input
+                editable="true"
+                formatType="currency"
+                id="WeeklyWagePreInjury"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.WeeklyWagePreInjury"
+                value="Claim.EmploymentData.WageAmountPreInjuryExt"/>
+              <Input
+                editable="true"
+                formatType="currency"
+                id="WeeklyWagePostInjury"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.WeeklyWagePostInjury"
+                value="Claim.EmploymentData.WageAmountPostInjury"/>
+              <DateInput
+                dateFormat="short"
+                editable="true"
+                id="EmploymentData_HireDate"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.HireDate"
+                validationExpression="Claim.EmploymentData.HireDate == null || Claim.EmploymentData.HireDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+                value="Claim.EmploymentData.HireDate"/>
+              <Input
+                editable="true"
+                id="EmploymentData_HireState"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.HireState"
+                value="Claim.EmploymentData.HireState"/>
+              <TypeKeyInput
+                editable="true"
+                id="NumberofDaysWorkWeek"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek"
+                value="Claim.EmploymentData.NumDaysWeekExt"/>
+            </InputColumn>
+          </DetailViewPanel>
+        </PanelRef>
+        <DetailViewPanel
+          columnDivider="false">
+          <InputColumn>
+            <TextInput
+              id="DaysWorkedLabel"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.NumDaysWorkedPerWeek"
+              labelAbove="true"
+              value="&quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Mon"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Mon"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[1]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Tues"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Tues"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[2]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Wed"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Wed"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[3]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Thurs"
+              label="&quot;Th&quot;"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[4]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Fri"
+              label="&quot; F&quot;"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[5]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Sat"
+              label="&quot;Sa&quot;"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[6]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              align="center"
+              editable="true"
+              id="Sun"
+              label="&quot;Su&quot;"
+              labelAbove="true"
+              validationExpression="updateDaysInWeek()"
+              value="DaysArray[0]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel>
+          <InputColumn>
+            <Input
+              editable="true"
+              id="EmploymentData_NumHoursWorkedPerDay"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.NumHoursWorkedPerDay"
+              value="Claim.EmploymentData.NumHoursWorked"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel
+          columnDivider="false">
+          <InputColumn>
+            <TextInput
+              id="DaysOffLabel"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.ScheduledDaysOff"
+              labelAbove="true"
+              value="&quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="MonOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Mon"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[1]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="TuesOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Tues"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[2]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="WedOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Wed"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[3]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="ThursOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Thurs"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[4]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="FriOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Fri"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[5]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="SatOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Sat"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[6]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+          <InputColumn>
+            <CheckBoxInput
+              editable="true"
+              id="SunOff"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.Sun"
+              labelAbove="true"
+              validationExpression="updateDaysOff()"
+              value="DaysOffArray[0]"
+              valueLabel="CurrentLocation.InEditMode == false ? displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.DaysInWeek.X : &quot;&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel>
+          <InputColumn>
+            <Input
+              editable="true"
+              id="EmploymentData_PayPeriod"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.PayPeriod"
+              value="Claim.EmploymentData.PayPeriod"/>
+            <DateInput
+              dateFormat="short"
+              editable="true"
+              id="FirstFullDayMissed"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.FirstDayMissed"
+              requestValidationExpression="gw.api.util.DateUtil.validateNonFutureDate(VALUE)"
+              value="Claim.EmploymentData.FirstFullDayMissedExt"/>
+            <BooleanRadioInput
+              editable="true"
+              id="EmploymentData_PaidFullWages"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.PaidFullWages"
+              value="Claim.EmploymentData.PaidFull"/>
+            <BooleanRadioInput
+              editable="true"
+              id="EmploymentData_WagePaymentContinued"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmploymentData.WagePaymentContinued"
+              value="Claim.EmploymentData.WagePaymentCont"/>
+            <BooleanRadioInput
+              editable="true"
+              id="ModifiedDutyAvailable"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.ModifiedDutyAvailable"
+              postOnChange="true"
+              value="Claim.ModifiedDutyAvail"/>
+            <TypeKeyRadioInput
+              editable="true"
+              id="ConcurrentEmployment"
+              label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.ConcurrentEmployment"
+              value="Claim.ConcurrentEmp"/>
+            <BooleanRadioInput
+              editable="true"
+              id="ChildSupportOrder"
+              label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ChildSupportOrder"
+              value="Claim.claimant.ChildSupportOrderExt"/>
+            <BooleanRadioInput
+              editable="true"
+              id="DisciplinaryAction"
+              label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DisciplinaryAction"
+              value="Claim.InjuredWorker.DisciplinaryActionExt"/>
+            <!-- <InputDivider/> -->
+          </InputColumn>
+        </DetailViewPanel>
+      </Card>
+      <Card
+        id="Claim_CompensabilityCard"
+        title="displaykey.NVV.Claim.Compensability"
+        visible="isWCClaim">
+        <PanelRef>
+          <DetailViewPanel>
+            <InputColumn>
+              <Label
+                id="CompensabilityFactors"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.CompensabilityFactors"/>
+              <BooleanRadioInput
+                editable="true"
+                id="Claim_EmploymentInjury"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.EmploymentInjury"
+                value="Claim.EmploymentInjury"/>
+              <TypeKeyInput
+                editable="true"
+                id="EmployerQuestionsValidity"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmployerQuestionsValidity"
+                postOnChange="true"
+                value="Claim.EmpQusValidity"/>
+              <Input
+                editable="true"
+                id="EmployerValidityReason"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.EmployerValidityReason"
+                value="Claim.EmployerValidityReason"
+                visible="Claim.EmpQusValidity == &quot;yes&quot;"/>
+              <TypeKeyInput
+                editable="true"
+                id="FraudClaimCode"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.FraudCode"
+                postOnChange="true"
+                value="Claim.FraudulentCodeExt"/>
+              <BooleanRadioInput
+                editable="true"
+                id="SafetyViolation"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.SafetyViolation"
+                value="Claim.SafetyViolationExt"/>
+              <BooleanRadioInput
+                editable="true"
+                id="SafetyEquipmentProvided"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.SafetyEquipmentProvided"
+                value="Claim.SafetyEquipProv"/>
+              <BooleanRadioInput
+                editable="true"
+                id="SafetyEquipmentUsed"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.SafetyEquipmentUsed"
+                value="Claim.SafetyEquipUsed"/>
+              <TextInput
+                editable="true"
+                id="Claim_EquipmentUsed"
+                label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.EquipmentUsed"
+                maxChars="40"
+                value="Claim.EquipmentUsed"/>
+              <TextInput
+                editable="true"
+                id="Claim_ActivityPerformed"
+                label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimWC.Claim.ActivityPerformed"
+                maxChars="40"
+                value="Claim.ActivityPerformed"/>
+              <TypeKeyInput
+                editable="true"
+                id="DrugTest"
+                label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DrugTest"
+                postOnChange="true"
+                value="Claim.DrugTestExt"/>
+              <TypeKeyInput
+                editable="true"
+                id="DrugTestResult"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.DrugTestResults"
+                value="Claim.DrugTestResultExt"
+                visible="Claim.DrugTestExt == &quot;yes&quot;"/>
+              <InputDivider/>
+              <InputSetRef
+                def="CompensableInputSet(Claim)"/>
+              <InputDivider/>
+            </InputColumn>
+            <InputFooterSection>
+              <ListViewInput
+                boldLabel="true"
+                def="EditableOtherBenefitsLV(Claim)"
+                editable="true"
+                label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.OtherBenefits"
+                labelAbove="true">
+                <Toolbar>
+                  <IteratorButtons/>
+                </Toolbar>
+              </ListViewInput>
+            </InputFooterSection>
+          </DetailViewPanel>
+        </PanelRef>
+      </Card>
+      <Card
+        id="Claim_ISOCard"
+        title="displaykey.NVV.Claim.ISO"
+        visible="Claim.ISOClaimLevelMessaging">
+        <PanelRef
+          def="ISODetailsDV(Claim)"
+          editable="!isWCClaim"/>
+      </Card>
+      <Card
+        id="Claim_UnderlyingScheduleCard"
+        title="displaykey.NVV.Claim.OtherCoverage"
+        visible="Claim.setUnderlyingVisible() or Claim.setUnderlyingVisible()">
+        <PanelRef
+          def="UnderSchedPolicyDetailsDV(Claim.Policy)"/>
+        <PanelRef
+          def="UnderSchedDetailsDV(Claim)"/>
+      </Card>
+      <Card
+        id="Claim_SIRCard"
+        title="&quot;SIR&quot;"
+        visible="(Claim.LossType == &quot;ENVLIAB&quot; and Claim.Policy.PolicyType != &quot;EEL&quot;) or (Claim.Policy.PolicyType == PolicyType.TC_PRC or Claim.Policy.PolicyType == PolicyType.TC_PRX) or Claim.UIHelper.isSIRVisible()">
+        <ListDetailPanel
+          selectionName="selectedExposure"
+          selectionType="Exposure">
+          <PanelRef
+            def="ClaimSIRSelectionLV(Claim)">
+            <Toolbar/>
+          </PanelRef>
+          <CardViewPanel>
+            <Variable
+              initialValue="selectedExposure.SIRsExt.SIRInvoicesExt*.CreditSIR != null and selectedExposure.SIRsExt.SIR != null ?(selectedExposure.SIRsExt.SIRInvoicesExt*.CreditSIR.sum()/selectedExposure.SIRsExt.SIR)*100 as java.math.BigDecimal : null"
+              name="sirImpairment"
+              recalculateOnRefresh="true"/>
+            <Card
+              id="addDetails"
+              title="&quot;SIR Information&quot;">
+              <DetailViewPanel>
+                <InputColumn>
+                  <Input
+                    id="exposure"
+                    label="displaykey.Exposure.EditableClaimSIRLV.Feature"
+                    value="selectedExposure.DisplayName"/>
+                  <Input
+                    id="insagreement"
+                    label="displaykey.Exposure.EditableClaimSIRLV.InsuringAgreement"
+                    value="selectedExposure.SIRsExt.InsuringAgreementExt"/>
+                  <Input
+                    formatType="exactNumber"
+                    id="CovPartLimOccExt"
+                    label="displaykey.Exposure.EditableClaimSIRLV.CovPartLimOcc"
+                    outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                    value="selectedExposure.SIRsExt.CovPartLimOcc"/>
+                  <Input
+                    formatType="exactNumber"
+                    id="sir"
+                    label="displaykey.Exposure.EditableClaimSIRLV.SIR"
+                    outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                    value="selectedExposure.SIRsExt.SIR"/>
+                  <Input
+                    formatType="exactNumber"
+                    id="sirAgg"
+                    label="displaykey.Exposure.EditableClaimSIRLV.SIRAgg"
+                    outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                    value="selectedExposure.SIRsExt.SIRAggregate"/>
+                  <Input
+                    formatType="exactNumber"
+                    id="maintsir"
+                    label="displaykey.Exposure.EditableClaimSIRLV.MaintSIR"
+                    outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                    value="selectedExposure.SIRsExt.MaintenanceSIR"
+                    visible="Claim.Policy.PolicyType != PolicyType.TC_PRC and Claim.Policy.PolicyType != PolicyType.TC_PRX and !Claim.UIHelper.isSIRVisible()"/>
+                </InputColumn>
+                <InputColumn>
+                  <Input
+                    formatType="exactNumber"
+                    id="siramtrem"
+                    label="displaykey.Exposure.EditableClaimSIRLV.SIRAmtRem"
+                    outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                    value="selectedExposure.SIRsExt.SIR - selectedExposure.SIRsExt.SIRInvoicesExt*.CreditSIR.sum()"/>
+                  <Input
+                    formatType="percentagePoints"
+                    id="sirimpairment"
+                    label="displaykey.Exposure.EditableClaimSIRLV.ImpairmentPercent"
+                    value="sirImpairment"/>
+                </InputColumn>
+              </DetailViewPanel>
+              <DetailViewPanel>
+                <InputColumn>
+                  <ListViewInput
+                    def="EditableClaimSIRLV(selectedExposure)"
+                    id="ClaimSIRDetails"
+                    labelAbove="true">
+                    <Toolbar>
+                      <IteratorButtons/>
+                    </Toolbar>
+                  </ListViewInput>
+                </InputColumn>
+              </DetailViewPanel>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="Claim_ExternalStatusUpdateCard"
+        title="displaykey.NVV.LossDetails.ExternalStatusUpdate">
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="&quot;  Agency&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRow
+          columnDivider="true">
+          <PanelColumn
+            width="40%">
+            <DetailViewPanel>
+              <InputColumn>
+                <Input
+                  id="AgencyName"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.Name"
+                  numCols="50"
+                  value="Claim.Policy.ex_Agency"/>
+                <Input
+                  id="ProducerCode"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.ProducerCode"
+                  numCols="50"
+                  value="Claim.Policy.ProducerCode"/>
+                <Input
+                  id="AAPAuthority"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.AAPAuthority"
+                  numCols="50"
+                  postOnChange="true"
+                  value="Claim.Policy.ex_Agency.ex_AAPAuthority"/>
+                <Input
+                  available="Claim.Policy.ex_Agency.ex_AAPAuthority"
+                  formatType="exactNumber"
+                  id="AAPAuthorityLimit"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.AAPAuthorityLimit"
+                  outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                  validationExpression="Claim.Policy.ex_Agency.ex_AAPAuthorityLimit == null || (Claim.Policy.ex_Agency.ex_AAPAuthorityLimit.intValue() == Claim.Policy.ex_Agency.ex_AAPAuthorityLimit) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+                  value="Claim.Policy.ex_Agency.ex_AAPAuthorityLimit"/>
+              </InputColumn>
+            </DetailViewPanel>
+          </PanelColumn>
+          <PanelColumn>
+            <DetailViewPanel>
+              <InputColumn>
+                <Input
+                  id="LossCheckCopy"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.LossCheckCopy"
+                  value="Claim.Policy.ex_Agency.ex_LossCheckCopy"/>
+                <Input
+                  id="ExpenseCheckCopy"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.ExpenseCheckCopy"
+                  value="Claim.Policy.ex_Agency.ex_ExpenseCheckCopy"/>
+                <Input
+                  id="ProfitCenterName"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.ProfitCenterName"
+                  value="Claim.Policy.ex_Agency.AgencyProfitCenterNameExt"
+                  visible="true"/>
+                <Input
+                  id="ProfitCenter"
+                  label="displaykey.NVV.LossDetails.ExternalStatusUpdate.ProfitCenter"
+                  value="Claim.Policy.ex_Agency.ex_AgencyProfitCenter"
+                  visible="true"/>
+              </InputColumn>
+            </DetailViewPanel>
+          </PanelColumn>
+        </PanelRow>
+        <DetailViewPanel>
+          <InputColumn>
+            <InputDivider/>
+            <Label
+              label="&quot;  Agent Updates&quot;"/>
+            <Label
+              label="&quot;  &quot;"/>
+            <TextAreaInput
+              editable="true"
+              id="AgentUpdates"
+              maxChars="4000"
+              numCols="144"
+              numRows="30"
+              value="Claim.AgentUpdatesExt"
+              visible="true"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </Card>
+      <Card
+        id="Claim_CMSCard"
+        title="displaykey.NVV.Exposure.Medicare"
+        visible="false">
+        <!-- ### =================================================================================================================
+  ###  CMS Medicare Subview
+  ### ================================================================================================================= -->
+        <DetailViewPanel
+          id="CMSClaimDetailsDV"
+          visible="true">
+          <InputColumn>
+            <Label
+              label="displaykey.NVV.Exposure.Medicare.Policy.Title"/>
+            <ClaimContactInput
+              claim="Claim"
+              id="Insured"
+              label="displaykey.NVV.Policy.PolicySearch.Insured"
+              value="Claim.Policy.insured"
+              valueRange="Claim.getRelatedContacts()"/>
+            <InputDivider/>
+            <Label
+              label="displaykey.NVV.Exposure.Medicare.Claimant.Title"/>
+            <!-- <ClaimContactInput
+              claim="Claim"
+              id="Claimant"
+              label="displaykey.Web.ClaimSummary.ExposuresLV.Claimant"
+              value="Claim.claimant"
+              valueRange="Claim.getRelatedContacts()"/> -->
+            <Input
+              id="ClaimantDOB"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.DateOfBirth"
+              value="Claim.claimant.DateOfBirth"/>
+            <Input
+              id="ClaimantSSN"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.TaxID"
+              value="util.crypto.Encryptor.maskString(Claim.claimant.TaxID, Claim.claimant.ssnISEditable(Claim, false), false)"/>
+            <Input
+              id="ClaimantHICN"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.HICN"
+              value="Claim.claimant.HICNExt"/>
+            <Input
+              id="ClaimantGender"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+              value="Claim.claimant.Gender"/>
+            <Input
+              id="ClaimantMedElig"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareEligible"
+              value="Claim.claimant.MedicareEligibleExt"/>
+            <InputDivider/>
+            <Label
+              label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareReportingName"/>
+            <Input
+              id="LegalFName"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.LegalFName"
+              value="Claim.claimant.LegalFNameExt"/>
+            <Input
+              id="LegalMName"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.LegalMName"
+              value="Claim.claimant.LegalMNameExt"/>
+            <Input
+              id="LegalLName"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.LegalLName"
+              value="Claim.claimant.LegalLNameExt"/>
+            <InputDivider/>
+            <Label
+              label="displaykey.NVV.Exposure.Medicare.CMS.Reporting.Title"/>
+            <Input
+              id="ClaimantSendCMS"
+              label="&quot;Defer Sending Data to CMS?&quot;"
+              value="Claim.claimant.SendPartyToCMSExt"/>
+            <Input
+              id="StopSendToCMS"
+              label="displaykey.Web.ContactDetail.AdditionalInfo.StopSendToCMS"
+              value="Claim.claimant.StopSendPartyToCMSExt"/>
+          </InputColumn>
+          <InputFooterSection/>
+        </DetailViewPanel>
+      </Card>
+    </CardViewPanel>
+    <Code><![CDATA[uses com.guidewire.pl.web.controller.UserDisplayableException
+
+property get ContactProhibited() : boolean {
+  return Claim.getClaimContact(Claim.claimant).ContactProhibited
+}
+property set ContactProhibited(prohibited : boolean) {
+  var claimContact = Claim.getClaimContact(Claim.claimant)
+  if (claimContact != null) claimContact.ContactProhibited = prohibited
+}
+
+property get TAXINFO() : String { return util.crypto.Encryptor.maskString(Claim.claimant.TaxID, Claim.claimant.ssnISEditable(claim, CurrentLocation.InEditMode), CurrentLocation.InEditMode) }
+property set TAXINFO(taxID : String) { Claim.claimant.TaxID = taxID } 
+
+      
+function setMedicare() {
+  if(Claim.claimant.TaxID==null && Claim.claimant.TaxID==""){
+     Claim.claimant.MedicareEligibleExt = false
+  }
+  
+  if(Claim.claimant.TaxID!=null){
+    if(Claim.claimant.TaxID.toString().startsWith("9")){
+      //Person.HICNExt = ""
+      Claim.claimant.MedicareEligibleExt = false
+      //Person.SendPartyToCMSExt = null
+    }
+  } else {
+    if(Claim.claimant.HICNExt!=null){
+      Claim.claimant.MedicareEligibleExt = true
+    }
+  }
+}
+
+function setInitialValues(){
+  Claim.claimant.setLoggedInUserId();
+  Claim.claimant.setLoggedInUserBUName();
+  Claim.claimant.setLoggedInUserCompAcct();
+}
+
+function validateTaxID():String{
+  var str : String  = null
+  if(Claim.claimant.TaxID == null){ 
+    if(Claim.claimant.checkContactTaxStatus())
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Required
+    else
+      str = null    
+  }else{
+    if(!Claim.claimant.TaxID.matches("[0-9]{9}") or (Claim.claimant.TaxID.matches("[0]{9}") or Claim.claimant.TaxID.matches("[1]{9}") or Claim.claimant.TaxID.matches("[2]{9}") or Claim.claimant.TaxID.matches("[3]{9}")
+     or Claim.claimant.TaxID.matches("[4]{9}") or Claim.claimant.TaxID.matches("[5]{9}") or Claim.claimant.TaxID.matches("[6]{9}") or Claim.claimant.TaxID.matches("[7]{9}") or Claim.claimant.TaxID.matches("[8]{9}")
+      or Claim.claimant.TaxID.matches("[9]{9}")))    
+      str = displaykey.Web.ContactDetail.Name.TaxID.EIN.Invalid  
+    else{
+      str = null
+    }
+  }
+  return str
+}
+
+function setDaysArray(): java.util.ArrayList<Boolean>{
+  var list = new java.util.ArrayList<Boolean>()
+  var i = 0
+  while (i < 7){
+    if (Claim.EmploymentData.DaysWorkedStringExt != null && Claim.EmploymentData.DaysWorkedStringExt.contains((i as String))){
+      list.add(true)
+    }else{
+      list.add(false)
+    }
+    i++
+  }
+  return list
+}
+
+function setDaysOffArray(): java.util.ArrayList<Boolean>{
+  var list = new java.util.ArrayList<Boolean>()
+  var i = 0
+  while (i < 7){
+    if (Claim.EmploymentData.ScheduledDaysOffExt != null && Claim.EmploymentData.ScheduledDaysOffExt.contains((i as String))){
+      list.add(true)
+    }else{
+      list.add(false)
+    }
+    i++
+  }
+  return list
+}
+
+function updateDaysInWeek(){
+  var i = 0
+  var newString = ""
+  while (i < 7){
+    if (DaysArray[i] == true){
+      newString = newString + i
+    }
+    i++
+  }
+  Claim.EmploymentData.DaysWorkedStringExt = newString
+}
+
+
+function updateDaysOff(){
+  var i = 0
+  var newString = ""
+  while (i < 7){
+    if (DaysOffArray[i] == true){
+      newString = newString + i
+    }
+    i++
+  }
+  Claim.EmploymentData.ScheduledDaysOffExt = newString
+}
+
+// This function sets the TypeOfLossMostExt for each Exposure to the TypeOfLossMostExt that is set for the Claim. 
+function setExposureTypeOfLoss(){
+  for(each in Claim.Exposures){
+    each.TypeOfLossMostExt = Claim.TypeOfLossMostExt
+  }
+}
+
+function validateDepartmentLength(str : String){
+  if(str.length > 40){
+    throw new UserDisplayableException("Department Code must be less than 40 characters.")
+  }
+}
+
+function checkClaimantRole(): boolean{
+  var claimContact = Claim.getClaimContact(Claim.claimant)
+  if((claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String) )){
+    return true
+  }
+  return false
+}
+//11.18.15 - Defect 7872 - cmullin - copied function and onChange call from ContactBasicsDV.InjuredWorkerExt.
+//This function is used to set Medicare Elibigle flag when Undocumented Worker field is changed.
+function updateMedEligible(){
+  if (claim.InjuredWorker.UndocumentedWorkerExt){
+    claim.InjuredWorker.MedicareEligibleExt = false
+  }
+  if (claim.InjuredWorker.UndocumentedWorkerExt == false){
+    claim.InjuredWorker.MedicareEligibleExt = null
+  }
+}]]></Code>
+  </PanelSet>
+</PCF>

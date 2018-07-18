@@ -1,0 +1,55 @@
+package rules.ActivityGeneratorBatch.ConversionActivityGeneratorBatchRules_dir.CAXX1000AllBUConversionActivityBatchRules_dir.CAXX1300LegalActions_dir
+
+@gw.rules.RuleName("CAXX1310 - Legal Action Needs Law Firm Assignment")
+internal class CAXX1310LegalActionNeedsLawFirmAssignment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//******* IMPORTANT PLEASE READ: ********
+ * This activity is also located in Activity Generator Batch Rules. Any changes made below need
+ * to be added to that rule for non-converted claims. 
+ */
+
+!claim.Matters.IsEmpty &&
+exists(matter in claim.Matters where matter.StatusExt != MatterStatus.TC_CLOSED
+       and matter.MatterAssignmentsExt.IsEmpty
+       and gw.api.util.DateUtil.daysBetween(matter.CreateTime.trimToMidnight(),
+           gw.api.util.DateUtil.currentDate().trimToMidnight()) >= ScriptParameters.Activity_LegalActionNeedsLawFirmAssignment)           /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var pattern = util.custom_Ext.finders.findActivityPattern("matter_needs_lawfirm")
+    var today = gw.api.util.DateUtil.currentDate().trimToMidnight()
+
+    //get all valid matters for activity
+    var matters = claim.Matters.where(\ m -> m.MatterAssignmentsExt.IsEmpty
+                  and m.StatusExt != MatterStatus.TC_CLOSED
+                  and gw.api.util.DateUtil.daysBetween(m.CreateTime.trimToMidnight(), today) >= ScriptParameters.Activity_LegalActionNeedsLawFirmAssignment 
+                  and !exists(act in claim.Activities where act.ActivityPattern.Code == "matter_needs_lawfirm"
+                              and act.Subject.contains(m.DisplayName)))             
+
+    //create activities for matters
+    for(matter in matters){
+      // 4.28.15 - cmullin - WC / Matters Phase II - added code to skip the activity trigger if the claim is Workers' Comp and no feature has "Legal Expense?" set to Yes.
+      if(!(util.WCHelper.isWCorELLossType(claim) && !(exists(exp in matter.Claim.Exposures where exp.LegalExpenseExt==true)))){
+      //Create new activity from existing pattern and add the matter name to the pattern
+      //subject and description  
+      var newAct = claim.createActivity(null, pattern,
+                   pattern.Subject + " (" + matter.DisplayName + ")",
+                   pattern.Description + " (" + matter.DisplayName + ")", pattern.Priority, pattern.Mandatory, null, null)           
+  
+      //associate matter
+      newAct.Matter = matter
+      //assign user             
+      newAct.AssignedUser = claim.AssignedUser
+      //set custom target date 
+      newAct.TargetDate =  matter.CreateTime.trimToMidnight().addDays(ScriptParameters.Activity_LegalActionNeedsLawFirmAssignment)  
+      }
+    }
+
+ 
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

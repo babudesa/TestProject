@@ -1,0 +1,16 @@
+package rules.Validation.ExposureValidationRules_dir.EVEQ1000EquineExposureValidationRules_dir
+
+@gw.rules.RuleName("EVEQ1200 - Exposure must have Injured Animal")
+internal class EVEQ1200ExposuremusthaveInjuredAnimal {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.FixedPropertyIncident.Property == null and (exposure.New or exposure.Changed) and !exposure.ReconnectFailExt
+and exposure.Claim.Policy.isPolicyInRefresh( 0 )/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// 2/14/2008 - zthomas - Defect 789, Ensure new feature contains a fixedpropertyincident.
+var strErrorReason = displaykey.Web.Feature.InjuredAnimal.Validation.Message;
+
+exposure.rejectField( "FixedPropertyIncident", "newloss", strErrorReason, null, null )/*end00rule*/
+  }
+}

@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="NewGroupDetailDV">
+    <Require
+      name="Group"
+      type="Group"/>
+    <InputColumn>
+      <Input
+        editable="true"
+        id="GroupName"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.GroupName"
+        required="true"
+        value="Group.Name"/>
+      <RangeInput
+        editable="true"
+        id="DivisionName"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.DivisionName"
+        optionLabel="VALUE.DivisionNameValue"
+        required="true"
+        value="Group.DivisionNameExt"
+        valueRange="getDivisionNames()"/>
+      <TypeKeyInput
+        editable="true"
+        filter="VALUE == GroupType.TC_ROOT ? false : true"
+        id="Type"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Type"
+        required="true"
+        value="Group.GroupType"/>
+      <GroupInput
+        editable="true"
+        id="Parent"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Parent"
+        required="true"
+        selectLocation="OrganizationGroupTreePopup.push(Group.makeOrganizationSelection())"
+        value="Group.Parent"
+        visible="true"/>
+      <!-- 10/20/09 erawe defect 2376 added company of the user to display on checks -->
+      <Input
+        editable="true"
+        id="Company"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Company"
+        required="true"
+        value="Group.CompanyNameExt"/>
+      <UserInput
+        editable="true"
+        id="Supervisor"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Supervisor"
+        required="true"
+        value="Group.Supervisor"/>
+      <RangeInput
+        editable="true"
+        id="SecurityZone"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.SecurityZone"
+        required="true"
+        validationExpression="return isValidTPA()"
+        value="Group.SecurityZone"
+        valueRange="find (securityZone in SecurityZone)"/>
+      <ListViewInput
+        def="GroupUsersLV(Group)"
+        editable="true"
+        label="displaykey.Web.Admin.GroupDetail.BasicDV.Users"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider/>
+      <Label
+        label="displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment"/>
+      <Input
+        editable="true"
+        id="LoadFactor"
+        label="displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment.LoadFactor"
+        numCols="4"
+        required="true"
+        validationExpression="!(Group.LoadFactor &lt; 0 or Group.LoadFactor &gt; 100) ? null : displaykey.NVV.Admin.GroupBasics.AdminGroupDetails.Assignment.LoadFactor.OutOfRange"
+        value="Group.LoadFactor"/>
+    </InputColumn>
+    <Code><![CDATA[function getDivisionNames() : DivisionNameExt[]{
+  var divisionName = find ( s in DivisionNameExt where s.DivisionNameValue!=null)
+  return divisionName.toList().toArray() as DivisionNameExt[]
+}
+
+function isValidTPA() : String{
+  var isGroupTPA = Group.GroupType.equals(typekey.GroupType.TC_TPA) or Group.GroupType.equals(typekey.GroupType.TC_TPAPROCESSING);
+  var isSecZoneTPA = Group.SecurityZone.IsSecurityZoneTPAExt
+  if((isSecZoneTPA and !isGroupTPA) or (isGroupTPA and !isSecZoneTPA)) {
+    var message = "If Security Zone or Claim Group Type are of type External User, then they both must be of type External User"
+    return message
+  }
+    return null
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,62 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1300MedicalVendorApproval_dir.BIAR1320AlternateApprover_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("BIAR1321 - Prevent re-approval within same group")
+internal class BIAR1321Preventreapprovalwithinsamegroup {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice).Count > 0 &&
+!util.user.GroupsHelper.isAGroupSupervisor(bulkInvoice.LastApprovingUser) and
+!util.user.GroupsHelper.isClaimManager(bulkInvoice.LastApprovingUser)  and
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.ManualBulkInvoiceApproverUser &&
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsTwoUser and 
+bulkInvoice.LastApprovingUser != util.user.SCOHelper.CorpClaimsOneUser/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+   
+   var lastApprovingUser = bulkInvoice.LastApprovingUser
+   var lastApprovingUserApprovalPath = util.approvals.ApprovalHelper.getBulkInoviceApprovalPath(lastApprovingUser)
+   var approvalHistory = util.approvals.ApprovalHelper.getApprovalHistory(bulkInvoice)
+   var currentApprovalAssignedToUser = util.approvals.ApprovalHelper.getLastAssignedToUserInHistory(approvalHistory)
+   var currentApprovalAssignedByUser = util.approvals.ApprovalHelper.getLastAssignedByUserInHistory(approvalHistory)
+   var lastFirstLevelAssignedByUser = util.approvals.ApprovalHelper.getLastApprovingFirstLevelUser(bulkInvoice)
+   var authorityLimits = lastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+    
+   if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+        
+      ///if last approving user is the current assigned by user
+      if(lastApprovingUser == currentApprovalAssignedByUser && lastApprovingUser != currentApprovalAssignedToUser &&
+      util.user.GroupsHelper.areUsersInSameGroup(lastApprovingUser,lastFirstLevelAssignedByUser) &&
+      util.approvals.ApprovalHelper.userInApprovalPath(currentApprovalAssignedToUser, lastApprovingUserApprovalPath)) {
+
+        var nextApprovingUser = currentApprovalAssignedToUser
+        var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+        bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+        actions.exit()
+
+      //if last approving user is not the current assigned by user and the current assigned to user
+      //is in the last approving users approval path and the last approving user and the current
+      //assigned by user are not in the same group.
+      } else if(lastApprovingUser != currentApprovalAssignedByUser && util.approvals.ApprovalHelper.userInApprovalPath(currentApprovalAssignedToUser, lastApprovingUserApprovalPath) &&
+         util.user.GroupsHelper.areUsersInSameGroup(lastApprovingUser,lastFirstLevelAssignedByUser) && lastApprovingUser != currentApprovalAssignedToUser)  {
+
+        var nextApprovingUser = currentApprovalAssignedToUser
+        var nextApprovingUsersGroup  = util.user.GroupsHelper.getUsersGroup(nextApprovingUser)
+        bulkInvoice.setApprovingUser(nextApprovingUser, nextApprovingUsersGroup)
+        actions.exit()
+      }  
+    
+    
+    } else {
+        bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+        actions.exit()
+    }
+
+}catch(aex:gw.rules.AbortExecutionException){
+    throw aex 
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError(bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

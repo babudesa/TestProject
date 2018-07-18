@@ -1,0 +1,18 @@
+package rules.ActivityGeneratorBatch.ActivityGeneratorBatchRules_dir.ABXX1000AExclusionfilters_dir.ABWC1000WorkersCompActivityBatchRules_dir.ABWC1050TruckingWCELActivityBatchRules_dir
+
+@gw.rules.RuleName("ABWC1300 - Initial Plan Of Action Due")
+internal class ABWC1300InitialPlanOfActionDue {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!exists(act in claim.Activities where act.ActivityPattern.Code=="initial_plan_due")
+&& gw.api.util.DateUtil.currentDate() >= gw.api.util.DateUtil.addDays( claim.ReportedDate, ScriptParameters.Activity_WCInitialPlan )/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var ap = util.custom_Ext.finders.findActivityPattern( "initial_plan_due" ) 
+  claim.createActivityFromPattern(null, ap)
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

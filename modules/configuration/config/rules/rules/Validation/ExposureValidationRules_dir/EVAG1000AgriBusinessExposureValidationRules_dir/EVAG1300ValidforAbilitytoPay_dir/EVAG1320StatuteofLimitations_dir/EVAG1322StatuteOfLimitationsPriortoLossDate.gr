@@ -1,0 +1,21 @@
+package rules.Validation.ExposureValidationRules_dir.EVAG1000AgriBusinessExposureValidationRules_dir.EVAG1300ValidforAbilitytoPay_dir.EVAG1320StatuteofLimitations_dir
+
+@gw.rules.RuleName("EVAG1322 - Statute Of Limitations Prior to Loss Date")
+internal class EVAG1322StatuteOfLimitationsPriortoLossDate {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Rule to enforce the Statute of Limitations date is greater than or equal to the loss date.
+Sprint/Maintenance Release: Sprint 15/Agri-Release 0 - Defect 1371      
+Author: Zach Thomas      
+Date: 08/21/08       
+*/
+exposure.StatuteOfLimitationsExt != null && gw.api.util.DateUtil.compareIgnoreTime( exposure.StatuteOfLimitationsExt,exposure.Claim.LossDate  ) < 0/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/try{
+  exposure.rejectField( "StatuteOfLimitationsExt", "newloss", displaykey.Rules.Validation.Exposure.Enterprise.NewLoss.StatuteOfLimitationsExt, null, null )
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

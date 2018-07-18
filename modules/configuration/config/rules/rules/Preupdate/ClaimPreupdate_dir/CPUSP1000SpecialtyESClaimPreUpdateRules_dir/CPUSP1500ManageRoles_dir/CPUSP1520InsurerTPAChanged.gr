@@ -1,0 +1,79 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUSP1000SpecialtyESClaimPreUpdateRules_dir.CPUSP1500ManageRoles_dir
+
+@gw.rules.RuleName("CPUSP1520 - Insurer/TPA Changed")
+internal class CPUSP1520InsurerTPAChanged {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ThirdPartyAdminsExt*.ChangedFields.contains({"InsurerTPA"}) ||
+claim.ThirdPartyAdminsExt*.ChangedFields.contains({"CurrentRole"}) ||
+claim.ChangedFields.contains("ThirdPartyAdminsExt")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var originalClaim = claim.OriginalVersion as Claim
+
+try{    
+
+    //account for completely removed rows 
+    for(tpa in originalClaim.ThirdPartyAdminsExt
+        .where(\ t ->  !exists(tpa in claim.ThirdPartyAdminsExt where t == tpa))){
+      
+       //set tpa to former and remove original role as long as the tpa isnt aleady on 
+       //the claim as a tpa
+       if(!exists(t in claim.ThirdPartyAdminsExt where 
+               t.InsurerTPA == tpa.InsurerTPA && t.ID != tpa.ID)){
+            
+            if(tpa.CurrentRole == ContactRole.TC_INSURERTPA) {
+                //claim.addRole(ContactRole.TC_FORMERINSURERTPA, tpa.InsurerTPA)
+                claim.removeRole(ContactRole.TC_INSURERTPA, tpa.InsurerTPA)
+            }
+            
+            if(tpa.CurrentRole == ContactRole.TC_INSURER){
+                //claim.addRole(ContactRole.TC_FORMERINSURER, tpa.InsurerTPA)
+                claim.removeRole(ContactRole.TC_INSURER, tpa.InsurerTPA)            
+            }
+       }       
+    }   
+
+      
+    for(tpa in claim.ThirdPartyAdminsExt.where(\ t ->t.ChangedFields.contains("InsurerTPA") ||
+                                                     t.ChangedFields.contains("CurrentRole"))){  
+    
+       var originalTPA = tpa.OriginalVersion as ThirdPartyAdminExt    
+
+       //set tpa to former and remove original role
+       if(originalTPA.InsurerTPA != null){
+        
+            if(originalTPA.CurrentRole == ContactRole.TC_INSURERTPA) {
+                //claim.addRole(ContactRole.TC_FORMERINSURERTPA, tpa.InsurerTPA)
+                claim.removeRole(ContactRole.TC_INSURERTPA, tpa.InsurerTPA)
+            }
+            
+            if(originalTPA.CurrentRole == ContactRole.TC_INSURER){
+                //claim.addRole(ContactRole.TC_FORMERINSURER, tpa.InsurerTPA)
+                claim.removeRole(ContactRole.TC_INSURER, tpa.InsurerTPA)            
+            }     
+       }     
+     
+       //if there is a new insurer/tpa
+       //add the correct new roles and remove corresponding former roles 
+       if(tpa.InsurerTPA != null){      
+          
+          if(tpa.CurrentRole == ContactRole.TC_INSURERTPA){
+              claim.addRole(ContactRole.TC_INSURERTPA, tpa.InsurerTPA)
+              //claim.removeRole(ContactRole.TC_FORMERINSURERTPA, tpa.InsurerTPA)
+          }
+          
+          if(tpa.CurrentRole == ContactRole.TC_INSURER){
+              claim.addRole(ContactRole.TC_INSURER, tpa.InsurerTPA)
+              //claim.removeRole(ContactRole.TC_FORMERINSURER, tpa.InsurerTPA)
+          }
+   
+       }     
+    }
+  
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+  /*end00rule*/
+  }
+}

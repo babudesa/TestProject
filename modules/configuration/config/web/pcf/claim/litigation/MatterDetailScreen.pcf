@@ -1,0 +1,534 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="MatterDetailScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Matter"
+      type="Matter"/>
+    <Variable
+      initialValue="perm.Claim.managepartiesinvolved(Claim)"
+      name="canAccessLinkButtons"
+      type="boolean"/>
+    <Variable
+      initialValue="User.util.getCurrentUser()==Claim.AssignedUser || User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;))"
+      name="currentUserIsAdjuster"
+      type="boolean"/>
+    <Variable
+      initialValue="false"
+      name="isCounselTabSelected"
+      type="boolean"/>
+    <Variable
+      initialValue="new util.custom_Ext.MatterActivator()"
+      name="matterActivator"
+      type="util.custom_Ext.MatterActivator"/>
+    <Toolbar>
+      <ToolbarButton
+        action="CurrentLocation.startEditing()"
+        available="perm.Matter.edit(Matter) &amp;&amp; Matter.StatusExt != MatterStatus.TC_CLOSED &amp;&amp; isCounselTabSelected == false  "
+        id="ToolbarButtonEdit"
+        label="&quot;Edit&quot;"
+        visible="CurrentLocation.InEditMode == false"/>
+      <ToolbarButton
+        action="Matter.UIHelper.beforeCommit();CurrentLocation.commit()"
+        available="isCounselTabSelected == false "
+        id="ToolbarButtonUpdate"
+        label="&quot;Update&quot;"
+        visible="CurrentLocation.InEditMode == true"/>
+      <ToolbarButton
+        action="CurrentLocation.cancel()"
+        available="isCounselTabSelected == false"
+        confirmMessage="&quot;Are you sure you want to cancel? You will lose all unsaved data on &quot; + (Matter)"
+        id="ToolbarButtonCancel"
+        label="&quot;Cancel&quot;"
+        promptQuestion="web.WebUtil.getActionEventParameter()"
+        visible="CurrentLocation.InEditMode == true"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="AssignMattersPopup.push(new gw.api.matter.MatterAssignmentPopup(Matter))"
+        hideIfEditable="true"
+        id="MatterDetailPage_AssignButton"
+        label="displaykey.Web.ClaimMatters.Assign"
+        shortcut="G"
+        visible="false //perm.Matter.genericassign"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="Matter.UIHelper.initiateCloseMatter()"
+        available="perm.Matter.close(Matter)"
+        hideIfEditable="true"
+        id="MatterDetailPage_CloseMatterButton"
+        label="&quot;Close Legal Action&quot;"
+        shortcut="S"
+        visible="Matter.Closed == false"/>
+      <ToolbarButton
+        action="Matter.UIHelper.initiateReopenMatter()"
+        available="perm.Matter.reopen(Matter)"
+        hideIfEditable="true"
+        id="MatterDetailPage_ReopenMatterButton"
+        label="&quot;Reopen Legal Action&quot;"
+        visible="Matter.Closed == true"/>
+      <ToolbarDivider/>
+      <ToolbarButton
+        action="ClaimMatterCalendarGroup.go(claim, matter)"
+        id="MatterDetailPage_CalendarButton"
+        label="displaykey.Web.ClaimMatters.Calendar"
+        visible="!Matter.Closed"/>
+    </Toolbar>
+    <CardViewPanel>
+      <Card
+        id="LitigationStatusCard"
+        onSelect="isCounselTabSelected = false "
+        title="displaykey.Matter.JurisdictionLitigationStatus.LitigationStatus">
+        <PanelRef
+          def="JurisdictionLitigationStatusDV(Matter)"
+          mode="Claim.LossType"/>
+      </Card>
+      <Card
+        id="MatterDetailCardDV"
+        onSelect="isCounselTabSelected = true; if(Matter.MatterAssignmentsExt.IsEmpty &amp;&amp; CurrentLocation.InEditMode == true){Matter.UIHelper.createMatterAssignment()}"
+        title="&quot;Counsel&quot;"
+        visible="util.WCHelper.isWCLossType(Claim)? exists( e in Claim.Exposures where (e.LegalExpenseExt)) : true">
+        <ListDetailPanel
+          id="LegalPartiesInvolvedDetailedListDetail"
+          lockWhileEditing="true"
+          selectionName="selectedAssignment"
+          selectionType="MatterAssignmentExt">
+          <PanelRef>
+            <Toolbar
+              visible="true">
+              <AddButton
+                id="AddLawFirmAssignmentToolbarButton"
+                label="&quot;Add Law Firm Assignment&quot;"
+                toCreateAndAdd="Matter.UIHelper.createMatterAssignment()"
+                visible="perm.Matter.edit(Matter) &amp;&amp; Matter.StatusExt != MatterStatus.TC_CLOSED"/>
+            </Toolbar>
+            <ListViewPanel>
+              <RowIterator
+                checkBoxVisible="false"
+                editable="true"
+                elementName="currentAssignment"
+                hasCheckBoxes="true"
+                id="MatterAssignmentRowIterator"
+                toCreateAndAdd="Matter.UIHelper.createMatterAssignment()"
+                toRemove="Matter.removeFromMatterAssignmentsExt(currentAssignment)"
+                value="Matter.MatterAssignmentsExt">
+                <IteratorSort
+                  sortBy="currentAssignment.CounselLawFirmExt"
+                  sortOrder="1"/>
+                <Row>
+                  <Cell
+                    id="LawFirmCell"
+                    label="displaykey.Matter.Counsel.General.CounselDetails.LawFirm"
+                    value="currentAssignment.CounselLawFirmExt"/>
+                  <Cell
+                    id="LeadCounselCell"
+                    label="displaykey.Matter.Counsel.General.CounselDetails.LeadCounsel"
+                    value="currentAssignment.LeadCounselExt"/>
+                  <Cell
+                    id="LeadCounselPrimaryPhoneCell"
+                    label="displaykey.Matter.Counsel.General.CounselDetails.LeadCounselPrimaryPhone"
+                    value="util.custom_Ext.finders.getPrimaryPhoneNumber(currentAssignment.LeadCounselExt)"/>
+                  <Cell
+                    id="AttorneyTypeCell"
+                    label="displaykey.Matter.Counsel.AttorneyType"
+                    value="currentAssignment.AttorneyTypeExt"/>
+                  <Cell
+                    id="ClosedCell"
+                    label="&quot;Status&quot;"
+                    value="currentAssignment.StatusExt"/>
+                </Row>
+              </RowIterator>
+            </ListViewPanel>
+          </PanelRef>
+          <CardViewPanel>
+            <Variable
+              initialValue="selectedAssignment.CounselLawFirmExt  ==null ? null : selectedAssignment.CounselLawFirmExt.generateLinkStatus()"
+              name="linkStatus"
+              recalculateOnRefresh="true"/>
+            <Variable
+              initialValue="User.util.getCurrentUser().hasRole(Role(&quot;superuser&quot;)) ? true : (((selectedAssignment.CounselLawFirmExt typeis PersonVendor) || (selectedAssignment.CounselLawFirmExt typeis CompanyVendor)) ? false : currentUserIsAdjuster)"
+              name="currentUserHasPerm"
+              recalculateOnRefresh="true"
+              type="boolean"/>
+            <Card
+              id="GeneralCard"
+              title="displaykey.Matter.Counsel.General">
+              <PanelRef
+                def="MatterDetails_CurrentDV(selectedAssignment,Matter)"
+                editable="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN">
+                <Toolbar>
+                  <ToolbarButton
+                    action="CurrentLocation.startEditing()"
+                    available="perm.Matter.edit(Matter) &amp;&amp; Matter.StatusExt != MatterStatus.TC_CLOSED &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN"
+                    id="ToolbarButtonEdit"
+                    label="&quot;Edit&quot;"
+                    visible="CurrentLocation.InEditMode == false"/>
+                  <ToolbarButton
+                    action="util.gaic.LitAdvisorFunctions.closeLawError(selectedAssignment); Matter.UIHelper.beforeCommit(); CurrentLocation.commit()"
+                    id="ToolbarButtonUpdate"
+                    label="&quot;Update&quot;"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarButton
+                    action="CurrentLocation.cancel()"
+                    confirmMessage="&quot;Are you sure you want to cancel? You will lose all unsaved data.&quot;"
+                    id="ToolbarButtonCancel"
+                    label="&quot;Cancel&quot;"
+                    promptQuestion="web.WebUtil.getActionEventParameter()"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarDivider/>
+                  <ToolbarButton
+                    action="closeAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN &amp;&amp; selectedAssignment.Matter.StatusExt == MatterStatus.TC_OPEN"
+                    hideIfEditable="true"
+                    id="MatterDetailPage_CloseMatterButton"
+                    label="&quot;Close Assignment&quot;"
+                    shortcut="S"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN "/>
+                  <ToolbarButton
+                    action="reopenAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED &amp;&amp; selectedAssignment.Matter.StatusExt == MatterStatus.TC_OPEN &amp;&amp; !selectedAssignment.AssignmentExposuresExt*.DispositionTypeExt.contains(DispositionTypeExt.TC_LAWFIRASSIGNEDINERROR)"
+                    hideIfEditable="true"
+                    id="MatterDetailPage_ReopenMatterButton"
+                    label="&quot;Reopen Assignment&quot;"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED"/>
+                  <ToolbarDivider/>
+                </Toolbar>
+              </PanelRef>
+              <PanelRef
+                def="ClaimantsDV(selectedAssignment,Matter)"
+                editable="selectedAssignment.MatterAssignmentStatusExt != typekey.MatterAssignmentStatus.TC_DECLINED &amp;&amp; perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN"/>
+            </Card>
+            <Card
+              id="StaffingPlanCard"
+              title="displaykey.Matter.Counsel.Staffing"
+              visible="matterActivator.isLOBUsingLSS(Matter.Claim.LossType) &amp;&amp; selectedAssignment.StaffBudgetRequiredExt == true">
+              <PanelRef
+                def="StaffingDetailsDV(selectedAssignment)"/>
+              <PanelRef>
+                <TitleBar
+                  title="displaykey.Matter.Counsel.Staffing.ExternalLink"/>
+                <ListViewPanel>
+                  <Row>
+                    <ContentCell>
+                      <Link
+                        action="LitAdvisorLink.push(selectedAssignment.LSSMatterID)"
+                        id="LitAdvisorStaffingLink"
+                        label="displaykey.Matter.Counsel.Staffing.ExternalLink.LitAdvisor"/>
+                    </ContentCell>
+                  </Row>
+                </ListViewPanel>
+              </PanelRef>
+            </Card>
+            <Card
+              id="BudgetPlanCard"
+              title="displaykey.Matter.Counsel.Budget"
+              visible="matterActivator.isLOBUsingLSS(Matter.Claim.LossType) &amp;&amp; selectedAssignment.StaffBudgetRequiredExt == true">
+              <PanelRef
+                def="BudgetStatusDV(selectedAssignment)"/>
+              <PanelRef>
+                <TitleBar
+                  title="displaykey.Matter.Counsel.Staffing.ExternalLink"/>
+                <ListViewPanel>
+                  <Row>
+                    <ContentCell>
+                      <Link
+                        action="LitAdvisorLink.push(selectedAssignment.LSSMatterID)"
+                        id="LitAdvisorBudgetLink"
+                        label="displaykey.Matter.Counsel.Staffing.ExternalLink.LitAdvisor"/>
+                    </ContentCell>
+                  </Row>
+                </ListViewPanel>
+              </PanelRef>
+            </Card>
+            <Card
+              id="DispositionCard"
+              title="&quot;Disposition&quot;">
+              <PanelRef
+                def="DispositionDV(Matter,selectedAssignment)">
+                <Toolbar>
+                  <ToolbarButton
+                    action="CurrentLocation.startEditing()"
+                    available="perm.Matter.edit(Matter) &amp;&amp; Matter.StatusExt != MatterStatus.TC_CLOSED &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN &amp;&amp; !(selectedAssignment.AssignmentExposuresExt*.DispositionTypeExt.contains(DispositionTypeExt.TC_LAWFIRASSIGNEDINERROR))"
+                    id="ToolbarButtonEdit"
+                    label="&quot;Edit&quot;"
+                    visible="CurrentLocation.InEditMode == false"/>
+                  <ToolbarButton
+                    action="util.gaic.LitAdvisorFunctions.closeLawError(selectedAssignment);Matter.UIHelper.beforeCommit(); CurrentLocation.commit()"
+                    id="ToolbarButtonUpdate"
+                    label="&quot;Update&quot;"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarButton
+                    action="CurrentLocation.cancel()"
+                    confirmMessage="&quot;Are you sure you want to cancel? You will lose all unsaved data.&quot;"
+                    id="ToolbarButtonCancel"
+                    label="&quot;Cancel&quot;"
+                    promptQuestion="web.WebUtil.getActionEventParameter()"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarDivider/>
+                  <ToolbarButton
+                    action="closeAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt != AssignmentStatusExt.TC_CLOSED "
+                    hideIfEditable="true"
+                    id="MatterDetailPage_CloseMatterButton"
+                    label="&quot;Close Assignment&quot;"
+                    shortcut="S"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN"/>
+                  <ToolbarButton
+                    action="reopenAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED &amp;&amp; selectedAssignment.Matter.StatusExt == MatterStatus.TC_OPEN &amp;&amp; !(selectedAssignment.AssignmentExposuresExt*.DispositionTypeExt.contains(DispositionTypeExt.TC_LAWFIRASSIGNEDINERROR))"
+                    hideIfEditable="true"
+                    id="MatterDetailPage_ReopenMatterButton"
+                    label="&quot;Reopen Assignment&quot;"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED"/>
+                  <ToolbarDivider/>
+                  <ToolbarButton
+                    action="disableAssignment(selectedAssignment)"
+                    hideIfEditable="true"
+                    id="MatterDetailPage_DisableAssignment"
+                    label="displaykey.Matter.Counsel.DisableAssignment"
+                    visible="perm.Matter.edit(Matter)  &amp;&amp; selectedAssignment.MatterAssignmentStatusExt !=typekey.MatterAssignmentStatus.TC_DISABLED &amp;&amp; !util.gaic.LitAdvisorFunctions.matterInError(selectedAssignment)"/>
+                </Toolbar>
+              </PanelRef>
+            </Card>
+            <Card
+              id="AttorneyRatingCard"
+              title="displaykey.Matter.Counsel.AttorneyRating"
+              visible="selectedAssignment.UIHelper.LeadCounselReview != null &amp;&amp; perm.Review.view">
+              <PanelRef
+                def="AttorneyRatingLV(selectedAssignment,selectedAssignment.UIHelper.LeadCounselReview)"
+                editable="perm.Matter.edit(Matter) &amp;&amp; perm.Review.edit &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN">
+                <Toolbar>
+                  <ToolbarButton
+                    action="CurrentLocation.startEditing()"
+                    available="perm.Matter.edit(Matter) &amp;&amp; Matter.StatusExt != MatterStatus.TC_CLOSED &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN"
+                    id="ToolbarButtonEdit"
+                    label="&quot;Edit&quot;"
+                    visible="CurrentLocation.InEditMode == false"/>
+                  <ToolbarButton
+                    action="Matter.UIHelper.beforeCommit(); CurrentLocation.commit()"
+                    id="ToolbarButtonUpdate"
+                    label="&quot;Update&quot;"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarButton
+                    action="CurrentLocation.cancel()"
+                    confirmMessage="&quot;Are you sure you want to cancel? You will lose all unsaved data.&quot;"
+                    id="ToolbarButtonCancel"
+                    label="&quot;Cancel&quot;"
+                    promptQuestion="web.WebUtil.getActionEventParameter()"
+                    visible="CurrentLocation.InEditMode == true"/>
+                  <ToolbarDivider/>
+                  <ToolbarButton
+                    action="closeAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt != AssignmentStatusExt.TC_CLOSED "
+                    hideIfEditable="true"
+                    id="MatterDetailPage_CloseMatterButton"
+                    label="&quot;Close Assignment&quot;"
+                    shortcut="S"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_OPEN"/>
+                  <ToolbarButton
+                    action="reopenAssignment(selectedAssignment)"
+                    available="perm.Matter.edit(Matter) &amp;&amp; selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED &amp;&amp; selectedAssignment.Matter.StatusExt == MatterStatus.TC_OPEN"
+                    hideIfEditable="true"
+                    id="MatterDetailPage_ReopenMatterButton"
+                    label="&quot;Reopen Assignment&quot;"
+                    visible="selectedAssignment.StatusExt == AssignmentStatusExt.TC_CLOSED"/>
+                  <ToolbarDivider/>
+                </Toolbar>
+              </PanelRef>
+            </Card>
+          </CardViewPanel>
+        </ListDetailPanel>
+      </Card>
+      <Card
+        id="MediationCard"
+        onSelect="isCounselTabSelected = false "
+        title="&quot;Mediator Evaluation&quot;">
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="&quot;Mediator Details&quot;"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel>
+          <InputColumn>
+            <BooleanRadioInput
+              editable="true"
+              id="DidMediationOccur1"
+              label="displaykey.Matter.DidMediationOccur"
+              postOnChange="true"
+              value="Matter.DidMediationOccurExt"/>
+            <HiddenInput
+              id="tempHiddenInput1"
+              value="&quot;&quot;"/>
+            <ListViewInput
+              boldLabel="true"
+              editable="true"
+              id="MediatorDetails"
+              labelAbove="true"
+              visible="Matter.DidMediationOccurExt == true">
+              <Toolbar>
+                <IteratorButtons/>
+              </Toolbar>
+              <ListViewPanel
+                editable="true">
+                <RowIterator
+                  editable="true"
+                  elementName="currentMediator"
+                  hideCheckBoxesIfReadOnly="true"
+                  id="mediators"
+                  toAdd="Matter.addToMediatorsExt(currentMediator)"
+                  toRemove="Matter.removeFromMediatorsExt(currentMediator)"
+                  value="Matter.MediatorsExt">
+                  <Row>
+                    <ClaimContactCell
+                      align="center"
+                      claim="Matter.Claim"
+                      editable="true"
+                      id="MediatorClaimContactInput"
+                      label="displaykey.Matter.MatterGeneral.MediationDetails.MediatorName"
+                      newContactMenu="ClaimNewMediatorOnlyPickerMenuItemSet"
+                      onPick="Matter.addRole(ContactRole.TC_MEDIATOR, currentMediator.MediatorExt)"
+                      required="true"
+                      unique="true"
+                      value="currentMediator.MediatorExt"
+                      valueRange="Matter.UIHelper.ValidPartiesInvolvedForMediator"/>
+                    <ContentCell
+                      align="center"
+                      label="displaykey.Matter.MatterGeneral.MediationDetails.WouldYouRecommend">
+                      <DetailViewPanel
+                        editable="true">
+                        <InputColumn>
+                          <BooleanRadioInput
+                            editable="true"
+                            id="Recommend"
+                            required="true"
+                            value="currentMediator.RecommendMediatorExt"/>
+                        </InputColumn>
+                      </DetailViewPanel>
+                    </ContentCell>
+                    <TextAreaCell
+                      align="center"
+                      editable="true"
+                      id="AdditionalComments"
+                      label="displaykey.NVV.Matter.SubView.Matter.Property.AdditionalComments"
+                      maxChars="256"
+                      numRows="5"
+                      value="currentMediator.AdditionalCommentsExt"/>
+                  </Row>
+                </RowIterator>
+              </ListViewPanel>
+            </ListViewInput>
+          </InputColumn>
+        </DetailViewPanel>
+      </Card>
+    </CardViewPanel>
+    <Code><![CDATA[uses java.util.ArrayList
+/**
+ * Performs closing validation on the assignment and displays necessary errors to the
+ * UI
+ */
+function closeAssignment(assignment : MatterAssignmentExt){
+    
+  var errors = 0
+  var errorScreen = CustomGeneralErrorWorksheet
+  var errorMessages = new ArrayList<String>()
+
+  //if the assignment has been accepted then perform the validation
+  
+  if(assignment.MatterAssignmentStatusExt == MatterAssignmentStatus.TC_ACCEPTED ||
+      assignment.MatterAssignmentStatusExt == MatterAssignmentStatus.TC_ASSIGNED){
+  
+      //if there is missing disposition information throw error to UI  
+      if(exists(ae in assignment.AssignmentExposuresExt where
+         ae.DispositionDateExt == null || ae.DispositionTypeExt== null)){
+         errors++
+         errorMessages.add("You cannot close this assignment ("+ assignment.CounselLawFirmExt + ") because there is missing disposition information. Please complete all required Disposition Details before closing this assignment.")
+         }
+      if(assignment.LeadCounselExt == null){  
+         errors++
+         errorMessages.add("You cannot close this assignment ("+ assignment.CounselLawFirmExt + ") because a lead counsel must be assigned. Please assign a lead counsel before closing this assignment.") 
+    
+      }
+      if(assignment.LeadCounselExt != null && assignment.AttorneyRatingHelper.RatingsComplete == false){
+          errors++
+          errorMessages.add("You cannot close this assignment ("+ assignment.CounselLawFirmExt + ") because there is missing attorney rating information. Please complete the attorney rating before closing this assignment.")
+       }
+        
+      //if there are no errors in validation then close the assignment and commit the location
+      if(errors == 0){      
+        assignment.ClosedDate = gw.api.util.DateUtil.currentDate()
+        assignment.StatusExt = AssignmentStatusExt.TC_CLOSED
+        assignment.Matter.commit()
+        CurrentLocation.commit()
+      }
+    
+      if(errors >0){   
+        errorScreen.goInWorkspace(errorMessages)
+      }
+  //close the assignment without validation if the assignment has not been accepted. 
+  //Defect # 8831 The user must always select a Disposotion value before close a law firm assignment.
+  }else{
+      
+if(exists(ae in assignment.AssignmentExposuresExt where
+         ae.DispositionDateExt == null || ae.DispositionTypeExt== null))
+         {
+      errors++
+      errorMessages.add("You cannot close this assignment ("+ assignment.CounselLawFirmExt + ") because there is missing disposition information. Please complete all required Disposition Details before closing this assignment.")
+         }
+      if(errors > 0){
+        errorScreen.goInWorkspace(errorMessages)
+      }
+      else{
+        assignment.ClosedDate = gw.api.util.DateUtil.currentDate()
+      assignment.StatusExt = AssignmentStatusExt.TC_CLOSED
+      assignment.Matter.commit()
+      CurrentLocation.commit()
+      }
+  }
+}
+
+
+/**
+ * Reopens the assignment 
+ */
+function reopenAssignment(assignment : MatterAssignmentExt){  
+    
+    var errors = 0
+    var errorScreen = CustomGeneralErrorWorksheet
+    var errorMessages = new ArrayList<String>()
+    
+    if(!exists(ae in assignment.AssignmentExposuresExt where
+        ae.Exposure.State == ExposureState.TC_OPEN)){
+        
+        errors++
+        errorMessages.add("Please reopen at least one Feature before reopening the Law Firm Assignment.")
+    }
+    
+    //if there are no errors then reopen the assignment else display the errors to the UI
+    if(errors == 0){   
+         assignment.StatusExt = AssignmentStatusExt.TC_OPEN
+         assignment.ClosedDate = null
+         assignment.Matter.commit()
+         CurrentLocation.commit()
+    }else if(errors >0){   
+        errorScreen.goInWorkspace(errorMessages)
+    }
+}
+function disableAssignment(assignment : entity.MatterAssignmentExt) {
+  CurrentLocation.startEditing();
+  assignment.MatterAssignmentStatusExt = MatterAssignmentStatus.TC_DISABLED
+  assignment.UIHelper.ValidAssignmentExposuresForDisposition.first().DispositionTypeExt = typekey.DispositionTypeExt.TC_LAWFIRASSIGNEDINERROR
+  
+  for( ae in assignment.AssignmentExposuresExt){ 
+   ae.DispositionDateExt = now() as java.util.Date  
+  }
+  assignment.StatusExt = AssignmentStatusExt.TC_CLOSED
+  assignment.ClosedDate = new java.util.Date();
+  CurrentLocation.commit()
+}]]></Code>
+  </Screen>
+</PCF>

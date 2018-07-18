@@ -1,0 +1,40 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEL1500 - Generate New Claim Email to Underwriter")
+internal class CPUEL1500GenerateNewClaimEmailtoUnderwriter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType != LossType.TC_MERGACQU and 
+claim.isFieldChanged("AssignedUser")
+and claim.AssignmentStatus=="assigned" &&
+claim.Policy.underwriter.FirstName != null and
+claim.Policy.underwriter.LastName != null and
+!(claim.Policy.underwriter.FirstName.matches("^(?i)[d][p][g]$") and
+claim.Policy.underwriter.LastName.matches("^(?i)[u][n][d][e][r][w][r][i][t][e][r]$"))/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+//ELD Email 4: New Claim
+uses util.custom_Ext.EmailHelper
+var noteBody:String;
+var note:Note;
+var body : String = templates.email.NewClaimUnderwriter.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var subject:String="New Claim "+claim.ClaimNumber
+var emailHelper=new EmailHelper()
+
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        "ClaimNotesELD@gaig.com", ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+} else {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}/*end00rule*/
+  }
+}

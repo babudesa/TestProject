@@ -1,0 +1,24 @@
+package rules.Presetup.TransactionSetPresetup_dir.TPRXX1000AllBusinessUnit_dir
+
+@gw.rules.RuleName("TPRXX1300 - Set Payment Gross Amount")
+internal class TPRXX1300SetPaymentGrossAmount {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "CheckSet" and
+(transactionSet as CheckSet).Recurrence != null and
+exists(lineItem in transactionSet.LineItems where lineItem.New or lineItem.Changed)==true
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {  
+  for (lineItem in transactionSet.LineItems){
+      if (lineItem.New or lineItem.Changed){
+        lineItem.GrossAmountExt = lineItem.TransactionAmount
+      }
+  }
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule().DisplayName, e, "" )  
+}
+/*end00rule*/
+  }
+}

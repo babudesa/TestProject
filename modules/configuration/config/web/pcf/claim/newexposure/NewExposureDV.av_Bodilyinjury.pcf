@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### =================================================================================================================
+  ###  New exposure/existing claim NVVs
+  ### ================================================================================================================= -->
+  <DetailViewPanel
+    id="NewExposureDV"
+    mode="av_Bodilyinjury|av_MedPay">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <!-- COLUMN ONE -->
+    <InputColumn>
+      <!-- Feature Section -->
+      <InputSetRef
+        def="ExposureSummaryInputSet(Exposure, &quot;AVBusinessInc&quot;)"/>
+      <!-- Claimant Section -->
+      <InputSetRef
+        def="ClaimantSectionInputSet(Exposure, Exposure.ExposureType.Description)"/>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"
+        id="TypeofLossBodilyInjury"
+        visible="Exposure.ExposureType == ExposureType.TC_AV_BODILYINJURY"/>
+    </InputColumn>
+    <!-- COLUMN TWO -->
+    <InputColumn>
+      <!-- Loss Description Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.LossDesc"/>
+      <TextAreaInput
+        id="Description"
+        numCols="60"
+        numRows="3"
+        value="Exposure.Claim.Description"/>
+      <InputDivider/>
+      <!-- Injury Section -->
+      <InputSetRef
+        def="InjuryDetailsInputSet(Exposure, Exposure.ExposureType.Description)"/>
+      <InputDivider/>
+      <InputSet
+        id="RecoveryInput"
+        visible="Exposure.ExposureType != ExposureType.TC_AV_MEDPAY">
+        <!-- Recovery Section -->
+        <Label
+          label="displaykey.NVV.Exposure.Subview.NewBodilyInjuryDamage.Exposure.Recovery"/>
+        <Input
+          editable="true"
+          id="ContributionPotential"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.ContributionPotential"
+          required="true"
+          value="Exposure.ContribPotentialExt"/>
+        <Input
+          editable="true"
+          id="SubroPotential"
+          label="displaykey.NVV.Exposure.SubView.PropertyDamage.Exposure.SubroPotential"
+          required="Exposure.UIHelper.IsSubgrogationPotentialRequired"
+          value="Exposure.SubrogPotentialExt"/>
+        <Input
+          editable="true"
+          id="DeductibleBooleanRadioInput"
+          label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.IsThereDeductible"
+          required="true"
+          value="Exposure.DeductibleExistsExt"
+          visible="Exposure.UIHelper.IsDeductibleVisible"/>
+        <InputDivider/>
+      </InputSet>
+      <!-- TYPE OF LOSS SECTION -->
+      <InputSetRef
+        def="TypeOfLossInputSet(Exposure)"
+        id="TypeofLossMedPay"
+        visible="Exposure.ExposureType == ExposureType.TC_AV_MEDPAY"/>
+      <!-- Other Carrier Involvement Section -->
+      <Label
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCarrierInvolvement"/>
+      <Input
+        editable="true"
+        id="Claimant_OtherCoverage"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.OtherCoverage"
+        required="false"
+        value="Exposure.OtherCoverage"/>
+      <ListViewInput
+        def="EditableOtherCoverageDetailsLV(Exposure)"
+        editable="true"
+        id="OtherCoverageDetails"
+        label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.OtherCoverageDetails">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <InputDivider
+        visible="Exposure.ExposureType != ExposureType.TC_AV_MEDPAY"/>
+      <!-- METHOD OF SETTLEMENT SECTION -->
+      <InputSetRef
+        def="MethodOfSettlementInputSet(Exposure)"
+        visible="Exposure.ExposureType != ExposureType.TC_AV_MEDPAY"/>
+    </InputColumn>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,30 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1200ReserveSetRecoverySetRules_dir
+
+@gw.rules.RuleName("TVXX1230 - Do Not Allow Negative Recoveries")
+internal class TVXX1230DoNotAllowNegativeRecoveries {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Subtype == "RecoverySet" and
+transactionSet.Claim.LossType != typekey.LossType.TC_PERSONALAUTO/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var recovery : Recovery
+
+// run through this transaction and make sure it is not a negative value  
+for(trans in transactionSet.Transactions){
+  recovery = trans as Recovery
+
+  // We need to allow recoveries to be voided so we need to check. If
+  // this is a recovery thats being voided then do not throw the error message
+  if(recovery.Comments == null or !recovery.Comments.contains("voided")){
+    if(recovery.Amount < 0){
+      transactionSet.reject( "newloss", "The transaction being entered will result in a negative total incurred on the claim. Negative Incurred is not permitted.", null, null); 
+      gw.api.util.Logger.logInfo(actions.getRule().DisplayName + ": Rejected Negative Recovery on Claim: " + recovery.Claim.ClaimNumber + " by user: " + transactionSet.RequestingUser);
+      actions.exit();
+    }
+  }
+  
+}
+/*end00rule*/
+  }
+}

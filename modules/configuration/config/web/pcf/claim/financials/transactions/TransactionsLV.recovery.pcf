@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="TransactionsLV"
+    mode="recovery">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="TxnFilterOption"
+      type="financials.ClaimFinancialsTransactionsOption"/>
+    <Variable
+      initialValue="TxnFilterOption.getTransactionsQuery(Claim)"
+      name="TransactionViewList"
+      type="RecoveryViewQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="TransactionView"
+      type="RecoveryView"
+      value="TransactionViewList">
+      <Row>
+        <Cell
+          id="CreateDate"
+          label="displaykey.LV.Financials.Recoveries.CreateDate"
+          sortOrder="1"
+          value="TransactionView.RptCreateDateExt"/>
+        <Cell
+          action="TransactionViewDetailForward.drilldown(Claim, TransactionView)"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.Recoveries.Amount"
+          sortBy="TransactionView.ClaimAmount"
+          value="TransactionView.Amount"/>
+        <Cell
+          action="ExposureDetailForward.go(Claim, TransactionView.Exposure)"
+          id="Exposure"
+          label="displaykey.LV.Financials.Recoveries.Exposure"
+          outputConversion="if (null != VALUE) {return TransactionView.Exposure.getFullDescription();} else {return displaykey.Financials.ReserveLine.NoExposure;}"
+          value="TransactionView.ExposureName"/>
+        <RangeCell
+          id="CoverageType"
+          label="displaykey.LV.Financials.Recoveries.CoverageType"
+          optionLabel="TransactionView.Exposure.Coverage.covTypeDisplayName()"
+          value="TransactionView.CoverageType"
+          valueRange="TransactionView.Exposure.Coverage.getCoverages()"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.Recoveries.CostType"
+          value="TransactionView.CostType"/>
+        <!-- <Cell
+          id="CostCategory"
+          label="displaykey.LV.Financials.Recoveries.CostCategory"
+          value="TransactionView.CostCategory"/> -->
+        <Cell
+          id="RecoveryCategory"
+          label="displaykey.LV.Financials.Recoveries.RecoveryCategory"
+          value="TransactionView.CostCategory"/>
+        <Cell
+          id="InjuryType"
+          label="displaykey.LV.Financials.Recoveries.InjuryType"
+          value="TransactionView.WCInjuryTypeExt"
+          visible="util.WCHelper.isWCorELLossType(Claim)"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Financials.Recoveries.Status"
+          value="TransactionView.Status"/>
+        <Cell
+          id="CashReceipt"
+          label="displayKey.LV.Financials.Reserves.CashReceipt"
+          value="TransactionView.ex_CashReceiptNumber"/>
+        <!-- (TransactionView.Transaction as Recovery) -->
+        <Cell
+          enableSort="false"
+          id="User"
+          label="displaykey.LV.Financials.Recoveries.User"
+          value="TransactionView.Transaction.CreateUser"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

@@ -1,0 +1,25 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir.CPUEL1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CPUEL1120 - Change to Potential Development")
+internal class CPUEL1120ChangetoPotentialDevelopment {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(exists(act in claim.Activities where act.ActivityPattern.Code == "initial_potential"&& !act.isNew()) == true) &&
+!exists(act in claim.Activities where act.ActivityPattern.Code == "change_potential" && act.Status == "open")
+
+// this rule checks to see if the potential development field has changed, 
+// the same "change_potential" activity should also be created if incurred changes.
+// See the Change to Potential Development rule in Transaction Pre-Update./*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if (claim.isFieldChanged("PotentialDevelopmentExt")){
+    var ap = util.custom_Ext.finders.findActivityPattern("change_potential")
+    claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+/*end00rule*/
+  }
+}

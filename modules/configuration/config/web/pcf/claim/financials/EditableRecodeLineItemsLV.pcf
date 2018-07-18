@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="EditableRecodeLineItemsLV">
+    <Require
+      name="Transaction"
+      type="Transaction"/>
+    <Variable
+      initialValue="new pcf_gs.EditableRecodeLineItemsLV_PageProc(Transaction)"
+      name="pageProcess"
+      recalculateOnRefresh="true"
+      type="pcf_gs.EditableRecodeLineItemsLV_PageProc"/>
+    <RowIterator
+      editable="true"
+      elementName="TransactionLineItem"
+      value="Transaction.LineItems">
+      <Row>
+        <TypeKeyCell
+          editable="true"
+          filter="TransactionLineItem.ValidLineCategories"
+          id="LineCategory"
+          label="Transaction.CostType == CostType.TC_CLAIMCOST || Transaction.CostType == CostType.TC_GAIASTPALOSS ? displaykey.LV.Financials.EditableRecodeLineItems.PaymentLineItem.ClaimcostCategory : displaykey.LV.Financials.EditableRecodeLineItems.PaymentLineItem.ExpenseCategory"
+          required="Transaction.costTypeCodeRequired()"
+          validationExpression="(Transaction.Exposure!=null)?Transaction.Exposure.getMedPayError(TransactionLineItem.LineCategory, Transaction.CostType):null"
+          value="TransactionLineItem.LineCategory"
+          visible="Transaction.CostType == null ? false : true"/>
+        <Cell
+          footerSumValue="TransactionLineItem.Amount"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.EditableRecodeLineItems.PaymentLineItem.Amount"
+          value="TransactionLineItem.Amount"/>
+        <TypeKeyCell
+          editable="true"
+          id="TransactionQualifier"
+          label="displaykey.LV.Financials.EditablePaymentLineItems.PaymentLineItem.ExpenseType"
+          required="true"
+          value="TransactionLineItem.TransactionQualifierExt"
+          visible="/*Is this Transaction an expense payment? */ Transaction typeis Payment ? Transaction.CostType == CostType.TC_EXPENSE || Transaction.CostType == CostType.TC_GAIASTPAEXPENSE : false"/>
+        <!-- <Cell
+          footerSumValue="TransactionLineItem.TransactionAmountComponent"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.Web.Claim.EditableRecodeLineItemsLV.Amount"
+          value="TransactionLineItem.TransactionAmountComponent"/> -->
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

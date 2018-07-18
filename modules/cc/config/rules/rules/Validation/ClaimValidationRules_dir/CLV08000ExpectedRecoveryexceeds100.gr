@@ -1,0 +1,26 @@
+package rules.Validation.ClaimValidationRules_dir
+
+@gw.rules.RuleName("CLV08000 - Expected Recovery exceeds 100")
+internal class CLV08000ExpectedRecoveryexceeds100 {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/Claim.SubrogationSummary != null AND
+Claim.SubrogationSummary.SubroAdverseParties.length > 0/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var  ChangeToExpectedRecovery = false;
+
+  for (thisParty in Claim.SubrogationSummary.SubroAdverseParties)
+      {
+          if (thisParty.getOriginalValue( "ExpectedRecovery" ) != thisParty.expectedrecovery) {
+              ChangeToExpectedRecovery = true;
+             }
+
+      }
+
+  if (ChangeToExpectedRecovery AND Claim.AdversePartyExpectedRecoveryPercent() > 100)  {
+
+     Claim.reject( null, null, "newloss", displaykey.Rules.Validation.Claim.TotalExpectedRecoveryExceeded(gw.api.util.StringUtil.substring( actions.getRule() as java.lang.String, 0,8)))
+   }/*end00rule*/
+  }
+}

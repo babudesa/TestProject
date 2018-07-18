@@ -1,0 +1,48 @@
+package rules.Validation.GroupValidationRules_dir.GVXX1000AllBUsGroupValidationRules_dir.GVXX1100CurrentUserUpdatesOnly_dir.GVXX1110BusUserGroupsOnly_dir
+
+@gw.rules.RuleName("GVXX1111 - New Users Only")
+internal class GVXX1111NewUsersOnly {
+  static function doCondition(group : entity.Group) : boolean {
+    return /*start00rule*/exists(it in group.Users where it.New == true )
+
+/*end00rule*/
+  }
+
+  static function doAction(group : entity.Group, actions : gw.rules.Action) {
+/*start00rule*/var mailaddpresent = false;
+var busaddpresent = false;
+var mailaddcount =0;
+var busaddcount =0;
+
+var ruleName=gw.api.util.StringUtil.substring(actions.getRule().displayName,0,8);
+
+for ( usr in group.Users){ // find the new user added to the group
+   mailaddpresent = false;
+   busaddpresent  = false;
+   mailaddcount =0;
+   busaddcount =0;
+   if(usr.New){
+      if( !usr.User.New ){ // new users will be checked in user validation rules
+  
+        for (add in usr.User.contact.AllAddresses){
+          if(add.AddressType == "mailing"){
+              mailaddpresent = true;
+              mailaddcount =mailaddcount + 1;
+          }
+          if(add.AddressType == "business"){
+              busaddpresent = true;
+              busaddcount = busaddcount + 1;
+          }
+        }
+        if(mailaddpresent == false or busaddpresent == false) {
+            group.reject("newloss", "Mailing and Business Addresses are required for " + usr.User.Contact.DisplayName + " to be associated with above Group ("+ruleName+")",null,null);
+        }
+    
+        if(mailaddcount > 1 OR busaddcount > 1){
+           group.reject("newloss", "Multiple Mailing and/or Business Addresses not allowed for  " + usr.User.Contact.DisplayName + " to be associated with above Group ("+ruleName+")",null,null); 
+        }
+     }
+   }
+}/*end00rule*/
+  }
+}

@@ -1,0 +1,25 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir.PVXX1210AgencyRequirements_dir
+
+@gw.rules.RuleName("PVXX1212 - Agency Address Required")
+internal class PVXX1212AgencyAddressRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified
+//defect 3074- this rule causing policy refresh errors on converted claim/policies.
+// changed rule to only run on unverified.
+//10.29.15 - cmullin - Defect 7750 - Producer information moved from ATP to New Loss Policy Validation (Enterprise). Rule disabled./*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/if (policy.ex_Agency.PrimaryAddress == null) {
+  policy.rejectField( "ex_Agency.PrimaryAddress", "payment", "Address required for an Agency", null, null )
+}
+else {
+  if (policy.ex_Agency.PrimaryAddress.PostalCode == null and util.custom_Ext.finders.postCodeRequired(policy.ex_Agency.PrimaryAddress.Country.Code, true)) {
+      policy.rejectField( "ex_Agency.PrimaryAddress.PostalCode", "payment", "Postal Code required for Agency address", null, null )
+  }
+}
+
+
+  /*end00rule*/
+  }
+}

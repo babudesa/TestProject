@@ -1,0 +1,21 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVIM1000PIMTransactionValidationRules_dir.TVIM1100ReserveRules_dir
+
+@gw.rules.RuleName("TVIM1110 - Level of Reserve under $10,000")
+internal class TVIM1110LevelofReserveunder10000 {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///Stephanie Przygocki 6/25/10 - If Level of Reserve is set to $10,000 or less on the
+//  Loss Details screen, and the user creates a reserve that exceeds $10,000, they
+//  should be given a WARNING that LOR is set to below that, but allowed to proceed.
+
+transactionSet.Claim.LevelOfReserveExt=="under_equal_10k" and
+transactionSet.Amount>10000/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  transactionSet.reject( null, null, "payment", "Level of Reserve is set to $10,000 or less. Please change on Loss Details." )
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

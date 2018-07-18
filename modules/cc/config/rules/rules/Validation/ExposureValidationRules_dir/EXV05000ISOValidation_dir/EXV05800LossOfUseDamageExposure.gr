@@ -1,0 +1,14 @@
+package rules.Validation.ExposureValidationRules_dir.EXV05000ISOValidation_dir
+
+@gw.rules.RuleName("EXV05800 - LossOfUseDamage Exposure")
+internal class EXV05800LossOfUseDamageExposure {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/Exposure.ExposureType =="LossOfUseDamage"
+  && (Exposure.LossParty != "insured"
+  || Exposure.claimant != Exposure.Claim.Policy.insured)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/Exposure.rejectField( "Claimant", "iso", displaykey.Rules.Validation.Exposure.ClaimantForLossOfUseMustBeInsured, null, null );/*end00rule*/
+  }
+}

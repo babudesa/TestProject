@@ -1,0 +1,45 @@
+package rules.Assignment.DefaultGroupClaimAssignmentRules_dir.DGCAXX100AllBUsDefaultGroupClaimAssignmentRules_dir
+
+@gw.rules.RuleName("DGCAXX120 - Incident Only Claims")
+internal class DGCAXX120IncidentOnlyClaims {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.IncidentReport == true or
+claim.isFieldChanged("IncidentReport")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var defaultcorpclaim:User = util.GlobalParameters.ParameterFinder.getUserParameter( "defaultcorpaccount", claim.LossType);
+var defaultcorpGroup:Group = defaultcorpclaim.AllGroups.first() as Group;
+  if(util.admin.SecurityUtil.isClaimCorporateAccount(claim.Policy.PolicyNumber)){
+    claim.CurrentAssignment.assign(defaultcorpGroup, defaultcorpclaim);
+    actions.exit()
+  }
+
+var user = util.GlobalParameters.ParameterFinder.getUserParameter( "incidentassign", claim.LossType )
+
+try{ 
+  if(claim.CurrentAssignment.assign(claim.CurrentAssignment.AssignedGroup, user)){
+    actions.exit(); 
+  }
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+    if(java.lang.System.getProperty( "gw.cc.env" ) == "prod"){
+    gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        "ClaimCenterSupport@gaig.com", "ClaimCenterSupport", 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Support", 
+        "ClaimCenter Notification", "Could not assign incident to " + user)
+    }
+    else{
+      gw.api.util.Logger.logInfo( "User not found " + user +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+      gw.api.email.EmailUtil.sendEmailWithBody(null, 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter DEV Email", 
+        ScriptParameters.ClaimCenterDevEmail, "ClaimCenter DEV", 
+        "ClaimCenter DEV Notification", "Could not assign incident to " + user)
+    }
+}/*end00rule*/
+  }
+}

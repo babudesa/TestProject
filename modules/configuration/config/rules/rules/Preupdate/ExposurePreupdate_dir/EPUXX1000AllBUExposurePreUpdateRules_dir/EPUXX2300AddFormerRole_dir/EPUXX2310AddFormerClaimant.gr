@@ -1,0 +1,19 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir.EPUXX2300AddFormerRole_dir
+
+@gw.rules.RuleName("EPUXX2310 - Add Former Claimant")
+internal class EPUXX2310AddFormerClaimant {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/!exposure.New && !exposure.Closed &&
+(exposure.OriginalVersion as Exposure) .Claimant != null &&
+(exposure.OriginalVersion as Exposure) .Claimant != exposure.Claimant/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*///Defect 6517 and 6667 - Claimant assigned Former Claimant when role changed to different party
+try{  
+  exposure.addRole(ContactRole.TC_FORMERCLAIMANT, (exposure.OriginalVersion as Exposure).Claimant)  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

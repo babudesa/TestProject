@@ -1,0 +1,81 @@
+<project name="Guidewire product configuration upgrade tools"
+  xmlns:ac="antlib:net.sf.antcontrib"
+  xmlns:gw="antlib:com.guidewire.ant.task"
+  xmlns:gwm="antlib:com.guidewire.ant.macro"
+  default="help">
+
+  <property file="build.properties"/>
+  <property file="upgrade.properties"/>
+  <import file="init.xml"/>
+
+  <target name="clean" description="clean so that steps can run again" depends="init">
+    <ac:if>
+      <available file="${gw.devroot.dir}/tmp/cfg-upgrade"/>
+      <then>
+        <delete includeemptydirs="true">
+          <fileset dir="${gw.devroot.dir}/tmp/cfg-upgrade" includes="**/*"/>
+        </delete>
+      </then>
+    </ac:if>
+<!--
+    <gw:gosu>
+      uses gw.ant.ScriptEnv
+      uses gw.ant.wrappers.Delete
+      Delete.dir(ScriptEnv.get().TmpDir.file("cfg-upgrade"))
+    </gw:gosu>
+-->
+  </target>
+
+  <target name="upgrade" description="run configuration upgrader" depends="init">
+    <fail unless="upgrader.priorversion.dir"/>
+    <gw:gosu>
+      uses gw.ant.ScriptEnv
+      uses gw.ant.ConfigUpgrade
+      uses java.io.File
+
+      var activeDir = ScriptEnv.get().TmpDir.file("cfg-upgrade")
+      var stepsResultsFile = activeDir.file("steps-results.txt")
+
+      if (!stepsResultsFile.exists()) {
+        if (activeDir.exists()) {
+          print("${activeDir.Path} exists, but it seems that the config upgrader step list script never ran to completion - deleting")
+          activeDir.deleteRecursively()
+        }
+        ConfigUpgrade.upgrade(
+          new File(ScriptEnv.get().Project.getProperty("upgrader.priorversion.dir")),
+          activeDir)
+      }
+      if (stepsResultsFile.exists()) {
+        if (stepsResultsFile.read().trim().contains("WARNING")) {
+          print("The config upgrader step list script ran to completion, but there were warnings.")
+          print("Please review the file")
+          print("      ${stepsResultsFile.Path}")
+          print("to see which steps failed.")
+          print("If you're absolutely certain that these issues are acceptable to ignore, and would like to continue with")
+          print("the upgrader merge tool, remove the instances of the string \"WARNING\" and re-run this \"upgrade\" target.")
+        }
+        else {
+          ConfigUpgrade.merge(activeDir)
+        }
+      }
+    </gw:gosu>
+  </target>
+
+  <target name="init" depends="asserts, gw-macros, gw-tasks">
+    <echo message="Java version: ${java.version}"/>
+    <echo message=" Ant version: ${ant.version}"/>
+    <gw:gosuInit rootdir="${gw.init.devroot.dir}"
+                 builddir="${gw.init.devbuild.dir}"
+                 apps="${gw.app}">
+      <classpath>
+        <pathelement location="${gw.init.devroot.dir}/modules/ant/public"/>
+        <pathelement location="${gw.init.devroot.dir}/modules/gosu-core-api/gsrc"/>
+      </classpath>
+      <dirset dir="${gw.init.devroot.dir}" includes="modules"/>
+    </gw:gosuInit>
+  </target>
+
+  <target name="help">
+    <echo message="For a list of targets available to run, use the &quot;-p&quot; switch"/>
+  </target>
+</project>

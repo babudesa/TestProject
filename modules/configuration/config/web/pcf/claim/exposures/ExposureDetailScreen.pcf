@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="ExposureDetailScreen">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="User"
+      type="User"/>
+    <Variable
+      initialValue="Libraries.ISO.showSubmitInfoMessage()"
+      name="messageShown"
+      recalculateOnRefresh="true"/>
+    <TitleBar
+      subtitle="getSubTitle()"/>
+    <Toolbar
+      reflectOnBottom="true"
+      visible="Exposure.ClosedOutcome!=&quot;invalidfeature&quot; &amp;&amp; (Exposure.ExposureType==ExposureType.TC_WC_MEDICAL_DETAILS || Exposure.ExposureType==ExposureType.TC_WC_INDEMNITY_TIMELOSS)">
+      <EditButtons/>
+      <ToolbarButton
+        action="gw.api.assignment.AssignmentUtil.assignEU(Exposure)"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_AssignButton"
+        label="displaykey.Web.ExposureDetail.Assign"
+        visible="perm.Exposure.assign(Exposure)"/>
+      <ToolbarButton
+        action="CloseExposurePopup.push(Exposure)"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_CloseButton"
+        label="displaykey.Web.ExposureDetail.Close"
+        visible="Exposure.canClose(User)"/>
+      <ToolbarButton
+        action="if (gw.api.claim.ReopenUtil.requireExplanation(entity.Exposure)) {ReopenExposurePopup.push(Exposure);} else {gw.api.claim.ReopenUtil.reopenExposureWithoutExplanation(Exposure);}"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_ReopenButton"
+        label="displaykey.Web.ExposureDetail.Reopen"
+        visible="Exposure.canReopen(User)"/>
+      <!-- <ToolbarButton
+        action="NewReserveSet.go(Exposure.Claim, Exposure, true)"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_CreateReserveButton"
+        label="displaykey.Web.ExposureDetail.CreateReserve"
+        visible="User.hasReserveAuthority() and !Exposure.Closed"/> -->
+      <ToolbarButton
+        action="gw.api.exposure.ExposureUtil.sendToISO(Exposure)"
+        available="Exposure.ISOButtonsAvailable"
+        confirmMessage="((Exposure.ISOSendDate &gt; Exposure.ISOReceiveDate)||(Exposure.ISOSendDate!=null AND Exposure.ISOReceiveDate==null))?displaykey.Web.ExposureDetail.SendToISO.ConfirmationMsg:null"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_SendToISOButton"
+        label="displaykey.Web.ExposureDetail.SendToISO"
+        visible="Exposure.ISOButtonsVisible"/>
+      <ToolbarButton
+        action="null"
+        available="Exposure.ISOButtonsAvailable"
+        hideIfEditable="true"
+        id="ExposureDetailScreen_RefreshButton"
+        label="displaykey.Web.ExposureDetail.Refresh"
+        visible="Exposure.ISOButtonsVisible"/>
+    </Toolbar>
+    <PanelRef
+      def="ExposureDetailDV(Exposure)"
+      mode="Exposure.ExposureType">
+      <Toolbar
+        visible="Exposure.ClosedOutcome!=&quot;invalidfeature&quot; &amp;&amp; Exposure.ExposureType!=ExposureType.TC_WC_MEDICAL_DETAILS &amp;&amp; Exposure.ExposureType!=ExposureType.TC_WC_INDEMNITY_TIMELOSS">
+        <EditButtons
+          updateVisible="true"/>
+        <ToolbarButton
+          action="gw.api.assignment.AssignmentUtil.assignEU(Exposure)"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_AssignButton"
+          label="displaykey.Web.ExposureDetail.Assign"
+          visible="perm.Exposure.assign(Exposure)"/>
+        <ToolbarButton
+          action="CloseExposurePopup.push(Exposure)"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_CloseButton"
+          label="displaykey.Web.ExposureDetail.Close"
+          visible="Exposure.canClose(User)"/>
+        <ToolbarButton
+          action="if (gw.api.claim.ReopenUtil.requireExplanation(entity.Exposure)) {ReopenExposurePopup.push(Exposure);} else {gw.api.claim.ReopenUtil.reopenExposureWithoutExplanation(Exposure);}"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_ReopenButton"
+          label="displaykey.Web.ExposureDetail.Reopen"
+          visible="Exposure.canReopen(User)"/>
+        <!-- <ToolbarButton
+          action="NewReserveSet.go(Exposure.Claim, Exposure, true)"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_CreateReserveButton"
+          label="displaykey.Web.ExposureDetail.CreateReserve"
+          visible="User.hasReserveAuthority() and !Exposure.Closed"/> -->
+        <ToolbarButton
+          action="gw.api.exposure.ExposureUtil.sendToISO(Exposure)"
+          available="Exposure.ISOButtonsAvailable"
+          confirmMessage="((Exposure.ISOSendDate &gt; Exposure.ISOReceiveDate)||(Exposure.ISOSendDate!=null AND Exposure.ISOReceiveDate==null))?displaykey.Web.ExposureDetail.SendToISO.ConfirmationMsg:null"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_SendToISOButton"
+          label="displaykey.Web.ExposureDetail.SendToISO"
+          visible="Exposure.ISOButtonsVisible"/>
+        <ToolbarButton
+          action="null"
+          available="Exposure.ISOButtonsAvailable"
+          hideIfEditable="true"
+          id="ExposureDetailScreen_RefreshButton"
+          label="displaykey.Web.ExposureDetail.Refresh"
+          visible="Exposure.ISOButtonsVisible"/>
+      </Toolbar>
+    </PanelRef>
+    <Code><![CDATA[
+function getSubTitle() : String{
+        	return util.exposures.ExposureMenuUtils.getTitleForNewExposure(Exposure.Coverage, "Full Menu")
+      	}
+    ]]></Code>
+  </Screen>
+</PCF>

@@ -1,0 +1,29 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVXX11G0 - Lock Down Claim if Disconnected Feature")
+internal class PVXX11G0LockDownClaimifDisconnectedFeature {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*//*Prevents the policy from being edited when there are features with 
+  Author: Zach Thomas
+  Date: 09/02/11
+*/
+policy.Changed and
+!policy.Claim.Changed and 
+policy.Claim.checkDisconnectedFeatures() and 
+policy.Claim.Policy.isPolicyInRefresh( 0 )/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(exp in policy.Claim.Exposures){ // loop through all exposures on the claim
+    if(exp.ReconnectFailExt){ // look for failed feature reconnect
+      policy.Claim.reject( "newloss", displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName), null, null );  
+      //gw.api.util.Logger.logInfo( actions.getRule().DisplayName + " - " + displaykey.Rules.Validation.Claim.Equine.NewLoss.DisconnectedFeatureClaimSuspended(exp.Claim.ClaimNumber, exp.DisplayName) )
+    }// end if
+  }// end for
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null );
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,27 @@
+package rules.EventMessage.EventFired_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("UnitApprovalEmail")
+internal class UnitApprovalEmail {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/MessageContext.EventName == "UnitApprovalEmail" /*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification to Losstype unitmanager user
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var msgAct:Activity = MessageContext.Root as Activity
+var emailBody = templates.email.ApprovalActivity.renderToString(msgAct)
+
+if(Libraries.ServiceInfoSource.getEnv() == "prod"){
+  //Send e-mail to that Losstype unitmanager user
+  msgAct.Claim.sendEmailWithBody(msgAct.AssignedUser, msgAct.AssignedUser.Contact.EmailAddress1, "ClaimCenter Notification","ClaimCenterSupport@gaig.com", "Approval Activity Notification", emailBody);    
+  gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Unit Manager User");
+}
+else{
+  //Send e-mail to that Losstype unitmanager user
+  msgAct.Claim.sendEmailWithBody(msgAct.AssignedUser,ScriptParameters.ClaimCenterDevEmail, environmentInformation,"ClaimCenterSupport@gaig.com", "Approval Activity Notification", emailBody);    
+  gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Unit Manager User"); 
+}/*end00rule*/
+  }
+}

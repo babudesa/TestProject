@@ -1,0 +1,21 @@
+package rules.Validation.ClaimValidationRules_dir.CVWC1000WorkersCompClaimValidationRules_dir.CVWC1100ValidationatNewLossLevel_dir
+
+@gw.rules.RuleName("CVWC1110 - Select Coverage Required")
+internal class CVWC1110SelectCoverageRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.CoverageSelectedExt == null &&
+claim.Policy.isPolicyInRefresh(1) == false &&
+!claim.IncidentReport
+// 3/25/2015 dnmiller: Rule to require user to select a coverage
+// before the claim is saved.
+// 10/2/2015 cmullin: Select Coverage not required for Incident Only claims/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try {
+  claim.rejectField("CoverageSelectedExt", "newloss", displaykey.Rules.Validation.Claim.WorkersComp.SelectCoverage, null, null)
+}catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

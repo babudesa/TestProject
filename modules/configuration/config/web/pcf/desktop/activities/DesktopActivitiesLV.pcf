@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- ### ============================================================================
+###  ListViewDef instances
+### ============================================================================
+  This file automatically generated from lv_activity.xml -->
+  <ListViewPanel
+    id="DesktopActivitiesLV">
+    <Require
+      name="ActivityDesktopViewList"
+      type="ActivityDesktopViewQuery"/>
+    <Variable
+      initialValue="new desktop.DesktopActivityFilterSet()"
+      name="FilterSet"
+      type="desktop.DesktopActivityFilterSet"/>
+    <Variable
+      initialValue="activity.WorkplanFilterSet.INSTANCE"
+      name="Filterset1"
+      type="activity.WorkplanFilterSet"/>
+    <RowIterator
+      editable="false"
+      elementName="ActivityDesktopView"
+      hasCheckBoxes="true"
+      value="ActivityDesktopViewList">
+      <ToolbarFlag
+        condition="ActivityDesktopView.canAssign() &amp;&amp; !gw.api.activity.ActivityUtil.isWorksheetOpen(ActivityDesktopView.ID)"
+        name="CanAssignActivity"/>
+      <ToolbarFlag
+        condition="ActivityDesktopView.canSkip() &amp;&amp; !gw.api.activity.ActivityUtil.isWorksheetOpen(ActivityDesktopView.ID)"
+        name="CanSkipActivity"/>
+      <ToolbarFlag
+        condition="ActivityDesktopView.canComplete() &amp;&amp; !gw.api.activity.ActivityUtil.isWorksheetOpen(ActivityDesktopView.ID)"
+        name="CanCompleteActivity"/>
+      <ToolbarFlag
+        condition="ActivityDesktopView.canApprove() &amp;&amp; !gw.api.activity.ActivityUtil.isWorksheetOpen(ActivityDesktopView.ID)"
+        name="CanApproveActivity"/>
+      <ToolbarFilter
+        name="DesktopActivitiesFilter">
+        <ToolbarFilterOption
+          filter="FilterSet.NotReviewOpenDueTodayFilter"
+          label="displaykey.Java.ToolBar.Activities.CurrentOpen"
+          selectOnEnter="true"/>
+        <ToolbarFilterOption
+          filter="FilterSet.getNotReviewOpenDueInNDaysFilter(7)"
+          label="displaykey.Java.ToolBar.Activities.DueNDays(7)"/>
+        <ToolbarFilterOption
+          filter="Filterset1.getMyNotReviewNotExternalOpenDueInNDaysFilter(30)"
+          label="displaykey.Java.ToolBar.Activities.DueWithinDays(30)"/>
+        <ToolbarFilterOption
+          filter="FilterSet.NotReviewOpenFilter"
+          label="displaykey.Java.ToolBar.Activities.AllOpen"/>
+        <ToolbarFilterOption
+          filter="FilterSet.NotReviewOpenOverdueFilter"
+          label="displaykey.Java.ToolBar.Activities.Overdue"/>
+        <ToolbarFilterOption
+          filter="FilterSet.NotReviewExternalOpenFilter"
+          label="displaykey.Java.ToolBar.Activities.AllOpenExternal"/>
+        <ToolbarFilterOption
+          filter="FilterSet.getNotReviewCompletedLastNDaysFilter(30)"
+          label="displaykey.Java.ToolBar.Activities.ClosedLastNDays(30)"/>
+      </ToolbarFilter>
+      <Row>
+        <Cell
+          enableSort="false"
+          icon="&quot;new.gif&quot;"
+          iconLabel="displaykey.LV.Activity.Updated.Tip"
+          id="Updated"
+          printWidth="0.02"
+          tooltip="displaykey.LV.Activity.Updated.Tip"
+          value="ActivityDesktopView.UpdatedSinceLastViewed"/>
+        <Cell
+          enableSort="false"
+          icon="&quot;escalated.gif&quot;"
+          iconLabel="displaykey.LV.Activity.Escalated.Tip"
+          id="Escalated"
+          printWidth="0.02"
+          tooltip="displaykey.LV.Activity.Escalated.Tip"
+          value="ActivityDesktopView.Escalated"/>
+        <Cell
+          fontColor="ActivityDesktopView.Overdue and ActivityDesktopView.Status == &quot;open&quot; ? &quot;Red&quot; : &quot;&quot;"
+          id="DueDate"
+          label="displaykey.LV.Activity.Activities.DueDate"
+          printWidth="0.1"
+          sortOrder="2"
+          value="ActivityDesktopView.TargetDate"/>
+        <Cell
+          id="Priority"
+          label="displaykey.LV.Activity.Activities.Priority"
+          printWidth="0.1"
+          sortOrder="1"
+          value="ActivityDesktopView.Priority"/>
+        <Cell
+          action="ClaimWorkplan.go(ActivityDesktopView.Claim); ActivityDetailForward.goInWorkspace(ActivityDesktopView.Claim, ActivityDesktopView.Activity)"
+          id="Subject"
+          label="displaykey.LV.Activity.Activities.Subject"
+          printWidth="0.30"
+          value="ActivityDesktopView.Subject"
+          width="20%"/>
+        <Cell
+          action="pcf.Claim.go(ActivityDesktopView.Claim)"
+          id="CaseID"
+          label="displaykey.LV.Activity.Activities.CaseID"
+          printWidth="0.16"
+          sortOrder="3"
+          value="ActivityDesktopView.ClaimNumber"
+          wrap="false"/>
+        <Cell
+          action="ClaimContactDetailPopup.push(ActivityDesktopView.ClaimInsured, ActivityDesktopView.Claim)"
+          id="Insured"
+          label="displaykey.LV.Activity.Activities.Insured"
+          printWidth="0.2"
+          value="ActivityDesktopView.ClaimInsuredName"/>
+        <TextCell
+          enableSort="false"
+          id="Exposure"
+          label="displaykey.LV.Activity.Activities.Exposure"
+          maxChars="120"
+          printWidth="0"
+          value="ActivityDesktopView.Exposure"/>
+        <Cell
+          enableSort="false"
+          id="Claimant"
+          label="displaykey.LV.Activity.Activities.Claimant"
+          printWidth="0"
+          value="(ActivityDesktopView.Claimant != null &amp;&amp;ActivityDesktopView.Claimant.length&gt;0)?ActivityDesktopView.Claimant :ActivityDesktopView.Claim.incidentclaimant //ActivityDesktopView.Claimant"/>
+        <Cell
+          id="Assigner"
+          label="displaykey.LV.Activity.Workplan.Activities.Assigner"
+          printWidth="0"
+          sortBy="ActivityDesktopView.AssignedByUser"
+          value="(ActivityDesktopView.Activity.AssignedByUser.Contact == null) ? displaykey.Java.Activity.AssignedByUser.SystemUser : ActivityDesktopView.Activity.AssignedByUser.Contact.DisplayName"/>
+        <!-- <Cell
+          id="ExternallyOwned"
+          label="displaykey.LV.Activity.Activities.ExternallyOwned"
+          printWidth="0.1"
+          value="ActivityDesktopView.ExternallyOwned"/> -->
+        <!-- <Cell
+          id="LOB"
+          label="displaykey.LV.Activity.Activities.LOB"
+          printWidth="0"
+          value="ActivityDesktopView.LOBCode"/> -->
+        <!-- <Cell
+          id="State"
+          label="displaykey.LV.Activity.Activities.State"
+          printWidth="0"
+          value="ActivityDesktopView.JurisdictionState"
+          wrap="false"/> -->
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

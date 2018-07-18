@@ -1,0 +1,42 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1300ValidforISO_dir.PVXX1310Insured_dir
+
+@gw.rules.RuleName("PVXX1311 - Name")
+internal class PVXX1311Name {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var msg = ""
+var insured = policy.insured
+
+if(insured==null){
+  policy.reject( "iso", "Insured cannot be null", null, null )
+} else if(insured typeis Person){
+    //validation for first name
+    msg = policy.Claim.performNameValidation(insured.FirstName)
+    if(msg == "1") {
+      policy.rejectField( "Insured.Name", "iso", "Insured must have a first name of at least 1 character.", null, null )
+    } else if(msg == "3") {
+      policy.rejectField( "Insured.Name", "iso", "Insured first name must must be a real name. Substitutions are not valid in place of a real name.", null, null )
+    }
+    //validation for last name.
+    msg = policy.Claim.performNameValidation(insured.LastName)
+    if(msg == "1") {
+      policy.rejectField( "Insured.Name", "iso", "Insured must have a last name.", null, null )
+    //3/11/10 erawe defect 2968 - took out check for insured last name of 1 character
+    //} else if(msg == "2") {
+    //  Policy.rejectField( "Insured.Name", "iso", "Insured last name must be longer than 1 character.", null, null )
+    } else  if(msg == "3") {
+      policy.rejectField( "Insured.Name", "iso", "Insured last name must must be a real name. Substitutions are not valid in place of a real name.", null, null )
+    }
+} else if(insured typeis Company){
+    msg = policy.Claim.performNameValidation(insured.Name)
+    if(msg == "1") {
+      policy.rejectField( "Insured.Name", "iso", "Insured must have a company name of at least 1 character.", null, null )
+    } if(msg == "3") {
+      policy.rejectField( "Insured.Name", "iso", "Insured company name must be a real name. Substitutions are not valid in place of a real name..", null, null )
+    }
+}/*end00rule*/
+  }
+}

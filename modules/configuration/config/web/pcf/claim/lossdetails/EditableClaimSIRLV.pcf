@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="EditableClaimSIRLV">
+    <Require
+      name="selectedExposure"
+      type="Exposure"/>
+    <RowIterator
+      editable="true"
+      elementName="ClaimSIR"
+      hasCheckBoxes="true"
+      hideCheckBoxesIfReadOnly="true"
+      id="RowIteratorClaimSIR"
+      toAdd="selectedExposure.SIRsExt.addToSIRInvoicesExt(ClaimSIR)"
+      toRemove="selectedExposure.SIRsExt.removeFromSIRInvoicesExt(ClaimSIR)"
+      value="selectedExposure.SIRsExt.SIRInvoicesExt">
+      <Row
+        id="invoice">
+        <ClaimContactCell
+          claim="selectedExposure.Claim"
+          editable="true"
+          footerLabel="&quot;Totals&quot;"
+          id="vendor"
+          label="displaykey.Exposure.EditableClaimSIRLV.Vendor"
+          newContactMenu="ClaimNewRelatedVendorForeignVendorPickerMenuItemSet"
+          onPick="if(ClaimSIR.VendorExt.AddressBookUID != null and ClaimSIR.VendorExt.AddressBookUID != &quot;&quot;){AddExistingPartyInvolvedPopup.push(selectedExposure.Claim, new contact.TemporaryContact(ClaimSIR.VendorExt))}"
+          required="true"
+          validationExpression="ClaimSIR.VendorExt.CloseDateExt != null ? &quot;This Vendor is Closed. Select a valid Vendor.&quot; : null "
+          value="ClaimSIR.VendorExt"
+          valueRange="getVendorList()"/>
+        <TextCell
+          editable="true"
+          id="invoicenum"
+          label="displaykey.Exposure.EditableClaimSIRLV.InvoiceNumber"
+          numCols="10"
+          required="true"
+          validationExpression="ClaimSIR.InvoiceNumber != null and !ClaimSIR.InvoiceNumber.Alphanumeric ? displaykey.Exposure.EditableClaimSIRLV.InvoiceAmountCharError : null"
+          value="ClaimSIR.InvoiceNumber"
+          wrapLabel="true"/>
+        <DateCell
+          editable="true"
+          id="sirinvoicedate"
+          label="displaykey.Exposure.EditableClaimSIRLV.InvoiceDate"
+          required="true"
+          sortDirection="descending"
+          sortOrder="1"
+          validationExpression="ClaimSIR.InvoiceDate != null and gw.api.util.DateUtil.compareIgnoreTime(ClaimSIR.InvoiceDate,util.DateUtil.currentDate())&gt;0 ? displaykey.Java.Validation.Date.ForbidFuture : null"
+          value="ClaimSIR.InvoiceDate"
+          wrapLabel="true"/>
+        <RangeCell
+          editable="true"
+          id="costtype"
+          label="displaykey.Exposure.EditableClaimSIRLV.CostType"
+          numCols="5"
+          postOnChange="true"
+          required="true"
+          value="ClaimSIR.CostTypeExt"
+          valueRange="typekey.CostType.getTypeKeys(false).where(\ c -&gt; c==typekey.CostType.TC_CLAIMCOST or c==typekey.CostType.TC_EXPENSE)"
+          valueWidth="90"/>
+        <RangeCell
+          editable="true"
+          filter="validLineCategories(ClaimSIR)"
+          id="linecategory"
+          label="displaykey.Exposure.EditableClaimSIRLV.PaymentCode"
+          numCols="10"
+          postOnChange="true"
+          required="true"
+          value="ClaimSIR.LineCategoryExt"
+          valueRange="(LineCategory as gw.entity.ITypeList).getTypeKeysByCategory(ClaimSIR.CostTypeExt).cast(LineCategory)"
+          valueWidth="270"/>
+        <TextCell
+          editable="true"
+          footerSumValue="ClaimSIR.InvoiceAmount"
+          id="sirinvoiceamount"
+          label="displaykey.Exposure.EditableClaimSIRLV.InvoiceAmount"
+          numCols="10"
+          postOnChange="true"
+          required="true"
+          validationExpression="ClaimSIR.InvoiceAmount == 0 ? displaykey.Exposure.EditableClaimSIRLV.InvoiceAmountError : null"
+          value="ClaimSIR.InvoiceAmount"
+          wrapLabel="true"/>
+        <TextCell
+          editable="true"
+          footerSumValue="ClaimSIR.DisputedAmount"
+          id="disputedamt"
+          label="displaykey.Exposure.EditableClaimSIRLV.DisputedAmount"
+          numCols="10"
+          postOnChange="true"
+          required="true"
+          value="ClaimSIR.DisputedAmount"
+          wrapLabel="true"/>
+        <TextCell
+          editable="true"
+          footerSumValue="ClaimSIR.CreditSIR"
+          id="sircredit"
+          label="displaykey.Exposure.EditableClaimSIRLV.CreditSIR"
+          numCols="10"
+          postOnChange="true"
+          required="true"
+          value="ClaimSIR.CreditSIR"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses java.util.ArrayList
+function getVendorList() :List
+{
+  var vendorList = new ArrayList<Contact>();
+  for(contact in selectedExposure.Claim.RelatedContacts)
+  {
+    if(contact.Subtype=="Attorney" || contact.Subtype=="AutoRepairShop" ||contact.Subtype=="CompanyVendor" ||contact.Subtype=="Doctor"
+    ||contact.Subtype=="MedicalCareOrg" ||contact.Subtype=="Ex_GAIVendor" ||contact.Subtype=="LawFirm" ||contact.Subtype=="PersonVendor"
+    ||contact.Subtype=="ex_foreignpervndrattny" ||contact.Subtype=="frgnautorepairshopext" ||contact.Subtype=="ex_foreigncovendor"
+    ||contact.Subtype=="ex_foreignpervndrdoc" ||contact.Subtype=="ex_foreigncovenlawfrm" ||contact.Subtype=="ex_foreigncovenmedorg" 
+    ||contact.Subtype=="ex_foreignpersonvndr")
+    {
+      vendorList.add(contact)
+    }
+  }
+  return vendorList
+}
+
+ function validLineCategories(ClaimSIR : SIRInvoiceExt) : java.util.List<LineCategory> {
+    var fullList = (LineCategory as gw.entity.ITypeList).getTypeKeysByCategories({selectedExposure.PrimaryCoverage, ClaimSIR.CostTypeExt, null}).cast(LineCategory).where(\ l -> l.Retired == false)
+    /* Recall Loss */
+    if(ClaimSIR.CostTypeExt == CostType.TC_CLAIMCOST and (selectedExposure.Claim.Policy.PolicyType == PolicyType.TC_PRC || selectedExposure.Claim.Policy.PolicyType == PolicyType.TC_PRX)){
+      var prodRecallList = new List<LineCategory>()
+      for(line in LineCategory.TF_PRODUCTRECALLLOSSCODES.TypeKeys.where(\ l -> l.Retired == false)){
+        prodRecallList.add(line)
+      }
+      return prodRecallList
+    }
+    /* E&S profit center 0643 Loss */
+    if (ClaimSIR.CostTypeExt == CostType.TC_CLAIMCOST and selectedExposure.Claim.UIHelper.isSIRVisible()){
+      var esSIRLoss = new List<LineCategory>()
+      for (line in LineCategory.TF_ESENVSIRLOSSCODES.TypeKeys.where(\ l -> l.Retired == false)){
+        esSIRLoss.add(line)
+      }
+       return esSIRLoss
+    }
+    /* Environmental Loss */
+    if (ClaimSIR.CostTypeExt == CostType.TC_CLAIMCOST and selectedExposure.Claim.LossType == LossType.TC_ENVLIAB){
+      var envSIRLoss = new List<LineCategory>()
+      for (line in LineCategory.TF_ESENVSIRLOSSCODES.TypeKeys.where(\ l -> l.Retired == false)){
+        envSIRLoss.add(line)
+      }
+       return envSIRLoss
+    }
+   
+    return fullList.where( \ t ->
+      (ClaimSIR.LineCategoryExt == "Deductible")
+      or (ClaimSIR.LineCategoryExt == "FormerDeductible" )
+      or (t!=LineCategory.TC_DEDUCTIBLE and t!=LineCategory.TC_FORMERDEDUCTIBLE)
+    ).cast( LineCategory )
+}]]></Code>
+  </ListViewPanel>
+</PCF>

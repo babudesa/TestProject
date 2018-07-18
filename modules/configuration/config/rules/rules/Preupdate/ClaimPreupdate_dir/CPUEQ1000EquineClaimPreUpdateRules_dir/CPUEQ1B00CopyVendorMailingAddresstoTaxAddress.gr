@@ -1,0 +1,40 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEQ1B00 - Copy Vendor Mailing Address to Tax Address")
+internal class CPUEQ1B00CopyVendorMailingAddresstoTaxAddress {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(contact in claim.Contacts where contact.Contact.New and 
+  exists(addy in contact.Contact.AllAddresses where addy.AddressType == "mailing") and
+  !exists(addy in contact.Contact.AllAddresses where addy.AddressType == "Tax") and 
+  ((contact.Contact typeis PersonVendor) or (contact.Contact typeis CompanyVendor)))==true/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var taxAddress:Address;
+  
+for(contact in claim.Contacts){
+  if(contact.Contact.New and ((contact.Contact typeis PersonVendor) or 
+  (contact.Contact typeis CompanyVendor) and contact.Contact.Subtype != "ex_Agency")){
+    
+    for(addr in contact.Contact.AllAddresses){
+      if(addr.AddressType == "Mailing"){
+        
+        taxAddress = new Address(addr)
+        taxAddress.AddressLine1 = addr.AddressLine1
+        taxAddress.AddressLine2 = addr.AddressLine2
+        taxAddress.City = addr.City
+        taxAddress.State = addr.State
+        taxAddress.PostalCode = addr.PostalCode
+        taxAddress.Country = addr.Country
+        taxAddress.County = addr.County
+        taxAddress.Description = addr.Description
+        taxAddress.AddressType = "Tax"
+            
+        contact.Contact.addAddress( taxAddress )
+        break;
+      }
+    }  
+  }
+}/*end00rule*/
+  }
+}

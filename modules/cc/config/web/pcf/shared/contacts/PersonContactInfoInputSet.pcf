@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="PersonContactInfoInputSet">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claimContact"
+      type="ClaimContact"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Phone"/>
+    <InputSet
+      visible="claimContact != null">
+      <Input
+        editable="true"
+        id="ContactProhibited"
+        label="displaykey.Web.ContactDetail.ContactProhibited"
+        value="claimContact.ContactProhibited"
+        visible="claimContact.isClaimant()"/>
+    </InputSet>
+    <Input
+      editable="true"
+      id="Work"
+      label="displaykey.Web.ContactDetail.Phone.Work"
+      value="Person.WorkPhone"/>
+    <Input
+      editable="true"
+      id="Home"
+      label="displaykey.Web.ContactDetail.Phone.Home"
+      value="Person.HomePhone"/>
+    <Input
+      editable="true"
+      id="Cell"
+      label="displaykey.Web.ContactDetail.Phone.Cell"
+      value="Person.CellPhone"/>
+    <Input
+      editable="true"
+      id="Fax"
+      label="displaykey.Web.ContactDetail.Phone.Fax"
+      value="Person.FaxPhone"/>
+    <Input
+      editable="true"
+      id="PrimaryPhone"
+      label="displaykey.Web.ContactDetail.Phone.PrimaryPhone"
+      validationExpression="                 if (Person.PrimaryPhone == null or                     (Person.PrimaryPhone == &quot;work&quot; and Person.WorkPhone != null) or                     (Person.PrimaryPhone == &quot;home&quot; and Person.HomePhone != null) or                     (Person.PrimaryPhone == &quot;mobile&quot; and Person.CellPhone != null)) {                   return null;                 } else {                   return displaykey.Web.ContactDetail.Phone.PrimaryPhone.Error;                 }"
+      value="Person.PrimaryPhone">
+      <Reflect
+        triggerIds="Work,Home,Cell"
+        value="javascript:getNewPrimaryPhoneValue(REFLECTOR.value, [VALUE1, VALUE2, VALUE3], ['work', 'home', 'mobile'])"/>
+    </Input>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Email"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Primary"
+      label="displaykey.Web.ContactDetail.Email.Primary"
+      value="Person.EmailAddress1"/>
+    <TextInput
+      editable="true"
+      formatType="email"
+      id="Secondary"
+      label="displaykey.Web.ContactDetail.Email.Secondary"
+      value="Person.EmailAddress2"/>
+    <Code><![CDATA[
+      property get Person() : Person { return contactHandle.Contact as Person; }
+    ]]></Code>
+  </InputSet>
+</PCF>

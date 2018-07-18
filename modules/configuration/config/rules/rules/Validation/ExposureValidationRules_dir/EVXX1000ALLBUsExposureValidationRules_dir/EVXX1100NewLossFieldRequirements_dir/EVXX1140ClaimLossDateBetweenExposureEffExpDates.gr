@@ -1,0 +1,77 @@
+package rules.Validation.ExposureValidationRules_dir.EVXX1000ALLBUsExposureValidationRules_dir.EVXX1100NewLossFieldRequirements_dir
+
+@gw.rules.RuleName("EVXX1140 - Claim Loss Date Between Exposure Eff & Exp Dates")
+internal class EVXX1140ClaimLossDateBetweenExposureEffExpDates {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.ChangedFields.contains("Coverage")
+
+/* Defect 1887 - 6/9/09 - blawless added Custom History Event to claim. When warning
+                          is displayed for any coverage regarding the date of loss 
+                          being outside coverage dates, a history event is saved.  
+                          The warning will now only display one time for each coverage 
+*/  
+
+// defect 2281 - blawless - this rule not working, now use a warning error worksheet call from the PCF.  warnings displayed from the Exposure screen don't always show up.
+// blawless - changed the rule to use a session variable, so now it works again /*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// Check to make sure that the date of loss is within the selected exposure effective dates
+// 
+// created in ArgiBusiness sprint 5 by rbr
+//
+
+
+
+try{
+ var calledByValidate session : List
+  if(exposure.Claim.LossDate != null){
+   if(!exposure.Claim.ClaimsMadePolicyExt){
+    if((exposure.Coverage.EffectiveDate != null and gw.api.util.DateUtil.compareIgnoreTime(exposure.Claim.LossDate,exposure.Coverage.EffectiveDate)<0 )
+        || (exposure.Coverage.ExpirationDate != null and gw.api.util.DateUtil.compareIgnoreTime(exposure.Claim.LossDate,exposure.Coverage.ExpirationDate)>0)){
+      if (!(exists(hist in exposure.Claim.History where hist.Description == "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName))){   
+        if(calledByValidate == null or !calledByValidate.contains(exposure.Claim.ClaimNumber)){
+          exposure.Claim.createCustomHistoryEvent("DataChange", "Warning for Loss Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName) 
+        }
+      }
+      if((exposure.Claim.OriginalVersion as Claim).State == "draft"){
+        pcf.GeneralErrorWorksheet.goInWorkspace(displaykey.Libraries.ClassExt.PolCovDateError(util.custom_Ext.DateTime.formatDate(exposure.Claim.LossDate),"Coverage: " + exposure.Coverage.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(exposure.Coverage.EffectiveDate, exposure.Coverage.ExpirationDate)))  
+      }else{ exposure.reject(null, null, "newloss", 
+        displaykey.Libraries.ClassExt.PolCovDateError(util.custom_Ext.DateTime.formatDate(exposure.Claim.LossDate),"Coverage: " + exposure.Coverage.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(exposure.Coverage.EffectiveDate, exposure.Coverage.ExpirationDate)))
+      }
+        }
+   }
+  }
+    if(exposure.Claim.ClaimsMadePolicyExt){
+      if((exposure.Coverage.EffectiveDate != null and gw.api.util.DateUtil.compareIgnoreTime(exposure.Claim.ReportedDate,exposure.Coverage.EffectiveDate)<0 )
+        || (exposure.Coverage.ExpirationDate != null and gw.api.util.DateUtil.compareIgnoreTime(exposure.Claim.ReportedDate,exposure.Coverage.ExpirationDate)>0)){
+      if((exposure.Claim.OriginalVersion as Claim).State == "draft"){
+        if (!(exists(hist in exposure.Claim.History where hist.Description == "Warning for Claims Made Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName))){   
+          if(calledByValidate == null or !calledByValidate.contains(exposure.Claim.ClaimNumber)){
+             exposure.Claim.createCustomHistoryEvent("DataChange", "Warning for Claims Made Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName) 
+          }
+        }
+         exposure.reject(null, null, "newloss", 
+         displaykey.Libraries.ClassExt.PolCovMadeDateError(util.custom_Ext.DateTime.formatDate(exposure.Claim.ReportedDate),"Coverage: " + exposure.Coverage.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(exposure.Coverage.EffectiveDate, exposure.Coverage.ExpirationDate)))
+         // pcf.GeneralErrorWorksheet.goInWorkspace(displaykey.Libraries.ClassExt.PolCovMadeDateError(util.custom_Ext.DateTime.formatDate(exposure.Claim.ReportedDate),"Coverage: " + exposure.Coverage.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(exposure.Coverage.EffectiveDate, exposure.Coverage.ExpirationDate)))
+      }
+      if((exposure.Claim.OriginalVersion as Claim).State != "draft"){
+        if (!(exists(hist in exposure.Claim.History where hist.Description == "Warning for Claims Made Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName))){   
+          if(calledByValidate == null or !calledByValidate.contains(exposure.Claim.ClaimNumber)){
+             exposure.Claim.createCustomHistoryEvent("DataChange", "Warning for Claims Made Date outside of Coverage dates has been previously displayed for feature: "+ exposure.DisplayName) 
+        }
+      }
+          exposure.reject(null, null, "newloss", 
+        displaykey.Libraries.ClassExt.PolCovMadeDateError(util.custom_Ext.DateTime.formatDate(exposure.Claim.ReportedDate),"Coverage: " + exposure.Coverage.Type.DisplayName + "'s", util.custom_Ext.DateTime.formatDateString(exposure.Coverage.EffectiveDate, exposure.Coverage.ExpirationDate)))
+    }
+    }
+        }
+}
+catch(e){
+  //gw.api.util.Logger.logError( "Unknown Error Occured in Exposure Validation Rule "+gw.api.util.StringUtil.substring(actions.getRule().displayName,0, 8))
+  //Exposure.reject( "newloss", "Unknown Error Occurred in Exposure Validation Rule "+gw.api.util.StringUtil.substring(actions.getRule().displayName,0, 8), null, null )
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null )
+  
+}/*end00rule*/
+  }
+}

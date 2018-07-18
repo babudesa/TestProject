@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!-- ************************************* IMPORTANT ********************************************************************
+     If this schema is changed in a way such that the changes cannot be implemented by simply creating the new ojbects,
+    you must increment the final static int UpgraderInstrumentation.EXPECTEDUPGRADESCHEMAVERSION, which will force
+    all these tables to be dropped and recreated.
+  ************************************* IMPORTANT ********************************************************************
+
+  ### ============================================================================
+  ###  Statements in upgrade encryption phase
+  ### ============================================================================ -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  admin="true"
+  cacheable="false"
+  desc="Statements within the encryption phase."
+  entity="UpgradeEncryptStep"
+  exportable="false"
+  extendable="false"
+  instrumentationtable="true"
+  javaClass="com.guidewire.pl.system.upgrader.UpgradeEncryptStep"
+  loadable="false"
+  platform="true"
+  size="small"
+  table="upgradeencryptstep"
+  type="keyable">
+  <implementsEntity
+    name="TimedUpgraderObject"/>
+  <foreignkey
+    columnName="UpgradePhaseID"
+    desc="Parent phase"
+    fkentity="UpgradePhase"
+    name="UpgradePhase"
+    nullok="false"/>
+  <column
+    desc="Name of table being updated"
+    name="TableName"
+    nullok="false"
+    type="shorttext"/>
+  <column
+    desc="Column(s) being encrypted (comma separated)"
+    name="ColumnsToEncrypt"
+    type="shorttext"/>
+  <column
+    desc="Column(s) being decrypted (comma separated)"
+    name="ColumnsToDecrypt"
+    type="shorttext"/>
+  <column
+    desc="Select statement used to read rows"
+    name="SelectStmt"
+    nullok="false"
+    type="longtext"/>
+  <column
+    desc="Update statement used to update rows"
+    name="UpdateStmt"
+    nullok="false"
+    type="longtext"/>
+  <column
+    desc="Target number of update executions in each chunk"
+    name="SizeOfTimedChuck"
+    nullok="false"
+    type="integer"/>
+  <column
+    desc="Total rows read and updated"
+    name="AffectedRowCount"
+    type="integer"/>
+  <array
+    arrayentity="UpgradeEncryptChunk"
+    name="UpgradeEncryptChunks"
+    owner="true"/>
+  <index
+    desc="Unique index for upgrade instrumentation"
+    name="upgradeencryptu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="UpgradePhaseID"/>
+    <indexcol
+      keyposition="2"
+      name="TableName"/>
+  </index>
+</entity>

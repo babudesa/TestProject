@@ -1,0 +1,21 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1700 - Prevent Multiple Agencies")
+internal class CPUXX1700PreventMultipleAgencies {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Prevents the same Agency from getting added to the claim multiple times - kmboyd*/
+claim.Policy.ex_Agency.New/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/for(agency in claim.Policy.Agency){
+  if(!agency.New){
+    for(cont in claim.Contacts){
+      if(agency == cont.Contact){
+        claim.removeFromContacts( cont )
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

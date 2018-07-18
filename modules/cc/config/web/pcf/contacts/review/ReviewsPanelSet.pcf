@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <PanelSet
+    desc="Provides a reusable panel displaying a Contact's reviews in a ListDetailPanel."
+    id="ReviewsPanelSet">
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="requireEdit"
+      type="Boolean"/>
+    <Require
+      name="inAB"
+      type="Boolean"/>
+    <ListDetailPanel
+      desc="List of Reviews"
+      id="ReviewCardPanel"
+      selectionName="selectedReview"
+      selectionType="Review">
+      <PanelRef
+        def="ReviewsLV(contact, claim)"
+        mode="isInAB(inAB)">
+        <Toolbar>
+          <ToolbarButton
+            hideIfReadOnly="true"
+            id="Reviews_AddReviewNewRE"
+            label="displaykey.Web.Reviews.Add"
+            visible="perm.Review.create">
+            <MenuItemIterator
+              elementName="selected"
+              value="gw.api.contact.ReviewUtil.findReviewTypesForContact(contact)">
+              <MenuItem
+                action="createNewReview(selected)"
+                id="Reviews_AddReviewNewMenuItem"
+                label="selected.Name"/>
+            </MenuItemIterator>
+          </ToolbarButton>
+          <ToolbarButton
+            hideIfEditable="true"
+            id="Reviews_AddReviewNewNRE"
+            label="displaykey.Web.Reviews.Add"
+            visible="(!requireEdit or claim.Closed) and perm.Review.create">
+            <MenuItemIterator
+              elementName="selected"
+              value="gw.api.contact.ReviewUtil.findReviewTypesForContact(contact)">
+              <MenuItem
+                action="pcf.CreateReviewPopup.push( selected, contact, claim )"
+                id="Reviews_AddReviewNewMenuItem"
+                label="selected.Name"/>
+            </MenuItemIterator>
+          </ToolbarButton>
+          <CheckedValuesToolbarButton
+            allCheckedRowsAction="gw.api.contact.ReviewUtil.completeSelectedReviews( CheckedValues, CurrentLocation )"
+            confirmMessage="displaykey.Web.Reviews.CompleteSelected.Warning"
+            hideIfEditable="true"
+            id="ReviewCompleteSelectedNRE"
+            iterator="ReviewsLV"
+            label="displaykey.Web.Reviews.CompleteSelected"
+            visible="perm.Review.edit and contact.AddressBookUID != null"/>
+        </Toolbar>
+      </PanelRef>
+      <CardViewPanel>
+        <Card
+          id="ReviewDetailCard"
+          title="displaykey.Web.Reviews.Review"
+          visible="perm.Review.view">
+          <PanelRef
+            def="ReviewDV(selectedReview, false)">
+            <Toolbar>
+              <ToolbarButton
+                action="pcf.ContactReviewPopup.push( selectedReview )"
+                hideIfEditable="true"
+                id="ToolbarButton"
+                label="displaykey.Button.Edit"
+                visible="(!requireEdit or claim.Closed) and !selectedReview.Completed and perm.Review.edit"/>
+              <ToolbarDivider/>
+              <ToolbarButton
+                action="selectedReview.delete()"
+                confirmMessage="displaykey.Web.Reviews.Delete.Warning"
+                hideIfEditable="true"
+                id="Delete"
+                label="displaykey.Web.Reviews.Delete"
+                visible="perm.Review.delete( selectedReview )"/>
+            </Toolbar>
+          </PanelRef>
+        </Card>
+      </CardViewPanel>
+    </ListDetailPanel>
+    <Code><![CDATA[
+function createNewReview(type : ReviewType) : Review {
+  return gw.api.contact.ReviewUtil.createNewReview(type, contact, claim);
+}
+
+function isInAB(useAB : Boolean) : String {
+  if (useAB) return "ab";
+  return "default";
+}
+    ]]></Code>
+  </PanelSet>
+</PCF>

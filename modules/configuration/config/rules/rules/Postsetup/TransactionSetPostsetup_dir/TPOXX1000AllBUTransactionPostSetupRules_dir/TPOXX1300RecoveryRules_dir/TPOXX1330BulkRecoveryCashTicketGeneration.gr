@@ -1,0 +1,69 @@
+package rules.Postsetup.TransactionSetPostsetup_dir.TPOXX1000AllBUTransactionPostSetupRules_dir.TPOXX1300RecoveryRules_dir
+
+@gw.rules.RuleName("TPOXX1330 - Bulk Recovery Cash Ticket Generation")
+internal class TPOXX1330BulkRecoveryCashTicketGeneration {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///sprzygocki 8/26/11 - temporarily disabling this because the document creation causes 
+//  bean for edit errors
+
+!exists(exp in transactionSet.Claim.Exposures where exp.ReconnectFailExt)/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/
+uses java.util.ArrayList;
+uses gw.api.util.Logger //Added for logging in Debug - SR
+for(each in transactionSet.Transactions)
+{
+  var recov = each as Recovery;
+
+  if(!recov.OffsetRecovery and recov.IsBulkedExt==true and
+      recov.New and recov.Status == "submitting" and recov.LoadCommandID == null and
+      recov.Amount > 0 and recov.LastBulkExt==true){
+        
+    uses com.guidewire.external.entity.EntityFactory;
+    uses java.util.HashMap;
+    
+    var recs = find(x in Recovery where x.ex_CashReceiptNumber == recov.ex_CashReceiptNumber)
+    if (!exists(doc in recov.Claim.Documents where doc.Name=="BulkCashReceivedTicket_" + recov.BulkRecoveryExt.CashReceiptNumberExt)){
+      var rec : BulkRecoveryExt = find(x in BulkRecoveryExt where (x.CashReceiptNumberExt == recov.ex_CashReceiptNumber)).getAtMostOneRow()
+    
+      //generate list of claims to add the document onto
+      var claimNumbers : List = new ArrayList();
+      for (stuff in recs){
+        if(!exists(id in claimNumbers where id.toString()==stuff.Claim.PublicID)){
+          claimNumbers.add(stuff.Claim.PublicID)
+        }//end if
+      }//end for
+      if(!exists(id in claimNumbers where id.toString()==recov.Claim.PublicID)){
+        claimNumbers.add(recov.Claim.PublicID)
+      }//end if
+
+      //Add the document to each claim
+      
+      for(z in claimNumbers){  
+        var c:Claim = EntityFactory.getEntityFactory().getEntityByRef( Claim, z.toString() ) as Claim
+
+        var note:Note
+        var body:String
+        if (util.document.DocumentProduction.synchronousDocumentCreationSupported( "CashReceivedTicket.html" )) {
+          if(recov.BulkRecoveryExt.RecoveryCheckNumberExt==null){
+            body = "Cash Received Form sent to Specialty Accounting for Money Order/Check Number <unknown> - Receipt Number: " +recov.BulkRecoveryExt.CashReceiptNumberExt; 
+          } else {
+            body = "Cash Received Form sent to Specialty Accounting for Money Order/Check Number " + recov.BulkRecoveryExt.RecoveryCheckNumberExt + " - Receipt Number: " + recov.BulkRecoveryExt.CashReceiptNumberExt;
+          }
+         note = c.addNote("general", body);
+         note.Subject = "Cash Receipt Notification";
+         c.addEvent( "NoteAdded" );
+        }
+        else {
+          //changed to logging in Debug - SR
+		  Logger.logDebug("ERROR: COULD NOT CREATE DOCUMENT from rule");
+        } //end if document
+        //count = count + 1
+      }//end for(z in claimNumbers)
+    }//end if
+  }//end if
+}//end for/*end00rule*/
+  }
+}

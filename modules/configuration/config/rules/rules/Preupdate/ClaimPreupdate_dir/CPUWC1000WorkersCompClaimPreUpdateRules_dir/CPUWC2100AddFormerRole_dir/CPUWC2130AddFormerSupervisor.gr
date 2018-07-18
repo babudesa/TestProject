@@ -1,0 +1,23 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir.CPUWC2100AddFormerRole_dir
+
+@gw.rules.RuleName("CPUWC2130-Add Former Supervisor")
+internal class CPUWC2130AddFormerSupervisor {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/!claim.New && !claim.Closed &&
+//(claim.OriginalVersion as Claim) .supervisor != null &&
+//(claim.OriginalVersion as Claim) .supervisor != claim.supervisor
+//Defect 8591 sdhakal - Instead of supervisor adding injuredworkersupersior for workerscomp claim, commented existing code.
+(claim.OriginalVersion as Claim) .injworkersuper != null 
+&&(claim.OriginalVersion as Claim) .injworkersuper != claim.injworkersuper/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Defect 8591 sdhakal - Instead of injworkersuper adding formerinjuredworkersupersior for workerscomp claim
+
+try{  
+  claim.addRole(ContactRole.TC_FMRINJWORKERSUPER, (claim.OriginalVersion as Claim).injworkersuper) 
+ }catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

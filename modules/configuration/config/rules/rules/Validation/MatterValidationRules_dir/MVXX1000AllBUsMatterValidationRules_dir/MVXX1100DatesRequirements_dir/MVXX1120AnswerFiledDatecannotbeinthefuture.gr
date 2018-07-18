@@ -1,0 +1,23 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir.MVXX1100DatesRequirements_dir
+
+@gw.rules.RuleName("MVXX1120 - Answer Filed Date cannot be in the future")
+internal class MVXX1120AnswerFiledDatecannotbeinthefuture {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/matter.ChangedFields.contains("AnswerFiledDate") and
+matter.AnswerFiledDate != null and
+gw.api.util.DateUtil.compareIgnoreTime( matter.AnswerFiledDate, gw.api.util.DateUtil.currentDate() ) > 0/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+  msg="Please provide an Answer Filed Date that is not a future date."
+  matter.rejectField( "AnswerFiledDate", "newloss", msg,Null, Null )
+  
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

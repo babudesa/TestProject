@@ -1,0 +1,28 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX1560 - Valid feature for ISO")
+internal class CEXX1560ValidfeatureforISO {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(claim.Exposures.length != 0)and 
+claim.ISOEnabled and
+claim.State=="open"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for (exp in claim.Exposures.where(\ exp ->!exp.Closed )) {  
+    if(!exp.isValid(ValidationLevel.TC_ISO) and
+     (!exists(act in claim.Activities where act.ActivityPattern.Code=="validate_feature_iso" and act.Exposure==exp )) and
+     (gw.api.util.DateUtil.compareIgnoreTime(gw.api.util.DateUtil.addDays( claim.ReportedDate, 30),gw.api.util.DateUtil.currentDate())) <0){
+      var ap = util.custom_Ext.finders.findActivityPattern( "validate_feature_iso" )
+        claim.createActivityFromPattern( exp, ap)
+      }  
+  }
+}
+catch (e) {
+  util.ErrorHandling.GAICErrorHandling.logError( Exposure, actions.getRule() as java.lang.String, e, null )
+}
+/*end00rule*/
+  }
+}

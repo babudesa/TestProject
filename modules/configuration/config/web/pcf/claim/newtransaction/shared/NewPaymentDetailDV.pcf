@@ -1,0 +1,374 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_financials.xml -->
+  <DetailViewPanel
+    id="NewPaymentDetailDV"
+    mode="default">
+    <Require
+      name="Payment"
+      type="Payment"/>
+    <Require
+      name="Wizard"
+      type="financials.CheckWizardInfo"/>
+    <Variable
+      initialValue="Payment.ReserveLine"
+      name="reserveLine"
+      recalculateOnRefresh="true"
+      type="ReserveLine"/>
+    <Variable
+      initialValue="util.WCHelper.isWCorELLossType(Payment.Claim)   "
+      name="isWCClaim"/>
+    <InputColumn>
+      <Input
+        available="false"
+        id="manualCheck_CheckNumber"
+        label="displayKey.manualCheck_CheckNumber"
+        value="Payment.Check.CheckNumber"
+        visible="Payment.Check.ManualCheck"/>
+      <RangeInput
+        editable="true"
+        filter="(Payment as Transaction).removeCostCat(VALUE)"
+        id="Transaction_ReserveLine"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.ReserveLine"
+        onChange="Payment.setReserveLine(reserveLine); Payment.PaymentType = null; Payment.DoesNotErodeReserves = false; Payment.updateProducerCopy(); ELDReserve(); Payment.Check.Memo = null"
+        optionLabel="Wizard.getReserveLinePickerOptionLabel(VALUE)"
+        postOnChange="true"
+        required="true"
+        validationExpression="!Payment.ReserveLine.isNew() ? Payment.ReserveLine.Exposure.checkLoss() : null"
+        value="reserveLine"
+        valueRange="Payment.Check.filterReserveLines(Wizard.getPayableReserveLines(Payment).toList())"/>
+      <Input
+        id="Transaction_CurrentInjuryType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.InjuryType"
+        value="getCurrentInjuryType(reserveLine)"
+        visible="util.WCHelper.isWCorELLossType(Payment.Claim)"/>
+      <!-- Customization Warning: the following fields are explicitly used by the code
+      and they should not be removed or have their names changed:
+      Transaction.Exposure: is used to pre-populate the Transaction.LineItems
+                            and is also reflected by the Transaction.CostType
+                            and the Payment.PaymentType
+      Transaction.CostType: is used to  pre-populate the Transaction.LineItems
+                            and is also reflected by Payment.PaymentType
+      Transaction.CostCategory: is used to pre-populate the Transaction.LineItems
+                                and is also reflected by Transaction.CostCategory
+                                and Payment.PaymentType
+      In general this NVV has a very high concentration of custom tags and it
+      will be hard to remove or change any of the existing items. -->
+      <RangeInput
+        available="ELDReserveVisible()"
+        editable="true"
+        id="Transaction_Exposure"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Exposure"
+        postOnChange="true"
+        required="false"
+        validationExpression="Payment.Exposure!=null ? Payment.Exposure.checkLoss():displaykey.NVV.Financials.SelectaFeature"
+        value="Payment.Exposure"
+        valueRange="Wizard.getPayableExposures(Payment).toArray() as Exposure[]"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+      <RangeInput
+        available="ELDReserveVisible()"
+        id="Transaction_Coverage"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Coverage"
+        optionLabel="Payment.Exposure.Coverage.covTypeDisplayName()"
+        value="Payment.Exposure.PrimaryCoverage"
+        valueRange="getCoverages(Payment.Exposure.Coverage)"/>
+      <RangeInput
+        available="ELDReserveVisible()"
+        editable="true"
+        id="Transaction_CostType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.CostType"
+        onChange="Payment.updateProducerCopy(); Payment.Check.Memo = null"
+        postOnChange="true"
+        required="true"
+        value="Payment.CostType"
+        valueRange="util.financials.CheckFunctions.getCostTypeValues(Payment.Claim, Payment.Check.PaymentMethod, Payment.Check.BankAccount)"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/>
+      <!-- <RangeInput
+        editable="true"
+        id="Transaction_CostCategory"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.CostCategory"
+        postOnChange="true"
+        required="true"
+        value="Payment.CostCategory"
+        valueRange="Wizard.getPossibleCostCategories(Payment)"
+        visible="Payment.ReserveLine != null and Payment.ReserveLine.isNew()"/> -->
+      <!-- GAIC - removed -->
+      <RangeInput
+        available="ELDReserveVisible()"
+        editable="Payment.isPaymentTypeEditable()"
+        id="Payment_PaymentType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Payment.PaymentType"
+        postOnChange="true"
+        requestValidationExpression="Wizard.validatePaymentType(Payment, VALUE)"
+        required="true"
+        value="Payment.PaymentType"
+        valueRange="Wizard.getPossiblePaymentTypes(Payment)"/>
+      <TypeKeyInput
+        available="ELDReserveVisible() and Payment.Claim.LossType == &quot;EXECLIABDIV&quot; || Payment.Claim.LossType == typekey.LossType.TC_MERGACQU || Payment.Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV"
+        id="PaymentCategory"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Payment.PaymentCategory"
+        value="Payment.PaymentCategoryExt"/>
+      <RangeInput
+        editable="true"
+        id="NVV_Financials_NewPaymentDetail_Payment_InjuryType"
+        label="displaykey.NVV.Financials.NewPaymentDetail.InjuryType"
+        required="true"
+        value="Payment.WCInjuryTypeExt"
+        valueRange="util.WCHelper.getWCInjuryTypeExtList(Payment.Claim)"
+        visible="util.WCHelper.isWCorELLossType(Payment.Claim)"/>
+      <!-- <Input
+        editable="true"
+        id="Payment_NonEroding"
+        label="displaykey.Web.NewCheckWizard.NewPaymentDetail.NonEroding"
+        required="true"
+        value="Payment.DoesNotErodeReserves"
+        visible="!Payment.Exposure.Closed and Payment.PaymentType != PaymentType.TC_SUPPLEMENT"/> -->
+      <!-- GAIC - removed -->
+      <Input
+        available="ELDReserveVisible()"
+        formatType="currency"
+        id="Transaction_OpenReserves"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.OpenReserves"
+        value="(!Payment.ReserveLine.New) ? financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Payment.ReserveLine) : financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Payment.Claim, Payment.Exposure, Payment.CostType, Payment.CostCategory)"/>
+      <Input
+        id="RemainReserves"
+        label="displaykey.LV.Financials.ReserveSet.Reserves.Remaining"
+        value="Payment.ReserveLine !=null ?  gw.api.financials.FinancialsCalculationUtil.getAvailableReserves().getAmount(Payment.ReserveLine) : null"/>
+      <!-- <Input
+        editable="true"
+        id="Transaction_Comments"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.Comments"
+        value="Payment.Comments"/> -->
+      <!-- <Input
+        editable="true"
+        id="PaymentCloseReason"
+        label="displaykey.LV.Financials.NewCheckPayments.Payments.ExposureCloseReason"
+        required="true"
+        value="Payment.Exposure.ClosedOutcome"
+        visible="Payment.PaymentType==&quot;final&quot;"/> -->
+      <!-- GAIC - removed 
+      
+       09/28/2009 - backed out change
+	  defect 1829 - Djohnson - Enterprise MTA - Close Reason is still being generated on Final Payments that close the Feature and/or Claim.  
+       Defect 1386 - Sprzygocki - Total Loss Indicator - matching requirements for Method of Settlement  4/1/10 erawe defect 2894 - added needsTotalLossReporting()check to visible so not to show TLI on checks, recodes, transfer for Auto -->
+      <Input
+        editable="true"
+        id="TotalLoss"
+        label="displaykey.NVV.Exposure.SubView.NewPhysicalDamage.Exposure.TotalLoss"
+        postOnChange="true"
+        required="true"
+        value="Payment.Exposure.TotalLossIndExt"
+        visible="(Payment.PaymentType==&quot;final&quot; || Payment.PaymentType==&quot;supplement&quot;) and Payment.CostType==&quot;claimcost&quot; and (Payment.Exposure!=null &amp;&amp; Payment.Exposure.totalLossNeededForPymt()) and (Payment.Exposure!=null &amp;&amp;!Payment.Exposure.needsTotalLossReporting())"/>
+      <ListViewInput
+        available="Payment.ReserveLine != null and ELDReserveVisible()"
+        def="EditablePaymentLineItemsLV(Payment)"
+        editable="true"
+        id="Transaction_LineItems"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.LineItems"
+        validationExpression="Payment.Valid ? null : displaykey.Java.Financials.CheckWizard.Error.Payment.PaymentExceedsReserves">
+        <Toolbar>
+          <IteratorButtons
+            addLabel="displaykey.Java.Financials.TransactionLineItem.AddItem"
+            addShortcut="I"
+            addVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"
+            removeVisible="gw.api.financials.FinancialsUtil.isAllowMultipleLineItems()"/>
+        </Toolbar>
+      </ListViewInput>
+      <InputSet
+        visible="checkMOS()">
+        <InputDivider/>
+        <Label
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Title"/>
+        <Input
+          editable="true"
+          id="MethodOfSettlement"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.Method"
+          postOnChange="true"
+          required="!isWCClaim or (isWCClaim and Payment.CostType==&quot;claimcost&quot;)"
+          value="Payment.Exposure.MethodOfSettlementExt"/>
+        <RangeInput
+          editable="true"
+          id="SettlementType"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.SettlementType"
+          postOnChange="true"
+          required="true"
+          value="Payment.Exposure.SettleMethod"
+          valueRange="typekey.SettleMethod.getTypeKeys(false).where(\ e -&gt; e.hasCategory(Payment.Claim.LossType) &amp;&amp; e.hasCategory(Payment.Claim.JurisdictionState))"
+          valueWidth="250"
+          visible="isWCClaim"/>
+        <Input
+          editable="true"
+          id="PolicyNumber"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.PolicyNum"
+          required="true"
+          value="Payment.Exposure.PolicyNumberExt"
+          visible="Payment.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+        <ClaimContactInput
+          claim="Payment.Exposure.Claim"
+          editable="true"
+          id="InsuranceCo"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsuranceCo"
+          newContactMenu="ClaimNewCompanyOnlyPickerMenuItemSet"
+          required="true"
+          showSearchInMenu="false"
+          validationExpression="annuityFieldsRequired() ? displaykey.Rules.Validation.Exposure.AgriBusiness.AbilityToPay.MethodOfSettlement : null"
+          value="Payment.Exposure.InsuranceCoExt"
+          valueRange="Payment.Exposure.getCompanies()"
+          visible="Payment.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+        <Input
+          id="Location"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoAddress"
+          required="true"
+          value="Payment.Exposure.InsuranceCoExt.getPrimaryAddressDisplayValue()"
+          visible="Payment.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;">
+          <Reflect
+            triggerIds="InsuranceCo"
+            value="VALUE.getPrimaryAddressDisplayValue()"/>
+        </Input>
+        <Input
+          id="InsurCoPhone"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.InsurCoPhone"
+          required="true"
+          value="getPhoneValue()"
+          visible="Payment.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+        <Input
+          editable="true"
+          id="AntFinalPayDate"
+          label="displaykey.NVV.Exposure.SubView.MethodOfSettlement.Exposure.AntFinalPayDate"
+          required="true"
+          validationExpression="Payment.Exposure.AnticFinalPmtDateExt&lt;Payment.Exposure.Claim.LossDate ? &quot;Anticipated Final Payment Date cannot occur before the Date of Loss&quot; : null"
+          value="Payment.Exposure.AnticFinalPmtDateExt"
+          visible="Payment.Exposure.MethodOfSettlementExt==&quot;structured_settle&quot;"/>
+      </InputSet>
+      <Input
+        id="ProducerCopyFunction"
+        value="Payment.Check.GetProducerCopy()"
+        visible="true"/>
+      <Input
+        editable="true"
+        id="Transaction_BackupWithholding"
+        label="displaykey.NVV.Financials.NewPaymentDetail.Transaction.BackupWithholding"
+        required="true"
+        value="Payment.Check.BackupWithholdingCheckExt"
+        visible="Payment.Check.hasPayeeBackupWithholding()"/>
+    </InputColumn>
+    <Code><![CDATA[function resetClosedOutcomes(){
+    	  if (!Payment.Claim.Closed and Payment.Claim.ClosedOutcome != null){
+    	    Payment.Claim.ClosedOutcome = null;
+    	  }
+    	  if (!Payment.Exposure.Closed and Payment.Exposure.ClosedOutcome != null){
+    	    Payment.Exposure.ClosedOutcome = null;
+    	  }
+    	}
+    	function annuityFieldsRequired() : boolean {
+     		var needFields : boolean = false;
+     		if(Payment.Exposure.InsuranceCoExt.PrimaryAddress==null){
+     			needFields = true;
+     		}
+     		if(Payment.Exposure.InsuranceCoExt.FaxPhone==null and
+     		   Payment.Exposure.InsuranceCoExt.TollFreeNumberExt==null and
+     		   Payment.Exposure.InsuranceCoExt.WorkPhone==null){
+     		  	needFields = true; 
+     		}
+     		return needFields;
+     	}
+     	function getPhoneValue() : String {
+     		var phoneNo = "";
+     		if(Payment.Exposure.InsuranceCoExt.TollFreeNumberExt!=null){
+     			phoneNo = Payment.Exposure.InsuranceCoExt.TollFreeNumberExt;
+     		} else if(Payment.Exposure.InsuranceCoExt.WorkPhone!=null){
+     			phoneNo = Payment.Exposure.InsuranceCoExt.WorkPhone;
+     		} else if(Payment.Exposure.InsuranceCoExt.FaxPhone!=null){
+     			phoneNo = Payment.Exposure.InsuranceCoExt.FaxPhone;
+     		}
+     		return phoneNo;
+     	}
+function getCoverages(cov:Coverage):List{
+    
+  if(cov != null){
+    return cov.getCoverages()
+  }else{
+    var coverages:List = new java.util.ArrayList()
+    return coverages
+  }
+}
+
+function ELDReserve(){
+  if(Payment.Claim.LossType == "EXECLIABDIV" || Payment.Claim.LossType == typekey.LossType.TC_MERGACQU || Payment.Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+   if(Payment.Claim.State != "closed"){
+    if(Payment.Check.Status == "draft"){
+      if((Payment.ReserveLine.New) or
+         (financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Payment.ReserveLine) <= 0)){
+           throw new util.DisplayableException(displaykey.Rules.Validation.Claim.ExecutiveLiability.Reserve)
+       }
+    }
+    if(Payment.Check.Status != "draft"){
+      if(Payment.ReserveLine.New){
+           throw new util.DisplayableException(displaykey.Rules.Validation.Claim.ExecutiveLiability.Reserve)
+         }
+    }
+   }
+  }
+
+}
+
+function ELDReserveVisible():boolean {
+  var visible:boolean = true
+  if(Payment.Claim.LossType == "EXECLIABDIV" || Payment.Claim.LossType == typekey.LossType.TC_MERGACQU || Payment.Claim.LossType == typekey.LossType.TC_SPECIALHUMSERV){
+    if(Payment.Claim.State != "closed"){
+   if(Payment.Check.Status == "draft"){
+      if((Payment.ReserveLine.New) or
+         (financials.FinancialsCalculationUtil.getOpenReserves().getAmount(Payment.ReserveLine) <= 0)){
+           visible = false
+       }
+    }
+    if(Payment.Check.Status != "draft"){
+      if(Payment.ReserveLine.New){
+        visible = false
+    }
+      
+  }
+  }
+}
+  return visible
+}
+
+
+function checkMOS() : boolean {
+  var exp : Exposure = Payment.Exposure;
+  if(Payment.PaymentType=="final" || Payment.PaymentType=="supplement"){
+    if(isWCClaim){
+      return true;
+    }else if(Payment.CostType=="claimcost" and 
+          (exp.ExposureType == ExposureType.TC_SP_BODILY_INJURY || exp.ExposureType=="ab_AGG_auto_BodInjury" || exp.ExposureType=="ab_AGG_gl_BodInjury" || exp.ExposureType=="ab_BodilyInjury"
+        || exp.ExposureType=="ex_auto_BodInjury" || exp.ExposureType=="ex_excess_BodInjury"|| (exp.ExposureType=="el_DutyDefOtsdLimits"and exp.Claim.BodilyInjuryExt)
+        ||(exp.ExposureType=="el_DutyDefWthnLimits" and exp.Claim.BodilyInjuryExt) || (exp.ExposureType=="el_Indemnity" and exp.Claim.BodilyInjuryExt)
+        ||(exp.ExposureType=="el_LossAdjustExp" and exp.Claim.BodilyInjuryExt)|| exp.ExposureType == ExposureType.TC_EN_BODILYINJURY
+        || exp.ExposureType == ExposureType.TC_PE_BODILYINJURY
+        || exp.ExposureType == ExposureType.TC_AV_BODILYINJURY)) {
+          return true;
+    }
+  }else{
+    return false;
+  }
+  return false;
+}
+
+// WC Defect 8208 3/4/16 - current injury didn't work for when reserveline was null
+function getCurrentInjuryType(currentReserveLine : ReserveLine) : String {
+  var injuryType = currentReserveLine.CostType == CostType.TC_CLAIMCOST
+    ? currentReserveLine.Exposure.WCLossInjuryTypeExt.DisplayName
+    : currentReserveLine.Exposure.WCExpenseInjuryTypeExt.DisplayName
+
+  // Grab the current injury type when the reserve line is new    
+  if ((injuryType == null or injuryType=="") and Payment.CostType != null and Payment.Exposure != null){
+    injuryType = Payment.CostType == CostType.TC_CLAIMCOST
+      ? Payment.Exposure.WCLossInjuryTypeExt.DisplayName
+      : Payment.Exposure.WCExpenseInjuryTypeExt.DisplayName
+  }
+  return injuryType
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,21 @@
+package rules.Validation.ActivityValidationRules_dir.AVWC1000WorkersCompActivityValidationRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("AVWC1100 - Compensability")
+internal class AVWC1100Compensability {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*/activity.ActivityPattern.Code == "claim_acceptance" and
+(activity.Claim.Compensable == null or
+activity.Claim.Compensable == "pending" ) and
+activity.Status == "complete"
+/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/var msg = displaykey.Rules.Validation.Activity.Compensable.Status(activity.Subject);
+
+activity.reject("external", msg ,null, null );
+
+// cmullin - 1.29.15 - This rule copied from OOTB WC rule/*end00rule*/
+  }
+}

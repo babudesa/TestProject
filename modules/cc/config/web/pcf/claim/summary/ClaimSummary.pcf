@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="perm.Claim.view(Claim) and perm.System.viewclaimsummary and (Claim.State != ClaimState.TC_DRAFT)"
+    id="ClaimSummary"
+    title="displaykey.Web.Claim.ClaimSummary">
+    <LocationEntryPoint
+      signature="ClaimSummary(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="ClaimSummary(Claim : Claim, excludeConfidentialNotes : boolean)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="false"
+      name="excludeConfidentialNotes"/>
+    <Screen
+      id="ClaimSummaryScreen">
+      <Toolbar/>
+      <PanelRow>
+        <PanelColumn>
+          <PanelRef
+            def="ClaimSummaryHeadlinePanelSet(Claim)"/>
+          <PanelRef
+            def="ClaimSummaryExposuresLV(Claim, Claim.Exposures)">
+            <TitleBar
+              title="displaykey.Web.ClaimSummary.ExposuresLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+        </PanelColumn>
+      </PanelRow>
+      <PanelRow>
+        <PanelColumn
+          width="45%">
+          <PanelRef
+            def="ClaimSummaryDV(Claim)">
+            <TitleBar
+              title="displaykey.Web.ClaimSummaryDV.Title"/>
+          </PanelRef>
+          <PanelRef
+            def="PeopleInvolvedLV(Claim, Claim.getContactsWithPreload())">
+            <TitleBar
+              title="displaykey.Web.ClaimSummary.PartiesInvolvedLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+          <PanelRef
+            def="ClaimSummaryActivitiesLV(Claim)">
+            <TitleBar
+              title="displaykey.Web.ClaimSummary.ActivitiesLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+          <PanelRef
+            def="ClaimSummaryMattersLV(Claim.Matters, Claim)"
+            visible="perm.Matter.view(Claim) and perm.System.viewmatters">
+            <TitleBar
+              title="displaykey.Web.ClaimSummary.MattersLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+          <PanelRef
+            def="ClaimSummaryAssociatedClaimsLV(Claim, Claim.Associations)">
+            <TitleBar
+              title="displaykey.Web.ClaimSummary.AssociatedClaimsLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+        </PanelColumn>
+        <PanelColumn
+          width="55%">
+          <PanelRef
+            def="NotesLV(excludeConfidentialNotes ? Claim.NonconfidentialNotes : Claim.ViewableNotes)">
+            <TitleBar
+              appendListViewPaging="true"
+              title="displaykey.Web.ClaimSummary.NotesLV.Title"/>
+            <Toolbar/>
+          </PanelRef>
+        </PanelColumn>
+      </PanelRow>
+    </Screen>
+  </Page>
+</PCF>

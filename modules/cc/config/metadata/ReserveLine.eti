@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<!-- ********************************************************************************************************************
+    RESERVELINE TABLES
+  ******************************************************************************************************************** -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  abstract="false"
+  desc="A unique combination of Claim, Exposure, CostType and CostCategory against which reserves can be set and payments made."
+  entity="ReserveLine"
+  exportable="false"
+  extendable="true"
+  final="true"
+  ignoreForEvents="true"
+  javaClass="com.guidewire.cc.domain.financials.ReserveLine"
+  overwrittenInStagingTable="true"
+  platform="false"
+  table="reserveline"
+  type="retireable">
+  <implementsEntity
+    name="Extractable"/>
+  <fulldescription><![CDATA[
+      A combination of Claim, Exposure, CostType, and CostCategory, used to categorize every Transaction on a claim.
+      Every Transaction has a ReserveLine. Claim is required, as all Transactions must be associated with a Claim.
+      Exposure can be NULL, in which case the Transaction and ReserveLine are "Claim-level". CostType and CostCategory
+      are typelists that contain values for categorizing Transactions, which can be configured for the customer's needs.
+      CostType and CostCategory cannot be NULL, but each has an Unspecified value (which may be removed during configuration).
+      <p>Every Transaction either increases or depletes reserves on a ReserveLine. Given the flexibility of Exposure being
+      null, and the two typelists being configurable, customers can track their Transactions according to their needs: all
+      Reserves and Payments could occur at the claim-level, or they could be categorized by exposure, CostType ("ClaimCost",
+      "A & O" adjusting expenses, etc) and CostCategory (Auto body repair, Legal, Vehicle Inspection, etc). Only certain
+      combinations of Exposure coverage type, CostType, and CostCategory are valid, as defined in the CostCategory.xml
+      typelist file.
+    ]]></fulldescription>
+  <foreignkey
+    columnName="ClaimID"
+    desc="The related claim."
+    fkentity="Claim"
+    name="Claim"
+    nullok="false"
+    setterScriptability="hidden"/>
+  <foreignkey
+    columnName="ExposureID"
+    desc="The related exposure."
+    fkentity="Exposure"
+    name="Exposure"
+    nullok="true"
+    setterScriptability="hidden"/>
+  <typekey
+    desc="Type of cost (for example, LAE or claim cost)."
+    name="CostType"
+    nullok="false"
+    setterScriptability="hidden"
+    typelist="costtype"/>
+  <typekey
+    desc="The costcategory for this transaction."
+    exportable="true"
+    name="CostCategory"
+    nullok="false"
+    setterScriptability="hidden"
+    typelist="costcategory">
+    <keyfilters>
+      <keyfilter
+        name="Exposure.PrimaryCoverage"/>
+      <keyfilter
+        name="CostType"/>
+    </keyfilters>
+  </typekey>
+  <array
+    arrayentity="TAccount"
+    arrayfield="ReserveLine"
+    getterScriptability="hidden"
+    name="TAccounts"
+    owner="true"
+    setterScriptability="hidden">
+    <link-association
+      hasGetter="true"
+      hasSetter="true">
+      <typelist-map
+        field="TAccountType"/>
+    </link-association>
+  </array>
+  <array
+    arrayentity="Transaction"
+    desc="Set of transactions that contribute to this ReserveLine."
+    getterScriptability="hidden"
+    name="Transactions"
+    setterScriptability="hidden"/>
+  <index
+    desc="Every nonretired ReserveLine instance should be for a unique combination of Claim, Exposure, CostType and CostCategory"
+    name="reserveline1"
+    trackUsage="true"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="Retired"/>
+    <indexcol
+      keyposition="3"
+      name="ExposureID"/>
+    <indexcol
+      keyposition="4"
+      name="CostType"/>
+    <indexcol
+      keyposition="5"
+      name="CostCategory"/>
+  </index>
+</entity>

@@ -1,0 +1,41 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir
+
+@gw.rules.RuleName("BIAR1200 - LitAdvisor,  Final Approval")
+internal class BIAR1200LitAdvisorFinalApproval {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.BulkInvoiceTypeExt == BulkInvoiceType.TC_LIT_ADVISOR &&
+bulkInvoice.LastApprovingUser != util.GlobalParameters.ParameterFinder.getUserParameter( "litadvapproval", "AGRIAUTO") &&
+bulkInvoice.ApprovalStatus == typekey.ApprovalStatus.TC_UNAPPROVED 
+
+/**
+ * All LitAdvisor invoices must be approved by the user specified in the
+ * script parameter "litadvisorapproval" in ScriptParameters.xml  (2.0)
+ * 
+ * This rule was formally named "BIAR1200 - LitAdvisor,  Approval by Veronika Willard"
+ * It was changed to be more generic to support changes in the future
+ */
+
+/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var approvingUser = util.GlobalParameters.ParameterFinder.getUserParameter( "litadvapproval", "AGRIAUTO")
+    bulkInvoice.setApprovingUser( approvingUser, approvingUser.RootGroup)
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+    actions.exit()
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex; 
+}
+catch(e){
+    if(java.lang.System.getProperty( "gw.cc.env" ) == "prod"){
+        gw.api.util.Logger.logInfo( "User not found " + util.GlobalParameters.ParameterFinder.getUserParameter( "litadvapproval", "AGRIAUTO") +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+    }
+    else{
+        gw.api.util.Logger.logInfo( "User not found " + util.GlobalParameters.ParameterFinder.getUserParameter( "litadvapproval", "AGRIAUTO")  +gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0, 8 ))
+        gw.api.util.Logger.logError("LA User Approval Error", e)
+    }
+}/*end00rule*/
+  }
+}

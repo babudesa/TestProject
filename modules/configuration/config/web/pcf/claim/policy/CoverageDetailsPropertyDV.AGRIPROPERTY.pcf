@@ -1,0 +1,286 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_policy.xml -->
+  <DetailViewPanel
+    editable="!Coverage.Policy.Verified"
+    id="CoverageDetailsPropertyDV"
+    mode="AGRIPROPERTY">
+    <Require
+      name="Coverage"
+      type="PropertyCoverage"/>
+    <!-- The variable below was added to trigger a function to pre-populate class code and description
+		on unverified policies. Agri sprint 9,jlmiller -->
+    <Variable
+      initialValue="Coverage.setClassDefaults()"
+      name="setDefaults"/>
+    <!-- Sprint Agri 11 ER: The variable below used to populate coverage eff/exp dates to policy dates -->
+    <Variable
+      initialValue="Coverage.policyCoveragedates()"
+      name="setcoveragedates"
+      recalculateOnRefresh="true"/>
+    <Variable
+      initialValue="Coverage.Policy.Claim.ClaimNumber"
+      name="ClaimNumber"
+      type="String"/>
+    <InputColumn>
+      <RangeInput
+        editable="Coverage.notUsedOnExposure()"
+        filter="gw.api.util.TypecodeMapperUtil.getTypecodeMapper().getInternalCodeByAlias(&quot;EDWRiskType&quot;, &quot;CoverageRisk&quot;, VALUE as java.lang.String)==((Coverage.RiskUnit as LocationBasedRU).Property.RiskTypeExt as java.lang.String)"
+        id="CoverageType"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageType"
+        onChange="resetInformation() ; setCoveredCauseOfLoss() ; Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage) "
+        optionLabel="(Coverage.Type!= null and Coverage.Policy.Verified) ? Coverage.covTypeDisplayName() : VALUE.toString()"
+        postOnChange="true"
+        required="true"
+        value="Coverage.Type"
+        valueRange="Coverage.getCoverages()"/>
+      <RangeInput
+        editable="true"
+        id="RiskState"
+        label="displaykey.GAIC.Policy.PolicyCoverages.RiskState"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        postOnChange="true"
+        required="Coverage.Policy.insured.PrimaryAddress.Country==&quot;US&quot;"
+        value="Coverage.State"
+        valueRange="util.custom_Ext.getStates.getUSStatesOnly()"/>
+      <!-- <RangeInput
+        editable="true"
+        id="SPPType"
+        label="displaykey.GAIC.Policy.PolicyCoverages.SchedPerPropType"
+        postOnChange="true"
+        value="Coverage.HighValueItemExt.SchedPerPropTypeExt"
+        valueRange="Coverage.getSPPTypes()"
+        visible="Coverage.Type==&quot;ab_SCPROP&quot; || Coverage.Type==&quot;ab_FPE&quot;"/> -->
+      <!-- Sprint 15 ER, Type no longer needed as they are now coverages  3684 Added condition so that if a user chooses Aqua Culture plus that the Covered Cause of Loss does not appear -->
+      <TypeKeyInput
+        editable="true"
+        id="SPPDetail"
+        label="displaykey.GAIC.Policy.PolicyCoverages.SchedPerPropDetail"
+        value="Coverage.HighValueItemExt.SPPDetailExt"
+        visible="false"/>
+      <!-- sprint 15 ER visible="Coverage.Type==&quot;ab_FPE&quot; AND Coverage.HighValueItemExt.SchedPerPropTypeExt!=null"/> -->
+      <TypeKeyInput
+        editable="true"
+        filter="filterCauseOfLoss(VALUE as java.lang.String)"
+        id="CauseOfLoss"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Causeofloss"
+        onChange="Coverage.SublineExt = util.gaic.subline.Subline.getSublineForCoverage(Coverage)"
+        postOnChange="true"
+        required="util.gaic.subline.Subline.checkAFPLossCauseRequired(Coverage)"
+        showNoneSelected="false"
+        value="Coverage.CauseOfLossExt"
+        visible="Coverage.Type != &quot;ab_AQUA&quot;"/>
+      <Input
+        id="Subline"
+        label="displaykey.GAIC.Policy.PolicyCoverages.Subline"
+        required="false"
+        value="Coverage.SublineExt"/>
+      <Input
+        id="ClassCode"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassCode"
+        value="Coverage.ClassCodeExt"/>
+      <Input
+        id="ClassDesc"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ClassDesc"
+        value="Coverage.ClassCodeDescExt"/>
+      <Input
+        editable="true"
+        id="EffDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.EffDate"
+        onChange="//ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? PropertyCoverage.effDateWarn() : null"
+        postOnChange="true"
+        validationExpression="Coverage.effDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Effective&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(Coverage.EffectiveDate, Coverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.EffectiveDate"/>
+      <Input
+        editable="true"
+        id="ExpDate"
+        label="displaykey.LV.Policy.EditablePropertyCoverages.ExpDate"
+        onChange="//ClaimNumber == null or ClaimNumber.startsWith(&quot;T&quot;) ? PropertyCoverage.expDateWarn() : null"
+        postOnChange="true"
+        validationExpression="Coverage.expDateError() ? displaykey.LV.Policy.EditablePropertyCoverages.DateValidation(&quot;Expiration&quot;, util.custom_Ext.DateTime.formatDateString(Coverage.Policy.EffectiveDate, Coverage.Policy.ExpirationDate)) : (util.custom_Ext.DateTime.isDateAfter(Coverage.EffectiveDate, Coverage.ExpirationDate) ? displaykey.Web.Dates.EffDateAfterExpDate : null)"
+        value="Coverage.ExpirationDate"/>
+    </InputColumn>
+    <InputColumn>
+      <InputSetRef
+        def="CoverageLimitsInputSet(Coverage)"
+        mode="Coverage.Policy.Claim.LossType"/>
+    </InputColumn>
+    <InputFooterSection>
+      <ListViewInput
+        editable="true"
+        id="CoverageADLV"
+        label="displaykey.LV.Policy.PolicyCoverages.CoverageBasis.LVTitle.PropCovBasis"
+        visible="setVisible()">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+        <ListViewPanel
+          editable="true"
+          id="CoverageADLimitLV">
+          <RowIterator
+            editable="true"
+            elementName="cvgLimit"
+            toAdd="Coverage.addToCoverageBasisLimitsExt(cvgLimit)"
+            toRemove="Coverage.removeFromCoverageBasisLimitsExt(cvgLimit)"
+            value="Coverage.CoverageBasisLimitsExt">
+            <Row>
+              <Cell
+                editable="true"
+                id="limittype"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.LimitType"
+                required="true"
+                sortOrder="1"
+                unique="true"
+                value="cvgLimit.CoverageLimitTypeExt"/>
+              <!-- <Cell
+                editable="true"
+                id="coveragebasis"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.CoverageBasis"
+                required="false"
+                value="cvgLimit.CoverageBasisExt"/> -->
+              <!-- Defect 3678 Removing coverage basis -->
+              <Cell
+                editable="true"
+                formatType="exactNumber"
+                id="coveragelimit"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.CoverageLimit"
+                outputConversion="util.StringUtils.removeDecimal(CurrentLocation.InEditMode, VALUE as java.lang.Double)"
+                required="true"
+                validationExpression="util.custom_Ext.ValidateCoverageAmounts.validateCoverageAmount(cvgLimit.LimitAmountExt) ? null : displaykey.Java.Validation.Number.NotAnInteger"
+                value="cvgLimit.LimitAmountExt"/>
+              <Cell
+                editable="true"
+                id="coverageappto"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.CoverLimitAppTo"
+                required="false"
+                value="cvgLimit.CoverageLimitAppExt"/>
+              <Cell
+                editable="true"
+                id="effectdate"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.EffDate"
+                required="false"
+                validationExpression="effDateErr(cvgLimit.EffDateExt, cvgLimit.ExpDateExt)"
+                value="cvgLimit.CoverageExt.EffectiveDate"/>
+              <Cell
+                editable="true"
+                id="expiredate"
+                label="displaykey.LV.Policy.PropertyCoverages.ADCoverage.ExpDate"
+                required="false"
+                validationExpression="expDateErr(cvgLimit.ExpDateExt, cvgLimit.EffDateExt)"
+                value="cvgLimit.CoverageExt.ExpirationDate"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+      <!-- Added Sprint 8 Agribusiness Eric Rawe 11/13/07 -->
+      <InputDivider/>
+      <ListViewInput
+        def="EditableCoverageReinsuranceLV(Coverage)"
+        id="Reinsurance"
+        label="displaykey.NVV.Policy.SubView.PolicyGeneral.Policy.Reinsurance"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <!-- Added Sprint 11 Agribusiness sprzygocki 2/20/08 -->
+      <ListViewInput
+        def="EditableScheduledLienholdersLV(Coverage)"
+        editable="Coverage.Type!=null"
+        id="Lienholders"
+        label="displaykey.NVV.Policy.LocationDetail.Property.Lienholders"
+        labelAbove="true"
+        validationExpression="Coverage.noLienDuplicates() ? &quot;&quot;: &quot;Duplicate Lienholders are not permitted. Please remove the duplicate entry or select a different Contact.&quot; "
+        visible="Coverage.isSFPP() and Coverage.Policy.Verified">
+        <!-- sprint 15 ER visible="Coverage.Type==&quot;ab_SCPROP&quot;">  || Coverage.Type==&quot;ab_FPE&quot;"> -->
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <ListViewInput
+        def="EditableScheduledAddInterestsLV(Coverage)"
+        editable="Coverage.Type!=null"
+        id="AddInterests"
+        label="displaykey.NVV.Policy.LocationDetail.Property.AdditionalInterest"
+        labelAbove="true"
+        validationExpression="Coverage.Policy.checkCoveredPartyConstraints().formatUserMessage(); return null"
+        visible="Coverage.isSFPP() and Coverage.Policy.Verified">
+        <!-- sprint 15 ER visible="Coverage.Type==&quot;ab_SCPROP&quot;">  || Coverage.Type==&quot;ab_FPE&quot;"> -->
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[function setVisible() : boolean {
+  if(Coverage.Type.Code=="ab_FPAD") { 
+    return true 
+  } else { 
+    return false 
+  } 
+}
+
+function resetInformation(){
+  Coverage.HighValueItemExt.SPPDescriptionExt=null
+  Coverage.HighValueItemExt.SPPDetailExt=null
+  //Coverage.HighValueItemExt.SchedPerPropTypeExt=null
+  //Coverage.HighValueItemExt.CauseOfLossExt=null
+} 
+function filterCauseOfLoss(causeOfLoss : String) : Boolean {
+  var result : Boolean = true;
+  if(Coverage.Type.Code!="ab_FPAD" and causeOfLoss == "broadspecial"){
+    result = false;
+  }
+  if (Coverage.Type == CoverageType.TC_AB_ORCHVINE and (causeOfLoss == "basic" or causeOfLoss == "special" or causeOfLoss == "broadspecial"))
+    result = false 
+  return result;
+}
+
+function effDateErr(effDate : DateTime, expDate : DateTime) : String {
+  if(effDate != null) {
+    if(expDate == null) {
+      return displaykey.LV.Policy.PropertyCoverages.ADCoverage.effDateSetExpDateNotSet
+    }
+    if(gw.api.util.DateUtil.compareIgnoreTime(effDate, expDate) > 0) {
+      return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisEffDateAfterBasisExpDate
+    }
+    if(Coverage.EffectiveDate != null and Coverage.ExpirationDate != null) {
+      if(gw.api.util.DateUtil.compareIgnoreTime(Coverage.EffectiveDate, effDate) > 0) {
+        return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisEffDateInvalid
+      }
+      else if(gw.api.util.DateUtil.compareIgnoreTime(Coverage.ExpirationDate, effDate) < 0) {
+        return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisEffDateInvalid
+      }
+    }
+  }
+  return null;
+}
+
+function expDateErr(expDate : DateTime, effDate : DateTime) : String {
+  if(expDate != null) {
+    if(effDate == null) {
+      return displaykey.LV.Policy.PropertyCoverages.ADCoverage.expDateSetEffDateNotSet
+    }
+    else if(gw.api.util.DateUtil.compareIgnoreTime(effDate, expDate) > 0) {
+      return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisEffDateAfterBasisExpDate
+    }
+    if(Coverage.EffectiveDate != null and Coverage.ExpirationDate != null) {
+      if(gw.api.util.DateUtil.compareIgnoreTime(Coverage.EffectiveDate, expDate) > 0) {
+        return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisExpDateInvalid
+      }
+      else if(gw.api.util.DateUtil.compareIgnoreTime(Coverage.ExpirationDate, expDate) < 0) {
+        return displaykey.LV.Policy.PropertyCoverages.ADCoverage.basisExpDateInvalid
+      }
+    }
+  }
+  return null;
+}
+
+function setCoveredCauseOfLoss(){
+    if (Coverage.Type == typekey.CoverageType.TC_AB_ORCHVINE){
+       Coverage.CauseOfLossExt = typekey.CauseOfLoss.TC_BROAD
+    }
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

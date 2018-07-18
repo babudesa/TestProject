@@ -1,0 +1,22 @@
+package rules.EventMessage.EventFired_dir.Destination11LDM_dir
+
+@gw.rules.RuleName("Contact Changed")
+internal class ContactChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.Root typeis Contact &&
+!gaic.conversion.util.ConversionStatusChecker.isCurrentlyConverting(messageContext.Root.LoadCommandID) &&
+messageContext.EventName == "ContactChanged" /*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/try{
+    var contact = messageContext.Root as Contact;
+    var f = util.gaic.LDM.LDMFunctionsFactory.getContactFunctions()
+
+    f.sendContactChanges(messageContext, contact)
+
+}catch(e) {
+    util.ErrorHandling.GAICErrorHandling.logError(null, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

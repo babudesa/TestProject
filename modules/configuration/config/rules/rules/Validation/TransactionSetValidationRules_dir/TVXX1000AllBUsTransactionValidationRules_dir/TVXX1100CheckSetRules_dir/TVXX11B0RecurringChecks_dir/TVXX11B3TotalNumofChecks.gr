@@ -1,0 +1,38 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX11B0RecurringChecks_dir
+
+@gw.rules.RuleName("TVXX11B3 - Total Num of Checks")
+internal class TVXX11B3TotalNumofChecks {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try {
+  var recurr = (transactionSet as CheckSet).Recurrence
+
+  // validate weekly number of checks
+  if (recurr typeis WeeklyCheckRecurrence){
+    if (recurr.WeeklyFrequency == 1 && recurr.NumChecks > 26){
+    transactionSet.rejectField("Recurrence", "newloss", displaykey.Validation.NewCheckWizard.NumChecks("Weekly", "26"), null, null)
+    }
+    else if (recurr.WeeklyFrequency == 2 && recurr.NumChecks > 12){
+    transactionSet.rejectField("Recurrence", "newloss", displaykey.Validation.NewCheckWizard.NumChecks("Bi-weekly", "12"), null, null)
+    }
+    else if (recurr.WeeklyFrequency  * recurr.NumChecks > 26){
+      transactionSet.rejectField("Recurrence", "newloss", "Invalid Recurrence. Cannot schedule more than 6 months' worth of recurring checks.", null, null)
+    }
+  }
+  // validation monthly number of checks
+  if (recurr typeis MonthlyCheckRecurrence){
+    if (recurr.MonthlyFrequency == 1 && recurr.NumChecks > 6){
+    transactionSet.rejectField("Recurrence", "newloss", displaykey.Validation.NewCheckWizard.NumChecks("Monthly", "6"), null, null)
+    }
+    else if (recurr.MonthlyFrequency * recurr.NumChecks > 6){
+    transactionSet.rejectField("Recurrence", "newloss", "Invalid Recurrence. Cannot schedule more than 6 months' worth of recurring checks.", null, null)
+    }
+  }
+} catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

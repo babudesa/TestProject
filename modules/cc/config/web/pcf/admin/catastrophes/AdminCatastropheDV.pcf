@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <!-- This file automatically generated from nvv_admin.xml -->
+  <DetailViewPanel
+    id="AdminCatastropheDV">
+    <Require
+      name="Catastrophe"
+      type="Catastrophe"/>
+    <Variable
+      name="zoneType"
+      type="ZoneType"/>
+    <Variable
+      name="linkedZone"
+      type="Zone"/>
+    <Variable
+      initialValue="gw.api.admin.BaseAdminUtil.getDefaultCountry()"
+      name="country"
+      type="Country"/>
+    <InputColumn>
+      <!-- GW10-CAL-01/09/07 Begin - Modified Layout and added fields to the current Catastrophe Screen -->
+      <Label
+        label="displaykey.NVV.Admin.AdminCatastrophe.Catastrophe"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Name"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Name"
+        postOnChange="true"
+        required="true"
+        value="Catastrophe[&quot;Name_&quot; + util.LocaleUtil.getDefaultLanguage().Code]"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Description"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Description"
+        postOnChange="true"
+        required="true"
+        value="Catastrophe[&quot;Description_&quot; + util.LocaleUtil.getDefaultLanguage().Code]"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_ID"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.ID"
+        required="true"
+        value="Catastrophe.CatastropheNumber"/>
+      <Input
+        editable="true"
+        id="CatastrophePCSNo"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastrophePCS.ID"
+        value="Catastrophe.PCSCatastropheNumber"/>
+      <Input
+        editable="true"
+        id="CatastropheAdmin_Type"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheAdmin.Type"
+        required="true"
+        value="Catastrophe.Type"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="CatastropheValidFrom"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheValidFrom"
+        required="true"
+        timeFormat="short"
+        value="Catastrophe.CatastropheValidFrom"/>
+      <DateInput
+        dateFormat="short"
+        editable="true"
+        id="CatastropheValidTo"
+        label="displaykey.NVV.Admin.AdminCatastrophe.CatastropheValidTo"
+        required="true"
+        timeFormat="short"
+        validationExpression="Catastrophe.CatastropheValidFrom &gt; Catastrophe.CatastropheValidTo ? displaykey.Java.Validation.AdminCatastrophe.Date.ForbidValidReverse : null"
+        value="Catastrophe.CatastropheValidTo"/>
+      <TextAreaInput
+        id="Zones"
+        label="displaykey.Web.Admin.AdminCatastropheDV.AreasCovered"
+        numCols="50"
+        numRows="5"
+        value="Catastrophe.Zones"/>
+      <RangeInput
+        editable="true"
+        hideIfReadOnly="true"
+        id="Country"
+        label="displaykey.Web.Admin.AdminCatastropheDV.Country"
+        postOnChange="true"
+        required="true"
+        value="country"
+        valueRange="getPossibleCountries()"/>
+      <InputSetRef
+        def="CatastropheZonesInputSet(Catastrophe)"
+        mode="country"/>
+      <ListViewInput
+        boldLabel="true"
+        def="CatastrophePerilsLV(Catastrophe)"
+        editable="true"
+        label="displaykey.NVV.Admin.AdminCatastrophe.Peril.Title"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <TextInput
+        id="empty1"
+        value="&quot;&quot;"/>
+      <ListViewInput
+        boldLabel="true"
+        def="CatastropheLocalizedLV(Catastrophe)"
+        editable="true"
+        label="displaykey.Web.Admin.AdminCatastropheDV.Localization"
+        labelAbove="true">
+        <Toolbar
+          visible="false">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+      <TextInput
+        id="empty2"
+        value="&quot;&quot;"/>
+      <ListViewInput
+        boldLabel="true"
+        def="CatastropheClaimsHistoryLV(Catastrophe)"
+        label="displaykey.Web.Admin.AdminCatastropheDV.HistoryOfMatchedClaims"
+        labelAbove="true">
+        <Toolbar
+          visible="false">
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputColumn>
+    <Code><![CDATA[function getZoneInputValueRange(first : String[], second : String[]) : String[] {
+  var both = new java.util.ArrayList<String>();
+  java.util.Collections.addAll(both, first);
+  java.util.Collections.addAll(both, second);
+
+  var h = new java.util.HashSet<String>(both);
+  both.clear();
+  both.addAll(h);
+
+  return both.toArray(new String[] {});
+}
+
+function getPossibleCountries() : List<Country> {
+  var org = User.util.CurrentUser.Organization
+  if (org == null) {
+    org = User.util.UnrestrictedUser.Organization
+  }
+  return org.Countries
+}]]></Code>
+  </DetailViewPanel>
+</PCF>

@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    afterCancel="PageHelper.afterCancel(claim)"
+    afterReturnFromPopup="refreshClaimUserPage()"
+    canEdit="perm.Claim.manageclaimusers(claim)"
+    canVisit="perm.Claim.view(claim) and perm.System.viewclaimparties"
+    id="ClaimUsers"
+    startEditing="PageHelper.startEditing()"
+    title="displaykey.Web.ClaimUsers.Title">
+    <LocationEntryPoint
+      signature="ClaimUsers(claim : Claim)"/>
+    <Variable
+      initialValue="new claimparties.ClaimUsersPageHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      initialValue="claim.ClaimUserModelSet"
+      name="claimUserModelSet"
+      type="ClaimUserModelSet"/>
+    <Screen
+      id="ClaimUsersScreen">
+      <Toolbar>
+        <PickerToolbarButton
+          action="GroupUserPickerPopup.push()"
+          hideIfEditable="true"
+          id="ClaimUsers_AddUserButton"
+          label="displaykey.Web.ClaimUsers.AddUser.Button"
+          onPick="gw.api.claimparties.ClaimUserUtil.addClaimUser(PickedValue, claimUserModelSet, CurrentLocation)"
+          visible="perm.Claim.manageclaimusers(claim)"/>
+        <!-- <CheckedValuesToolbarButton
+          allCheckedRowsAction="claimparties.ClaimUserUtil.removeUserRoles(CurrentLocation, CheckedValues)"
+          hideIfEditable="true"
+          id="ClaimUsers_ButtonButton"
+          iterator="ClaimUsersLV"
+          label="displaykey.Web.ClaimUsers.RemoveUserRoles.Button"
+          visible="perm.Claim.manageclaimusers(claim)"/> -->
+      </Toolbar>
+      <ListDetailPanel
+        lockWhileEditing="true"
+        selectionName="claimUserModel"
+        selectionType="ClaimUserModel">
+        <PanelRef
+          def="ClaimUsersLV(claimUserModelSet.ClaimUserModels)"/>
+        <CardViewPanel>
+          <Card
+            id="UserDetailsCard"
+            title="displaykey.Web.ClaimUsers.UserDetails.Title(claimUserModel.User)">
+            <PanelRef
+              def="ClaimUserDetailDV(claimUserModel, claim)">
+              <Toolbar>
+                <EditButtons
+                  editVisible="claimUserModel.User.Credential.Active == true"/>
+              </Toolbar>
+            </PanelRef>
+          </Card>
+        </CardViewPanel>
+      </ListDetailPanel>
+    </Screen>
+    <Code><![CDATA[function refreshClaimUserPage(){
+    gw.api.tools.InternalToolsUtil.reloadCurrentLocation()
+    ClaimUsers.go(claim)
+}]]></Code>
+  </Page>
+</PCF>

@@ -1,0 +1,31 @@
+package rules.ApprovalRouting.BulkInvoiceApprovalAssignmentRules_dir.BIAR1000BulkInvoiceApprovalRoutingRules_dir.BIAR1300MedicalVendorApproval_dir.BIAR1320AlternateApprover_dir
+
+@gw.rules.RuleName("BIAR1325 - Approve by SCO VP")
+internal class BIAR1325ApprovebySCOVP {
+  static function doCondition(bulkInvoice : entity.BulkInvoice) : boolean {
+    return /*start00rule*/bulkInvoice.LastApprovingUser == util.user.SCOHelper.CorpClaimsTwoUser/*end00rule*/
+  }
+
+  static function doAction(bulkInvoice : entity.BulkInvoice, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var lastApprovingUser = bulkInvoice.LastApprovingUser
+  var user: User = util.user.SCOHelper.CorpClaimsOneUser
+  var group:Group = util.GlobalParameters.ParameterFinder.getGroupParameter( "gaicclaims", null )
+  var authorityLimits = bulkInvoice.LastApprovingUser.getAuthorityLimit(AuthorityLimitType.TC_CPTD, null, CostType.TC_EXPENSE).LimitAmount
+
+  if(authorityLimits == null || bulkInvoice.BulkInvoiceTotal > authorityLimits ){
+      bulkInvoice.setApprovingUser(user, group)
+  } else {
+      bulkInvoice.setRequestingUser(util.custom_Ext.finders.getUserOb( "batchsu" ))
+  }
+  gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+  actions.exit()
+}
+catch(aex:gw.rules.AbortExecutionException){
+    throw aex 
+}
+catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( bulkInvoice, actions.getRule().toString(), e, null );
+}/*end00rule*/
+  }
+}

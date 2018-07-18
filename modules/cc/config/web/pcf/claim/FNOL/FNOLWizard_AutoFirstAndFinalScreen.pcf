@@ -1,0 +1,263 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="FNOLWizard_AutoFirstAndFinalScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Variable
+      initialValue="initializeStep()"
+      name="exposure"
+      type="Exposure"/>
+    <Toolbar>
+      <WizardButtons/>
+      <ToolbarButton
+        action="Wizard.goToFullWizardFromIncompatible(&quot;BasicInfo&quot;, &quot;Summary&quot;)"
+        confirmMessage="displaykey.Web.NewClaimWizard.AutoFirstAndFinal.GoToFullClaimConfirm"
+        id="NewClaimWizard_QuickClaimScreen_ReturnFromQuickClaimButton"
+        label="displaykey.Button.Wizard.ReturnFromQuickClaim"
+        shortcut="R"/>
+    </Toolbar>
+    <DetailViewPanel>
+      <InputColumn>
+        <TypeKeyRadioInput
+          editable="true"
+          id="FirstFinalReportedAgencyRadioButton"
+          label="displaykey.Web.NewClaimWizard.AutoFirstAndFinal.WhoReported"
+          postOnChange="true"
+          value="Wizard.FirstFinalReportedAgency"/>
+      </InputColumn>
+    </DetailViewPanel>
+    <PanelDivider/>
+    <PanelRef
+      def="FNOLWizardAutoFirstAndFinalPanelSet(Claim, Wizard, VehicleIncident)"
+      id="AutoFirstAndFinalReportedPanelSet"
+      mode="Wizard.FirstFinalReportedAgency.Code"/>
+    <PanelRow>
+      <PanelColumn>
+        <PanelDivider/>
+        <DetailViewPanel>
+          <InputColumn>
+            <Label
+              label="displaykey.Web.NewClaimWizard.AutoFirstAndFinal.Damage"/>
+            <RangeInput
+              editable="true"
+              flatten="true"
+              id="Vehicle_Name"
+              label="displaykey.NVV.Claim.SubView.NewQuickClaimClaimAutoFirstAndFinal.Claim.Vehicle.Name"
+              postOnChange="true"
+              required="true"
+              sortValueRange="false"
+              validationExpression="!(VehicleIncident.Vehicle.Vin == null and VehicleIncident.Vehicle.LicensePlate == null and (VehicleIncident.Vehicle.Model == null or exposure.VehicleIncident.Vehicle.Make == null)) ? null : displaykey.NVV.Claim.SubView.NewQuickClaimClaimAutoFirstAndFinal.Claim.Vehicle.ValidationError"
+              value="VehicleRU"
+              valueRange="Claim.Policy.Vehicles"
+              valueWidth="300"/>
+            <TextAreaInput
+              editable="true"
+              id="Description"
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.LossDescription"
+              numCols="35"
+              numRows="3"
+              value="Claim.Description"/>
+            <Label
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant"/>
+            <ClaimContactInput
+              claim="Claim"
+              editable="true"
+              id="Claimant_Picker"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant.Picker"
+              required="true"
+              value="exposure.Claimant"
+              valueRange="Claim.getRelatedContacts(Claim.getContactType(&quot;claimant&quot;))"/>
+            <RangeInput
+              align="left"
+              editable="true"
+              id="Claimant_Type"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant.Type"
+              required="true"
+              value="exposure.ClaimantType"
+              valueRange="ClaimantType.getTypeKeys(false)"
+              valueWidth="300">
+              <Reflect
+                triggerIds="Claimant_Picker">
+                <ReflectCondition
+                  condition="Claim.Insured==VALUE"
+                  value="&quot;insured&quot;"/>
+                <ReflectCondition
+                  condition="true"
+                  value="&quot;&quot;"/>
+              </Reflect>
+            </RangeInput>
+            <Input
+              id="Claimant_Workphone"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant.Workphone"
+              value="exposure.claimant.PrimaryPhoneValue">
+              <Reflect
+                triggerIds="Claimant_Picker"
+                value="VALUE.PrimaryPhoneValue"/>
+            </Input>
+            <Input
+              id="Claimant_Address"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant.Address"
+              value="exposure.Claimant.PrimaryAddressDisplayValue">
+              <Reflect
+                triggerIds="Claimant_Picker"
+                value="VALUE.primaryAddressDisplayValue"/>
+            </Input>
+            <Input
+              editable="true"
+              id="Claimant_OtherCoverage"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.Claimant.OtherCoverage"
+              required="false"
+              value="exposure.OtherCoverage"/>
+            <Label
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.Repair"/>
+            <ClaimContactInput
+              claim="Claim"
+              editable="true"
+              id="RepairShop_Picker"
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.RepairShop"
+              onPick="repairShopOnPick()"
+              required="true"
+              value="VehicleIncident.repairshop"
+              valueRange="Claim.RelatedAutoRepairShopArray"
+              visible="true"/>
+            <Label
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.ExposureDetails"/>
+            <Input
+              id="Exposure_PrimaryCoverage"
+              label="displaykey.NVV.Exposure.SubView.NewQuickClaimClaimGL.Exposure.PrimaryCoverage"
+              value="exposure.PrimaryCoverage"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <DetailViewPanel>
+          <InputColumn>
+            <BooleanRadioInput
+              editable="true"
+              id="ReadyToPay"
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.ReadyToPay"
+              postOnChange="true"
+              value="Wizard.check.readyToPay"/>
+          </InputColumn>
+        </DetailViewPanel>
+        <PanelRef
+          def="FNOLWizardCheckDV(Claim, Wizard)"
+          mode="Wizard.Check.ReadyToPay ? &quot;ready&quot; : &quot;notready&quot;"/>
+      </PanelColumn>
+      <PanelColumn>
+        <PanelDivider/>
+        <DetailViewPanel>
+          <InputColumn>
+            <InputSetRef
+              def="AddressInputSet(Claim.AddressOwner)"
+              mode="Claim.AddressOwner.InputSetMode"/>
+            <DateInput
+              dateFormat="short"
+              id="Claim_LossDate"
+              label="displaykey.NVV.Claim.SubView.NewClaimLossDetailsAuto.Claim.LossDate"
+              validationExpression="Claim.LossDate == null || Claim.LossDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+              value="Claim.LossDate"/>
+            <DateInput
+              editable="true"
+              id="Claim_lossTime"
+              label="displaykey.Web.FNOLWizard.AutoFirstAndFinal.Time"
+              timeFormat="short"
+              validationExpression="Claim.LossDate == null || Claim.LossDate &lt; util.DateUtil.currentDate() ? null : displaykey.Java.Validation.Date.ForbidFuture"
+              value="Claim.LossDate"/>
+          </InputColumn>
+        </DetailViewPanel>
+      </PanelColumn>
+    </PanelRow>
+    <Code><![CDATA[property get VehicleIncident() : VehicleIncident {return exposure.VehicleIncident}
+
+property get VehicleRU() : VehicleRU {
+  var vehicleRUs = Claim.Policy.Vehicles
+ 
+  for (var riskUnit in vehicleRUs) {
+    if (exposure.VehicleIncident.Vehicle == riskUnit.Vehicle) {
+      return riskUnit
+    }
+  }
+  
+  return null
+}
+
+property set VehicleRU(riskUnit : VehicleRU) {
+  VehicleIncident.Vehicle = riskUnit.Vehicle
+  updateExposureCoverage(exposure, riskUnit)
+}
+
+function removeOldClaimDeductible(exp : Exposure) {
+  if (exp.Coverage.ClaimDeductible != null) {
+    exp.Coverage.ClaimDeductible.remove()
+    Wizard.Check.ApplyDeductible = false
+  }
+}
+
+function createClaimDeductible(exp : Exposure) {
+  if (exp.Coverage.Deductible != null and gw.api.financials.FinancialsUtil.isUseDeductibleHandling()) {
+    var deductible = exp.Coverage.ClaimDeductible==null ? new Deductible() : exp.Coverage.ClaimDeductible
+    deductible.Claim = exp.Claim
+    deductible.Coverage = exp.Coverage
+    deductible.Amount = gw.util.DeductibleCalculator.calculateDeductibleAmountForCoverage(exp.Coverage)
+  }
+}
+
+function updateExposureCoverage(exp : Exposure, riskUnit : VehicleRU) {
+  removeOldClaimDeductible(exp)
+      
+  for (var coverage in riskUnit.Coverages) {
+    //match the coverage type
+    if (coverage.Type == exp.PrimaryCoverage) {
+      exp.Coverage = coverage
+      createClaimDeductible(exp)
+    }
+  }
+}
+
+function initializeVehicleRU(exp : Exposure) {
+  var vehicleRUs = Claim.Policy.Vehicles
+
+  //default to the first vehicleRU if there's vehicles on the policy
+  if ((vehicleRUs != null) && (vehicleRUs.length > 0)){
+    //set the deductible object and the vehicleincident vehicle
+    exp.VehicleIncident.Vehicle = vehicleRUs[0].Vehicle
+    updateExposureCoverage(exp, vehicleRUs[0])
+  }
+}
+
+function repairShopOnPick() {
+  if (Wizard.Check.ReadyToPay and  Wizard.Check.Payee == null) {
+    Wizard.Check.Payee = VehicleIncident.repairshop
+    Wizard.Check.PayeeRole = ContactRole.TC_VENDOR
+    Wizard.Check.MailTo = VehicleIncident.repairshop.DisplayName
+    Wizard.Check.MailToAddress = VehicleIncident.repairshop.PrimaryAddressDisplayValue;
+  }
+}
+
+function initializeStep() : Exposure {
+  if (!Claim.areInitialValuesSet()) {
+    Claim.setInitialValues()
+  }
+  var exposures = Claim.OrderedExposures
+  var result : Exposure
+  if (exposures.length > 0) {
+    result = exposures[0]
+  } else {
+    result = Wizard.addExposureWithNoIncident(Claim, null, "COMP", "comp_vd")
+  }
+  
+  result.ensureIncidentCreated()
+  
+  if (VehicleRU == null) {
+    initializeVehicleRU(result)
+  }
+  return result
+}]]></Code>
+  </Screen>
+</PCF>

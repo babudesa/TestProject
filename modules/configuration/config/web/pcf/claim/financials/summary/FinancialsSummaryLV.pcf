@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="FinancialsSummaryLV">
+    <Require
+      name="SummaryRows"
+      type="financials.FinancialsSummaryRow[]"/>
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Row
+      id="DummyRow"/>
+    <RowIterator
+      alternateEntryStyle="false"
+      editable="false"
+      elementName="FSRow"
+      id="FinancialsSummaryRowIterator"
+      pageSize="0"
+      type="financials.FinancialsSummaryRow"
+      value="SummaryRows">
+      <Row
+        id="FinancialsSummaryRow"
+        useSubHeaderStyle="FSRow.Level.Level==1 and !FSRow.Level.Leaf"
+        useTitleStyle="FSRow.Level.Level==0">
+        <FinancialsSummaryLabelCell
+          id="Label"
+          value="FSRow"/>
+        <!-- The value below was added to remove the picker box from next to any values that are suppose to be recoveries. This is done by just adding a string to the end or beginning of the FSRow.Label  value="(FSRow.Label != &quot;Deductible&quot; and FSRow.Label != &quot;Overpayment&quot; and FSRow.Label != &quot;Subrogation&quot; and FSRow.Label != &quot;Salvage&quot; and
+                  FSRow.Label != &quot;Loss Deductible&quot; and FSRow.Label != &quot;Loss Overpayment&quot; and FSRow.Label != &quot;Loss Subrogation&quot; and FSRow.Label != &quot;Loss Salvage&quot; and
+                  FSRow.Label != &quot;Expense Deductible&quot; and FSRow.Label != &quot;Expense Overpayment&quot; and FSRow.Label != &quot;Expense Subrogation&quot; and FSRow.Label != &quot;Expense Salvage&quot; and FSRow.Label != &quot;Cost Category&quot;)
+                  ? FSRow.Label :&quot;          &quot; + FSRow.Label" label="&quot;&quot;" />  <FinancialsSummaryCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTxnIDs(gw.api.financials.FinancialsCalculationUtil.getRemainingReservesExpression())); ClaimFinancialsTransactions.go(Claim)"
+          formatType="currency"
+          id="RemainingReserves"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getRemainingReservesExpression())"
+          visible="perm.Claim.viewreserves(Claim) and perm.Claim.viewpayments(Claim)">
+          <ColumnHeader>
+            <Cell
+              align="right"
+              id="RemainingReservesHeader"
+              useHeaderStyle="true"
+              value="displaykey.Java.Financials.Summary.RemainingReserves"
+              visible="perm.Claim.viewreserves(Claim) and perm.Claim.viewpayments(Claim)"/>
+          </ColumnHeader>
+        </FinancialsSummaryCell> -->
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getRemainingReservesExpression())); ClaimFinancialsTransactions.go(Claim)"
+          align="right"
+          enableSort="false"
+          formatType="currency"
+          id="OpenReserves"
+          label="displaykey.Java.Financials.Summary.OpenReserves"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getOpenReservesExpression())"
+          visible="perm.Claim.viewreserves(Claim) and perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getFuturePaymentsExpression())); ClaimFinancialsTransactions.go(Claim)"
+          enableSort="false"
+          formatType="currency"
+          id="PendingApprovalReserves"
+          label="displaykey.Java.Financials.Summary.PendingApprovalReserves"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getPendingApprovalReservesExpression())"
+          visible="perm.Claim.viewreserves(Claim) and perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getTotalPaymentsExpression())); ClaimFinancialsTransactions.go(Claim)"
+          available="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalPaymentsExpression()) != null"
+          enableSort="false"
+          formatType="currency"
+          id="TotalPayments"
+          label="displaykey.Java.Financials.Summary.TotalPayments"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalPaymentsExpression())"
+          visible="perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getPendingApprovalPaymentsExpression())); ClaimFinancialsTransactions.go(Claim)"
+          enableSort="false"
+          formatType="currency"
+          id="PendingApprovalPayments"
+          label="displaykey.Java.Financials.Summary.PendingApprovalPayments"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getPendingApprovalPaymentsExpression())"
+          visible="perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getFuturePaymentsExpression())); ClaimFinancialsTransactions.go(Claim)"
+          available="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getFuturePaymentsExpression()) != null"
+          enableSort="false"
+          formatType="currency"
+          id="FuturePayments"
+          label="displaykey.Java.Financials.Summary.FuturePayments"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getFuturePaymentsExpression())"
+          visible="perm.Claim.viewpayments(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getTotalRecoveriesExpression())); ClaimFinancialsTransactions.go(Claim)"
+          available="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalRecoveriesExpression()) != null"
+          enableSort="false"
+          formatType="currency"
+          id="TotalRecoveries"
+          label="displaykey.Java.Financials.Summary.TotalRecoveries"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalRecoveriesExpression())"
+          visible="perm.Claim.viewrecoveries(Claim)"
+          wrapLabel="true"/>
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReservesExpression())); ClaimFinancialsTransactions.go(Claim)"
+          enableSort="false"
+          formatType="currency"
+          id="OpenRecoveryEstimates"
+          label="displaykey.Java.Financials.Summary.OpenRecoveryEstimates"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReservesExpression())"
+          visible="perm.Claim.viewrecoveries(Claim)"
+          wrapLabel="true"/>
+        <!-- <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNetRecoveriesExpression())); ClaimFinancialsTransactions.go(Claim)"
+          available="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNetRecoveriesExpression()) != null"
+          enableSort="false"
+          formatType="currency"
+          id="TotalIncurredNet"
+          label="displaykey.Java.Financials.Summary.TotalIncurredNet"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNetRecoveriesExpression())"
+          visible="perm.Claim.viewnettotalincurred(Claim)"
+          wrapLabel="true"/> -->
+        <TextCell
+          action="financials.FinancialsUtil.updateCustomTransactionIdsForClaim(Claim, FSRow.getTransactions(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNetRecoveriesExpression().minus(gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReservesExpression()))); ClaimFinancialsTransactions.go(Claim)"
+          enableSort="false"
+          formatType="currency"
+          id="IncurredIncludingRecovery"
+          label="displaykey.Java.Financials.Summary.IncurredIncludingRecovery"
+          value="FSRow.getValue(gw.api.financials.FinancialsCalculationUtil.getTotalIncurredNetRecoveriesExpression().minus(gw.api.financials.FinancialsCalculationUtil.getOpenRecoveryReservesExpression()))"
+          visible="perm.Claim.viewnettotalincurred(Claim)"
+          wrapLabel="true"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

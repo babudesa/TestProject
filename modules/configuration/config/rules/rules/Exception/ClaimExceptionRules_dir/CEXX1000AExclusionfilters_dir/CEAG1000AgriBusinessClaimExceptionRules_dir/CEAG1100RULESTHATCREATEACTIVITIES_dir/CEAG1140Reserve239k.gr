@@ -1,0 +1,37 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEAG1000AgriBusinessClaimExceptionRules_dir.CEAG1100RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleName("CEAG1140 - Reserve 239k")
+internal class CEAG1140Reserve239k {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/((claim.LossType== "agriliability" || claim.LossType=="AGRIAUTO") &&
+//!exists(act in Claim.Activities where act.ActivityPattern.Code=="ab_239_reserve") &&
+claim.Exposures.length!=0 )   //means a feature does exist
+//comment out !exist line if activity per expsosure, i moved it below, defect 1675/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+for(exp in claim.Exposures){
+  if (exp.ExposureType=="ab_AGG_auto_BodInjury" || exp.ExposureType=="ab_AGG_gl_BodInjury"|| exp.ExposureType=="ab_BodilyInjury") {
+    if(exp.ReservesQuery.getCount()>0 ){
+      for(transView in exp.ReservesQuery.iterator()){
+        var reserve = (transView as ReserveView)
+          if(reserve.Amount == 239000 and
+          !exists(act in exp.Claim.Activities where act.ActivityPattern.Code=="ab_239_reserve" and act.Exposure==exp)){ 
+            var ap = util.custom_Ext.finders.findActivityPattern( "ab_239_reserve" )
+            claim.createActivityFromPattern( exp,ap )
+          }
+      }
+    }
+  }
+}
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+
+
+
+/*end00rule*/
+  }
+}

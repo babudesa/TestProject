@@ -1,0 +1,47 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUIM1000PIMClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUIM1200 - Catastrophe (PIM)")
+internal class CPUIM1200CatastrophePIM {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*Author: erawe
+Date:7/15/10
+Note: Weather related not requested for PIM
+Updated 12/7/12 cdmcdonald - added if statement condition so CAT Activity will 
+only generate if Loss State and CAT State match in addition to date requirement.
+*/
+(claim.AssignmentStatus=="assigned" &&
+claim.IncidentReport==false &&
+claim.State!="closed" &&
+claim.State!="draft" &&
+claim.Catastrophe==null &&
+!exists(act in claim.Activities where act.ActivityPattern.Code=="ab_possible_Cat_loss")) 
+
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var catQuery : CatastropheQuery;
+  var found : Boolean = FALSE 
+  catQuery = find(var cat in Catastrophe where cat.Active == true and (cat.BusinessCatNameExt == "PrpIM" 
+    or cat.Type == "iso" or cat.Type =="internal" or cat.Type =="businesscat" )
+    and cat.Ex_EarliestStartDate <=  claim.LossDate and cat.Ex_LatestEndDate >= claim.LossDate)
+     
+    
+    for(cat in catQuery){
+      if(cat.Ex_EarliestStartDate <=  claim.LossDate and cat.Ex_LatestEndDate >= claim.LossDate
+          and exists(occ in cat.Ex_CatOccurances where occ.State==claim.LossLocation.State)){
+        var ap = util.custom_Ext.finders.findActivityPattern( "ab_possible_Cat_loss" )
+//Defect 5226  added description       
+        //claim.createActivityFromPattern( null, ap)
+        var act = claim.createActivityFromPattern( null, ap)
+         act.Description = "This claim meets the criteria for Catastrophe " +catQuery.toTypedArray().last().Name +" but has not been designated as a Cat Claim. Please verify."
+        break
+      }
+    }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

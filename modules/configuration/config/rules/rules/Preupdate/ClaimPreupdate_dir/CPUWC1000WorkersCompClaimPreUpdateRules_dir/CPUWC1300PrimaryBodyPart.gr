@@ -1,0 +1,29 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CPUWC1300 - Primary Body Part")
+internal class CPUWC1300PrimaryBodyPart {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/exists(inc in claim.Incidents where inc.Subtype == "InjuryIncident" 
+&& (inc as InjuryIncident).BodyParts.length != 0)
+
+// 6.12.15 - cmullin - WC Config: If the claim has any BodyPart attached to any incident (i.e. there is 
+// at least one non-empty BodyParts array), then enter the rule. This rule sets the Primary Body Part if
+// the user has not already chosen a Primary Body Part. This rule ensures that there will always be at least 
+// one Body Part with the PrimaryExt indicator set to True. /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{ 
+  for(each in claim.Incidents){
+    if(each.Subtype == "InjuryIncident" && (each as InjuryIncident).BodyParts.length != 0){
+      if(!exists(part in (each as InjuryIncident).BodyParts where part.PrimaryExt == true)){
+        (each as InjuryIncident).BodyParts.first().PrimaryExt = true
+      }
+    }
+  }
+}catch(e) {
+   util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

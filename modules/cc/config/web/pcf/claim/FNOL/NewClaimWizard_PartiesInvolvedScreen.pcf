@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Screen
+    id="NewClaimWizard_PartiesInvolvedScreen">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="Wizard"
+      type="claim.NewClaimWizardInfo"/>
+    <Toolbar>
+      <WizardButtons/>
+    </Toolbar>
+    <Verbatim
+      label="displaykey.JSP.NewClaimPartiesInvolved.PeopleInvolved.Tip"/>
+    <!-- Note: the permissions here match the 3.1.x version; the parties involved page in the claim file also checks
+         manageclaimparties everywhere, which is unnecessary in the wizard. -->
+    <PanelRef
+      def="NewClaimPeopleInvolvedDetailedLV(Wizard, Claim)">
+      <Toolbar>
+        <ToolbarButton
+          id="NewClaimWizard_PartiesInvolvedScreen_CreateNewContactButton"
+          label="displaykey.Web.ClaimContacts.Button.CreateNewContact"
+          shortcut="N"
+          visible="perm.Contact.createlocal">
+          <MenuItem
+            id="NewClaimPartiesInvoled_Person"
+            label="displaykey.Web.NewContactMenu.Person">
+            <MenuItem
+              action="createClaimContact(entity.Adjudicator)"
+              id="NewClaimPartiesInvoled_Adjudicator"
+              label="displaykey.Web.NewContactMenu.Adjudicator"/>
+            <MenuItem
+              action="createClaimContact(entity.Person)"
+              id="NewClaimPartiesInvoled_OtherPerson"
+              label="displaykey.Web.NewContactMenu.OtherPerson"/>
+          </MenuItem>
+          <MenuItem
+            id="NewClaimPartiesInvoled_Vendor"
+            label="displaykey.Web.NewContactMenu.Vendor">
+            <MenuItem
+              action="createClaimContact(entity.Attorney)"
+              id="NewClaimPartiesInvoled_Attorney"
+              label="displaykey.Web.NewContactMenu.Attorney"/>
+            <MenuItem
+              action="createClaimContact(entity.AutoRepairShop)"
+              id="NewClaimPartiesInvoled_AutoRepairShop"
+              label="displaykey.Web.NewContactMenu.AutoRepairShop"/>
+            <MenuItem
+              action="createClaimContact(entity.AutoTowingAgcy)"
+              id="NewClaimPartiesInvoled_AutoTowingAgcy"
+              label="displaykey.Web.NewContactMenu.AutoTowingAgcy"/>
+            <MenuItem
+              action="createClaimContact(entity.Doctor)"
+              id="NewClaimPartiesInvoled_Doctor"
+              label="displaykey.Web.NewContactMenu.Doctor"/>
+            <MenuItem
+              action="createClaimContact(entity.LawFirm)"
+              id="NewClaimPartiesInvoled_LawFirm"
+              label="displaykey.Web.NewContactMenu.LawFirm"/>
+            <MenuItem
+              action="createClaimContact(entity.MedicalCareOrg)"
+              id="NewClaimPartiesInvoled_MedicalCareOrg"
+              label="displaykey.Web.NewContactMenu.MedicalCareOrg"/>
+            <MenuItem
+              action="createClaimContact(entity.CompanyVendor)"
+              id="NewClaimPartiesInvoled_CompanyVendor"
+              label="displaykey.Web.NewContactMenu.CompanyVendor"/>
+          </MenuItem>
+          <MenuItem
+            action="createClaimContact(entity.Company)"
+            id="NewClaimPartiesInvoled_Company"
+            label="displaykey.Web.NewContactMenu.Company"/>
+          <MenuItem
+            action="createClaimContact(entity.LegalVenue)"
+            id="NewClaimPartiesInvoled_LegalVenue"
+            label="displaykey.Web.NewContactMenu.LegalVenue"/>
+        </ToolbarButton>
+        <PickerToolbarButton
+          action="AddressBookPickerPopup.push(entity.Contact, claim)"
+          id="NewClaimWizard_PartiesInvolvedScreen_AddExistingButton"
+          label="displaykey.Web.ClaimContacts.Button.AddExisting"
+          onPick="NewClaimWizard_PartyInvolvedPopup.push(Wizard, wizard.addClaimContact(PickedValue), wizard.isContactNew(PickedValue))"
+          shortcut="G"
+          visible="perm.Contact.viewlocal"/>
+        <CheckedValuesToolbarButton
+          allCheckedRowsAction="claimparties.ClaimContactUtil.deleteNewClaimContacts(CurrentLocation, Claim, CheckedValues, CheckedValuesErrors)"
+          flags="any ClaimContact"
+          id="NewClaimWizard_PartiesInvolvedScreen_DeleteButton"
+          iterator="NewClaimPeopleInvolvedDetailedLV"
+          label="displaykey.Button.Delete"
+          shortcut="L"/>
+      </Toolbar>
+    </PanelRef>
+    <Code><![CDATA[
+      function createClaimContact(contactType : Type) {
+        NewClaimWizard_PartyInvolvedPopup.push(wizard, wizard.createClaimContact(contactType), true);
+      }
+    ]]></Code>
+  </Screen>
+</PCF>

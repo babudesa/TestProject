@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<internalExtension
+  xmlns="http://guidewire.com/datamodel"
+  entityName="Message"
+  javaClass="com.guidewire.cc.system.messaging.Message">
+  <description><![CDATA[
+An active message created by the event fired rules in response to an event in the ClaimCenter system.  A message is intended for a particular destination that can be determined by <b>getDestinationID</b>.     Messages carry a payload containing the data to be sent to the destination.  Messages are dispatched using a MessageTransport plugin specified in config.xml, which is responsible for sending the message to the receiving system. See the ClaimCenter Integration documentation for more details about the lifecycle of Messages.
+      
+    ]]></description>
+  <foreignkey
+    columnName="ClaimID"
+    desc="Associated claim, if applicable.  If null, then the associated object is a cross-claim object."
+    fkentity="Claim"
+    name="Claim"/>
+  <index
+    desc="Descending index on claim and send order, used for getting the max send order when creating messages."
+    name="ClaimSendOrder"
+    trackUsage="true">
+    <indexcol
+      keyposition="1"
+      name="ClaimID"/>
+    <indexcol
+      keyposition="2"
+      name="SendOrder"
+      sortascending="false"/>
+  </index>
+  <index
+    desc="Index for queries that gets primary messages and cross primary messages."
+    name="PendingMsgs"
+    trackUsage="true">
+    <indexcol
+      keyposition="1"
+      name="DestinationID"/>
+    <indexcol
+      keyposition="2"
+      name="Status"/>
+    <indexcol
+      keyposition="3"
+      name="SendOrder"/>
+    <indexcol
+      keyposition="4"
+      name="ClaimID"/>
+  </index>
+  <dbcheckbuilder
+    className="com.guidewire.cc.system.messaging.dbchecks.CCMessageDBCheckBuilder"/>
+</internalExtension>

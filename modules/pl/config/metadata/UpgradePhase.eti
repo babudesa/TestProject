@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!-- ************************************* IMPORTANT ********************************************************************
+     If this schema is changed in a way such that the changes cannot be implemented by simply creating the new ojbects,
+    you must increment the final static int UpgraderInstrumentation.EXPECTEDUPGRADESCHEMAVERSION, which will force
+    all these tables to be dropped and recreated.
+  ************************************* IMPORTANT ********************************************************************
+
+  ### ============================================================================
+  ###  Upgrade phases
+  ### ============================================================================ -->
+<entity
+  xmlns="http://guidewire.com/datamodel"
+  admin="true"
+  cacheable="false"
+  desc="Phases within an upgrade."
+  entity="UpgradePhase"
+  exportable="false"
+  extendable="false"
+  instrumentationtable="true"
+  javaClass="com.guidewire.pl.system.upgrader.UpgradePhase"
+  loadable="false"
+  platform="true"
+  size="small"
+  table="upgradephase"
+  type="keyable">
+  <implementsEntity
+    name="TimedUpgraderObject"/>
+  <typekey
+    desc="Type of upgrade step"
+    name="PhaseType"
+    nullok="false"
+    typelist="UpgradeExecutionTimeType"/>
+  <foreignkey
+    columnName="UpgradeInstanceID"
+    desc="Parent"
+    fkentity="UpgradeInstance"
+    name="UpgradeInstance"
+    nullok="false"/>
+  <array
+    arrayentity="UpgradeVersionTrigger"
+    name="UpgradeVersionTriggers"
+    owner="true"/>
+  <array
+    arrayentity="UpgradeEncryptStep"
+    name="UpgradeEncryptSteps"
+    owner="true"/>
+  <array
+    arrayentity="UpgradeCustomStatement"
+    name="UpgradeCustomStatements"
+    owner="true"/>
+  <!-- Unique index on UpgradeInstanceID, PhaseType -->
+  <index
+    desc="Unique index for upgrade instrumentation"
+    name="upgradephaseu1"
+    unique="true">
+    <indexcol
+      keyposition="1"
+      name="UpgradeInstanceID"/>
+    <indexcol
+      keyposition="2"
+      name="PhaseType"/>
+  </index>
+</entity>

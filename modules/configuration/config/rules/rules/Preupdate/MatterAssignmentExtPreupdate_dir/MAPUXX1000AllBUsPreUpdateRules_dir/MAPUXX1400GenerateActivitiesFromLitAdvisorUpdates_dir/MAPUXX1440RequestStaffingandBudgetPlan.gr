@@ -1,0 +1,43 @@
+package rules.Preupdate.MatterAssignmentExtPreupdate_dir.MAPUXX1000AllBUsPreUpdateRules_dir.MAPUXX1400GenerateActivitiesFromLitAdvisorUpdates_dir
+
+@gw.rules.RuleName("MAPUXX1440 - Request Staffing and Budget Plan")
+internal class MAPUXX1440RequestStaffingandBudgetPlan {
+  static function doCondition(matterAssignmentExt : entity.MatterAssignmentExt) : boolean {
+    return /*start00rule*/matterAssignmentExt.ChangedFields.contains("StaffBudgetRequiredExt") &&
+matterAssignmentExt.StaffBudgetRequiredExt == true/*end00rule*/
+  }
+
+  static function doAction(matterAssignmentExt : entity.MatterAssignmentExt, actions : gw.rules.Action) {
+/*start00rule*/var lssAdmin = find (la in LSSAdminExt where la.LossTypeExt == matterAssignmentExt.Matter.Claim.LossType).AtMostOneRow
+
+if (matterAssignmentExt.CreateTime <= lssAdmin.EffectiveDateExt){
+try{
+        
+      //get the request staffing budget plan activity pattern
+      var pattern = ActivityPattern.finder.getActivityPatternByCode( "staffing_budget_request" )
+     
+      //get exposure related to primary claimant
+      var exposure = matterAssignmentExt.AssignmentExposuresExt.where(\ a -> a.PrimaryClaimantExt == true)*.Exposure.first()
+      
+      //Create new activity from existing pattern and add the matter name to the pattern
+      //subject and description  
+      var newAct = matterAssignmentExt.Matter.Claim
+          .createActivity(exposure, pattern,
+           "Contact (" + matterAssignmentExt.CounselLawFirmExt + ") to request the Staffing and Budget Plan for the Matter (" + matterAssignmentExt.LSSMatterID + ")",
+           "Contact (" + matterAssignmentExt.CounselLawFirmExt + ") to request the Staffing and Budget Plan for the Matter (" + matterAssignmentExt.LSSMatterID + ")",
+           pattern.Priority, pattern.Mandatory, gw.api.util.DateUtil.currentDate(), null)
+      
+      
+      //associate matter & matterAssignmentExt
+      newAct.Matter = matterAssignmentExt.Matter
+      newAct.MatterAssignmentExt = matterAssignmentExt
+      
+      //assign the activity to the user assigned to the claim
+      newAct.AssignedUser = matterAssignmentExt.Matter.Claim.AssignedUser
+     
+  }catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matterAssignmentExt, actions.getRule().DisplayName, e, null )
+}
+}/*end00rule*/
+  }
+}

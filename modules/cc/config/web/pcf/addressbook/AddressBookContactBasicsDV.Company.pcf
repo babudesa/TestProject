@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="AddressBookContactBasicsDV"
+    mode="Company|CompanyVendor|MedicalCareOrg|AutoRepairShop|AutoTowingAgcy|LawFirm">
+    <Require
+      name="contact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <Variable
+      initialValue="contact.getSortedCategoryScores()"
+      name="sortedCategoryScores"
+      type="ContactCategoryScore[]"/>
+    <Variable
+      initialValue="sortedCategoryScores != null AND sortedCategoryScores.length &gt; 0"
+      name="hasCategoryScores"
+      type="Boolean"/>
+    <InputColumn>
+      <Label
+        label="asCompany().getSubtype().DisplayName"/>
+      <Input
+        editable="true"
+        id="OrganizationName"
+        label="displaykey.Web.ContactDetail.Name.OrganizationName"
+        required="true"
+        value="asCompany().Name"/>
+      <InputSet
+        visible="!(contact typeis CompanyVendor)">
+        <PrivacyInput
+          editable="true"
+          encryptionExpression="asCompany().maskTaxId(VALUE)"
+          id="V_EIN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+          required="true"
+          value="asCompany().TaxID"/>
+      </InputSet>
+      <InputDivider/>
+      <InputSetRef
+        def="AddressBookPrimaryAddressInputSet(contact)"/>
+      <InputDivider
+        visible="hasCategoryScores OR (contact.Score != null)"/>
+      <Label
+        label="displaykey.Web.Reviews.ReviewPerformance"
+        visible="hasCategoryScores or (contact.Score != null)"/>
+      <Input
+        id="score"
+        label="displaykey.Web.Reviews.OverallScore"
+        value="contact.Score"
+        visible="contact.Score != null"/>
+      <ListViewInput
+        label="displaykey.Web.Reviews.CategoryScores"
+        visible="hasCategoryScores">
+        <Toolbar/>
+        <ListViewPanel
+          id="CategoryScoresLV">
+          <RowIterator
+            editable="false"
+            elementName="categoryScore"
+            pageSize="0"
+            value="sortedCategoryScores">
+            <Row>
+              <Cell
+                enableSort="false"
+                id="Category"
+                label="displaykey.Web.Reviews.Category"
+                value="categoryScore.ReviewCategory"/>
+              <Cell
+                enableSort="false"
+                id="Score"
+                label="displaykey.Web.Reviews.Score"
+                value="categoryScore.Score"/>
+            </Row>
+          </RowIterator>
+        </ListViewPanel>
+      </ListViewInput>
+    </InputColumn>
+    <InputColumn>
+      <Label
+        label="displaykey.Web.ContactDetail.AdditionalInfo"/>
+      <InputSetRef
+        def="AddressBookCompanyVendorAdditionalInfoInputSet(asCompany())"
+        mode="contact typeis CompanyVendor ? &quot;CompanyVendor&quot; : null"/>
+      <Input
+        editable="true"
+        id="Currency"
+        label="displaykey.Financials.Multicurrency.PreferredCurrency"
+        value="contact.PreferredCurrency"
+        visible="gw.api.util.CurrencyUtil.isMultiCurrencyMode()"/>
+      <InputSetRef
+        def="AddressBookBusinessContactInfoInputSet(contact, externalContactSource)"/>
+      <InputSet
+        visible="contact typeis CompanyVendor">
+        <InputDivider/>
+        <Label
+          label="displaykey.Web.ContactDetail.TaxInfo"/>
+        <PrivacyInput
+          editable="true"
+          encryptionExpression="asCompany().maskTaxId(VALUE)"
+          id="EIN"
+          label="displaykey.Web.ContactDetail.Name.TaxID.EIN"
+          required="true"
+          value="asCompany().TaxID"/>
+        <InputSetRef
+          def="AddressBookVendorW9InfoInputSet(contact)"
+          visible="gw.api.admin.BaseAdminUtil.getDefaultCountry() == Country.TC_US "/>
+      </InputSet>
+      <InputDivider/>
+      <TextAreaInput
+        boldLabel="true"
+        editable="true"
+        id="Notes"
+        label="displaykey.Web.ContactDetail.Notes"
+        numRows="3"
+        value="asCompany().Notes"/>
+    </InputColumn>
+    <InputFooterSection>
+      <InputDivider/>
+      <ListViewInput
+        boldLabel="true"
+        def="ContactEFTLV(contact)"
+        label="displaykey.Web.ContactBasicsDV.BankData"
+        labelAbove="true">
+        <Toolbar>
+          <IteratorButtons/>
+        </Toolbar>
+      </ListViewInput>
+    </InputFooterSection>
+    <Code><![CDATA[
+      function asCompany() : Company {
+      return contact as Company;
+      }
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

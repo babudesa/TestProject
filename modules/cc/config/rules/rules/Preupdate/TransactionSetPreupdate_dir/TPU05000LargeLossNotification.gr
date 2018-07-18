@@ -1,0 +1,18 @@
+package rules.Preupdate.TransactionSetPreupdate_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("TPU05000 - Large Loss Notification")
+internal class TPU05000LargeLossNotification {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Claim.LargeLossNotificationStatus == null or
+ transactionSet.Claim.LargeLossNotificationStatus == "None") and
+transactionSet.Claim.exceedsLargeLossThreshold()/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/uses gw.api.financials.FinancialsCalculationUtil
+
+transactionSet.Claim.addLargeLossEvent()
+/*end00rule*/
+  }
+}

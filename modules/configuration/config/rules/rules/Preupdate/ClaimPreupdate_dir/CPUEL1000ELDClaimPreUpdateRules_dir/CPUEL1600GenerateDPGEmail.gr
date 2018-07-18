@@ -1,0 +1,50 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEL1000ELDClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUEL1600 - Generate DPG Email")
+internal class CPUEL1600GenerateDPGEmail {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossType != LossType.TC_MERGACQU and 
+(!exists(note in claim.Notes where note.Subject == "DPG Email")) and
+//claim.Policy.ProducerCode == "740363" and
+claim.AssignmentStatus=="assigned" and
+claim.State!="closed" and
+claim.State!="draft" and
+claim.Policy.underwriter.FirstName != null and 
+claim.Policy.underwriter.LastName != null and
+claim.Policy.underwriter.FirstName.matches("^(?i)[d][p][g]$") and
+claim.Policy.underwriter.LastName.matches("^(?i)[u][n][d][e][r][w][r][i][t][e][r]$")
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Send e-mail notification
+//ELD Email 5. DPG New Claim
+uses util.custom_Ext.EmailHelper
+var noteBody:String;
+var note:Note;
+var body : String = templates.email.DPGNewClaim.renderToString(claim)
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var subject:String="DPG New Claim - Insured: " + claim.Insured
+var emailHelper=new EmailHelper()
+if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        "DPGClaims@distinguished.com", "DPG Broker", 
+        "ClaimCenterSupport@gaig.com", "ClaimCenter Notification", 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+} else {
+  emailHelper.sendEmailWithBodyEcf(claim, 
+        ScriptParameters.ClaimCenterDevEmail, ScriptParameters.Underwriters_Name, 
+        "ClaimCenterSupport@gaig.com", environmentInformation, 
+        subject, body)
+  gw.api.util.Logger.logInfo(actions.getRule().DisplayName);
+}
+
+noteBody = "Email notification generated to DPG of new claim."
+note = claim.addNote("general", noteBody);
+note.Subject = "DPG Email"
+
+/*end00rule*/
+  }
+}

@@ -1,0 +1,13 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1200ReserveSetRecoverySetRules_dir
+
+@gw.rules.RuleName("TVXX1210 - Prevent Financials if not @ ability to Pay")
+internal class TVXX1210PreventFinancialsifnotabilitytoPay {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/(transactionSet.Claim.ValidationLevel !="payment" ||
+exists (trans in transactionSet.Exposures where trans.ValidationLevel !="payment"))/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/transactionSet.reject( "newloss", "The Claim/Feature need to be at Ability to Pay to create Reserves or Recoveries.", null, null )/*end00rule*/
+  }
+}

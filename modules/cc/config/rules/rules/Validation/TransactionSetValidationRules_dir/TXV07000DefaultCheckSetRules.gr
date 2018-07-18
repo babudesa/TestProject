@@ -1,0 +1,17 @@
+package rules.Validation.TransactionSetValidationRules_dir
+
+@gw.rules.RuleName("TXV07000 - Default CheckSet Rules")
+internal class TXV07000DefaultCheckSetRules {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/TransactionSet.Subtype == "checkset" &&
+(TransactionSet as CheckSet).PrimaryCheck.DeliveryMethod =="send" &&
+(TransactionSet as CheckSet).PrimaryCheck.MailToAddress == null &&
+(TransactionSet as CheckSet).PrimaryCheck.PaymentMethod != "eft"/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/TransactionSet.rejectSubField(
+  (TransactionSet as CheckSet).PrimaryCheck, "MailToAddress",
+  "newloss", displaykey.Web.FNOLWizard.CheckReady.SendingErrorMessage,  null, null)/*end00rule*/
+  }
+}

@@ -1,0 +1,61 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVAG1000AgriBusinessPolicyValidationRules_dir.PVAG1100NewLoss_dir
+
+@gw.rules.RuleName("PVAG1110 - Vehicle Date Validation")
+internal class PVAG1110VehicleDateValidation {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/true/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*///  This function validates that vehicle level eff/exp dates are within the policy effective/ 
+//  expiration dates 
+//  AgriBusiness Sprint 12 by ER, 3/19/08
+
+try {
+  //vehicles 
+  for(veh in policy.Vehicles){
+    if(veh.Vehicle.VehicleExpDateExt<veh.Vehicle.VehicleEffDateExt){
+      policy.rejectSubField( veh, "Vehicle.VehicleExpDateExt", "newloss", "One of the vehicle(s) expiration date is before the vehicle(s) effective date "+actions.getRule().DisplayName, null, null )  
+    }
+    if(veh.Vehicle.VehicleEffDateExt<policy.EffectiveDate){
+      policy.rejectSubField( veh, "Vehicle.VehicleEffDateExt", "newloss", "One of the vehicle(s) effective date is before the policy effective date "+actions.getRule().DisplayName, null, null )  
+    }
+    if(veh.Vehicle.VehicleEffDateExt>policy.ExpirationDate){
+      policy.rejectSubField( veh, "Vehicle.VehicleEffDateExt", "newloss", "One of the vehicle(s) effective date is after the policy expiration date "+actions.getRule().DisplayName, null, null )  
+    }
+    if(veh.Vehicle.VehicleExpDateExt>policy.ExpirationDate){
+      policy.rejectSubField( veh, "Vehicle.VehicleExpDateExt", "newloss", "One of the vehicle(s) expiration date is after the policy expiration date "+actions.getRule().DisplayName, null, null )  
+    }
+    if(veh.Vehicle.VehicleExpDateExt<policy.EffectiveDate){
+      policy.rejectSubField( veh, "Vehicle.VehicleExpDateExt", "newloss", "One of the vehicle(s) expiration date is before the policy effective date "+actions.getRule().DisplayName, null, null )  
+    }
+  }
+  
+  //vehicle coverages
+  for(veh in policy.Vehicles){
+    for(vehcov in veh.Coverages){
+      if(vehcov.ExpirationDate<vehcov.EffectiveDate){
+        policy.rejectSubField( vehcov, "ExpirationDate", "newloss", "One of the vehicle(s) coverages expiration date is before the vehicle(s) coverages effective date "+actions.getRule().DisplayName, null, null )  
+      }
+      if(vehcov.EffectiveDate<policy.EffectiveDate){
+        policy.rejectSubField( vehcov, "EffectiveDate", "newloss", "One of the vehicle(s) coverages effective date is before the policy effective date "+actions.getRule().DisplayName, null, null )  
+      }
+      if(vehcov.EffectiveDate>policy.ExpirationDate){
+        policy.rejectSubField( vehcov, "EffectiveDate", "newloss", "One of the vehicle(s) coverages effective date is after the policy expiration date "+actions.getRule().DisplayName, null, null )  
+      }
+      if(vehcov.ExpirationDate>policy.ExpirationDate){
+        policy.rejectSubField( vehcov, "ExpirationDate", "newloss", "One of the vehicle(s) coverages expiration date is after the policy expiration date "+actions.getRule().DisplayName, null, null )  
+      }
+      if(vehcov.ExpirationDate<policy.EffectiveDate){
+        policy.rejectSubField( vehcov, "ExpirationDate", "newloss", "One of the vehicle(s) coverages expiration date is before the policy effective date "+actions.getRule().DisplayName, null, null )  
+      }
+    }
+  }
+}
+catch(e){
+  gw.api.util.Logger.logError( "Unknown Error Occurred in Policy Validation Rule "+actions.getRule().DisplayName)
+  policy.reject( "newloss", "Unknown Error Occurred in Policy Validation Rule "+actions.getRule().DisplayName, null, null )
+}
+/*end00rule*/
+  }
+}

@@ -1,0 +1,28 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEN1000ENVClaimExceptionRules_dir.CEEN1100RULESTHATCREATEACTIVITES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEN1120 - 90 Day Open File Review")
+internal class CEEN112090DayOpenFileReview {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="3_month_reserve")) 
+and claim.State != "closed"
+
+//moved to ActivityGeneratorBatchRules/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var latestUpdate:DateTime;
+
+
+try{
+  if (gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.CreateTime, 90)){
+    //create the activity
+    //var res = gw.api.util.StringUtil.formatNumber(gw.api.financials.FinancialsCalculationUtil.getOpenReserves().getAmount(claim), "$#,##0.00")
+    var ap = util.custom_Ext.finders.findActivityPattern( "3_month_reserve" )
+    claim.createActivity(null, ap, "90 Day open file review","Open file must be reviewed at 90 Days.", null, null, gw.api.util.DateUtil.addDays( gw.api.util.DateUtil.currentDate(), -14 ) , null)
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(claim, actions.getRule().DisplayName, e, "")
+}/*end00rule*/
+  }
+}

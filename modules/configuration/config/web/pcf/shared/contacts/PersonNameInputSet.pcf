@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="PersonNameInputSet">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+    possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+    a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+    become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+    contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+    the new contact.
+
+    As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+    access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="firstNameRequired"
+      type="boolean"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <Label
+      label="Person.getSubtype().DisplayName"/>
+    <Input
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="Prefix"
+      label="displaykey.Web.ContactDetail.Name.Prefix"
+      value="Person.Prefix"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="FirstName"
+      label="displaykey.Web.ContactDetail.Name.FirstName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;first&quot;)};"
+      postOnChange="true"
+      required="firstNameRequired"
+      validationExpression="Person.FirstName== null and Person.TaxID !=null  and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() and checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+      value="Person.FirstName"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="MiddleName"
+      label="displaykey.Web.ContactDetail.Name.MiddleName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;middle&quot;)}"
+      postOnChange="true"
+      value="Person.MiddleName"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="LastName"
+      label="displaykey.Web.ContactDetail.Name.LastName"
+      numCols="17"
+      onChange="if(Person.New){Person.copyPersonNameForCMS(&quot;last&quot;)}"
+      postOnChange="true"
+      required="true"
+      value="Person.LastName"/>
+    <Input
+      editable="!Person.VerifiedPolicyContactExt and !Person.FormerVerifiedContactExt"
+      id="Suffix"
+      label="displaykey.Web.ContactDetail.Name.Suffix"
+      value="Person.Suffix"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt"
+      id="DoingBusinessAsExt"
+      label="displaykey.Web.ContactDetail.Name.DoingBusinessAs"
+      numCols="17"
+      required="false"
+      value="Person.DoingBusinessAsExt"/>
+    <TextInput
+      editable="!Person.VerifiedPolicyContactExt"
+      id="FormerName"
+      label="displaykey.Web.ContactDetail.Name.FormerName"
+      numCols="17"
+      value="Person.FormerName"
+      visible="Person.Subtype == &quot;Person&quot;"/>
+    <Input
+      available="ClaimContact != null"
+      editable="!Person.VerifiedPolicyContactExt"
+      id="AppointmentDate"
+      label="displaykey.Web.ContactDetail.AppointmentDate"
+      value="(Person as PersonVendor).ex_AppointmentDate"
+      visible="Person.Subtype != &quot;Person&quot; and Person.Subtype != &quot;UserContact&quot; and Person.Subtype != &quot;InjuredWorkerExt&quot;"/>
+    <Input
+      available="ClaimContact != null"
+      editable="User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;) and !Person.VerifiedPolicyContactExt"
+      id="PersonCloseDateExt"
+      label="displaykey.Web.ContactDetail.CloseDate"
+      onChange="Person.updateCloseIndicator()"
+      postOnChange="true"
+      value="Person.CloseDateExt"
+      visible="Person.getSubtype() != &quot;Person&quot;"/>
+    <Input
+      available="ClaimContact != null"
+      editable="User.util.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;) and !Person.VerifiedPolicyContactExt"
+      id="VendorCloseReasonExt"
+      label="displaykey.Web.ContactDetail.VendorCloseReason"
+      onChange="Person.updateCloseIndicator()"
+      postOnChange="true"
+      value="Person.VendorCloseReasonExt"
+      visible="Person.getSubtype() != &quot;Person&quot; &amp;&amp; Person.CloseDateExt != null"/>
+    <Code><![CDATA[property get Person() : Person { return contactHandle.Contact as Person; }
+
+
+function checkClaimantRole(): boolean{
+   var claimContact = claim.getClaimContact(Person)
+  return claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String)
+}
+
+function checkSSn(): boolean{
+  var SSN : boolean=  false
+  if(Person.TaxID != null && (Person.TaxID.matches("^[0]{2}[1-9]{1}[0-9]{6}") or Person.TaxID.matches("^[0]{4}[1-9]{1}[0-9]{4}"))){
+    return true
+    }else{   
+    return SSN
+    }
+}]]></Code>
+  </InputSet>
+</PCF>

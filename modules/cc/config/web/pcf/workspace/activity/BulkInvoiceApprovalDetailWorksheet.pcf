@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    canEdit="true"
+    canVisit="perm.Activity.view(Activity)"
+    id="BulkInvoiceApprovalDetailWorksheet"
+    tabLabel="displaykey.Web.Claim.ApprovalDetailWorksheet.Tab"
+    title="displaykey.JSP.ApprovalActivityDetailHeader.Detail.Title(Activity.Claim.ClaimNumber)">
+    <LocationEntryPoint
+      signature="BulkInvoiceApprovalDetailWorksheet(Activity : Activity)"/>
+    <Scope
+      location="Claim(Activity.Claim)"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Activity"
+      type="Activity"/>
+    <Screen
+      id="ApprovalDetailScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="buttonAction(\ -&gt; Activity.approve())"
+          id="BulkInvoiceApprovalDetailWorksheet_ApproveButton"
+          label="displaykey.JSP.ApprovalActivityDetailHeader.Toolbar.Approve"
+          visible="Activity.canApprove()"/>
+        <ToolbarButton
+          action="buttonAction(\ -&gt; Activity.reject())"
+          id="BulkInvoiceApprovalDetailWorksheet_RejectButton"
+          label="displaykey.JSP.ApprovalActivityDetailHeader.Toolbar.Reject"
+          visible="Activity.canApprove()"/>
+        <ToolbarButton
+          action="CurrentLocation.cancel()"
+          id="BulkInvoiceApprovalDetailWorksheet_CancelButton"
+          label="displaykey.JSP.ApprovalActivityDetailHeader.Toolbar.Cancel"/>
+        <ToolbarDivider/>
+        <EditButtons
+          cancelVisible="false"/>
+      </Toolbar>
+      <PanelRef
+        def="BulkInvoiceApprovalDetailDV(Activity, PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[function buttonAction(action : Block()) {
+  if (!CurrentLocation.InEditMode) {
+    CurrentLocation.startEditing()
+  } 
+  
+  action()
+  CurrentLocation.commit()
+}]]></Code>
+  </Worksheet>
+</PCF>

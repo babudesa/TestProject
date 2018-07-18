@@ -1,0 +1,25 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1200ValidationattheISOLevel_dir.CVXX1220General_dir
+
+@gw.rules.RuleName("CVXX1221 - Loss Cause is Required")
+internal class CVXX1221LossCauseisRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*//*6/7/10 erawe - defect 3462 (production issue)
+  added check for converted claim (cont. if not a converted claim)
+  So we will skip this rule if claims are converted claims
+From defect 3462:
+  We are getting errors on I/O Converted Claims, while bringing in documents from ECF.
+  The Claims have reached 'Send to External' level but Loss Cause is missing - 
+  which is required for ISO Level.  It's a timing issue  - 
+  Conversion was done earlier and ISO rules were enabled later.
+  This is not a problem on new Claims being created. Only on Converted I/O Claims.
+Updated 6/8/10 - sprzygocki - slight logic issue with what I gave Eric - updated
+  to be Claim.IncidentReport==false
+*/
+//10.28.15 - cmullin - Loss Cause (Cause of Injury) validation handled separately for WC
+claim.LossCause==null and !util.WCHelper.isWCorELLossType(claim) /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.rejectField( "LossCause", "iso", "Loss Cause is required.", Null, Null )  /*end00rule*/
+  }
+}

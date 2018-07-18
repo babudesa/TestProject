@@ -1,0 +1,57 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1100CheckSetRules_dir.TVXX1120TransferChecks_dir
+
+@gw.rules.RuleName("TVXX1121 - Incorrect Role on Transfer")
+internal class TVXX1121IncorrectRoleonTransfer {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*//*If the transferred to check's payee's role doesn't exist an activity is generated
+  stating this.
+  Author: Kris Boyd
+  Date: 1/31/2008
+  Updated: Kris Boyd
+  *Applied standards
+  *Added a check that would find out 
+  EM10 Defect: 1095  - 5/14/08
+  
+  Updated mbendure Defect 5225 (Incorrect Role on Check Transfer (see claim A60602552))
+  Now takes the roles that are assigned to the payee of the source claim and checks to ensure all the roles
+  on the destination payee.  Also suppresses any activities for "former payee"
+*/
+transactionSet.Claim.State != ClaimState.TC_CLOSED/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var act : Activity
+
+  for(check in (transactionSet as CheckSet).Checks){
+    if(check.Transferred and check.TransferredToCheck.New){
+      for(payees in check.Payees){  //checks all the payees on check
+        for(TransferedContact in check.TransferredToCheck.Claim.Contacts){ 
+          //searches through the contacts on the destination claim
+          if(TransferedContact.DisplayName == payees.ClaimContact.DisplayName){
+            //matches the name
+            for(payee_role in payees.ClaimContact.Roles){
+              if((!(TransferedContact.hasRole(payee_role.Role))) and (payee_role.Role.Code != "formercheckpayee")){ //suppresses any activities for former check payee   
+                if (!check.TransferredToCheck.Claim.Activities.where(\ a -> a.ActivityPattern == util.custom_Ext.finders.findActivityPattern( "general_reminder" )  and
+                 a.ClaimContact == TransferedContact and
+                 a.Subject == displaykey.Rules.Validation.Transaction.Enterprise.CheckSet.IncorrectRoleSubject).HasElements){// and
+                   if (check.TransferredToCheck.Claim.State != "closed"){
+                   act = check.TransferredToCheck.Claim.createActivity( null, util.custom_Ext.finders.findActivityPattern( "general_reminder" ), displaykey.Rules.Validation.Transaction.Enterprise.CheckSet.IncorrectRoleSubject, displaykey.Rules.Validation.Transaction.Enterprise.CheckSet.IncorrectRoleBody(check.CheckNumber, payees.ClaimContact.DisplayName), "normal", false, gw.api.util.DateUtil.currentDate(), null )
+   // defect 8350 - schandanam, changed the mapping of claimcontact from source claim associated for an activity  to the claimcontact of the destination claim(since activity created on destination claim) inorder to remove the database inconsistencies while check transfer between  claims.                 
+                    act.ClaimContact = TransferedContact
+                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError(transactionSet, actions.getRule().DisplayName, e, null)
+}
+/*end00rule*/
+  }
+}

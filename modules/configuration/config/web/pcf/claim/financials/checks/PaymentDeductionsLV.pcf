@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    available="true"
+    editable="true"
+    id="PaymentDeductionsLV"
+    visible="true">
+    <Require
+      name="Check"
+      type="Check"/>
+    <RowIterator
+      editable="true"
+      elementName="Deduction"
+      hideCheckBoxesIfReadOnly="true"
+      toRemove="Check.removeFromDeductions(Deduction)"
+      value="Check.Deductions">
+      <Row>
+        <RangeCell
+          id="DeductionPaymentCell"
+          label="displaykey.LV.Financials.PaymentDeductions.Payment"
+          optionLabel="VALUE.getPaymentLabel()"
+          postOnChange="true"
+          sortBy="Deduction.DeductionPaymentExt.Exposure.ClaimOrder"
+          sortOrder="1"
+          value="Deduction.DeductionPaymentExt"
+          valueRange="Check.Payments"/>
+        <RangeCell
+          available="Deduction.DeductionPaymentExt != null"
+          id="DeductionLineItem"
+          label="displaykey.LV.Financials.PaymentDeductions.LineItem"
+          optionLabel="VALUE.LineCategory.DisplayName"
+          sortBy="Deduction.DeductionLineItemExt.LineCategory.DisplayName"
+          sortOrder="3"
+          value="Deduction.DeductionLineItemExt"
+          valueRange="Deduction.DeductionPaymentExt.LineItems"/>
+        <Cell
+          id="GrossAmountCell"
+          label="displaykey.LV.Financials.PaymentDeductions.GrossAmount"
+          sortOrder="2"
+          value="Deduction.DeductionLineItemExt.TransactionAmount"/>
+        <TypeKeyCell
+          editable="true"
+          id="DeductionType"
+          label="displaykey.LV.Financials.PaymentDeductions.DeductionType"
+          required="true"
+          value="Deduction.DeductionType"/>
+        <Cell
+          align="center"
+          editable="Check.Status != &quot;issued&quot;"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.PaymentDeductions.Amount"
+          numCols="10"
+          onChange="setDeductionAmount(Deduction, Deduction.TransactionAmount)"
+          postOnChange="true"
+          required="true"
+          validationExpression="Deduction.TransactionAmount &gt;= Deduction.DeductionLineItemExt.TransactionAmount.Amount ? displaykey.LV.Financials.PaymentDeductions.DeductionAmountValidation : null"
+          value="Deduction.TransactionAmount"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[uses gw.api.util.CurrencyUtil
+
+function setDeductionAmount(aDeduction : Deduction, deductionTransAmount : java.math.BigDecimal) {
+
+  deductionTransAmount = CurrencyUtil.roundToCurrencyScale(deductionTransAmount, Check.Currency, CurrencyUtil.getRoundingMode())
+  aDeduction.TransactionAmount = deductionTransAmount
+  var claimCurrency = Check.Claim.Currency
+  aDeduction.ClaimAmount = CurrencyUtil.convertAmount(deductionTransAmount, Check.Currency, claimCurrency, Check.TransToClaimExchangeRateEntityRate, true)
+  print ("this is the claim ammount" + aDeduction.ClaimAmount)
+  if( CurrencyUtil.getReportingCurrency() == Check.Currency ) {
+    aDeduction.ReportingAmount = deductionTransAmount
+  } else {
+    aDeduction.ReportingAmount = CurrencyUtil.convertAmount(aDeduction.ClaimAmount, claimCurrency, CurrencyUtil.getReportingCurrency(), Check.ClaimToReportingExchangeRateEntityRate, true)
+  } 
+}]]></Code>
+  </ListViewPanel>
+</PCF>

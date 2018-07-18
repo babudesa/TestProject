@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="InjuredWorkerSectionInputSet">
+    <Require
+      name="Exposure"
+      type="Exposure"/>
+    <Require
+      name="ExposureType"
+      type="String"/>
+    <Variable
+      initialValue="Exposure.Claim.LossType"
+      name="LossType"/>
+    <Variable
+      initialValue="setClaimant()"
+      name="claimant"/>
+    <Label
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant"/>
+    <!-- <ClaimContactInput
+      claim="Exposure.Claim"
+      editable="true"
+      id="Claimant_Picker"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.Picker"
+      newContactMenu="CMSClaimNewPersonOnlyPickerMenuItemSet(Contact, Exposure.Claimant, Exposure.Claim, Exposure)"
+      postOnChange="true"
+      required="true"
+      showSearchInMenu="false"
+      validationExpression="Exposure.Claimant typeis Person and Person.MedicareEligibleExt ? validateMedicareElgible() : null"
+      value="Exposure.Claimant"
+      valueRange="Exposure.getFeatureContacts()"/> -->
+    <RangeInput
+      action="CMSClaimContactDetailPopup.push(Exposure.Claim.claimant, Exposure.Claim, Exposure)"
+      id="Claimant_Picker"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.Picker"
+      onChange="if((Exposure.MedicareExposureExt || Exposure.IsMedicareExposureExt) &amp;&amp; Exposure.Claim.claimant != null &amp;&amp; typeof Exposure.Claim.claimant == entity.Person){checkORMInd()}"
+      postOnChange="true"
+      required="true"
+      validationExpression="Exposure.Claim.claimant typeis Person and Person.MedicareEligibleExt ? validateMedicareElgible() : null"
+      value="Exposure.Claim.claimant"
+      valueRange="Exposure.Claim.RelatedPersonArray">
+      <MenuItemSetRef
+        def="CMSClaimNewPersonCompanyOnlyPickerMenuItemSet(Contact, Exposure.Claimant, Exposure.Claim, Exposure)"/>
+    </RangeInput>
+    <Input
+      editable="true"
+      id="MinorChild"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.MinorChild"
+      onChange="Exposure.Claim.setMinorChildIndicator()"
+      postOnChange="true"
+      required="true"
+      validationExpression="(Exposure.Claim.claimant.Subtype == &quot;PersonVendor&quot; || Exposure.Claim.claimant.Subtype == &quot;Company&quot;) and Exposure.Claim.InjuredWorker.MinorWorkerExt == true ? displaykey.Validation.Exposure.MinorChild : null"
+      value="Exposure.Claim.InjuredWorker.MinorWorkerExt"
+      visible="Exposure.isMinorChildFeature()"/>
+    <Input
+      editable="true"
+      id="DateOfBirth"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.DateOfBirth"
+      required="Exposure.Claim.InjuredWorker.MinorWorkerExt==true"
+      validationExpression="Exposure.Claim.claimant.DateOfBirth != null &amp;&amp; Exposure.Claim.claimant.DateOfBirth &gt; util.DateUtil.currentDate() ? displaykey.Java.Validation.Date.ForbidFuture : (Exposure.Claim.claimant.DateOfBirth == null and Exposure.Claim.claimant.TaxID !=null and Exposure.Claim.claimant.validateTaxID() == null and !Exposure.Claim.claimant.isValidZeroSSN() and Exposure.Claim.claimant.isValidPartialSSN() &amp;&amp; checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required : null) "
+      value="Exposure.Claim.claimant.DateOfBirth"
+      visible="Exposure.Claim.InjuredWorker.MinorWorkerExt==true AND Exposure.isMinorChildFeature()"/>
+    <Input
+      id="MedicareEligible"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MedicareEligible"
+      onChange="setMedicareFields()"
+      postOnChange="true"
+      value="Exposure.Claim.claimant.MedicareEligibleExt"/>
+    <Input
+      editable="true"
+      id="DeathIndicator"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.ClaimantDeceased"
+      postOnChange="true"
+      required="true"
+      value="Exposure.Claim.claimant.ClaimantFatalityExt"
+      visible="Exposure.Claim.claimant != null and Exposure.Claim.claimant typeis Person"/>
+    <Input
+      editable="true"
+      id="DateOfDeath"
+      label="displaykey.NVV.Claim.LossDetailsWorkersComp.Claim.DateOfDeath"
+      onChange="setDeceasedIndicator()"
+      postOnChange="true"
+      required="Exposure.Claim.claimant.ClaimantFatalityExt == true"
+      validationExpression="Exposure.Claim.claimant.DateOfDeathExt == null || Exposure.Claim.claimant.DateOfDeathExt &lt;= util.DateUtil.currentDate() ? (Exposure.Claim.claimant.DateOfDeathExt == null || Exposure.Claim.claimant.DateOfBirth == null || Exposure.Claim.claimant.DateOfDeathExt &gt;= Exposure.Claim.claimant.DateOfBirth? null : &quot;Date must be greater than or equal to the Date of Birth.&quot;) : displaykey.Java.Validation.Date.ForbidFuture"
+      value="Exposure.Claim.claimant.DateOfDeathExt"
+      visible="Exposure.Claim.claimant.ClaimantFatalityExt == true"/>
+    <Input
+      id="Claimant_ContactProhibited"
+      label="displaykey.NVV.Exposure.SubView.NewMedPay.Exposure.Claimant.ContactProhibited"
+      value="Exposure.Claim.getClaimContact(Exposure.Claim.claimant).ContactProhibited"/>
+    <Input
+      id="Claimant_PrimaryPhone"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.PrimaryPhone"
+      value="util.custom_Ext.finders.getPrimaryPhoneNumber(Exposure.Claim.claimant)"/>
+    <Input
+      id="Claimant_Address"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.Claimant.Address"
+      value="Exposure.Claim.claimant.getPrimaryAddressDisplayValue()"/>
+    <Input
+      editable="true"
+      id="AttRep"
+      label="displaykey.NVV.Exposure.SubView.NewBodilyInjuryDamage.Exposure.AttRep"
+      onChange="clearOpCounsel()"
+      postOnChange="true"
+      required="true"
+      value="Exposure.AttorneyRepExt"/>
+    <!-- <Reflect
+      available="VALUE==true"
+      triggerIds="AttRep"/> -->
+    <RangeInput
+      action="CMSClaimContactDetailPopup.push(Exposure.opposingcounsel, Exposure.Claim, Exposure)"
+      editable="Exposure.AttorneyRepExt==true"
+      id="AttorneyPicker_NewLoss"
+      label="displaykey.NVV.Claim.SubView.LossDetailsWorkersComp.Claim.Attorney"
+      required="false"
+      value="Exposure.opposingcounsel"
+      valueRange="Exposure.Claim.getAttorneys()"
+      visible="Exposure.AttorneyRepExt==true"/>
+    <InputDivider/>
+    <!-- <Reflect
+      available="VALUE==true"
+      triggerIds="AttRep"/> -->
+    <Code><![CDATA[function setClaimant() {
+  Exposure.Claimant = Exposure.Claim.claimant
+}
+function clearOpCounsel(){
+  Exposure.opposingcounsel=null
+}
+
+ //TODO: Refactor this into the IsAttorneyRepresentedVisible in the ExposureUIHelper class   
+	   	  function setAttorneyVisibility():boolean{
+	   	    var result:boolean = false
+	   	    if((ExposureType=="BodilyInjury" || ExposureType=="PropertyDamage" || 
+	   	        ExposureType=="MedPay" || ExposureType=="PersonalInjury") AND 
+	   	        Exposure.LossParty!="insured" AND Exposure.PrimaryCoverage!="ab_EQCCC"){
+	   	      result = true 
+	   	    }   
+	   	    return result
+	   	  }
+	   	  
+	   	  property set ClaimantDeceased(value : boolean) {
+	   	    
+	   	     Exposure.Claim.claimant.ClaimantFatalityExt = value 
+	   	     if(value == false)
+	   	       Exposure.Claim.claimant.DateOfDeathExt = null
+	   	  }
+	   	  property get ClaimantDeceased() : boolean{
+	   	    if(Exposure.Claim.claimant.DateOfDeathExt != null)
+	   	      Exposure.Claim.claimant.ClaimantFatalityExt = true
+	   	    else
+	   	      Exposure.Claim.claimant.ClaimantFatalityExt = Exposure.Claim.claimant.ClaimantFatalityExt
+	   	      
+	   	    return Exposure.Claim.claimant.ClaimantFatalityExt
+	   	       
+	   	  }
+	   	  function setDeceasedIndicator(){
+                    if(Exposure.Claim.claimant.DateOfDeathExt == null)
+                      Exposure.Claim.claimant.ClaimantFatalityExt = false
+                   }
+	   
+      property get Person() : Person { return Exposure.Claim.claimant; }
+      
+      function setMedicareFields() {
+      	if(Person.MedicareEligibleExt==false){
+      		Person.HICNExt = ""
+      		//Person.SendPartyToCMSExt = null
+      	}
+      	if(Person.MedicareEligibleExt){
+      	 Person.DateOfMedicareEligibleExt = gw.api.util.DateUtil.currentDate() 
+      	}
+      }
+      function isMediEditable() : boolean {
+      	var result : boolean = false
+      	if(Person.TaxID!=null){
+      		if(!Person.TaxID.toString().startsWith("9") and Person.HICNExt==null){
+      			result = true
+      		}      	
+      	} else {
+      		if(Person.HICNExt==null){
+      			result =  true
+      		}
+      	}
+      	return result
+      }
+      function validateMedicareElgible() : String {
+        var missingInfo = "" 
+        if(Exposure.Claim.claimant.RefuseProvideExt != true and Exposure.Claim.claimant.BelowThresholdExt != true){
+          if(Person.Gender==null){
+            missingInfo = missingInfo + "Gender, "
+          }
+          if(Person.DateOfBirth==null){
+            missingInfo = missingInfo + "Date of Birth, "
+          }
+          if((Person.TaxID=="" || Person.TaxID==null) && (Person.HICNExt=="" || Person.HICNExt==null)){
+            missingInfo = missingInfo + "SSN or HICN, "
+          }
+          if(Person.LegalFNameExt=="" || Person.LegalFNameExt==null || Person.LegalLNameExt=="" || Person.LegalLNameExt==null){
+            if((Person.LegalFNameExt=="" || Person.LegalFNameExt==null) && (Person.LegalLNameExt=="" || Person.LegalLNameExt==null)){
+              missingInfo = missingInfo + "Medicare Reporting Name - First and Last"
+            } else 
+            if((Person.LegalFNameExt=="" || Person.LegalFNameExt==null) && (Person.LegalLNameExt!="" || Person.LegalLNameExt!=null)){
+              missingInfo = missingInfo + "Medicare Reporting Name - First"
+            } else 
+            if((Person.LegalFNameExt!="" || Person.LegalFNameExt!=null) && (Person.LegalLNameExt=="" || Person.LegalLNameExt==null)){
+              missingInfo = missingInfo + "Medicare Reporting Name - Last"
+            }
+          }
+          if(Exposure.Claim.claimant.SendPartyToCMSExt == null)
+            missingInfo = missingInfo + "Defer Sending Data to CMS?, "
+        }
+        if(missingInfo != ""){
+          missingInfo = missingInfo.trim()
+          if(missingInfo.endsWith( "," )){
+            missingInfo = missingInfo.substring( 0, missingInfo.lastIndexOf( "," ) )
+          }
+          missingInfo = "Enter " + missingInfo + " for the Claimant " + Exposure.Claimant
+          return missingInfo
+        }
+        return null
+      }
+      
+      function setDateOfDeath(){
+        if(Exposure.Claim.claimant.ClaimantFatalityExt == false)
+          Exposure.Claim.claimant.DateOfDeathExt = null
+      }
+      
+function checkORMInd(){
+  gw.api.util.Logger.logDebug("checkORMInd() for " + Exposure + ": " + Exposure.Claimant)
+  if(Exposure.Claim.claimant.MedicareEligibleExt && 
+    (Exposure.IsORMExposure || Exposure.Claim.Exposures.hasMatch(\ e -> e.IsORMExposure && e.Claimant == Exposure.Claimant))){  
+    Exposure.Claim.claimant.ContactISOMedicareExt.ORMIndExt = true
+    Exposure.Claim.claimant.SendPartyToCMSExt = false
+  }
+}
+
+function checkClaimantRole(): boolean{
+  var claimContact = Exposure.Claim.getClaimContact(Person)
+  if((claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String) )){
+    return true
+  }
+  return false
+}
+
+function validateDOB() : String {
+  var retString : String = ""
+  if(Exposure.Claim.claimant.DateOfBirth != null && Exposure.Claim.claimant.DateOfBirth > util.DateUtil.currentDate()){
+     retString = displaykey.Java.Validation.Date.ForbidFuture
+  }else if(Person.DateOfBirth == null and Person.TaxID !=null and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() && checkClaimantRole()){
+     retString = displaykey.Web.ContactDetail.Name.TaxID.SSN.Required
+  }
+  return retString
+}]]></Code>
+  </InputSet>
+</PCF>

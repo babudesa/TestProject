@@ -1,0 +1,23 @@
+package rules.Validation.ExposureValidationRules_dir.EVEQ1000EquineExposureValidationRules_dir
+
+@gw.rules.RuleName("EVEQ1100 - Exposure must be for the same animal")
+internal class EVEQ1100Exposuremustbeforthesameanimal {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exists(exp in exposure.Claim.Exposures 
+where exp.FixedPropertyIncident.Property.PublicID != exposure.FixedPropertyIncident.Property.PublicID)
+and (exposure.New or exposure.Claim.ChangedFields.contains( "ClaimNumber" ))/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/// 2/01/08 - zthomas - Defect 259, Ensure features for different animals are created only when feature on other animal is closed because of wrong horse.
+// 2/24/09 - kmboyd - Defect 1392, Wrong horse reason has been removed
+var strErrorReason = displaykey.Web.Feature.MultipleHorse.Validation.Message;
+
+if(exposure.checkMultipleAnimals()){
+  exposure.reject("newloss", strErrorReason, Null, Null )
+  actions.exitToNext();
+}
+
+/*end00rule*/
+  }
+}

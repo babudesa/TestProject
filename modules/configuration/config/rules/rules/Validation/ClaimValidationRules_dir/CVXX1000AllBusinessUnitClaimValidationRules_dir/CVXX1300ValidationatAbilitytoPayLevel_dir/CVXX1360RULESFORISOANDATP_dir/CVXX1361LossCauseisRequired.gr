@@ -1,0 +1,14 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1300ValidationatAbilitytoPayLevel_dir.CVXX1360RULESFORISOANDATP_dir
+
+@gw.rules.RuleName("CVXX1361 - Loss Cause is Required")
+internal class CVXX1361LossCauseisRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*///PLD is not currently using LossCause - added code to exclude this rule for PLD
+//10.28.15 - cmullin - Loss Cause (Cause of Injury) validation handled separately for WC
+claim.LossCause==null and claim.LossType != "PROFLIABDIV" and !util.WCHelper.isWCorELLossType(claim)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/claim.rejectField( "LossCause", "payment", "Loss Cause is required.", Null, Null )/*end00rule*/
+  }
+}

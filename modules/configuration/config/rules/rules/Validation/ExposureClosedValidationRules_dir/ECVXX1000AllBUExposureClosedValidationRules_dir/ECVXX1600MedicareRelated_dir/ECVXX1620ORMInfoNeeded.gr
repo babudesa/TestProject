@@ -1,0 +1,31 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVXX1000AllBUExposureClosedValidationRules_dir.ECVXX1600MedicareRelated_dir
+
+@gw.rules.RuleName("ECVXX1620 - ORM Info Needed")
+internal class ECVXX1620ORMInfoNeeded {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.Claimant.ContactISOMedicareExt.ORMIndExt and
+(exposure.Claimant as Person).MedicareEligibleExt
+/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var inRecode = false
+var payment = exposure.getPaymentsIterator(true)
+while(payment.hasNext()){
+  var newPay = payment.next()
+  
+  // Check to see if the exposure has a payment that is being recoded.
+  if((newPay as Payment).RecodingOnset)
+    inRecode = true
+}
+
+if(!inRecode){
+  if(exposure.Claimant.ContactISOMedicareExt.ORMEndDateExt == null and
+     exposure.Claimant.ContactISOMedicareExt.ExhaustDateExt == null){
+     exposure.reject(null, null, "loadsave", "ORM is open with Medicare.  Medicare requires ORM to remain open until coverage for MedPay or PIP has ended.  You should either provide an ORM Termination Date or set a reminder to close ORM when coverage ends.") 
+  }
+}
+    
+/*end00rule*/
+  }
+}

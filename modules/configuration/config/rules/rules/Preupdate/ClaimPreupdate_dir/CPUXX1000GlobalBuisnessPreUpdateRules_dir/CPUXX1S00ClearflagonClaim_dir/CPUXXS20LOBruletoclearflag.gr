@@ -1,0 +1,22 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir.CPUXX1S00ClearflagonClaim_dir
+
+@gw.rules.RuleName("CPUXXS20 - LOB rule to clear flag")
+internal class CPUXXS20LOBruletoclearflag {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(Claim.LossType=="AGRIAUTO" || Claim.LossType=="AGRILIABILITY" || Claim.LossType=="AGRIPROPERTY" OR 
+claim.LossType==LossType.TC_ALTMARKETSAUTO OR claim.LossType==LossType.TC_SHSAUTO OR claim.LossType==LossType.TC_TRUCKINGAUTO) and
+gw.api.util.DateUtil.daysBetween( claim.LossDate, claim.Policy.EffectiveDate ) > 60/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  claim.clearFlag(displaykey.Rules.Preupdate.Claim.ClearFlag60Day)
+  
+  var note:Note = claim.Notes.firstWhere(\ n -> n.New and n.Confidential and n.Body.equals(displaykey.Rules.Preupdate.Claim.ClearFlag60Day))
+  note.Confidential = false
+  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null)
+}/*end00rule*/
+  }
+}

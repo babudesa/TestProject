@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <!-- This file automatically generated from lv_financials.xml -->
+  <ListViewPanel
+    id="TransactionsLV"
+    mode="reserve">
+    <Require
+      name="Claim"
+      type="Claim"/>
+    <Require
+      name="TxnFilterOption"
+      type="financials.ClaimFinancialsTransactionsOption"/>
+    <Variable
+      initialValue="TxnFilterOption.getTransactionsQuery(Claim)"
+      name="TransactionViewList"
+      type="ReserveViewQuery"/>
+    <RowIterator
+      editable="false"
+      elementName="TransactionView"
+      type="ReserveView"
+      value="TransactionViewList">
+      <Row>
+        <Cell
+          id="CreateDate"
+          label="displaykey.LV.Financials.Reserves.CreateDate"
+          sortOrder="1"
+          value="TransactionView.RptCreateDateExt"/>
+        <Cell
+          action="TransactionViewDetailForward.drilldown(Claim, TransactionView)"
+          formatType="currency"
+          id="Amount"
+          label="displaykey.LV.Financials.Reserves.Amount"
+          sortBy="TransactionView.ClaimAmount"
+          value="TransactionView.Amount"/>
+        <Cell
+          enableSort="false"
+          id="FactorReserve"
+          label="displaykey.LV.Financials.ReserveSet.Reserves.FactorReserve"
+          value="TransactionView.Transaction.getFactorReserveExt()"
+          width="15"
+          wrapLabel="true"/>
+        <Cell
+          action="ExposureDetailForward.go(Claim, TransactionView.Exposure)"
+          id="Exposure"
+          label="displaykey.LV.Financials.Reserves.Exposure"
+          outputConversion="if (null != VALUE) {return TransactionView.Exposure.getFullDescription();} else {return displaykey.Financials.ReserveLine.NoExposure;}"
+          value="TransactionView.ExposureName"/>
+        <RangeCell
+          id="CoverageType"
+          label="displaykey.LV.Financials.Reserves.CoverageType"
+          optionLabel="TransactionView.Exposure.Coverage.covTypeDisplayName()"
+          value="TransactionView.CoverageType"
+          valueRange="TransactionView.Exposure.Coverage.getCoverages()"/>
+        <Cell
+          id="CostType"
+          label="displaykey.LV.Financials.Reserves.CostType"
+          value="TransactionView.CostType"/>
+        <!-- <Cell
+          id="CostCategory"
+          label="displaykey.LV.Financials.Reserves.CostCategory"
+          value="TransactionView.CostCategory"/> -->
+        <Cell
+          id="InjuryType"
+          label="displaykey.LV.Financials.Reserves.InjuryType"
+          value="Claim.formatInjuryType(TransactionView.WCInjuryTypeExt.DisplayName)"
+          visible="util.WCHelper.isWCorELLossType(Claim)"/>
+        <Cell
+          id="Status"
+          label="displaykey.LV.Financials.Reserves.Status"
+          value="TransactionView.Status"/>
+        <Cell
+          enableSort="false"
+          id="User"
+          label="displaykey.LV.Financials.Reserves.User"
+          value="TransactionView.Transaction.CreateUser"
+          wrap="false"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

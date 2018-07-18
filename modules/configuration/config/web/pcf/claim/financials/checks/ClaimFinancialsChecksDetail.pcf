@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    canEdit="true"
+    canVisit="perm.Check.view(check)"
+    id="ClaimFinancialsChecksDetail"
+    parent="ClaimFinancialsChecks(claim)"
+    showUpLink="true"
+    title="displaykey.JSP.CheckDetail.ViewCheck.Title">
+    <LocationEntryPoint
+      signature="ClaimFinancialsChecksDetail(claim : Claim, check : Check)"/>
+    <Variable
+      name="claim"
+      type="Claim"/>
+    <Variable
+      name="check"
+      type="Check"/>
+    <Variable
+      name="CheckView"
+      type="CheckView"/>
+    <Screen
+      id="ClaimFinancialsChecksDetailScreen">
+      <Toolbar>
+        <ToolbarButton
+          action="EditCheckWizard.go(claim, check)"
+          available="!check.Bulked and ((check.Group != null) ? check.Group.isEditable() : check.isEditable()) and (!check.CheckSet.Recurring || check.CheckSet.Approved) and perm.payment.edit(check)"
+          id="ClaimFinancialsChecksDetail_EditButton"
+          label="displaykey.Button.Edit"
+          shortcut="E"
+          visible="perm.payment.edit(check)"/>
+        <ToolbarButton
+          action="deleteCheckAndGo(check)"
+          available="!check.Bulked and check.isDeleteable() and perm.Payment.edit(check) and !claim.checkDisconnectedFeatures()"
+          confirmMessage="getDeleteConfirmationMsg(check)"
+          id="ClaimFinancialsChecksDetail_DeleteButton"
+          label="displaykey.Button.Delete"
+          shortcut="L"
+          visible="perm.payment.edit(check)"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="CheckTransfer.go(claim, check)"
+          available="(check.Status==&quot;issued&quot; || check.Status==&quot;cleared&quot;) and check.isTransferable() and perm.Check.transfer(check) and check.TransferredCheck.Status!=TransactionStatus.TC_PENDINGTRANSFER"
+          id="ClaimFinancialsChecksDetail_TransferButton"
+          label="displaykey.Button.Check.Transfer"
+          shortcut="T"
+          visible="perm.check.transfer(check)"/>
+        <!-- <ToolbarButton
+          action="VoidStopCheck.go(claim, check)"
+          available="((check.Voidable or check.Stoppable)) and perm.payment.voidorstop(check) and Check.BulkInvoiceItem.BulkInvoice.Status != &quot;cleared&quot; and Check.BulkInvoiceItem.BulkInvoice.DatePrintedExt != null"
+          id="ClaimFinancialsChecksDetail_VoidBIButton"
+          label="displaykey.Button.Check.VoidBILineItem"
+          shortcut="P"
+          visible="perm.payment.voidorstop(check) and check.Bulked"/> -->
+        <!-- 12/05/2006 Equine Sprint 3 - nscavelli
+        	changed available logic so this is not available for cleared (endorsed) checks 
+         Bulk Invoice Void Button  sprzygocki 2/19/10 - meeting with Karen 2/18/10 to remove this option until a viable recode option is available
+          Regular Check Void/Stop Button -->
+        <ToolbarButton
+          action="VoidStopCheck.go(claim, check)"
+          available="((check.Voidable or check.Stoppable)) and perm.Payment.voidorstop(check) and check.Status != &quot;cleared&quot; and check.ex_DatePrinted != null and check.EscheatStatusExt != &quot;Escheated&quot; or (check.Status != &quot;cleared&quot; and check.ManualCheck and check.PaymentMethod ==&quot;manual&quot; and check.EscheatStatusExt != &quot;Escheated&quot;)"
+          id="ClaimFinancialsChecksDetail_VoidStopButton"
+          label="displaykey.Button.Check.VoidStop"
+          shortcut="P"
+          visible="perm.payment.voidorstop(check) and !check.Bulked"/>
+        <!-- <ToolbarButton
+          action="ReissueCheck.go(claim, check)"
+          available="!check.Bulked and check.Reissueable and perm.payment.voidorstop(check)"
+          id="ClaimFinancialsChecksDetail_ReissueButton"
+          label="displaykey.Button.Check.Reissue"
+          visible="perm.Payment.voidorstop(check)"/> -->
+        <!-- <ToolbarButton
+          action="resubmitCheck(check)"
+          available=" check.Resubmittable and perm.Check.edit(check)"
+          id="ClaimFinancialsChecksDetail_ResubmitButton"
+          label="displaykey.Button.Check.Resubmit"
+          shortcut="R"
+          visible="check.Resubmittable"/> -->
+        <!-- <ToolbarButton
+          action="CloneCheckWizard.go(claim, check)"
+          available="!check.Bulked and perm.Claim.createpayment(claim)"
+          id="ClaimFinancialsChecksDetail_CloneButton"
+          label="displaykey.Button.Check.Clone"
+          visible="perm.Claim.createpayment(claim)"/> -->
+        <!-- GW ADDED
+           Removed clone button until Guidewire fixes problems with it - Defect 452 - kmboyd -->
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="EditRecurrenceCheckWizard.go(claim, check)"
+          available="check.CheckSet.Recurrence != null and check.CheckSet.Recurrence.hasEditableChecks() and perm.payment.edit(check)"
+          id="ClaimFinancialsChecksDetail_EditAllButton"
+          label="displaykey.Button.Payment.Edit.EditAll"
+          shortcut="U"
+          visible="check.CheckSet.Recurrence != null and perm.payment.edit(check)"/>
+        <ToolbarButton
+          action="ChangeCheckRecurrence.go(claim, check)"
+          available="check.CheckSet.Recurrence != null and check.CheckSet.Recurrence.hasEditableChecks() and perm.payment.edit(check)"
+          id="ClaimFinancialsChecksDetail_ChangeRecurrenceScheduleButton"
+          label="displaykey.Button.Payment.Edit.ChangeRecurrenceSchedule"
+          shortcut="S"
+          visible="check.CheckSet.Recurrence != null and perm.payment.edit(check)"/>
+        <ToolbarButton
+          action="ClaimFinancialsFixBrokenCheck.go(claim, check)"
+          available="check.reportable() and !checkIsVoidStopTransfer(check)"
+          id="checkreportability"
+          label="displaykey.Button.Payment.Reportability"
+          visible="gw.plugin.util.CurrentUserUtil.getCurrentUser().User.hasUserRole(&quot;Compliance Accounting&quot;)"/>
+      </Toolbar>
+      <!-- <ToolbarButton
+        action="ClaimFinancialsAddJointPayees.go(Claim, Check)"
+        available="!checkIsVoidStopTransfer(Check) and checkIsIssued(Check)"
+        id="joint_payees"
+        label="displaykey.LV.Check.Payees.NewPayees.PayeeCorrection"
+        visible="Libraries.Utilities.getCurrentUser().hasUserRole(&quot;Compliance Accounting&quot;)"/> -->
+      <!-- 1515: Commenting out as Karen believes this solution hasn't been approriately vetted. -->
+      <PanelRef
+        def="CheckDV(check)"
+        visible="!check.Retired"/>
+      <PanelRef
+        def="PayeeInformationDV(Check)"/>
+      <PanelRef
+        def="CheckPaymentsAndDocumentsDV(check, claim)"/>
+    </Screen>
+    <Code><![CDATA[/* kniese - Defect 2149
+* Added an if statement to the function to check if the total incurred would be 
+* negative after deleting the check.  
+*/
+function deleteCheckAndGo(aCheck : Check) {
+  // Add code to check for negative incurred before deleting the check
+    if(aCheck.Status != TransactionStatus.TC_PENDINGAPPROVAL and (aCheck.Claim.getTotalIncurred() - aCheck.GrossAmount.Amount < 0.0) and claim.LossType != typekey.LossType.TC_PERSONALAUTO){
+    throw new gw.api.util.DisplayableException(displaykey.Error.TotalIncurred.NegativeIncurred)
+  }
+  else{ 
+    
+    CurrentLocation.startEditing();
+    var destClaim = aCheck.Claim
+    var success = false;
+    try {
+    
+      // only unlink deductible if the deleted check is the primary check or not in a checkgroup.
+      if (aCheck.Group == null or (aCheck.Group != null and aCheck.PublicID == aCheck.Group.PrimaryCheck.PublicID)) {
+        aCheck.unlinkDeductibles()
+      }
+      aCheck.delete();
+    
+      //Patch for defect 4573
+      //If a new address was inserted into the bundle that has the same publicID as an existing Address (because of Check.getPrimaryPayeeHistoryAddress)),
+      //then remove it before committing the bundle to avoid a DBDuplicateKeyException
+      var bundle = gw.transaction.Transaction.getCurrent();
+      for(bean in bundle.InsertedBeans){
+        if(typeof bean == Address and find(a in Address where a.PublicID == bean.PublicID).Count > 0){
+          bundle.remove(bean); 
+        }
+      }
+      CurrentLocation.commit();
+      success = true;
+      ClaimFinancialsChecks.go(destClaim);
+    } catch(e) {
+      gw.api.util.Logger.logError("Error deleting check: " + e) 
+    }finally {
+      if (!success) {
+        CurrentLocation.cancel();
+      }
+    }
+  }
+}
+
+        function getDeleteConfirmationMsg(chk : Check) : java.lang.String {
+          if (chk.Primary) {
+            return displaykey.Java.Financials.DeleteCheck.Tip;
+          } else {
+            return displaykey.Java.Financials.DeleteCheck.Tip.Secondary;
+          }
+        }
+
+function resubmitCheck(rcheck : Check) {
+  CurrentLocation.startEditing()
+
+  var success = false
+  try {
+    //relinks the deductible
+    rcheck.relinkFormerDeductiblesForResubmit()
+    rcheck.resubmit()
+    CurrentLocation.commit()
+    success = true
+  } finally {
+    if (!success) {
+      CurrentLocation.cancel()
+    }
+  }
+}
+function checkIsVoidStopTransfer(chk : Check) : boolean{
+          var isVST : boolean = false;
+          if(chk.Status=="voided" || chk.Status=="transferred" || chk.Status=="stopped" ||
+             chk.Status=="pendingvoid" || chk.Status=="pendingstop" || chk.Status=="pendingtransfer"){
+             isVST = true;
+          }
+          return isVST;
+        }
+        
+        function checkIsIssued(chk : Check) : boolean{
+          var isIssued : boolean = false;
+          if(chk.Status=="issued" || chk.Status=="cleared"){
+            isIssued = true;
+          }
+          return isIssued;
+        }
+        
+function checkSuperUser(): boolean
+{
+  var temp:boolean = false;
+  for(a in User.util.CurrentUser.Roles)
+  {
+    if(a.Role.Name.toString().equals("Superuser")){
+      temp = true;
+      break;
+    }
+  }
+  return temp;
+}
+
+//defect 7584 - C.McDonald : removed Check Reissue from being visible by chaning field to false 
+// once ability is created in accounting will need to make visible and add "perm.Payment.voidorstop(check)"]]></Code>
+  </Page>
+</PCF>

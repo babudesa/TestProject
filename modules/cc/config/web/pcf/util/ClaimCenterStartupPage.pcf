@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <Forward
+    id="ClaimCenterStartupPage"
+    onBeforeForward="checkVacation()">
+    <LocationEntryPoint
+      signature="ClaimCenterStartupPage()"/>
+    <Variable
+      initialValue="entity.User.util.CurrentUser"
+      name="User"
+      recalculateOnRefresh="true"/>
+    <!-- First try to determine the correct location based on startup page. -->
+    <ForwardCondition
+      action="DesktopActivities.go()"
+      condition="User.UserSettings.StartupPage == &quot;DesktopActivities&quot;"/>
+    <ForwardCondition
+      action="DesktopClaims.go()"
+      condition="User.UserSettings.StartupPage == &quot;DesktopClaims&quot;"/>
+    <ForwardCondition
+      action="DesktopExposures.go()"
+      condition="User.UserSettings.StartupPage == &quot;DesktopExposures&quot;"/>
+    <ForwardCondition
+      action="DesktopAwaitingAssignment.go()"
+      condition="User.UserSettings.StartupPage == &quot;AwaitingAssignment&quot;"/>
+    <ForwardCondition
+      action="Team.go()"
+      condition="User.UserSettings.StartupPage == &quot;Team&quot;"/>
+    <ForwardCondition
+      action="ClaimSearch.go()"
+      condition="User.UserSettings.StartupPage == &quot;ClaimSearch&quot;"/>
+    <ForwardCondition
+      action="FNOLWizard.go()"
+      condition="User.UserSettings.StartupPage == &quot;NewClaim&quot;"/>
+    <ForwardCondition
+      action="AdminWelcome.go()"
+      condition="User.UserSettings.StartupPage == &quot;Admin&quot;"/>
+    <ForwardCondition
+      action="DashboardGroup.go()"
+      condition="User.UserSettings.StartupPage == &quot;Dashboard&quot;"/>
+    <!-- Next attempt to simply go to the locations in order, checking permissions along the way. -->
+    <ForwardCondition
+      action="DesktopActivities.go()"/>
+    <ForwardCondition
+      action="DesktopClaims.go()"/>
+    <ForwardCondition
+      action="DesktopExposures.go()"/>
+    <ForwardCondition
+      action="DesktopAwaitingAssignment.go()"/>
+    <ForwardCondition
+      action="Team.go()"/>
+    <ForwardCondition
+      action="ClaimSearch.go()"/>
+    <ForwardCondition
+      action="FNOLWizard.go()"/>
+    <ForwardCondition
+      action="AdminWelcome.go()"/>
+    <ForwardCondition
+      action="DashboardGroup.go()"/>
+    <!-- Finally go to the no permissions error page. -->
+    <ForwardCondition
+      action="StartupPageError.go()"/>
+    <Code><![CDATA[
+      function checkVacation(){
+        var CurrentUser = entity.User.util.CurrentUser;
+        if(CurrentUser.VacationStatus == VacationStatusType.tc_Inactive or CurrentUser.VacationStatus == VacationStatusType.tc_OnVacation){
+          UserVacationWorksheet.goInWorkspace();
+        }
+      }
+      
+    ]]></Code>
+  </Forward>
+</PCF>

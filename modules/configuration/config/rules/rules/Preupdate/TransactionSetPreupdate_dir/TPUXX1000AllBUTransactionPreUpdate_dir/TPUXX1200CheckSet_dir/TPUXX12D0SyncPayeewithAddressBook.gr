@@ -1,0 +1,38 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUXX1000AllBUTransactionPreUpdate_dir.TPUXX1200CheckSet_dir
+
+@gw.rules.RuleName("TPUXX12D0 - Sync Payee with AddressBook")
+internal class TPUXX12D0SyncPayeewithAddressBook {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/((transactionSet as CheckSet).PrimaryCheck.New or 
+(transactionSet as CheckSet).PrimaryCheck.Changed)
+  /*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var checkset = transactionSet as CheckSet;
+var primaryCk = checkset.PrimaryCheck
+//this significantly slows down the check status job for large bulk
+//invoices. Adding code to prevent doing this for that case.
+if(!(primaryCk.Bulked && 
+    (primaryCk.ChangedFields.contains("ex_DatePrinted") ||
+    primaryCk.ChangedFields.contains("ex_DateEndorsed") ||
+    primaryCk.ChangedFields.contains("ex_DateVoidExec") ||
+    primaryCk.ChangedFields.contains("ex_DateStopExec") ||
+    primaryCk.ChangedFields.contains("DateEscheatedExt")))){
+  var payee = checkset.PrimaryCheck.Payees[0].ClaimContact.Contact;
+  var linkStatus = payee.generateLinkStatus()
+  if((payee typeis PersonVendor and payee.PayableExt) or 
+     (payee typeis CompanyVendor and payee.PayableExt))
+  {  
+    for(check in(transactionSet as CheckSet).Checks){
+      if(check.Status=="draft" or check.Status=="awaitingsubmission" or check.Status=="pendingapproval"){
+        if(linkStatus.Linked and (!linkStatus.Synced or !linkStatus.SyncedRemote))
+        {   
+          payee.syncToAB()
+        }
+      }
+    }
+  }
+}/*end00rule*/
+  }
+}

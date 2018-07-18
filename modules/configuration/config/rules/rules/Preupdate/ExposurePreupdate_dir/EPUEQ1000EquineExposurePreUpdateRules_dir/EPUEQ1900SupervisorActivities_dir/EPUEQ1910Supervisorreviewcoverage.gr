@@ -1,0 +1,58 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUEQ1000EquineExposurePreUpdateRules_dir.EPUEQ1900SupervisorActivities_dir
+
+@gw.rules.RuleName("EPUEQ1910 - Supervisor review coverage")
+internal class EPUEQ1910Supervisorreviewcoverage {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*5/17/10 - erawe added back rule from 2000 and 2010 to 1900 and 1910 
+that I mistakenly removed 
+2/15/10 erawe: defect 2989 moved rule here from CPUEQ1130
+*/
+(exposure.Coverage.Type == "eq_accidentIllFM" or 
+exposure.Coverage.Type =="eq_barrennesPF"  or
+exposure.Coverage.Type == "eq_wobblerBarPF" or
+exposure.Coverage.Type== "eq_wobblerPF" or 
+exposure.Coverage.Type=="eq_transitBarPF" or 
+exposure.Coverage.Type=="eq_transitPF" or
+exposure.Coverage.Type == "eq_profoal" or
+exposure.Coverage.Type == "eq_limituselossFM" or
+exposure.Coverage.Type == "eq_accidentIllStalCI" or
+exposure.Coverage.Type == "eq_theftSP" or
+exposure.Coverage.Type == "eq_uselossExtFM" or
+exposure.Coverage.Type == "eq_manuBarPF" or
+exposure.Coverage.Type == "eq_manuPF")/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var CovSubject: String
+
+for ( injuredhorse  in exposure.Claim.FixedPropertyIncidentsOnly) {
+  var coverages : Coverage[];
+    for(riskUnit in exposure.Claim.Policy.RiskUnits){
+      if(riskUnit.Subtype=="LocationBasedRU" || riskUnit.Subtype=="PropertyRU" 
+        and (riskUnit as LocationBasedRU).Property==injuredhorse.Property){
+        coverages = riskUnit.Coverages
+      }
+    }
+    for (coverage in coverages) {
+    if(CovSubject == null){
+      CovSubject = exposure.Coverage.Type.Description
+    }
+  }//end for coverage
+}//end for injuredhorse
+for (injuredhorse  in exposure.Claim.FixedPropertyIncidentsOnly) {
+  if (CovSubject !=null and exposure.Claim.DeathDate == null){
+    if(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="eq_supreview_coverage" and act.Exposure==exposure)){
+      exposure.Claim.createActivity( exposure, util.custom_Ext.finders.findActivityPattern("eq_supreview_coverage"), "Supervisor Review - " + CovSubject + " " + injuredhorse.Property.RoundUpThePropertyValue(), " ", "normal", false, null, null )
+      actions.exitToNext()
+    }
+  }
+
+  if (CovSubject !=null and exposure.Claim.DeathDate != null){
+    if(!exists(act in exposure.Claim.Activities where act.ActivityPattern.Code=="eq_supreview_coverage" and act.Exposure==exposure)){
+      exposure.Claim.createActivity( exposure, util.custom_Ext.finders.findActivityPattern("eq_supreview_coverage"), "Supervisor Review - " + CovSubject + " " + injuredhorse.Property.RoundUpThePropertyValue()+ " DEAD", " ", "normal", false, null, null )
+      actions.exitToNext()
+    }
+  }
+}/*end00rule*/
+  }
+}

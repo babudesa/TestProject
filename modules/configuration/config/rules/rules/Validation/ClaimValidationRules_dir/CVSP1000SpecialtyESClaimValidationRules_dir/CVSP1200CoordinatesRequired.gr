@@ -1,0 +1,28 @@
+package rules.Validation.ClaimValidationRules_dir.CVSP1000SpecialtyESClaimValidationRules_dir
+
+@gw.rules.RuleName("CVSP1200 - Coordinates Required")
+internal class CVSP1200CoordinatesRequired {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.LossCause=="earthmovement" and claim.ex_DetailLossCause=="sinkhole"
+
+//Created 2014/06/19 for Defect #6980 by dcarson2
+//Lattitude and longitude are required when Loss Cause is "Earth Movement" and Detail Loss Cause is "Sinkhole".
+//Latitude must be within -90 to 90 to be valid coordinate
+//Longitude must be within -180 to 180 to be valid coordinate/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  if (claim.LossLocation.Latitude==null or claim.LossLocation.Longitude==null)
+    claim.reject("loadsave", "Longitude and Latitude are required for a Detail Loss Cause of Sinkhole", null, null)
+  if (claim.LossLocation.Latitude>90 or claim.LossLocation.Latitude<-90)
+    claim.reject("loadsave", "Latitude must be within -90 to 90.", null, null)
+  if (claim.LossLocation.Longitude>180 or claim.LossLocation.Longitude<-180)
+    claim.reject("loadsave", "Longitude must be within -180 to 180.", null, null)
+}
+catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}
+/*end00rule*/
+  }
+}

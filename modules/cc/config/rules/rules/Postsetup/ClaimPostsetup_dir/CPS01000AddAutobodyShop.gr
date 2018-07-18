@@ -1,0 +1,45 @@
+package rules.Postsetup.ClaimPostsetup_dir
+
+@gw.rules.RuleName("CPS01000 - Add Auto-body Shop")
+internal class CPS01000AddAutobodyShop {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/gw.api.contact.ProximitySearchPageHelper.useGeocodeUILocally()
+        AND (Claim.LossType == LossType.TC_AUTO)
+AND (Claim.LossLocation != null)/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/uses java.lang.RuntimeException;
+uses gw.api.geocode.GeocodeScriptHelper;
+
+        gw.api.util.Logger.logDebug(displaykey.Rules.PostSetup.Claim.SearchForPrefRepairShopByProximityToLossLoc(Claim.LossLocation));
+
+// Parameters:
+//   "AutoRepairShop" - contact subtype as a String
+//   claim.LossLocation - the address to use as the search center  
+//   true - indicates a distance based search within a given radius (10 miles, as noted below); 
+//              false would indicate a "nearest 10" search
+//   10  - This indicates the radius for a distance search;
+//         it would be the number of results for an ordinal search 
+//   UnitOfDistance.TC_MILE - For distance-based searches only, indicates whether the number indicates miles;
+//         for both distance OR ordinal searches, this indicates whether result distances should be in miles or kilometers 
+var criteria = GeocodeScriptHelper.setupContactCenterProximitySearch( "AutoRepairShop", Claim.LossLocation, true, 10, UnitOfDistance.TC_MILE);
+      
+// You can specify any normal contact search criteria in combination with the Proximity search
+criteria.PreferredVendors = true;
+  
+// It is STRONGLY recommended that you cap your results, rather than getting all results
+try { 
+  var cwtis = GeocodeScriptHelper.getResultsFromContactCenter( criteria, 20 ) ;
+  if (cwtis.length > 0) {
+    var internalRepairShop = GeocodeScriptHelper.makeLocalContact( cwtis[0], Claim );
+    Claim.addRole(ContactRole.TC_REPAIRSHOP, internalRepairShop);
+    gw.api.util.Logger.logDebug( displaykey.Rules.PostSetup.Claim.AddedRepairShop(cwtis[0]))
+  } else {
+    gw.api.util.Logger.logDebug( displaykey.Rules.PostSetup.Claim.NoPrefRepairShopWithinNMiles( "10" ));
+  }
+} catch (e) {
+    gw.api.util.Logger.logDebug( displaykey.Rules.PostSetup.Claim.AddressCouldNotBeUsedForProximitySearch(Claim.LossLocation, e.getMessage()))
+}/*end00rule*/
+  }
+}

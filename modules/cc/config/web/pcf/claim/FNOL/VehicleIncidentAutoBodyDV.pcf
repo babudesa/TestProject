@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <DetailViewPanel
+    id="VehicleIncidentAutoBodyDV">
+    <Require
+      name="VehicleIncident"
+      type="VehicleIncident"/>
+    <Variable
+      initialValue="getVehicleCollisionCoverage(CoverageType.TC_COLL)"
+      name="coverageValue"/>
+    <InputColumn>
+      <InputGroup
+        childrenVisible="VehicleIncident.BodyShopSelected"
+        id="AutobodyInputGroup"
+        label="displaykey.Web.VehicleIncidentAutoBodyDV.Autobody.ValueLabel">
+        <InputSet
+          visible="VehicleIncident.BodyShopSelected">
+          <Input
+            id="Collision"
+            label="displaykey.Web.VehicleIncidentAutoBodyDV.CollisionCoverage.Label"
+            value="coverageValue == null ? displaykey.Web.VehicleIncidentAutoBodyDV.CollisionCoverage.NoCoverage : coverageValue"/>
+          <ClaimContactInput
+            claim="VehicleIncident.Claim"
+            editable="true"
+            id="RepairShop_Picker"
+            label="displaykey.Web.VehicleIncidentDV.RepairShopPicker"
+            required="false"
+            value="VehicleIncident.RepairShop"
+            valueRange="VehicleIncident.Claim.RelatedAutoRepairShopArray"/>
+          <Input
+            id="RepairShop_Phone"
+            label="displaykey.Web.VehicleIncidentDV.RepairShopPhone"
+            value="VehicleIncident.RepairShop.PrimaryPhoneValue">
+            <Reflect
+              triggerIds="RepairShop_Picker"
+              value="VALUE.PrimaryPhoneValue"/>
+          </Input>
+        </InputSet>
+      </InputGroup>
+    </InputColumn>
+    <Code><![CDATA[
+function getVehicleCollisionCoverage(coverageType : CoverageType) : String {
+  var coverageTypes = VehicleIncident.Claim.Policy.getCoveragesByCoverageType( coverageType );
+  if (coverageTypes.length > 0) {
+    return coverageTypes[0].DetailsSummary
+  }
+  else {
+    return null;
+  }  
+}
+    ]]></Code>
+  </DetailViewPanel>
+</PCF>

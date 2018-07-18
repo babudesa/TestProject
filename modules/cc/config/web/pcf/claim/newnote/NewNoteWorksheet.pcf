@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    canEdit="true"
+    canVisit="perm.Claim.createNote(Claim)"
+    id="NewNoteWorksheet"
+    parent="Claim(Claim)"
+    startEditing="Note.setInitialValues()"
+    startInEditMode="true"
+    tabLabel="displaykey.Web.ClaimMenuActions.NewNote"
+    title="displaykey.Web.ClaimMenuActions.NewNote">
+    <LocationEntryPoint
+      signature="NewNoteWorksheet(Claim : Claim)"/>
+    <Scope
+      location="Claim(Claim)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="Claim.addNote(null,null)"
+      name="Note"
+      type="Note"/>
+    <Variable
+      initialValue="initializeTemplateSearchCriteria()"
+      name="templateSearchCriteria"
+      type="NoteTemplateSearchCriteria"/>
+    <Screen
+      id="NewNoteScreen">
+      <Toolbar>
+        <EditButtons
+          editVisible="false"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickNoteTemplatePopup.push(templateSearchCriteria)"
+          id="NewNoteWorksheet_UseTemplateButton"
+          label="displaykey.Web.Note.UseTemplate"
+          onPick="Note.useTemplate( PickedValue, { &quot;Claim&quot; -&gt; Claim})"
+          shortcut="P"/>
+        <ToolbarDivider/>
+        <PickerToolbarButton
+          action="PickExistingDocumentPopup.push(Claim)"
+          id="NewNoteWorksheet_AddDocumentButton"
+          label="displaykey.JSP.NoteDetail.Toolbar.AddDocument"
+          onPick="gw.api.note.NewNoteUtil.linkDocumentToNote(PickedValue, Note)"
+          shortcut="E"
+          visible="gw.document.DocumentsUtil.claimHasDocuments(Claim) and perm.Claim.view(Claim) and perm.System.viewdocs"/>
+      </Toolbar>
+      <PanelRef
+        def="NoteDetailDV(Note)"/>
+    </Screen>
+    <Code><![CDATA[
+function initializeTemplateSearchCriteria() : NoteTemplateSearchCriteria {
+  var rtn = new NoteTemplateSearchCriteria()
+  rtn.Language = gw.api.util.LocaleUtil.toLanguage(User.Util.CurrentLocale)
+  rtn.AvailableSymbols = "Claim"
+  return rtn
+}
+      
+    ]]></Code>
+  </Worksheet>
+</PCF>

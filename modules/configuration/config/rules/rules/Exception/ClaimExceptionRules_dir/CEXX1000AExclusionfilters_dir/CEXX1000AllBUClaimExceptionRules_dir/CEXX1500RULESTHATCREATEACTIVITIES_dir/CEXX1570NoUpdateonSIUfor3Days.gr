@@ -1,0 +1,69 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEXX1000AllBUClaimExceptionRules_dir.CEXX1500RULESTHATCREATEACTIVITIES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEXX1570 - No Update on SIU for 3 Days")
+internal class CEXX1570NoUpdateonSIUfor3Days {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// If an SIU referral has been submitted and no activity has occured within 3 days by an
+//  investigator, an activity is created and sent to the SIU investigator's manager.
+//Stephanie Przygocki - Defect 3702 - 3/31/11
+// kniese - 11/3/15 - Disable Activity as a part of defect 7827
+exists(investigation in claim.SIUInvestigationsExt where 
+       investigation.SIUInvestigator != null and
+       investigation.SIUOpenDate==null and
+       investigation.SIUReferralType!="data" and
+       gw.api.util.DateUtil.daysBetween( investigation.UpdateTime, gw.api.util.DateUtil.currentDate() )>=3 and
+       !exists(act in claim.Activities where
+               act.ActivityPattern==util.custom_Ext.finders.findActivityPattern( "no_siu_activity" ) and
+               act.SIUInvestigationExt==investigation))==true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var pattern = util.custom_Ext.finders.findActivityPattern( "no_siu_activity" )
+var today = gw.api.util.DateUtil.currentDate()
+
+for(investigation in claim.SIUInvestigationsExt){
+  var daysBetween = gw.api.util.DateUtil.daysBetween( investigation.UpdateTime, today )
+  if(investigation.SIUInvestigator != null and investigation.SIUOpenDate==null and daysBetween>=3 and investigation.SIUReferralType!="data"){
+    if(!exists(act in claim.Activities where
+       act.ActivityPattern==pattern and act.SIUInvestigationExt==investigation)){
+      var act = claim.createActivityFromPattern( null, pattern )
+      var assgdUser = (investigation.SIUInvestigator.AllGroups.first() as Group).Supervisor
+      act.assignUserAndDefaultGroup(assgdUser)
+      act.SIUInvestigationExt = investigation
+      act.Description = "This SIU referral for claimant " + investigation.SIUClaimant + " was submitted 3 days ago but there has been no SIU activity entered."
+      act.Subject = "SIU referral submitted 3 days ago with no SIU activity"
+    }
+  }
+}
+/*end00rule*/
+  }
+}

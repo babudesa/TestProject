@@ -1,0 +1,26 @@
+package rules.Preupdate.PolicyPreupdate_dir.PPUXXPRERulesthatneedtorun_dir.PPUPIMPimPolicyPreUPdateRules_dir.PPUPIM1100FilterPackagePolicyDataperLossType_dir
+
+@gw.rules.RuleName("PPUPIM1110 - Filter Policy Properties")
+internal class PPUPIM1110FilterPolicyProperties {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/policy.Properties.Count > 0/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/var propTotal = policy.Properties.Count;
+for(prop in policy.Properties.where(\ l -> l typeis PropertyRU && l.PropertyNumberExt == 0 &&
+    (l.Property.BuildingNumberExt == null ||
+    l.Property.BuildingNumberExt.equals("0")) &&
+    l.Property.RiskNumberExt == 0 && 
+    (l.Property.Lienholders.Count <= 0 ||
+    l.Property.AdditionalInterestRisksExt.Count <= 0))) {
+  prop.remove();
+  propTotal--;
+}
+/*
+for(jobSite in policy.Properties.where(\ js -> js typeis JobsiteRUExt && js.JobsiteNumberExt == 0 &&
+   (js.Property
+   */
+policy.TotalProperties = propTotal;/*end00rule*/
+  }
+}

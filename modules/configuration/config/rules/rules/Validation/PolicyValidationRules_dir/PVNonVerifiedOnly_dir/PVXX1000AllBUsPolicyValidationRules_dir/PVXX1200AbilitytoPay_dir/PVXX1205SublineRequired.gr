@@ -1,0 +1,20 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVXX1000AllBUsPolicyValidationRules_dir.PVXX1200AbilitytoPay_dir
+
+@gw.rules.RuleName("PVXX1205 - Subline Required")
+internal class PVXX1205SublineRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/exists(cov in policy.AllCoverages where cov.SublineExt == null)/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(cov in policy.AllCoverages){
+    if(cov.SublineExt == null){
+      policy.reject( "payment", displaykey.Rules.Validation.Policy.Enterprise.AbilityToPay.Subline(cov.Type.DisplayName, cov.DisplayName), null, null )
+    }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( policy, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

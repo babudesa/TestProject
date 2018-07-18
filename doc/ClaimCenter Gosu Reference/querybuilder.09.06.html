@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Database Functions</title>
+    <link rel="StyleSheet" href="css/querybuilder.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>Gosu Reference Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="querybuilder.09.01.html#2185769">Query Builder</a> : <a class="WebWorks_Breadcrumb_Link" href="querybuilder.09.02.html#2185769">Query Builder Overview</a> : Database Functions</span></div>
+    <hr align="left" />
+    <blockquote>
+      <div class="H2B_-_Heading_2_Break"><a name="2185769">Database Functions</a></div>
+      <div class="B_-_Body"><a name="2190741">Real-world database queries sometimes require native database functions found in SQL. For example, a query </a>might need the power of SQL’s native minimum and maximum functions that examine rows already in the database.</div>
+      <div class="B_-_Body"><a name="2185798">The query builder includes built-in database functions implemented as methods on the </a><span class="cv_-_computer_voice">DBFunction</span> class. Each time you use these database functions, Gosu generates exactly one corresponding native database function in the SQL. For example, if you use the <span class="cvt_-_computer_voice_table">Min</span> database function to calculate the minimum value in that column, Gosu generates the <span class="cv_-_computer_voice">MIN</span> SQL function.</div>
+      <div class="B_-_Body"><a name="2192417">The Gosu database functions all take a single argument, which is a column reference. Use the query method </a><span class="cv_-_computer_voice">getColumnRef</span> and pass it the column name as a <span class="cvt_-_computer_voice_table">String</span> value.</div>
+      <div class="B_-_Body"><a name="2234678">You can only use these database functions in the contexts permitted by the SQL standard. For example, all func</a>tions listed in the table except for <span class="cv_-_computer_voice">Constant</span> represent collective data from multiple rows. In database terms, these functions <span class="e_-_emphasis">aggregate</span> data from other rows. This functions are <span class="e_-_emphasis">aggregating database functions</span>. You cannot use an aggregating database function on one column and then compare the function result with the <span class="s_-_strong">same</span> database column or even other columns on the same table. Gosu throws exceptions at run time if you violate SQL-enforced usage limitations of aggregated functions.</div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="2236100">Due to restrictions in the SQL standard, you cannot compare one column to aggregated </a>data in the same table. However, if you use a join or subselect, you can compare one column to another table’s aggregated data for its columns.</div>
+      <div class="B_-_Body"><a name="2234680">For example, the following query is valid:</a></div>
+      <PRE class="CF_-_Code_First_Line"><a name="2234682">q.having().compare(DBFunction.Constant(44), GreaterThanOrEquals,</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2234683">&nbsp;</a>&nbsp;DBFunction.Avg(q.getColumnRef("IntegerExt")))</PRE>
+      <div class="B_-_Body"><a name="2234684">The following query is </a><span class="s_-_strong">invalid</span> because the function compares the column name A an aggregate version of a column from the same table:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2234685">q.compare(</a><span class="s_-_strong">"A"</span>, Equals, DBFunction.Min(q.getColumnRef(<span class="s_-_strong">"A"</span>)))</div>
+      <div class="B_-_Body"><a name="2234686">This is also </a><span class="s_-_strong">invalid</span> even if you use different columns on the same table:</div>
+      <div class="CS_-_Code_Single_Line"><a name="2234687">q.compare(</a><span class="s_-_strong">"A"</span>, Equals, DBFunction.Min(q.getColumnRef(<span class="s_-_strong">"B"</span>)))</div>
+      <div class="B_-_Body"><a name="2234688">You can work around this SQL limitation using one of the following approaches:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2236046">Performing a </a><span class="e_-_emphasis">join</span> on the table. For information about joins and examples of using database functions with joins, see <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.15.html#2211737', '');" title="Advanced Queries (Subselects and Joins)">“Advanced Queries (Subselects and Joins)”</a>. </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2236050">Use the database function in a </a><span class="cv_-_computer_voice">having</span> clause, which you create with the <span class="cv_-_computer_voice">having</span> method (see the following example)</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2236021">For example, the following code performs a join with another table and compares the value in one column in one </a>table with aggregate data in another table:</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2236058">var q = Query.make(SampleBean)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2236059">var childTable = q.join(SampleChildBean, "parent")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2236060">q.having().between("TextField1", DBFunction.Min(childTable.getColumnRef("TextField1")),</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2236345">&nbsp;</a>&nbsp;&nbsp;&nbsp;DBFunction.Max(childTable.getColumnRef("TextField1")))</PRE>
+      <div class="B_-_Body"><a name="2186772">The following table lists the supported database functions. In the example column, note that the symbol </a><span class="cv_-_computer_voice">q</span> refers to an instance of a <span class="cv_-_computer_voice">Query</span> object or a <span class="cv_-_computer_voice">Table</span> object.</div>
+      <div class="T_-_Table"><a name="2186029">&nbsp;</a></div>
+      <table class="withHeading" style="text-align: left" cellspacing="10" summary="">
+        <caption></caption>
+        <tr>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="2192500">Function</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="2192502">Description</a></div>
+          </td>
+          <td style="border-bottom-color: #000000; border-bottom-style: solid; border-bottom-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: bottom">
+            <div class="TH_-_Table_Heading"><a name="2192504">Example</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192506">Min</a></span></div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2192508">Minimum of the values in that </a>column.</div>
+          </td>
+          <td style="border-top-color: #000000; border-top-style: solid; border-top-width: 1px; padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192510">q.compare("A", GreaterThan, DBFunction.Min(q.getColumnRef("B")))</a></span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192512">Max</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2192514">Maximum of the values in that </a>column.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><span class="cvt_-_computer_voice_table"><a name="2192516">q.compare(DBFunction.Constant(44), LessThan, </a></span><span class="cvt_-_computer_voice_table">DBFunction.Max(q.getColumnRef("B")))</span> </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192518">Avg</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2192520">Average of the values in that </a>column.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192522">q.compare(DBFunction.Constant(44), GreaterThan, </a></span><span class="cvt_-_computer_voice_table">DBFunction.Avg(q.getColumnRef("B"))) </span></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192524">Count</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2192526">Total count of the rows in that </a>column matching the table.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><span class="cvt_-_computer_voice_table"><a name="2192528">q.compare(DBFunction.Constant(44), GreaterThan, </a></span><span class="cvt_-_computer_voice_table">DBFunction.Count(q.getColumnRef("B")))</span> </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192530">Sum</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2192532">Sum of the rows in that col</a>umn matching the table.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><span class="cvt_-_computer_voice_table"><a name="2192534">q.compare(DBFunction.Constant(44), GreaterThan, </a></span><span class="cvt_-_computer_voice_table">DBFunction.Sum(q.getColumnRef("B")))</span> </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2234391">Constant</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2234393">For use in a </a><span class="cvt_-_computer_voice_table">HAVING</span> clause, returns a constant wrapped so that it can be used in SQL. For example, in a compare predicate method that normally takes a column name as a <span class="cvt_-_computer_voice_table">String</span>, you can instead provide a constant using this function. </div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2234395">An advanced example with a join and </a><span class="cv_-_computer_voice">HAVING</span> clause. This permits a <span class="e_-_emphasis">constant</span> in the first argument of <span class="cvt_-_computer_voice_table">compare</span> instead of a column name:</div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2234396">var q = new Query(TestE)</a></span></div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2234397">var aTable = q.join(Child, "E")</a></span></div>
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2234398">q.having().compare(DBFunction.Constant("44"), Equals, </a></span><span class="cvt_-_computer_voice_table">DBFunction.Count( aTable.getColumnRef( "A" ) ))</span></div>
+            <div class="TT_-_Table_Text"><a name="2234401">For more about joins, see </a><a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.15.html#2211737', '');" title="Advanced Queries (Subselects and Joins)">“Advanced Queries (Subselects and Joins)”</a>.</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text" style="color: #000000; font-family: &quot;Lucida Sans Typewriter&quot;; font-style: normal; font-variant: normal; font-weight: normal; margin-top: 3.0pt; text-transform: none; vertical-align: baseline"><span class="cvt_-_computer_voice_table"><a name="2192536">Expr</a></span></div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2234466">Returns a function defined by </a>a list of column reference and character sequences. See <a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.06.html#2186799', '');" title="Database Functions">“Example of ‘Expr’ Database Function”</a>.</div>
+          </td>
+          <td style="padding-bottom: 2pt; padding-left: 2pt; padding-right: 8pt; padding-top: 2pt; vertical-align: top">
+            <div class="TT_-_Table_Text"><a name="2234869">See </a><a href="javascript:WWHClickedPopup('gosu', 'querybuilder.09.06.html#2186799', '');" title="Database Functions">“Example of ‘Expr’ Database Function”</a>.</div>
+          </td>
+        </tr>
+      </table>
+      <div class="H3_-_Heading_3"><a name="2186799">Example of ‘Expr’ Database Function</a></div>
+      <div class="B_-_Body"><a name="2234886">The </a><span class="cv_-_computer_voice">Expr</span> database function returns a function defined by a list of column reference and character sequences. The argument to this database function is a list containing only objects of type:</div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="cvt_-_computer_voice_table"><a name="2234887">java.lang.CharSequence</a></span> - for example, pass a <span class="cvt_-_computer_voice_table">String</span> containing SQL operators or other functions</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt">
+        <table border="0" cellspacing="0" cellpadding="0" summary="" role="presentation">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><a name="2234888">a column reference - the return result of </a><span class="cvt_-_computer_voice_table">query.getColumnRef(</span><span class="pt_-_parameter_in_table">columnName</span><span class="cvt_-_computer_voice_table">)</span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="B_-_Body"><a name="2234889">Gosu concatenates the objects in the list, in order, to form a SQL expression. </a></div>
+      <div class="B_-_Body"><a name="2234966">For example, the following example creates a new database function from column references to two columns, </a>with the sum (" + ") operator. You can then use the new function to compare values against the sum of these two columns.</div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235068">// SETUP our database to test our Expr() function example. DO NOT USE IN PRODUCTION SERVERS</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235069">// for this example, we populate the SCORE and IntegerEext property in Contacts</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235070">var b = gw.transaction.Transaction.getCurrent()</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235071">var setupQuery = Query.make(Contact)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235072">for (a in setupQuery.select() index i) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235073">  var writableEntity = b.add(a)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235074">  writableEntity.Score = i      // set the score to be 1, then 2, then 3, and so on </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235075">  writableEntity.IntegerExt = 3 // for this demo, set to a constant</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235076">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235077">b.commit()  // permanently change the database with this data. for non-production use only.</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235078">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235079">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235080">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235081">// create a new SQL function that sums two integer properties </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235082">var q1 = Query.make(Contact)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235083">var e1 = DBFunction.Expr({q1.getColumnRef("Score") , " + ", q1.getColumnRef("IntegerExt") } )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235084">print("Rows where 6 &gt; Score + IntegerExt")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235085">q1.compare(DBFunction.Constant(6), GreaterThan, e1)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235086">for (a in q1.select()) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235087">  print("public ID  '" + a.PublicID + " Score " + a.Score + ", IntegerExt " + a.IntegerExt)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235088">}</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235089">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235090">&nbsp;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235091">// create a new SQL function that sums two integer properties </a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235092">var q2 = Query.make(Contact)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235093">var e2 = DBFunction.Expr({q2.getColumnRef("Score") , " + ", q2.getColumnRef("IntegerExt") } )</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235094">print("Rows where 6 &lt;= Score + IntegerExt")</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235095">q2.compare(DBFunction.Constant(6), LessThanOrEquals, e2)</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235096">for (a in q2.select()) {</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235097">  print("public ID  '" + a.PublicID + " Score " + a.Score + ", IntegerExt " + a.IntegerExt)</a></PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="2235098">}</a></PRE>
+      <div class="B_-_Body"><a name="2235125">This prints results similar to the following:</a></div>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235147">Rows where 6 &gt; Score + IntegerExt</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235148">public ID  'systemTables:1 Score 0, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235149">public ID  'default_data:1 Score 1, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235150">public ID  'default_data:2 Score 2, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235151">Rows where 6 &lt;= Score + IntegerExt</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235152">public ID  'default_data:3 Score 3, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235153">public ID  'test:5 Score 4, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235154">public ID  'test:6 Score 5, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235155">public ID  'test:7 Score 6, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235156">public ID  'test:8 Score 7, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235157">public ID  'test:9 Score 8, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235158">public ID  'test:10 Score 9, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235159">public ID  'test:11 Score 10, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235160">public ID  'test:12 Score 11, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235161">public ID  'test:13 Score 12, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235162">public ID  'test:14 Score 13, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235163">public ID  'test:15 Score 14, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235164">public ID  'test:16 Score 15, IntegerExt 3</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="2235165">public ID  'test:17 Score 16, IntegerExt 3</a></PRE>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </blockquote>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

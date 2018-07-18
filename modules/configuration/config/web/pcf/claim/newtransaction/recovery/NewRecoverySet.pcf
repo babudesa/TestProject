@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../../pcf.xsd">
+  <Page
+    afterCancel="ClaimFinancialsTransactions.go(Claim)"
+    afterCommit="ClaimFinancialsTransactions.go(Claim, financials.ClaimFinancialsTransactionsOption.RECOVERY)"
+    afterEnter="Claim.freezeCurrency();financials.FinancialsUtil.ensureRecoveryHasOneLineItem(Recovery)"
+    alwaysInEditMode="true"
+    beforeCommit="if(Claim.getTotalIncurred() - Recovery.Amount &lt; 0 and Claim.LossType != typekey.LossType.TC_PERSONALAUTO){NegativeIncurred = true}; beforeCommit()"
+    canEdit="true"
+    canVisit="perm.Claim.createrecovery(Claim) and (Claim.State != ClaimState.TC_DRAFT)"
+    id="NewRecoverySet"
+    onResume="if(NegativeIncurred and Claim.LossType != typekey.LossType.TC_PERSONALAUTO){UpdateVisible = false}; gw.api.system.bundle.BundleCommitCondition.verify(Claim);"
+    parent="Claim(Claim)"
+    startInEditMode="true"
+    title="displaykey.JSP.EditRecovery.Financials.CreateRecovery">
+    <LocationEntryPoint
+      signature="NewRecoverySet(Claim : Claim)"/>
+    <LocationEntryPoint
+      signature="NewRecoverySet(Claim : Claim, Payment : Payment)"/>
+    <Variable
+      initialValue="new financials.NewRecoverySetHelper()"
+      name="PageHelper"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="Payment"
+      type="Payment"/>
+    <Variable
+      initialValue="financials.FinancialsUtil.newRecovery(Claim, Payment)"
+      name="Recovery"
+      type="Recovery"/>
+    <Variable
+      initialValue="false"
+      name="NegativeIncurred"
+      type="Boolean"/>
+    <Variable
+      initialValue="true"
+      name="UpdateVisible"
+      type="Boolean"/>
+    <Screen
+      id="NewRecoveryScreen">
+      <Toolbar>
+        <EditButtons
+          cancelLabel="displaykey.Button.Cancel"
+          cancelVisible="true"
+          editVisible="false"
+          updateLabel="displaykey.Button.Update"
+          updateVisible="UpdateVisible"/>
+      </Toolbar>
+      <PanelRef
+        def="RecoveryDetailDV(Recovery, PageHelper)"/>
+    </Screen>
+    <Code><![CDATA[function beforeCommit() {
+   gw.api.system.bundle.BundleCommitCondition.verify(Claim)
+   financials.FinancialsUtil.preCommitRecovery(Recovery)
+}]]></Code>
+  </Page>
+</PCF>

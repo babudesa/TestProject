@@ -1,0 +1,18 @@
+package rules.Validation.PolicyValidationRules_dir.PVNonVerifiedOnly_dir.PVWC1000WorkersCompPolicyValidationRules_dir.PVWC1100NewLossLevel_dir
+
+@gw.rules.RuleName("PVWC1105 - Coverage Required")
+internal class PVWC1105CoverageRequired {
+  static function doCondition(policy : entity.Policy) : boolean {
+    return /*start00rule*/!policy.Verified && !policy.Claim.IncidentReport/*end00rule*/
+  }
+
+  static function doAction(policy : entity.Policy, actions : gw.rules.Action) {
+/*start00rule*/try {
+  if (policy.Coverages.IsEmpty){
+    policy.rejectField("Coverages", "newloss", "At least one Policy-level Coverage is required.", null, null)
+  }
+} catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

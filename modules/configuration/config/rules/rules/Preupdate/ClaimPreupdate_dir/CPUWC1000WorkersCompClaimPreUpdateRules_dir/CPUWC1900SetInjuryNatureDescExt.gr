@@ -1,0 +1,47 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUWC1000WorkersCompClaimPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUWC1900 - Set InjuryNatureDescExt")
+internal class CPUWC1900SetInjuryNatureDescExt {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/true
+/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/ /**
+   *  10.22.15 - cmullin - function moved from NewClaimLossDetails to PreUpdate rules. 
+   *  This rule sets the InjuryNatureDescExt field for each Exposure on the Claim. 
+   *  This field is not displayed for any Workers' Comp feature but it is required for 
+   *  ISO Integration. The [Exposure].InjuryNatureDescExt is concatenated from 
+   *  the Detailed Body Part, Nature of Injury and Cause of Injury fields. This rule also
+   *  sets the Primary Body Part if there is not a part so assigned. Moved CPUWC1300 to
+   *  Validation rule CVWC1192 to set Primary Body Part on reopened Incident Only claims.
+   */
+  var detailedBodyPart : String = ""
+  var natureOfInjury = claim.ensureClaimInjuryIncident().GeneralInjuryType.DisplayName
+  var injuryCause = claim.LossCause.DisplayName
+  // Find the Detailed Body Part
+  for(each in claim.Incidents){
+    if(each.Subtype == "InjuryIncident" && (each as InjuryIncident).BodyParts.length != 0){
+      for(part in (each as InjuryIncident).BodyParts){
+        if(part.PrimaryExt == true){
+          detailedBodyPart = part.DetailedBodyPart.DisplayName
+        }
+      }
+      // If PrimaryExt is not set for any BodyPart and detailedBodyPart cannot be assigned, then 
+      // choose the first Body Part in the BodyParts array and set that first Body Part to Primary
+      if(detailedBodyPart == ""){
+        var firstBodyPart = (each as InjuryIncident).BodyParts.orderBy(\ b -> b.Ordering).first()
+        detailedBodyPart = firstBodyPart.DetailedBodyPart.DisplayName;
+        firstBodyPart.PrimaryExt=true
+      }
+    }
+  }
+  // Concatenate all three fields
+  var result = detailedBodyPart + " - " + natureOfInjury + " - " + injuryCause
+  // Set the new InjuryNatureDescExt for all Exposures on the Claim
+  for(each in claim.OrderedExposures){
+    each.InjuryNatureDescExt = result
+  }/*end00rule*/
+  }
+}

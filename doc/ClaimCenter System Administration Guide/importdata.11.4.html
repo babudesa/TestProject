@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <!-- MOTW-DISABLED saved from url=(0014)about:internet -->
+    <title>Importing and Exporting Administrative Data from ClaimCenter</title>
+    <link rel="StyleSheet" href="css/importdata.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/webworks.css" type="text/css" media="all" />
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/context.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/towwhdir.js"></script>
+    <script type="text/javascript" language="JavaScript1.2" src="wwhdata/common/wwhpagef.js"></script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        var  WebWorksRootPath = "";
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        // Set reference to top level help frame
+        //
+        var  WWHFrame = WWHGetWWHFrame("", true);
+      // -->
+    </script>
+    <script type="text/javascript" language="JavaScript1.2" src="scripts/expand.js"></script>
+    <!-- THE FOLLOWING IS A GUIDEWIRE STYLE DEFINITION FOR THE LINK TO THIS FEATURE -->
+    <link rel="StyleSheet" href="css/css-guidewire-extra.css" type="text/css" media="all" />
+    <!-- THE FOLLOWING IS A GUIDEWIRE GSCRIPT FUNCTION FOR THE LINK TO THIS FEATURE -->
+    <script type="text/javascript">
+function guidewire_selectall()
+{
+var text_val=eval("document.linktothisurlform.urlfield");
+text_val.focus();
+text_val.select();
+}
+</script>
+  </head>
+  <body style="" onLoad="WWHUpdate();" onUnload="WWHUnload();" onKeyDown="WWHHandleKeyDown((document.all||document.getElementById||document.layers)?event:null);" onKeyPress="WWHHandleKeyPress((document.all||document.getElementById||document.layers)?event:null);" onKeyUp="WWHHandleKeyUp((document.all||document.getElementById||document.layers)?event:null);">
+    <!-- THE FOLLOWING IS A GUIDEWIRE DIV FOR THE 'LINK TO THIS' FEATURE -->
+    <div id="linkToThisPage" class="popup" style="display: none;">
+      <div class="popupTitle">Link Directly to This Page 
+           <a href="#" onclick="var thePopup = getElementById('linkToThisPage');thePopup.style.display='none';return false;"><img class="popupClosebox" src="wwhelp/wwhimpl/common/images/close.gif" /></a></div>
+      <div style="padding:6px;">
+        <div class="popupText" id="linkToThisPageBookmark">An error has occurred if you see this messsage.</div>
+        <form name="linktothisurlform" method="post" action="" style="width:275px;margin:0px">
+          <input type="text" class="popupURLText" id="linkToThisPageURL" name="urlfield" rows="1" cols="55" onClick="guidewire_selectall();" onFocus="guidewire_selectall();"></input>
+        </form>
+      </div>
+    </div>
+    <br />
+    <div class="WebWorks_Breadcrumbs" style="text-align: left;">
+      <span>ClaimCenter System Administration Guide</span> : 
+    <span class="WebWorks_Breadcrumbs" style="text-align: left;"><a class="WebWorks_Breadcrumb_Link" href="importdata.11.1.html#1644791">Importing and Exporting Administrative Data</a> : Importing and Exporting Administrative Data from ClaimCenter</span></div>
+    <hr align="left" />
+    <div>
+      <div class="H1_-_Heading_1"><a name="1644791">Importing and Exporting Administrative Data from </a>ClaimCenter</div>
+      <div class="B_-_Body"><a name="1644795">You can import and export administrative data from the ClaimCenter user interface rather than from the </a>command line. This interface imports and exports data in XML format only.</div>
+      <div class="H2_-_Heading_2"><a name="1644799">Creating an XML File for Import</a></div>
+      <div class="B_-_Body"><a name="1644803">The </a><span class="cv_-_computer_voice">ClaimCenter/build/xsd/cc_import.xsd</span> file defines the XML schema used for import and export. This file further references information in two other XSD files in the same directory: <span class="cv_-_computer_voice">cc_entities.xsd</span> and <span class="cv_-_computer_voice">cc_typelists.xsd</span>. You can use any schema-aware XML editor to help format information properly according to these XSD definitions. You generate these XSD files with the following command:</div>
+      <div class="CS_-_Code_Single_Line"><a name="1644811">gwcc regen-xsd</a></div>
+      <div class="B_-_Body"><a name="1644812">Regenerate the XSD files any time you modify the data model. These files are likely to change as you configure </a>the data model.</div>
+      <div class="B_-_Body"><a name="1644813">Within an XML file, it is common to have references between objects in the file. For example, a user object </a>might refer to a group of which it is a member. Since the group definition is elsewhere in the XML file, or perhaps was previously defined elsewhere, the user definition refers to this group with a foreign key. The foreign key is the object’s public ID. For example, the XML file could contain:</div>
+      <PRE class="CF_-_Code_First_Line"><a name="1644814">&lt;User publicID=“demo_sample:100”&gt; … &lt;/User&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644815">…</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644816">&lt;Group publicID=“demo_sample:200”&gt;</a></PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644817">&nbsp;</a>&nbsp;…</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644818">&nbsp;</a>&nbsp;&lt;Users&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644819">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;GroupUser&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644820">&nbsp;</a>&nbsp;&nbsp;&nbsp;&lt;User publicID=“demo_sample:100” /&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644821">&nbsp;</a>&nbsp;&nbsp;&nbsp;…</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644822">&nbsp;</a>&nbsp;&lt;/GroupUser&gt;</PRE>
+      <PRE class="CM_-_Code_Middle_Line"><a name="1644823">&nbsp;</a>&nbsp;&lt;/Users&gt;</PRE>
+      <PRE class="CL_-_Code_Last_Line"><a name="1644824">&lt;/Group&gt;</a></PRE>
+      <div class="B_-_Body"><a name="1644825">In this example, the user </a><span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt;">demo_sample:100</span> is a member of group <span style="font-family: &quot;Lucida Sans Typewriter&quot;; font-size: 7.0pt;">demo_sample:200</span>.</div>
+      <div class="B_-_Body"><a name="1644826">Within a single XML file you can reference an item before defining the item. This enables you to define all of the </a>groups first, for example, including referring to supervisor users who are not defined until later in the file. ClaimCenter reports errors only if a referenced object still does not exist after reading the entire file.</div>
+      <div class="H2_-_Heading_2"><a name="1644833">Importing Data From the User Interface</a></div>
+      <div class="B_-_Body"><a name="1644834">You can import administrative data from the user interface. Log on as a user with the </a><span class="cv_-_computer_voice">viewadmin</span> and <span class="cv_-_computer_voice">soapadmin</span> permissions and choose <span class="ui_-_UI_element">Import/Export Data</span> from the <span class="ui_-_UI_element">Administration</span> page.</div>
+      <div class="B_-_Body"><a name="1644840">While importing data, ClaimCenter looks for matching data by </a><span class="cv_-_computer_voice">publicID</span> only. ClaimCenter notifies you if it locates existing records that match the data you are trying to import. You can then choose how you want to resolve differences between the existing data and the data you are importing.</div>
+      <div class="F_-_Figure"><a name="1667381"><img class="Default" src="images/admindata.png" style="display: inline; float: none; left: 0.0; top: 0.0;" alt="" /></a></div>
+      <div class="B_-_Body"><a name="1654680">If you perform a case-by-case resolution of each discrepancy, ClaimCenter displays conflicting fields and </a>enables you to update the record with the new version or keep the old version.</div>
+      <div class="F_-_Figure"><a name="1667389"><img class="Default" src="images/resolveimport.png" style="display: inline; float: none; left: 0.0; top: 0.0;" alt="" /></a></div>
+      <div class="B_-_Body"><a name="1654688">During import, ClaimCenter inserts a new entity or updates an existing entity for each entity in the XML file, just </a>as with the command-line import. During an import, ClaimCenter does not run validation rules. However ClaimCenter does run pre-update rules. For this reason, run the <span class="cv_-_computer_voice">maintenance_tools</span> actions to check for user and group exceptions after you import administrative data.</div>
+      <div class="B_-_Body"><span class="ri_-_run_in_header"><a name="1654698">Arrays are a special case.</a></span> ClaimCenter handles arrays differently depending on whether it is importing an owned array or a virtual array. If an entity owns the array, ClaimCenter notifies you of differences between the imported data and any existing data. However, you do not have the choice of resolving the array elements. ClaimCenter only gives you the option to delete the current array and replace all of the contents of the array. Virtual arrays, because they cannot be deleted, cannot be replaced by an import at all.</div>
+      <div class="H2_-_Heading_2"><a name="1654706">Exporting Data from the User Interface</a></div>
+      <div class="B_-_Body"><a name="1667394">You can export different sets of data, including:</a></div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner"><span class="ui_-_UI_element"><a name="1667395">Admin</a></span> - includes all of the other categories</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667396">Authority Limit Profiles</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667397">Business Weeks</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667398">Catastrophes</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667399">Coverage Verifications</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667400">Exchange Rates</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667401">Holidays</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667402">ICD 9 Codes</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667403">Large Loss Thresholds</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667404">Metric Limits</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667405">Questions</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667406">Regions</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667407">Reinsurance Thresholds</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667408">Roles</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="BI_-_Bullet_Item_outer" style="margin-left: 57pt;margin-bottom: 2.0pt; vertical-align: baseline;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="BI_-_Bullet_Item_inner" style="width: 15pt; white-space: nowrap;color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;">
+                <span class="bu_-_bullet">•	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="BI_-_Bullet_Item_inner" style="color: #000000; font-style: normal; font-variant: normal; font-weight: bold; text-transform: none;"><span class="ui_-_UI_element"><a name="1667409">Users and Groups</a></span></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="T_-_Table"><a name="1652315">&nbsp;</a></div>
+      <div class="NI_-_Note_Important">
+        <span class="n_-_note">IMPORTANT   </span><a name="1667535">If a particular data set is not on the previous list, you cannot export it using this function.</a></div>
+      <div class="B_-_Body"><a name="1654777">During export or import of users and groups, ClaimCenter also exports or imports any entities referred to by any </a><span class="cv_-_computer_voice">User</span> or <span class="cv_-_computer_voice">UserRole</span> object through a foreign key or array. </div>
+      <div class="B_-_Body"><a name="1654778">The </a><span class="ui_-_UI_element">Export</span> command exports an XML file.</div>
+      <div class="HS_-_Head_Sub"><a name="1657044">To export administrative data from ClaimCenter</a></div>
+      <div class="LS_-_List_Start_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LS_-_List_Start_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	1.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LS_-_List_Start_inner"><a name="1657061">Log on as a user with the </a><span class="cv_-_computer_voice">viewadmin</span> and <span class="cv_-_computer_voice">soapadmin</span> permissions</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	2.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657129">Click the </a><span class="ui_-_UI_element">Administration</span> tab.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	3.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657151">Choose </a><span class="ui_-_UI_element">Import/Export Data</span>.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	4.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657112">Select the </a><span class="ui_-_UI_element">Export</span> tab.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	5.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657119">Select the data set to export.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	6.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657171">Click </a><span class="ui_-_UI_element">Export</span>. Your browser will note that you are opening a file and will prompt you to save or download the file.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="LI_-_List_Item_outer" style="margin-left: 57pt;">
+        <table border="0" cellspacing="0" cellpadding="0" summary="">
+          <tr style="vertical-align: baseline;">
+            <td>
+              <div class="LI_-_List_Item_inner" style="width: 15pt; white-space: nowrap;">
+                <span class="ri_-_run_in_header">	7.	</span>
+              </div>
+            </td>
+            <td width="100%">
+              <div class="LI_-_List_Item_inner"><a name="1657181">Select to download the XML file.</a></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <script type="text/javascript" language="JavaScript1.2">
+        <!--
+          // Clear related topics
+          //
+          WWHClearRelatedTopics();
+
+          document.writeln(WWHRelatedTopicsInlineHTML());
+        // -->
+      </script>
+    </div>
+    <script type="text/javascript" language="JavaScript1.2">
+      <!--
+        document.write(WWHRelatedTopicsDivTag() + WWHPopupDivTag() + WWHALinksDivTag());
+      // -->
+    </script>
+  </body>
+</html>

@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <InputSet
+    id="PersonAdditionalInfoInputSet">
+    <!-- NOTE: This shared section requires a contact.ContactHandle, rather than a Contact, because it's
+			possible for some actions on a contact detail screen to fundamentally change the contact. In particular, syncing
+			a contact that leads to a downcast of that contact to a more specific subtype causes the original contact to
+			become invalid. To protect against this, contacts on shared sections should be wrapped in a ContactHandle. If the
+			contact is fundamentally changed, then only the handle needs to be updated, and all existing references will see
+			the new contact.
+			
+			As a shortcut for "contactHandle.Contact", this shared section defines a read-only property which can be used to
+			access the most current value of the contact. -->
+    <Require
+      name="contactHandle"
+      type="contact.ContactHandle"/>
+    <Require
+      name="claim"
+      type="Claim"/>
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.PersonInfo"/>
+    <!-- <Input
+      editable="true"
+      id="TaxID"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxID"
+      required="false"
+      value="Person.TaxID"/> -->
+    <!-- <Input
+      editable="true"
+      id="TaxFilingStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.TaxFilingStatus"
+      value="Person.TaxFilingStatus"/> -->
+    <!-- GW ADDED -->
+    <Input
+      editable="true"
+      id="DateOfBirth"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.DateOfBirth"
+      required="(Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true) or (util.WCHelper.isWCorELLossType(claim) &amp;&amp; Person typeis InjuredWorkerExt &amp;&amp; Person.MinorWorkerExt == true)"
+      validationExpression="Person.DateOfBirth == null and Person.TaxID !=null and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() &amp;&amp; (checkClaimantRoleAndMedEligible())? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+      value="Person.DateOfBirth"/>
+    <Input
+      editable="true"
+      id="Gender"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Gender"
+      required="(Person.MedicareEligibleExt==true and Person.RefuseProvideExt != true and Person.BelowThresholdExt != true) or (util.WCHelper.isWCorELLossType(claim) &amp;&amp; claim.State!=&quot;draft&quot; &amp;&amp; contactHandle.Contact.Subtype==&quot;InjuredWorkerExt&quot; &amp;&amp; claim.IncidentReport==false)"
+      validationExpression="Person.Gender== null and Person.TaxID !=null  and Person.validateTaxID() == null and !Person.isValidZeroSSN() and Person.isValidPartialSSN() and checkClaimantRole() ? displaykey.Web.ContactDetail.Name.TaxID.SSN.Required:null"
+      value="Person.Gender"/>
+    <!-- GW ADDED -->
+    <Input
+      editable="true"
+      id="DateOfDeath"
+      label="&quot;Date of Death&quot;"
+      onChange="setDeceasedIndicator()"
+      postOnChange="true"
+      validationExpression="Person.DateOfDeathExt == null || Person.DateOfDeathExt &lt; util.DateUtil.currentDate() ? Person.DateOfDeathExt == null || Person.DateOfBirth == null || Person.DateOfDeathExt &gt;= Person.DateOfBirth? null : &quot;Date must be greater than or equal to the Date of Birth.&quot; : displaykey.Java.Validation.Date.ForbidFuture"
+      value="Person.DateOfDeathExt"/>
+    <Input
+      editable="true"
+      id="MaritalStatus"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.MaritalStatus"
+      value="Person.MaritalStatus"/>
+    <!-- <ClaimContactInput
+      claim="Claim"
+      editable="true"
+      forceContactSubtype="entity.Person"
+      id="Guardian"
+      label="displaykey.Web.ContactDetail.AdditionalInfo.Guardian"
+      newContactMenu="ClaimNewPersonOnlyPickerMenuItemSet"
+      parentContact="Person"
+      showSearchInMenu="false"
+      validationExpression="Person.updateGuardian(Claim)"
+      value="Person.Guardian"
+      valueRange="Claim.getGuardianContactsFromRelatedPersonArray(Person)"/> -->
+    <InputDivider/>
+    <Label
+      label="displaykey.Web.ContactDetail.Company"/>
+    <Input
+      editable="true"
+      id="Occupation"
+      label="displaykey.Web.ContactDetail.Company.Occupation"
+      value="Person.Occupation"/>
+    <ClaimContactInput
+      claim="Claim"
+      editable="true"
+      id="Organization"
+      label="displaykey.Web.ContactDetail.Company.Organization"
+      parentContact="Person"
+      value="Person.Employer"
+      valueRange="Claim.getOrganizations()"/>
+    <Code><![CDATA[property get Person() : Person { return	contactHandle.Contact as Person; }
+
+function setDeceasedIndicator(){
+  if(Person.DateOfDeathExt == null)
+    Person.ClaimantFatalityExt = false
+}
+  //Defect: 7608  
+function checkClaimantRoleAndMedEligible(): boolean{
+  
+  var claimContact = claim.getClaimContact(Person)
+  if((claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String) )){
+    return true
+  }
+  return false
+
+}
+
+function checkClaimantRole(): boolean{
+  
+  var claimContact = claim.getClaimContact(Person)
+   if(claimContact.hasRole(typekey.ContactRole.TC_CLAIMANT as java.lang.String) ){
+  return true 
+   }
+return false
+}
+]]></Code>
+  </InputSet>
+</PCF>

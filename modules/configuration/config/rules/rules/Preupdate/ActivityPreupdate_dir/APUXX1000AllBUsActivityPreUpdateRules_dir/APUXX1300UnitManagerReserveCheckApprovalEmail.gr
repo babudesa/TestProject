@@ -1,0 +1,64 @@
+package rules.Preupdate.ActivityPreupdate_dir.APUXX1000AllBUsActivityPreUpdateRules_dir
+
+@gw.rules.RuleName("APUXX1300 - Unit Manager Reserve/Check Approval Email")
+internal class APUXX1300UnitManagerReserveCheckApprovalEmail {
+  static function doCondition(activity : entity.Activity) : boolean {
+    return /*start00rule*//*Defect # 5235 - kepage 4/25/2012 - Added this rule to send Email to unit manager for approval
+* Original rule in place was in a rule set that was being called before the check number was generated
+* 
+*/
+User.util.CurrentUser!= activity.AssignedUser and  
+activity.Claim.LossType!=typekey.LossType.TC_EQUINE and 
+activity.Claim.LossType!=typekey.LossType.TC_AGRIAUTO and 
+activity.Claim.LossType!=typekey.LossType.TC_AGRILIABILITY and 
+activity.Claim.LossType!=typekey.LossType.TC_AGRIPROPERTY and 
+activity.Claim.LossType!=typekey.LossType.TC_PROFLIABDIV and
+activity.Claim.LossType != typekey.LossType.TC_COMMBONDS and
+activity.Claim.LossType != typekey.LossType.TC_OMAVALON and
+activity.AssignedUser==util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType )and
+(activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_reserve_change")and activity.Status!="complete" or
+activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("approve_payment"))and activity.Status!="complete"/*end00rule*/
+  }
+
+  static function doAction(activity : entity.Activity, actions : gw.rules.Action) {
+/*start00rule*/uses util.custom_Ext.EmailHelper
+
+var unitManagerEmail =util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType ).Contact.EmailAddress1
+var unitManagerName =util.GlobalParameters.ParameterFinder.getUserParameter( "unitmanager", activity.Claim.LossType ) as java.lang.String
+var environmentInformation : String = util.custom_Ext.finders.getEnvironment();
+var emailBody = templates.email.ApprovalActivity.renderToString(activity)
+var clmNum = activity.Claim.ClaimNumber
+var emailHelper = new EmailHelper()
+
+try{
+  
+    gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+ 
+  //If current environment is "Prod" then send email to unit manager
+    if(gw.api.system.server.ServerUtil.getEnv() == "prod") {
+       gw.api.email.EmailUtil.sendEmailWithBody(null,
+          unitManagerEmail, unitManagerName, "ClaimCenterSupport@gaig.com",
+          "ClaimCenter Notification", "Approval Activity Notification", emailBody);
+       gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Unit Manager User")        
+  
+    //otherwise send to ClaimCenter testing email address
+    } else {
+       gw.api.email.EmailUtil.sendEmailWithBody(null,
+          ScriptParameters.ClaimCenterDevEmail, "ClaimCenter Testing",
+          "ClaimCenterSupport@gaig.com", environmentInformation,
+          "Approval Activity Notification", emailBody)   
+       gw.api.util.Logger.logInfo("### UnitApprovalEmail - Activity Approval Notification Sent to Unit Manager User")
+    }
+
+    actions.exit()
+
+}
+catch(aex:gw.rules.AbortExecutionException){
+  throw aex 
+}
+catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( TransactionSet, actions.getRule().toString(), e, null );
+}
+/*end00rule*/
+  }
+}

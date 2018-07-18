@@ -1,0 +1,20 @@
+package rules.Preupdate.ClaimPreupdate_dir
+
+@gw.rules.RuleName("CPU11000 - Subro - Referral")
+internal class CPU11000SubroReferral {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// CPU01910
+Claim.SubrogationSummary != null AND
+Claim.SubrogationSummary.EscalateSubro AND
+Claim.SubrogationSummary.isFieldChanged( "EscalateSubro")/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var newAct = Claim.createActivityFromPattern(null,ActivityPattern.finder.getActivityPatternByCode("subro_check")) ;
+newAct.Description = Claim.SubrogationSummary.SubroReferralComment;
+Claim.SubrogationSummary.SubroReferralDate = gw.api.util.DateUtil.currentDate();
+if (Claim.SubrogationStatus <> "open")
+    { Claim.SubrogationStatus="review"};
+Claim.addToHistory( Claim.createCustomHistoryEvent( "DataChange", displaykey.Subrogation.History.Referal ) )/*end00rule*/
+  }
+}

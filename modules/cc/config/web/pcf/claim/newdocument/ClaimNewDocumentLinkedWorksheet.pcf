@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Worksheet
+    afterCancel="removeFileIfCreated()"
+    canEdit="true"
+    canVisit="true"
+    id="ClaimNewDocumentLinkedWorksheet"
+    startInEditMode="true"
+    tabLabel="displaykey.Java.PageAction.NewDocument"
+    title="displaykey.Java.PageAction.NewDocument">
+    <LocationEntryPoint
+      signature="ClaimNewDocumentLinkedWorksheet(Claim : Claim)"/>
+    <Scope
+      location="*"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      initialValue="gw.document.DocumentsUtil.createDocumentCreationInfo(Claim)"
+      name="DocumentCreationInfo"
+      type="gw.document.DocumentCreationInfo"/>
+    <ScreenRef
+      def="NewDocumentLinkedScreen(DocumentCreationInfo, Claim)"/>
+    <Code><![CDATA[function removeFileIfCreated() {
+  var docContentSrc = gw.plugin.Plugins.get(gw.plugin.document.IDocumentContentSource)
+  var doc = DocumentCreationInfo.Document
+  if (doc.DocUID != null and docContentSrc.isDocument(doc)) {
+    try {
+      if (not docContentSrc.removeDocument(doc)) {
+        var docMetadataSrc = gw.plugin.Plugins.get(gw.plugin.document.IDocumentMetadataSource)
+        docMetadataSrc.removeDocument(doc)
+      }
+    } catch (e : java.lang.Exception) {
+      gw.api.util.Logger.DOCUMENT.error(e.Message)
+    }
+  }
+}]]></Code>
+  </Worksheet>
+</PCF>

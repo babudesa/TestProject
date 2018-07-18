@@ -1,0 +1,24 @@
+package rules.Validation.MatterValidationRules_dir.MVXX1000AllBUsMatterValidationRules_dir
+
+@gw.rules.RuleName("MVXX1300 - Claimant Required on Matter Assignment")
+internal class MVXX1300ClaimantRequiredonMatterAssignment {
+  static function doCondition(matter : entity.Matter) : boolean {
+    return /*start00rule*/exists (ae in matter.MatterAssignmentsExt*.AssignmentExposuresExt where
+        ae.ClaimantExt == null) || 
+exists(ma in matter.MatterAssignmentsExt where
+        ma.AssignmentExposuresExt.IsEmpty)/*end00rule*/
+  }
+
+  static function doAction(matter : entity.Matter, actions : gw.rules.Action) {
+/*start00rule*/var msg:String
+
+try{
+    
+    msg="At least one claimant must be selected for the Law Firm."
+    matter.reject("newloss", msg, null, null)    
+    
+  } catch(e) {
+  util.ErrorHandling.GAICErrorHandling.logError( matter, actions.getRule().DisplayName, e, null )
+}/*end00rule*/
+  }
+}

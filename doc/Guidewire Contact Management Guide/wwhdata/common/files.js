@@ -1,0 +1,48 @@
+function  WWHBookData_Files(P)
+{
+P.fA("Guidewire Contact Management Guide","cover-contact.html");
+P.fA("About This Document","about.html");
+P.fA("Key Concepts in Contact Management","understanding.03.1.html");
+P.fA("Components of Contact Management","understanding.03.2.html");
+P.fA("ClaimCenter Integration with ContactCenter","understanding.03.3.html");
+P.fA("Integrating ClaimCenter with ContactCenter","integrate.04.1.html");
+P.fA("Integration Concepts and Prerequisites","integrate.04.2.html");
+P.fA("Installing and Integrating ContactCenter with QuickStart","integrate.04.3.html");
+P.fA("Installing and Integrating ContactCenter in a Development Environment","integrate.04.4.html");
+P.fA("Management and Configuration Resources","admin.05.1.html");
+P.fA("Managing ContactCenter Information","admin.05.2.html");
+P.fA("Configuring ClaimCenter Contact Management Features","admin.05.3.html");
+P.fA("Configuring an Integrated ClaimCenter and ContactCenter","admin.05.4.html");
+P.fA("Extending the Contact Data Model","extending.06.1.html");
+P.fA("Understanding the Contact Data Model","extending.06.2.html");
+P.fA("Extending Contacts","extending.06.3.html");
+P.fA("Working with Contact Mapping Files","extending.06.4.html");
+P.fA("Example of Adding a Contact Subtype","extending.06.5.html");
+P.fA("Synchronizing Contacts between ContactCenter and ClaimCenter","syncing.07.1.html");
+P.fA("Configuring Automatic Synchronization","syncing.07.2.html");
+P.fA("Synchronizing Contact Attributes","syncing.07.3.html");
+P.fA("Configuring Link Functionality","syncing.07.4.html");
+P.fA("Configuring Roles and Relationships","roles.08.1.html");
+P.fA("Adding Contact Roles","roles.08.2.html");
+P.fA("How Configuring Roles Impacts Entity Data and Types","roles.08.3.html");
+P.fA("Example of Adding a New Contact Role","roles.08.4.html");
+P.fA("Relationships Between Contacts","roles.08.5.html");
+P.fA("Configuring Contact Address Interfaces","afill-zmap.09.1.html");
+P.fA("Understanding Autofill and Zone Mapping","afill-zmap.09.2.html");
+P.fA("Importing Address Zone Data","afill-zmap.09.3.html");
+P.fA("Working with the zone-config.xml File","afill-zmap.09.4.html");
+P.fA("Configuring Addressing","afill-zmap.09.5.html");
+P.fA("Implementing Autofill and Autocomplete in a PCF File","afill-zmap.09.6.html");
+P.fA("Contact Pickers and Search","picker.10.1.html");
+P.fA("How Pickers Work","picker.10.2.html");
+P.fA("Example of a Constrained Picker","picker.10.3.html");
+P.fA("Extending Contacts and Search with an Array","picker.10.4.html");
+P.fA("Proximity Search Using Geocoding","geocode.11.1.html");
+P.fA("Overview of the Geocoding Feature","geocode.11.2.html");
+P.fA("The Mechanics of Geocoding","geocode.11.3.html");
+P.fA("Configuring Geocoding","geocode.11.4.html");
+P.fA("Proximity Search and Geocoding with Gosu","geocode.11.5.html");
+P.fA("Securing Contact Information","security.12.1.html");
+P.fA("Overview of Contact Security","security.12.2.html");
+P.fA("Configuring Contact Permissions","security.12.3.html");
+}

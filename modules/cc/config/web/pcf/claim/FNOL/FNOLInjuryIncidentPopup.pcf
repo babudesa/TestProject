@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    afterEnter="initializeVariables()"
+    canEdit="true"
+    id="FNOLInjuryIncidentPopup"
+    returnType="InjuryIncident"
+    startInEditMode="true"
+    title="displaykey.Web.FNOLInjuryIncidentPopup.Title">
+    <LocationEntryPoint
+      signature="FNOLInjuryIncidentPopup(Claim: Claim, injuryIncident: InjuryIncident)"/>
+    <Variable
+      name="Claim"
+      type="Claim"/>
+    <Variable
+      name="injuryIncident"
+      type="InjuryIncident"/>
+    <Variable
+      name="contactPerson"
+      type="Person"/>
+    <Variable
+      name="newPerson"
+      type="Person"/>
+    <Variable
+      name="originalPerson"
+      type="Person"/>
+    <Screen
+      id="FNOLInjuryIncidentScreen">
+      <TitleBar
+        icon="injuryIncident.HeaderIcon"/>
+      <Toolbar>
+        <EditButtons
+          pickValue="injuryIncident"/>
+      </Toolbar>
+      <DetailViewPanel
+        id="ContactDV">
+        <InputColumn>
+          <RangeInput
+            editable="true"
+            id="ClaimContactPerson"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.Person.Label"
+            onChange="assignContact()"
+            optionLabel="VALUE == newPerson ? displaykey.Web.FNOLContactPopup.ContactDV.NewPerson.Value : VALUE.DisplayName"
+            postOnChange="true"
+            showNoneSelected="false"
+            value="contactPerson"
+            valueRange="getContactPersonValueRange()"/>
+          <InputSetRef
+            def="FNOLContactInputSet( contactPerson, ContactRole.TC_INJURED, injuryIncident )"/>
+        </InputColumn>
+        <InputColumn>
+          <Label
+            id="Injury"
+            label="displaykey.Web.FNOLContactPopup.ContactDV.InjuryLabel"/>
+          <InputSetRef
+            def="InjuryIncidentInputSet(injuryIncident)"/>
+        </InputColumn>
+      </DetailViewPanel>
+    </Screen>
+    <Code><![CDATA[function getContactPersonValueRange() : List<Contact> {
+  var existingContacts = Claim.getRelatedContacts( Person ) 
+  var result = (existingContacts as List<Contact>)
+  if ((newPerson != null) &&
+      (not result.contains(newPerson))) {
+    result.add(newPerson)
+  }
+  if ((originalPerson != null) &&
+      (not result.contains(originalPerson))) {
+    result.add(originalPerson)
+  }
+  return result
+}
+
+function initializeVariables() {
+  if (injuryIncident == null) {
+    injuryIncident = new InjuryIncident();
+    Claim.addToIncidents( injuryIncident );
+  }  
+  
+  newPerson = new Person()
+  if (injuryIncident.injured == null) {
+    injuryIncident.injured = newPerson
+  } else {
+    originalPerson = injuryIncident.injured
+  }
+
+  contactPerson = injuryIncident.injured
+}
+
+function assignContact() {
+  injuryIncident.injured = contactPerson
+}]]></Code>
+  </Popup>
+</PCF>

@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <ListViewPanel
+    id="UserSearchResultsLV">
+    <Require
+      name="searchResults"
+      type="UserQuery"/>
+    <Require
+      name="EnablePick"
+      type="boolean"/>
+    <Require
+      name="pageHelper"
+      type="contact.ProximitySearchPageHelper"/>
+    <Require
+      name="searchCriteria"
+      type="UserSearchCriteria"/>
+    <Require
+      name="EnableCheckbox"
+      type="boolean"/>
+    <Variable
+      initialValue="pageHelper.getDrivingDirectionsCache()"
+      name="directions"
+      recalculateOnRefresh="false"/>
+    <RowIterator
+      canPick="EnablePick"
+      checkBoxVisible="EnableCheckbox"
+      editable="false"
+      elementName="user"
+      hasCheckBoxes="true"
+      pickValue="user"
+      value="searchResults">
+      <ToolbarFlag
+        name="User"/>
+      <Row>
+        <Cell
+          action="UserDetailPage.go(user)"
+          available="not EnablePick"
+          id="DisplayName"
+          label="displaykey.Web.UserSearchResults.DisplayName"
+          sortBy="user"
+          sortOrder="1"
+          value="user.DisplayName"/>
+        <Cell
+          id="Username"
+          label="displaykey.Web.UserSearchResults.Username"
+          value="user.Credential.UserName"/>
+        <TextCell
+          enableSort="false"
+          id="GroupName"
+          label="displaykey.Web.UserSearchResults.GroupName"
+          numCols="100"
+          numEntries="5"
+          value="user.AllGroups"/>
+        <Cell
+          enableSort="false"
+          id="GCDistance"
+          label="displaykey.Web.Addressbook.Search.Result.ProximateDistance"
+          sortOrder="1"
+          value="user.Contact.PrimaryAddress.getDistanceFromAsString(searchCriteria.Contact.ProximitySearchCenter)"
+          valueVisible="user.Contact.PrimaryAddress.hasLocationInformation()"
+          visible="searchCriteria.Contact.isProximitySearch()"
+          width="50"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="DrivingDistance"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingDistance"
+          value="directions.getCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress).getTotalDistanceString()"
+          valueVisible="directions.haveCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria.getContact())"
+          width="50"
+          wrap="false"/>
+        <Cell
+          enableSort="false"
+          id="DrivingTime"
+          label="displaykey.Web.Addressbook.Search.Result.DrivingTime"
+          value="directions.getCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress).getTotalTimeInMinutes()"
+          valueVisible="directions.haveCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria.getContact())"
+          width="50"
+          wrap="false"/>
+        <Cell
+          action="AddressBookDirectionsPopup.push(directions.getCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress))"
+          enableSort="false"
+          id="Directions"
+          label="displaykey.Web.Addressbook.Search.Result.Directions"
+          value="displaykey.Web.Addressbook.Search.Result.Directions"
+          valueVisible="directions.haveCached(searchCriteria.getContact().ProximitySearchCenter, user.Contact.PrimaryAddress)"
+          visible="pageHelper.displayDirectionsColumns(searchCriteria.getContact())"
+          width="50"/>
+      </Row>
+    </RowIterator>
+  </ListViewPanel>
+</PCF>

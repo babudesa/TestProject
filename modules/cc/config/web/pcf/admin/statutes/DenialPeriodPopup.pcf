@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Popup
+    beforeCommit="validate(aWCDenialPeriod)"
+    canEdit="true"
+    canVisit="true"
+    id="DenialPeriodPopup"
+    returnType="WCDenialPeriod"
+    startInEditMode="willStartInEditMode"
+    title="displaykey.Web.Admin.WCDenialDetail">
+    <LocationEntryPoint
+      signature="DenialPeriodPopup()"/>
+    <LocationEntryPoint
+      signature="DenialPeriodPopup( specificWCDenialPeriod : WCDenialPeriod, willStartInEditMode : boolean)"/>
+    <Variable
+      initialValue="true"
+      name="willStartInEditMode"/>
+    <Variable
+      name="specificWCDenialPeriod"
+      type="WCDenialPeriod"/>
+    <Variable
+      initialValue="specificWCDenialPeriod == null ? new WCDenialPeriod() : specificWCDenialPeriod"
+      name="aWCDenialPeriod"
+      type="WCDenialPeriod"/>
+    <Screen>
+      <PanelRef
+        def="DenialPeriodDV(aWCDenialPeriod)">
+        <Toolbar>
+          <EditButtons
+            pickValue="aWCDenialPeriod"/>
+        </Toolbar>
+      </PanelRef>
+    </Screen>
+    <Code><![CDATA[
+function validate(denialPeriod: entity.WCDenialPeriod) : String {
+  
+  var endDate = denialPeriod.ExpiryDate
+  var startDate = denialPeriod.EffectiveDate
+  var jurisdiction = denialPeriod.JurisdictionState
+  
+  var overlaps = find(
+        dp in WCDenialPeriod 
+      where 
+        dp.JurisdictionState == jurisdiction
+      and 
+         dp != denialPeriod
+      and 
+        (dp.EffectiveDate <= endDate AND dp.ExpiryDate >= startDate)
+  )
+          
+  if (overlaps.Count > 0) {
+    throw new gw.api.util.DisplayableException(displaykey.Web.Admin.WCParams.DenialPeriod.ConflictWarning)
+  } else {
+    return null
+  }    
+}
+      
+    ]]></Code>
+  </Popup>
+</PCF>

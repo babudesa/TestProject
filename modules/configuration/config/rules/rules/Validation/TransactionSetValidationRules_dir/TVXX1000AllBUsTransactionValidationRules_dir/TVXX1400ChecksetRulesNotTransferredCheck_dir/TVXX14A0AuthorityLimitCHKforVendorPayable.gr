@@ -1,0 +1,29 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVXX1000AllBUsTransactionValidationRules_dir.TVXX1400ChecksetRulesNotTransferredCheck_dir
+
+@gw.rules.RuleName("TVXX14A0 - Authority Limit CHK for Vendor Payable")
+internal class TVXX14A0AuthorityLimitCHKforVendorPayable {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*///exists (xx in TransactionSet.RequestingUser.roles where xx.Role.Name == "Make Vendors Payable") and 
+exists (role in transactionSet.RequestingUser.Roles where exists(xx in role.Role.Privileges where xx.Permission.Code == "vendorpayable")) and 
+!exists (usr in transactionSet.RequestingUser.Roles where usr.Role.Name == "Superuser") and 
+exists (authLimit in transactionSet.RequestingUser.AuthorityLimits where authLimit.LimitAmount > 0.01) and 
+transactionSet.New
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/var ruleName=gw.api.util.StringUtil.substring(actions.getRule().DisplayName,0,8);
+var illegalLimit = false;
+
+for (perm in transactionSet.RequestingUser.AuthorityLimits)
+  if (perm.LimitAmount > 0.01) {
+  {
+     illegalLimit = true;
+  }
+}
+
+if(illegalLimit){
+  transactionSet.reject( null,null,"newloss", "Vendor Payable role must not have more than .01 for an authorization limit.");
+}/*end00rule*/
+  }
+}

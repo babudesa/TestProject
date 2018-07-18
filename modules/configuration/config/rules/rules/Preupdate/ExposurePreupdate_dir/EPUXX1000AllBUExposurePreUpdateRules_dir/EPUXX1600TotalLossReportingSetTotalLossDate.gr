@@ -1,0 +1,16 @@
+package rules.Preupdate.ExposurePreupdate_dir.EPUXX1000AllBUExposurePreUpdateRules_dir
+
+@gw.rules.RuleName("EPUXX1600 - Total Loss Reporting - Set Total Loss Date")
+internal class EPUXX1600TotalLossReportingSetTotalLossDate {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*/exposure.ChangedFields.contains( "TotalLossIndExt" ) and
+exposure.needsTotalLossReporting() and exposure.DateOfTotalLossExt==null/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/if(((exposure.OriginalVersion as Exposure).TotalLossIndExt!=
+   exposure.TotalLossIndExt) and exposure.TotalLossIndExt==true){
+  exposure.DateOfTotalLossExt = gw.api.util.DateUtil.currentDate()
+}/*end00rule*/
+  }
+}

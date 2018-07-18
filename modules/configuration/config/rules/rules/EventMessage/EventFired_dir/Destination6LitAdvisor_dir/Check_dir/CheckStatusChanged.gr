@@ -1,0 +1,15 @@
+package rules.EventMessage.EventFired_dir.Destination6LitAdvisor_dir.Check_dir
+
+@gw.rules.RuleName("CheckStatusChanged")
+internal class CheckStatusChanged {
+  static function doCondition(messageContext : entity.MessageContext) : boolean {
+    return /*start00rule*/messageContext.EventName == "CheckStatusChanged"/*end00rule*/
+  }
+
+  static function doAction(messageContext : entity.MessageContext, actions : gw.rules.Action) {
+/*start00rule*/var check = messageContext.Root as Check;
+var lssAdminInfo = find (admin in LSSAdminExt where admin.LossTypeExt ==check.Claim.LossType).AtMostOneRow
+if (lssAdminInfo != null && lssAdminInfo.EnableLSSExt)
+  util.gaic.LitAdvisorFunctions.sendLossCheckChanges( messageContext, check );/*end00rule*/
+  }
+}

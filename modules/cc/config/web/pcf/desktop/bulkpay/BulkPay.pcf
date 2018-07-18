@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../../pcf.xsd">
+  <Page
+    canEdit="false"
+    canVisit="perm.BulkInvoice.view"
+    id="BulkPay"
+    title="displaykey.Web.Financials.BulkPay.Invoice.BulkInvoices">
+    <LocationEntryPoint
+      signature="BulkPay()"/>
+    <Variable
+      initialValue="new financials.BulkPayHelper()"
+      name="helper"/>
+    <Variable
+      initialValue="displaykey.Web.Financials.BulkPay.Filter.All"
+      name="bulkPayFilter"
+      type="String"/>
+    <Screen
+      editable="true"
+      id="BulkPayScreen">
+      <Toolbar>
+        <ToolbarRangeInput
+          id="BulkPayFilter"
+          postOnChange="true"
+          showNoneSelected="false"
+          value="bulkPayFilter"
+          valueRange="getBulkPayFilterOptions()"/>
+        <ToolbarButton
+          action="NewBulkInvoiceDetail.go()"
+          id="CreateNewButton"
+          label="displaykey.Web.Financials.BulkPay.Button.CreateNew"
+          visible="perm.BulkInvoice.create"/>
+        <CheckedValuesToolbarButton
+          checkedRowAction="BulkInvoice.delete()"
+          confirmMessage="displaykey.Web.Financials.BulkPay.Invoice.Delete.Confirm"
+          flags="all Deleteable"
+          id="DeleteButton"
+          iterator="BulkInvoicesLV"
+          label="displaykey.Web.Financials.BulkPay.Button.Delete"
+          visible="perm.BulkInvoice.delete"/>
+        <ToolbarDivider/>
+        <CheckedValuesToolbarButton
+          checkedRowAction="BulkInvoice.validate()"
+          flags="any Validateable, all Validateable"
+          id="ValidateButton"
+          iterator="BulkInvoicesLV"
+          label="displaykey.Web.Financials.BulkPay.Button.Validate"
+          visible="perm.BulkInvoice.edit"/>
+        <CheckedValuesToolbarButton
+          checkedRowAction="BulkInvoice.submitForApproval()"
+          flags="any Submittable, all Submittable"
+          id="SubmitButton"
+          iterator="BulkInvoicesLV"
+          label="displaykey.Web.Financials.BulkPay.Button.Submit"
+          visible="perm.BulkInvoice.edit"/>
+        <ToolbarDivider/>
+        <CheckedValuesToolbarButton
+          checkedRowAction="BulkInvoice.stopBulkInvoice()"
+          flags="one Stoppable, all Stoppable"
+          id="StopButton"
+          iterator="BulkInvoicesLV"
+          label="displaykey.Web.Financials.BulkPay.Button.Stop"
+          visible="perm.BulkInvoice.edit"/>
+        <CheckedValuesToolbarButton
+          checkedRowAction="BulkInvoice.voidBulkInvoice()"
+          flags="one Voidable, all Voidable"
+          id="VoidButton"
+          iterator="BulkInvoicesLV"
+          label="displaykey.Web.Financials.BulkPay.Button.Void"
+          visible="perm.BulkInvoice.edit"/>
+        <ToolbarDivider/>
+        <ToolbarButton
+          action="helper.clearMessages()"
+          id="RefreshButton"
+          label="displaykey.Web.Financials.BulkPay.Button.Refresh"/>
+      </Toolbar>
+      <PanelRef
+        def="BulkInvoicesLV(helper.getBulkInvoicesByStatus( getBulkInvoiceActiveStatus() ))"/>
+    </Screen>
+    <Code><![CDATA[
+function getBulkInvoiceActiveStatus() : BulkInvoiceStatus[] {
+  if (displaykey.Web.Financials.BulkPay.Filter.Active.equals(bulkPayFilter)) {
+    return new BulkInvoiceStatus[]{BulkInvoiceStatus.TC_AWAITINGSUBMISSION, BulkInvoiceStatus.TC_DRAFT, BulkInvoiceStatus.TC_INREVIEW,
+                                   BulkInvoiceStatus.TC_INVALIDITEMS, BulkInvoiceStatus.TC_ONHOLD, BulkInvoiceStatus.TC_PENDINGITEMVALIDATION,
+                                   BulkInvoiceStatus.TC_PENDINGSTOP, BulkInvoiceStatus.TC_PENDINGVOID, BulkInvoiceStatus.TC_REJECTED,
+                                   BulkInvoiceStatus.TC_REQUESTED, BulkInvoiceStatus.TC_REQUESTING}
+  } else {
+    return null
+  }
+}
+
+function getBulkPayFilterOptions() : String[] {
+  return {displaykey.Web.Financials.BulkPay.Filter.Active, displaykey.Web.Financials.BulkPay.Filter.All}
+}
+    ]]></Code>
+  </Page>
+</PCF>

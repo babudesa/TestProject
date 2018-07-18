@@ -1,0 +1,28 @@
+package rules.Preupdate.TransactionSetPreupdate_dir.TPUEL1000ELDTransactionPreUpdateRules_dir.TPUEL1100CheckSetandReserveSet_dir
+
+@gw.rules.RuleName("TPUEL1120 - Change to Potential Development")
+internal class TPUEL1120ChangetoPotentialDevelopment {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/transactionSet.Claim.isClaimOpenToCreateActivity() and
+(transactionSet.Claim.Activities.where(\ a -> a.ActivityPattern.Code == "initial_potential" and !a.isNew()).HasElements and
+!transactionSet.Claim.Activities.where(\ a -> a.ActivityPattern.Code == "change_potential" and a.Status == "open").HasElements)
+
+// this rule checks to see if incurred has changed
+// the same "change_potential" activity should also be created if the potential development field has changed
+// see the Change to Potential Development rule in Claim Pre-Update under ELD Claim PreUpdate Rules/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var origfintotal = gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount((transactionSet.Claim.OriginalVersion as Claim))
+  var fintotal = gw.api.financials.FinancialsCalculationUtil.getTotalIncurredGross().getAmount(transactionSet.Claim)
+  
+  if (fintotal != origfintotal){
+    var ap = util.custom_Ext.finders.findActivityPattern("change_potential")
+    transactionSet.Claim.createActivityFromPattern(null, ap)
+  }
+}catch(e){
+      util.ErrorHandling.GAICErrorHandling.logError( transactionSet.Claim, actions.getRule().DisplayName, e, "" )
+}/*end00rule*/
+  }
+}

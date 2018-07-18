@@ -1,0 +1,30 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUEQ1000EquineClaimPreUpdateRules_dir.CPUEQ1100SupervisorActivities_dir
+
+@gw.rules.RuleName("CPUEQ1110 - Animal Dead and above adjuster authority")
+internal class CPUEQ1110AnimalDeadandaboveadjusterauthority {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/// 6/2/2008 - zjthomas - Defect 1682, Replaced user specific rules with global rules "CPUEQ1100 - Supervisor Activities".
+// 3/3/2014 - mbendure - Defect 6703, added a check for the policy refreshing.  During a policy refresh the data returned from claim.FixedPropertyIncidentsOnly was not always correct
+!exists( Activity in claim.Activities
+    where (Activity.ActivityPattern == util.custom_Ext.finders.findActivityPattern("eq_supreview_dead"))) and !claim.PolicyRefreshedExt
+    /*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///* Check for Claim Cost Authority Limit of the Adjuster aginst the value of the injured animal
+for (injuredanimal in claim.FixedPropertyIncidentsOnly) {
+  for (authoritylimit in claim.AssignedUser.AuthorityLimits) {
+    if(authoritylimit.LimitType == "cptd" and authoritylimit.CostType == "claimcost"){
+      if (claim.DeathDate != null and (injuredanimal.Property.ex_AmountofInsurance > authoritylimit.LimitAmount)) {
+        claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_supreview_dead"), "Supervisor Review - " + injuredanimal.Property.RoundUpThePropertyValue() + " DEAD, Above Adjuster Authority", " ","normal", false, null, null)
+        actions.exitToNext()
+      }  //end if 
+      else if(claim.DeathDate == null and (injuredanimal.Property.ex_AmountofInsurance > authoritylimit.LimitAmount)) {
+        claim.createActivity( null, util.custom_Ext.finders.findActivityPattern("eq_supreview_dead"), "Supervisor Review - " + injuredanimal.Property.RoundUpThePropertyValue() + ", Above Adjuster Authority",  " ","normal", false, null, null)
+        actions.exitToNext()
+      }  //end else
+    }
+  }  //end inner for
+}  //end for/*end00rule*/
+  }
+}

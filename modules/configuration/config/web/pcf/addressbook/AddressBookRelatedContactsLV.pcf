@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<PCF
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="../../../../../pcf.xsd">
+  <ListViewPanel
+    border="true"
+    desc="List of Related Contacts"
+    id="AddressBookRelatedContactsLV">
+    <Require
+      name="primaryContact"
+      type="Contact"/>
+    <Require
+      name="externalContactSource"
+      type="contact.ExternalContactSource"/>
+    <RowIterator
+      editable="true"
+      elementName="contactContact"
+      hideCheckBoxesIfReadOnly="true"
+      pageSize="10"
+      toAdd="primaryContact.addContactContact(contactContact)"
+      toRemove="primaryContact.removeContactContact(contactContact)"
+      value="primaryContact.allContactContacts">
+      <ToolbarFlag
+        name="relationship"/>
+      <Row>
+        <AddressBookContactCell
+          editable="true"
+          forceContactSubtype="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).OtherContactType"
+          id="Contact"
+          label="displaykey.Web.RelatedContactsLV.Contact"
+          newContactMenu="NewPlaceMenuItemSet(new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).OtherContactType, primaryContact)"
+          onPick="contactContact.setBidiRel(primaryContact, ContactBidiRel.TC_COMPANYLOCATION)"
+          parentContact="primaryContact"
+          postOnChange="true"
+          required="true"
+          setNoneSelected="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).setNoneSelected()"
+          sortBy="contactContact.getOtherContact(primaryContact).PrimarySortValue,contactContact.getOtherContact(primaryContact).SecondarySortValue,contactContact.getOtherContact(primaryContact).TertiarySortValue,contactContact.getOtherContact(primaryContact).QuaternarySortValue"
+          sortOrder="2"
+          value="new util.lvwrapper.ContactContactLVWrapper(contactContact, primaryContact).OtherContact"/>
+        <TypeKeyCell
+          editable="true"
+          filter="VALUE == ContactBidiRel.TC_COMPANYLOCATION ? true : false"
+          id="Rel"
+          label="displaykey.Web.RelatedContactsLV.Rel"
+          required="true"
+          setter="contactContact.setBidiRel(primaryContact, VALUE)"
+          sortOrder="1"
+          value="contactContact.getBidiRel(primaryContact)"/>
+        <Cell
+          id="Address"
+          label="displaykey.Web.RelatedContactsLV.Address"
+          value="getRelatedAddress(contactContact, &quot;Address&quot;)"/>
+        <Cell
+          id="City"
+          label="displaykey.Web.RelatedContactsLV.City"
+          value="getRelatedAddress(contactContact, &quot;City&quot;)"/>
+        <Cell
+          id="State"
+          label="displaykey.Web.RelatedContactsLV.State"
+          value="getRelatedAddress(contactContact, &quot;State&quot;)"/>
+        <Cell
+          id="ZipCode"
+          label="displaykey.Web.RelatedContactsLV.ZipCode"
+          value="getRelatedAddress(contactContact, &quot;Zip&quot;)"/>
+        <Cell
+          id="AddressType"
+          label="displaykey.Web.RelatedContactsLV.AddressType"
+          value="getRelatedAddress(contactContact, &quot;Type&quot;)"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[function getRelatedAddress(conCon : ContactContact, code : String) : String {
+  if(new util.lvwrapper.ContactContactLVWrapper(conCon, primaryContact).OtherContact != null){
+    var cont = externalContactSource.loadContact(new util.lvwrapper.ContactContactLVWrapper(conCon, primaryContact).OtherContact, true)
+    switch(code){
+      case "Address" :
+        return  cont.PrimaryAddress.AddressLine1
+      case "City" :
+        return cont.PrimaryAddress.City
+      case "State" :
+        return cont.PrimaryAddress.State.DisplayName
+      case "Zip" :
+        return cont.PrimaryAddress.PostalCode
+      case "Type" :
+        return cont.PrimaryAddress.AddressType.DisplayName
+    }
+  }
+ return null 
+}]]></Code>
+  </ListViewPanel>
+</PCF>

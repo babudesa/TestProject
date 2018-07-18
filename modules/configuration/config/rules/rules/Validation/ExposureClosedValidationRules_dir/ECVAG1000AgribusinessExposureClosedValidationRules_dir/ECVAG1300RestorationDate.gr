@@ -1,0 +1,39 @@
+package rules.Validation.ExposureClosedValidationRules_dir.ECVAG1000AgribusinessExposureClosedValidationRules_dir
+
+@gw.rules.RuleName("ECVAG1300 - Restoration Date")
+internal class ECVAG1300RestorationDate {
+  static function doCondition(exposure : entity.Exposure) : boolean {
+    return /*start00rule*//*Restoration Date: Required to be populated before closing the feature
+  that has the restoration date on it and a Loss payment.
+  Sprint/EC: Sprint 3
+  Author: Eric Rawe
+  Date: 9/11/08
+*/
+((exposure.CoverageSubType=="ab_FPE_ext_exp" || exposure.CoverageSubType=="ab_FPF_ext_exp"||
+exposure.CoverageSubType== "ab_FPG_ext_exp" || exposure.CoverageSubType=="ab_FPG_farm_income")
+)/*end00rule*/
+  }
+
+  static function doAction(exposure : entity.Exposure, actions : gw.rules.Action) {
+/*start00rule*/var errorReason = "The Restoration Date is required to close a first-party property feature"
+
+try{
+for(transaction in exposure.getTransactionsIterator(false)){
+  if((transaction as Transaction).Subtype == "Payment"
+    and (transaction as Transaction).CostType=="claimcost"){
+      if(exposure.RestorationDateExt==null){
+        exposure.reject( "payment", errorReason, null, null ) 
+        gw.api.util.Logger.logInfo( actions.getRule().DisplayName )
+      }
+  }
+}
+}
+catch (e) {
+  util.ErrorHandling.GAICErrorHandling.logError( exposure, actions.getRule().DisplayName, e, null )
+}
+
+
+
+/*end00rule*/
+  }
+}

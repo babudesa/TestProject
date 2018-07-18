@@ -1,0 +1,9 @@
+e9f9515c415df3d6ac0beb89c9c5b6fe5c52024b997c09ca0ace6615e042c69db79be4ab2886f20f8dd7d89acdcc41ae8e6796dd2bb18d31d53c6cebbb37e8de
+lib/asm-3.1.jar,2d88388448e1e463
+lib/asm-analysis-3.1.jar,2bace63603e67128
+lib/asm-commons-3.1.jar,eac5d38d1b7c6cfd
+lib/asm-tree-3.1.jar,82f902e4d803aa4c
+lib/asm-util-3.1.jar,c2fb1d7027801b8c
+lib/commons-cli-1.0.jar,300accb6abf41ac9
+lib/javassist.jar,d32cb6572b55a72c
+lib/jline-0.9.94.jar,866c40d6e2d99b24

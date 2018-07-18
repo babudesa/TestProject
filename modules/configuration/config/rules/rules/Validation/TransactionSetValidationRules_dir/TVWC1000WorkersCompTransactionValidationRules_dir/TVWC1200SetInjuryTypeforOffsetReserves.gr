@@ -1,0 +1,37 @@
+package rules.Validation.TransactionSetValidationRules_dir.TVWC1000WorkersCompTransactionValidationRules_dir
+
+@gw.rules.RuleName("TVWC1200 - Set Injury Type for Offset Reserves")
+internal class TVWC1200SetInjuryTypeforOffsetReserves {
+  static function doCondition(transactionSet : entity.TransactionSet) : boolean {
+    return /*start00rule*/exists(trans in transactionSet.AllTransactions where trans.Subtype=="reserve" && trans.WCInjuryTypeExt == null)
+/*Defect 8192 - cmullin - re-worked the Injury Type rules (see also Defect 8100) to catch any offsetting or 
+zeroing reserve without an Injury Type. This rule sets the Injury Type value on the reserve to match the 
+Injury Type on the Offsetting Payment or on the most recent transaction with matching Cost Type / Exposure. 
+This rule will only catch system-generated reserves in this Validation ruleset, not Preupdate etc.
+/*end00rule*/
+  }
+
+  static function doAction(transactionSet : entity.TransactionSet, actions : gw.rules.Action) {
+/*start00rule*/try{
+  for(trans in transactionSet.AllTransactions){
+    if(trans.Subtype=="reserve" && trans.WCInjuryTypeExt==null){
+      if((trans as Reserve).OffsetPayment!=null){  
+        trans.WCInjuryTypeExt = (trans as Reserve).OffsetPayment.WCInjuryTypeExt
+      }else{
+        var allTrans = transactionSet.Claim.getAllTransactions().sortBy(\ t -> t.CreateTime)
+        for(t in allTrans){
+          if(t.Subtype=="payment" && t.ReserveLine==trans.ReserveLine && t.WCInjuryTypeExt!=null && 
+             java.lang.Math.abs(t.Amount.longValue())==java.lang.Math.abs(trans.Amount.longValue())){
+                trans.WCInjuryTypeExt = t.WCInjuryTypeExt
+          }else if(t.ReserveLine==trans.ReserveLine && t.WCInjuryTypeExt!=null && trans.Amount < 0){
+                trans.WCInjuryTypeExt = t.WCInjuryTypeExt
+          }
+        }
+      }
+    }
+  }  
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( transactionSet, actions.getRule() as java.lang.String, e, null )
+}/*end00rule*/
+  }
+}

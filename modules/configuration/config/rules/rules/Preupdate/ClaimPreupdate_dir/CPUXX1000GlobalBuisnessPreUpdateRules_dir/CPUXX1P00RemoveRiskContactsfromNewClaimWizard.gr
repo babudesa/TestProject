@@ -1,0 +1,34 @@
+package rules.Preupdate.ClaimPreupdate_dir.CPUXX1000GlobalBuisnessPreUpdateRules_dir
+
+@gw.rules.RuleName("CPUXX1P00 - Remove Risk Contacts from New Claim Wizard")
+internal class CPUXX1P00RemoveRiskContactsfromNewClaimWizard {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.State == "draft"/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/try{
+  var trainers = claim.getClaimContactsByRoles(new ContactRole []{ ContactRole.TC_PRIMARYTRAINER, ContactRole.TC_ALTERNATETRAINER})
+  for(cont in trainers){
+    for(prop in claim.Properties){
+        for(role in cont.Roles){
+          if(role.Role == "AlternateTrainer"){
+            if((prop.OriginalVersion as PolicyLocation).ex_AlternateTrainer.PublicID == cont.Contact.PublicID and 
+              prop.ex_AlternateTrainer.PublicID != cont.Contact.PublicID){
+              claim.removePropertyContact("AlternateTrainer", cont.Contact)
+            }
+          }
+          if(role.Role == "PrimaryTrainer"){
+            if((prop.OriginalVersion as PolicyLocation).ex_PrimaryTrainer.PublicID == cont.Contact.PublicID and
+              prop.ex_PrimaryTrainer.PublicID != cont.Contact.PublicID){
+              claim.removePropertyContact("PrimaryTrainer", cont.Contact)
+            }
+          }
+        }
+      }
+  }
+}catch(e){
+  util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule() as java.lang.String, e, null );
+}/*end00rule*/
+  }
+}

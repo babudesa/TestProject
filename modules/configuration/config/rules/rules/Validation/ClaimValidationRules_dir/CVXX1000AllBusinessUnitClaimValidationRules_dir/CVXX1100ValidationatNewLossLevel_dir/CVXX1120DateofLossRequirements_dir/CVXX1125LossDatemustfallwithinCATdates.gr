@@ -1,0 +1,28 @@
+package rules.Validation.ClaimValidationRules_dir.CVXX1000AllBusinessUnitClaimValidationRules_dir.CVXX1100ValidationatNewLossLevel_dir.CVXX1120DateofLossRequirements_dir
+
+@gw.rules.RuleName("CVXX1125 - Loss Date must fall within CAT dates")
+internal class CVXX1125LossDatemustfallwithinCATdates {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/claim.ClaimsMadePolicyExt == false and 
+claim.Catastrophe != null/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*///Updated: 6/20/08 ER:  switched operator on early date and added
+//the compareIgnoreTime function 
+if(claim.LossDate!=null){
+  if((claim.Catastrophe.Ex_EarliestStartDate!=null and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Catastrophe.Ex_EarliestStartDate)< 0)
+      or
+     (claim.Catastrophe.Ex_LatestEndDate!=null and gw.api.util.DateUtil.compareIgnoreTime(claim.LossDate,claim.Catastrophe.Ex_LatestEndDate)> 0 ))
+  {
+    var msg:String
+    msg="The loss date must fall within the catastrophe effective dates.  Please correct the loss date or select the correct catastrophe."
+    if(claim.Policy.isPolicyInRefresh( 1 )){
+      claim.setPolicyRefreshFailed()
+    }
+
+    claim.rejectField( "LossDate", "newloss", msg, Null, Null )
+  }
+}/*end00rule*/
+  }
+}

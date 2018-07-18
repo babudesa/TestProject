@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<PCF>
+  <!-- WARNING: Internal Guidewire file. DO NOT EDIT. -->
+  <ListViewPanel
+    id="PickProfilerSourceLV"
+    mode="MessageDestination">
+    <RowIterator
+      editable="false"
+      elementName="instrumentedMessage"
+      toRemove="deleteProfilerData(instrumentedMessage)"
+      value="find(instrumentedMessage in InstrumentedMessage where instrumentedMessage.ProfilerData != null)">
+      <ToolbarFilter
+        label="displaykey.Web.Profiler.MessageDestination"
+        name="messageDestinationChooser">
+        <ToolbarFilterOptionGroup
+          filters="new gw.api.filters.MessageDestinationFilterSet().getFilterOptions()"/>
+      </ToolbarFilter>
+      <ToolbarFlag
+        condition="instrumentedMessage.EndTime != null"
+        name="CanDelete"/>
+      <ToolbarFlag
+        condition="instrumentedMessage.EndTime == null"
+        name="CannotDelete"/>
+      <Row>
+        <Cell
+          id="MessageDestinationID"
+          label="displaykey.Web.Profiler.DestinationID"
+          sortOrder="1"
+          value="instrumentedMessage.DestinationID"/>
+        <Cell
+          enableSort="false"
+          id="MessageDestinationName"
+          label="displaykey.Web.Profiler.DestinationName"
+          value="instrumentedMessage.Name"/>
+        <DateCell
+          dateFormat="short"
+          id="StartTime"
+          label="displaykey.Web.WorkQueueWorkerRunsLv.StartTime"
+          sortDirection="descending"
+          sortOrder="4"
+          timeFormat="short"
+          value="instrumentedMessage.StartTime"/>
+        <DateCell
+          dateFormat="short"
+          id="EndTime"
+          label="displaykey.Web.WorkQueueWorkerRunsLv.EndTime"
+          timeFormat="short"
+          value="instrumentedMessage.EndTime"/>
+      </Row>
+    </RowIterator>
+    <Code><![CDATA[
+function deleteProfilerData(instrumentedMessage : InstrumentedMessage) {
+  gw.transaction.Transaction.runWithNewBundle( \ bundle -> {
+      var localSource = bundle.add( instrumentedMessage )
+      localSource.ProfilerData = null
+    }
+  )
+}
+    ]]></Code>
+  </ListViewPanel>
+</PCF>

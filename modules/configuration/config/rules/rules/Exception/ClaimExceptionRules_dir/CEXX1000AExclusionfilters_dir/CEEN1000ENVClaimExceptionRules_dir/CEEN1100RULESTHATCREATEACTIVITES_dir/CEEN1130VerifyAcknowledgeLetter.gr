@@ -1,0 +1,28 @@
+package rules.Exception.ClaimExceptionRules_dir.CEXX1000AExclusionfilters_dir.CEEN1000ENVClaimExceptionRules_dir.CEEN1100RULESTHATCREATEACTIVITES_dir
+
+@gw.rules.RuleDisabled
+@gw.rules.RuleName("CEEN1130 - Verify Acknowledge Letter")
+internal class CEEN1130VerifyAcknowledgeLetter {
+  static function doCondition(claim : entity.Claim) : boolean {
+    return /*start00rule*/(!exists(act in claim.Activities where act.ActivityPattern.Code=="acknowledge_letter") && 
+!exists(document in claim.Documents where document.ex_Type != null && document.ex_Type.toLowerCase().equals("correspondence") &&
+document.ex_SubType == "Claim Acknowledgement"))
+
+//moved to ActivityGeneratorBatchRules/*end00rule*/
+  }
+
+  static function doAction(claim : entity.Claim, actions : gw.rules.Action) {
+/*start00rule*/var ap = util.custom_Ext.finders.findActivityPattern("acknowledge_letter")
+var ap2 = "An Acknowledgement Letter must be sent within 10 days of claim opening."
+try{
+  if(gw.api.util.DateUtil.currentDate() > gw.api.util.DateUtil.addDays(claim.CreateTime, 10)){
+    claim.createActivity(null, ap, "Acknowledgement Letter must be sent", ap2, null, null, null, null)
+  }
+}catch(e){
+    util.ErrorHandling.GAICErrorHandling.logError( claim, actions.getRule().DisplayName, e, "" )
+}
+//claim.createActivity(null, nn, null, "Claim has been open 10 days. Please enter note.", null, null, null, null)
+//replacing claim.createActivityFromPattern(null, ap) due to specific wording desired 
+/*end00rule*/
+  }
+}
